@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(php -v)",
+      "PowerShell(Get-Content \"d:\\\\projects\\\\bilaiGhor\\\\storage\\\\logs\\\\laravel.log\" | Where-Object { $_ -match \"^\\\\[2026\" } | Select-Object -Last 5)",
+      "PowerShell(mysql -u root -e \"SELECT 1;\" 2>&1)",
+      "PowerShell(Get-Process -Name \"mysqld\" -ErrorAction SilentlyContinue)",
+      "PowerShell($mysqlPath = Get-ChildItem \"C:\\\\laragon\\\\bin\\\\mysql\" -Recurse -Filter \"mysql.exe\" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName; Write-Output $mysqlPath; & $mysqlPath -u root --password=\"\" -e \"SHOW DATABASES;\" 2>&1)",
+      "PowerShell($m = \"C:\\\\laragon\\\\bin\\\\mysql\\\\mysql-8.4.3-winx64\\\\bin\\\\mysql.exe\"; & $m -u root --password=\"\" -h 127.0.0.1 -P 3306 -e \"SELECT user, host FROM mysql.user WHERE user='root';\" 2>&1 | Where-Object { $_ -notmatch \"Warning\" })",
+      "PowerShell($m = \"C:\\\\laragon\\\\bin\\\\mysql\\\\mysql-8.4.3-winx64\\\\bin\\\\mysql.exe\"; & $m -u root --password=\"\" -h 127.0.0.1 -P 3306 -e \"SELECT 1;\" 2>&1 | Where-Object { $_ -notmatch \"Warning\" })",
+      "PowerShell(Copy-Item \"d:\\\\projects\\\\bilaiGhor\\\\resources\\\\views\\\\frontEnd\\\\layouts\\\\pages\\\\index_old.blade.php\" \"d:\\\\projects\\\\bilaiGhor\\\\resources\\\\views\\\\frontEnd\\\\layouts\\\\pages\\\\index.blade.php\")",
+      "Read(//c/laragon/etc/apache2/sites-enabled/**)",
+      "PowerShell(& \"C:\\\\laragon\\\\bin\\\\apache\\\\httpd-2.4.66-260223-Win64-VS18\\\\bin\\\\httpd.exe\" -k restart 2>&1)",
+      "PowerShell(Get-Process -Name \"httpd\" -ErrorAction SilentlyContinue)",
+      "Read(//c/laragon/bin/apache/httpd-2.4.66-260223-Win64-VS18/conf/**)",
+      "Read(//c/laragon/**)",
+      "PowerShell(Start-Process \"php\" -ArgumentList \"-S 127.0.0.1:8000 index.php\" -WorkingDirectory \"d:\\\\projects\\\\bilaiGhor\" -WindowStyle Hidden)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://127.0.0.1:8000\" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://127.0.0.1:8000/public/frontEnd/css/style.css\" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://127.0.0.1:8000/public/frontEnd/css/all.min.css\" -UseBasicParsing -TimeoutSec 5 | Select-Object StatusCode, @{N=\"ContentType\";E={$_.Headers[\"Content-Type\"]}})",
+      "Bash(grep -E \"\\\\.\\(css|scss\\)$\")"
+    ],
+    "additionalDirectories": [
+      "C:\\laragon\\etc\\apache2\\sites-enabled"
+    ]
+  }
+}

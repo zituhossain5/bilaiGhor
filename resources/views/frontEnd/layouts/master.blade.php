@@ -707,14 +707,30 @@
                         </div>
                     </div>
 
-                    {{-- Nav links (≥ 992px) --}}
+                    {{-- BilaiGhor: Parent categories as nav items — subcategories appear only inside hover dropdown --}}
                     <ul class="bilai-nav__links">
-                        <li><a href="{{route('home')}}" class="{{ Route::is('home') ? 'active' : '' }}">Home</a></li>
+                        @foreach($menucategories as $cat)
+                        <li class="bilai-nav__item{{ $cat->subcategories->count() > 0 ? ' bilai-nav__item--has-drop' : '' }}">
+                            <a href="{{ route('category', $cat->slug) }}" class="{{ Request::segment(1) === 'category' && Request::segment(2) === $cat->slug ? 'active' : '' }}">
+                                {{ $cat->name }}
+                                @if($cat->subcategories->count() > 0)<i class="fa-solid fa-chevron-down bilai-nav-chevron"></i>@endif
+                            </a>
+                            @if($cat->subcategories->count() > 0)
+                            <ul class="bilai-nav__subnav">
+                                @foreach($cat->subcategories as $sub)
+                                <li><a href="{{ route('subcategory', $sub->slug) }}">{{ $sub->subcategoryName }}</a></li>
+                                @endforeach
+                            </ul>
+                            @endif
+                        </li>
+                        @endforeach
+                        {{-- Static navigation links --}}
+                        <li class="bilai-nav__item"><a href="{{ route('home') }}" class="{{ Route::is('home') ? 'active' : '' }}">Home</a></li>
                         @if(($generalsetting?->vendor_enabled ?? 1) == 1)
-                        <li><a href="{{route('sellers')}}" class="{{ Route::is('sellers') ? 'active' : '' }}">Sellers</a></li>
+                        <li class="bilai-nav__item"><a href="{{ route('sellers') }}" class="{{ Route::is('sellers') ? 'active' : '' }}">Sellers</a></li>
                         @endif
-                        <li><a href="{{route('contact')}}" class="{{ Route::is('contact') ? 'active' : '' }}">Contact</a></li>
-                        <li><a href="{{route('customer.order_track')}}" class="{{ Route::is('customer.order_track') ? 'active' : '' }}">Track Order</a></li>
+                        <li class="bilai-nav__item"><a href="{{ route('contact') }}" class="{{ Route::is('contact') ? 'active' : '' }}">Contact</a></li>
+                        <li class="bilai-nav__item"><a href="{{ route('customer.order_track') }}" class="{{ Route::is('customer.order_track') ? 'active' : '' }}">Track Order</a></li>
                     </ul>
 
                 </div>

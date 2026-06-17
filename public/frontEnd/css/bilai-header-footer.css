@@ -422,6 +422,66 @@ header#navbar_top {
   background: rgba(255, 255, 255, 0.06);
 }
 
+/* ── CATEGORY NAV ITEMS — parent category hover dropdowns ──────── */
+/* Position anchor for the dropdown */
+.bilai-nav__links > li.bilai-nav__item {
+  position: relative;
+}
+
+/* Subcategory dropdown panel — hidden by default */
+.bilai-nav__subnav {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 200px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #fff;
+  border-top: 3px solid var(--bilai-primary);
+  border-radius: 0 0 var(--bilai-radius-sm) var(--bilai-radius-sm);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+  list-style: none;
+  padding: 8px 0;
+  margin: 0;
+  z-index: 600;
+}
+
+/* Show on desktop hover */
+.bilai-nav__item--has-drop:hover > .bilai-nav__subnav {
+  display: block;
+}
+
+/* Subcategory link styles */
+.bilai-nav__subnav li a {
+  display: block;
+  padding: 9px 18px;
+  color: var(--bilai-text) !important;
+  font-size: 13.5px;
+  font-family: var(--bilai-font-main);
+  font-weight: 400;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, padding-left 0.18s;
+}
+.bilai-nav__subnav li a:hover {
+  background: var(--bilai-primary);
+  color: #fff !important;
+  padding-left: 24px;
+}
+
+/* Chevron icon on category label */
+.bilai-nav-chevron {
+  font-size: 9px;
+  margin-left: 4px;
+  opacity: 0.75;
+  display: inline-block;
+  transition: transform 0.22s;
+}
+.bilai-nav__item--has-drop:hover > a .bilai-nav-chevron {
+  transform: rotate(180deg);
+}
+
 /* Mobile hamburger inside nav */
 .bilai-nav__ham {
   background: transparent;

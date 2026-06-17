@@ -711,12 +711,29 @@
 
                     
                     <ul class="bilai-nav__links">
-                        <li><a href="<?php echo e(route('home')); ?>" class="<?php echo e(Route::is('home') ? 'active' : ''); ?>">Home</a></li>
+                        <?php $__currentLoopData = $menucategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li class="bilai-nav__item<?php echo e($cat->subcategories->count() > 0 ? ' bilai-nav__item--has-drop' : ''); ?>">
+                            <a href="<?php echo e(route('category', $cat->slug)); ?>" class="<?php echo e(Request::segment(1) === 'category' && Request::segment(2) === $cat->slug ? 'active' : ''); ?>">
+                                <?php echo e($cat->name); ?>
+
+                                <?php if($cat->subcategories->count() > 0): ?><i class="fa-solid fa-chevron-down bilai-nav-chevron"></i><?php endif; ?>
+                            </a>
+                            <?php if($cat->subcategories->count() > 0): ?>
+                            <ul class="bilai-nav__subnav">
+                                <?php $__currentLoopData = $cat->subcategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sub): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li><a href="<?php echo e(route('subcategory', $sub->slug)); ?>"><?php echo e($sub->subcategoryName); ?></a></li>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </ul>
+                            <?php endif; ?>
+                        </li>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        
+                        <li class="bilai-nav__item"><a href="<?php echo e(route('home')); ?>" class="<?php echo e(Route::is('home') ? 'active' : ''); ?>">Home</a></li>
                         <?php if(($generalsetting?->vendor_enabled ?? 1) == 1): ?>
-                        <li><a href="<?php echo e(route('sellers')); ?>" class="<?php echo e(Route::is('sellers') ? 'active' : ''); ?>">Sellers</a></li>
+                        <li class="bilai-nav__item"><a href="<?php echo e(route('sellers')); ?>" class="<?php echo e(Route::is('sellers') ? 'active' : ''); ?>">Sellers</a></li>
                         <?php endif; ?>
-                        <li><a href="<?php echo e(route('contact')); ?>" class="<?php echo e(Route::is('contact') ? 'active' : ''); ?>">Contact</a></li>
-                        <li><a href="<?php echo e(route('customer.order_track')); ?>" class="<?php echo e(Route::is('customer.order_track') ? 'active' : ''); ?>">Track Order</a></li>
+                        <li class="bilai-nav__item"><a href="<?php echo e(route('contact')); ?>" class="<?php echo e(Route::is('contact') ? 'active' : ''); ?>">Contact</a></li>
+                        <li class="bilai-nav__item"><a href="<?php echo e(route('customer.order_track')); ?>" class="<?php echo e(Route::is('customer.order_track') ? 'active' : ''); ?>">Track Order</a></li>
                     </ul>
 
                 </div>

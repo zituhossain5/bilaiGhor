@@ -587,23 +587,32 @@
             <div class="bilai-topbar">
                 <div class="bilai-topbar__inner">
                     <div class="bilai-topbar__left">
-                        <?php if(optional($contact)->hotline): ?>
-                        <a href="tel:<?php echo e($contact->hotline); ?>"><i class="fas fa-phone-alt"></i> <?php echo e($contact->hotline); ?></a>
+                        <?php
+                            $topbarPhone = optional($contact)->hotline ?? optional($contact)->phone ?? null;
+                            $topbarEmail = optional($contact)->email ?? optional($contact)->mail ?? null;
+                        ?>
+                        <?php if($topbarPhone): ?>
+                        <a href="tel:<?php echo e($topbarPhone); ?>">
+                            
+                            <img src="<?php echo e(asset('public/frontEnd/images/topCallIcon.svg')); ?>" width="24" height="24" alt="">
+                            Call Us: <?php echo e($topbarPhone); ?>
+
+                        </a>
                         <?php endif; ?>
-                        <?php if(optional($contact)->email ?? optional($contact)->mail ?? false): ?>
-                        <a href="mailto:<?php echo e($contact->email ?? $contact->mail); ?>"><i class="fas fa-envelope"></i> <?php echo e($contact->email ?? $contact->mail); ?></a>
+                        <?php if($topbarEmail): ?>
+                        <a href="mailto:<?php echo e($topbarEmail); ?>">
+                        <img src="<?php echo e(asset('public/frontEnd/images/topMailIcon.svg')); ?>" width="24" height="24" alt="">  
+                          Email Us: <?php echo e($topbarEmail); ?>
+
+                        </a>
                         <?php endif; ?>
-                    </div>
-                    <div class="bilai-topbar__center">
-                        ঢাকা শহরে সম্পূর্ণ বিনামূল্যে ডেলিভারি &bull; সারা দেশে দ্রুত ডেলিভারি
                     </div>
                     <div class="bilai-topbar__right">
-                        <a href="<?php echo e(route('customer.order_track')); ?>"><i class="fas fa-truck"></i> Track Order</a>
-                        <?php if(Auth::guard('customer')->user()): ?>
-                        <a href="<?php echo e(route('customer.account')); ?>"><i class="far fa-user"></i> My Account</a>
-                        <?php else: ?>
-                        <a href="<?php echo e(route('customer.login')); ?>"><i class="far fa-user"></i> Login</a>
-                        <?php endif; ?>
+                        <?php $__currentLoopData = $socialicons; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $si): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <a href="<?php echo e($si->link); ?>" target="_blank" rel="noopener" title="<?php echo e($si->title); ?>" class="bilai-topbar__social-icon">
+                            <i class="<?php echo e($si->icon); ?>"></i>
+                        </a>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
             </div>
@@ -621,15 +630,13 @@
                     <div class="bilai-main-header__search">
                         <form action="<?php echo e(route('search')); ?>">
                             <input type="text" placeholder="Search for cat food, accessories and more..." class="search_keyword search_click" name="keyword" autocomplete="off" />
-                            <button type="submit"><i class="fas fa-search"></i> Search</button>
+                            <button type="submit"><img src="<?php echo e(asset('public/frontEnd/images/searchIcon.svg')); ?>" width="24" height="24" alt=""> </button>
                         </form>
                         <div class="search_result"></div>
                     </div>
 
                     
                     <div class="bilai-main-header__actions">
-
-                        
                         <?php if(Auth::guard('customer')->user()): ?>
                         <a href="<?php echo e(route('customer.account')); ?>" class="bilai-h-btn bilai-h-btn--user">
                             <i class="far fa-user"></i>
@@ -645,17 +652,9 @@
                         </a>
                         <?php else: ?>
                         <a href="<?php echo e(route('customer.login')); ?>" class="bilai-h-btn bilai-h-btn--user">
-                            <i class="far fa-user"></i><span>Login / Sign Up</span>
+                            <img src="<?php echo e(asset('public/frontEnd/images/topUserIcon.svg')); ?>" width="24" height="24" alt=""> Login / Register</span>
                         </a>
                         <?php endif; ?>
-
-                        
-                        <a href="<?php echo e(route('customer.checkout')); ?>" class="bilai-h-btn bilai-h-btn--cart">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Cart</span>
-                            <span class="bilai-badge mobilecart-qty"><?php echo e(Cart::instance('shopping')->count()); ?></span>
-                        </a>
-
                         
                         <span id="cart-qty" style="display:none;" aria-hidden="true"></span>
                     </div>
@@ -671,43 +670,6 @@
                         <i class="fa-solid fa-bars"></i>
                         <span style="font-size:13px;margin-left:6px;font-weight:600;">Menu</span>
                     </button>
-
-                    
-                    <div class="bilai-nav__cat-wrapper" id="bilaiCatWrapper">
-                        <button class="bilai-nav__cat-btn" id="bilaiCatBtn" type="button" aria-expanded="false" aria-controls="bilaiMegaMenu">
-                            <i class="fa-solid fa-bars"></i>
-                            ALL CATEGORIES
-                            <i class="fa-solid fa-chevron-down bilai-cat-chevron"></i>
-                        </button>
-
-                        <div class="bilai-mega-menu" id="bilaiMegaMenu" role="region" aria-label="Category menu">
-                            <div class="bilai-mega-menu__grid">
-                                <?php $__currentLoopData = $menucategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <div class="bilai-mega-col">
-                                    <a href="<?php echo e(route('category', $category->slug)); ?>" class="bilai-mega-col__head">
-                                        <?php if($category->image): ?>
-                                        <img src="<?php echo e(asset($category->image)); ?>" alt="<?php echo e($category->name); ?>" class="bilai-mega-col__thumb" loading="lazy">
-                                        <?php else: ?>
-                                        <span class="bilai-mega-col__icon"><i class="fas fa-tag"></i></span>
-                                        <?php endif; ?>
-                                        <?php echo e($category->name); ?>
-
-                                    </a>
-                                    <?php if($category->subcategories->count() > 0): ?>
-                                    <ul class="bilai-mega-col__subs">
-                                        <?php $__currentLoopData = $category->subcategories->take(5); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sub): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <li><a href="<?php echo e(route('subcategory', $sub->slug)); ?>"><?php echo e($sub->subcategoryName); ?></a></li>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                        <?php if($category->subcategories->count() > 5): ?>
-                                        <li><a href="<?php echo e(route('category', $category->slug)); ?>" class="bilai-mega-more">View all &rsaquo;</a></li>
-                                        <?php endif; ?>
-                                    </ul>
-                                    <?php endif; ?>
-                                </div>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </div>
-                        </div>
-                    </div>
 
                     
                     <ul class="bilai-nav__links">
@@ -727,14 +689,23 @@
                             <?php endif; ?>
                         </li>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        
-                        <li class="bilai-nav__item"><a href="<?php echo e(route('home')); ?>" class="<?php echo e(Route::is('home') ? 'active' : ''); ?>">Home</a></li>
-                        <?php if(($generalsetting?->vendor_enabled ?? 1) == 1): ?>
-                        <li class="bilai-nav__item"><a href="<?php echo e(route('sellers')); ?>" class="<?php echo e(Route::is('sellers') ? 'active' : ''); ?>">Sellers</a></li>
-                        <?php endif; ?>
-                        <li class="bilai-nav__item"><a href="<?php echo e(route('contact')); ?>" class="<?php echo e(Route::is('contact') ? 'active' : ''); ?>">Contact</a></li>
-                        <li class="bilai-nav__item"><a href="<?php echo e(route('customer.order_track')); ?>" class="<?php echo e(Route::is('customer.order_track') ? 'active' : ''); ?>">Track Order</a></li>
                     </ul>
+
+                    
+                    <div class="bilai-nav__right">
+                        <ul class="bilai-nav__right-links">
+                            <li><a href="<?php echo e(route('home')); ?>" class="<?php echo e(Route::is('home') ? 'active' : ''); ?>">Home</a></li>
+                            <?php if(($generalsetting?->vendor_enabled ?? 1) == 1): ?>
+                            <li><a href="<?php echo e(route('sellers')); ?>" class="<?php echo e(Route::is('sellers') ? 'active' : ''); ?>">Sellers</a></li>
+                            <?php endif; ?>
+                            <li><a href="<?php echo e(route('contact')); ?>" class="<?php echo e(Route::is('contact') ? 'active' : ''); ?>">Contact</a></li>
+                            <li><a href="<?php echo e(route('customer.order_track')); ?>" class="<?php echo e(Route::is('customer.order_track') ? 'active' : ''); ?>">Track Order</a></li>
+                        </ul>
+                        <a href="<?php echo e(route('customer.checkout')); ?>" class="bilai-nav__cart-pill">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span class="bilai-nav__cart-count mobilecart-qty"><?php echo e(Cart::instance('shopping')->count()); ?></span>
+                        </a>
+                    </div>
 
                 </div>
             </nav>

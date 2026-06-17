@@ -586,23 +586,30 @@
             <div class="bilai-topbar">
                 <div class="bilai-topbar__inner">
                     <div class="bilai-topbar__left">
-                        @if(optional($contact)->hotline)
-                        <a href="tel:{{$contact->hotline}}"><i class="fas fa-phone-alt"></i> {{$contact->hotline}}</a>
+                        @php
+                            $topbarPhone = optional($contact)->hotline ?? optional($contact)->phone ?? null;
+                            $topbarEmail = optional($contact)->email ?? optional($contact)->mail ?? null;
+                        @endphp
+                        @if($topbarPhone)
+                        <a href="tel:{{$topbarPhone}}">
+                            {{-- phone --}}
+                            <img src="{{ asset('public/frontEnd/images/topCallIcon.svg') }}" width="24" height="24" alt="">
+                            Call Us: {{$topbarPhone}}
+                        </a>
                         @endif
-                        @if(optional($contact)->email ?? optional($contact)->mail ?? false)
-                        <a href="mailto:{{$contact->email ?? $contact->mail}}"><i class="fas fa-envelope"></i> {{$contact->email ?? $contact->mail}}</a>
+                        @if($topbarEmail)
+                        <a href="mailto:{{$topbarEmail}}">
+                        <img src="{{ asset('public/frontEnd/images/topMailIcon.svg') }}" width="24" height="24" alt="">  
+                          Email Us: {{$topbarEmail}}
+                        </a>
                         @endif
-                    </div>
-                    <div class="bilai-topbar__center">
-                        ঢাকা শহরে সম্পূর্ণ বিনামূল্যে ডেলিভারি &bull; সারা দেশে দ্রুত ডেলিভারি
                     </div>
                     <div class="bilai-topbar__right">
-                        <a href="{{route('customer.order_track')}}"><i class="fas fa-truck"></i> Track Order</a>
-                        @if(Auth::guard('customer')->user())
-                        <a href="{{route('customer.account')}}"><i class="far fa-user"></i> My Account</a>
-                        @else
-                        <a href="{{route('customer.login')}}"><i class="far fa-user"></i> Login</a>
-                        @endif
+                        @foreach($socialicons as $si)
+                        <a href="{{ $si->link }}" target="_blank" rel="noopener" title="{{ $si->title }}" class="bilai-topbar__social-icon">
+                            <i class="{{ $si->icon }}"></i>
+                        </a>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -620,15 +627,13 @@
                     <div class="bilai-main-header__search">
                         <form action="{{route('search')}}">
                             <input type="text" placeholder="Search for cat food, accessories and more..." class="search_keyword search_click" name="keyword" autocomplete="off" />
-                            <button type="submit"><i class="fas fa-search"></i> Search</button>
+                            <button type="submit"><img src="{{ asset('public/frontEnd/images/searchIcon.svg') }}" width="24" height="24" alt=""> </button>
                         </form>
                         <div class="search_result"></div>
                     </div>
 
-                    {{-- User + Cart --}}
+                    {{-- Login / Account (desktop only — cart is in the orange nav bar) --}}
                     <div class="bilai-main-header__actions">
-
-                        {{-- User button --}}
                         @if(Auth::guard('customer')->user())
                         <a href="{{route('customer.account')}}" class="bilai-h-btn bilai-h-btn--user">
                             <i class="far fa-user"></i>
@@ -644,24 +649,16 @@
                         </a>
                         @else
                         <a href="{{route('customer.login')}}" class="bilai-h-btn bilai-h-btn--user">
-                            <i class="far fa-user"></i><span>Login / Sign Up</span>
+                            <img src="{{ asset('public/frontEnd/images/topUserIcon.svg') }}" width="24" height="24" alt=""> Login / Register</span>
                         </a>
                         @endif
-
-                        {{-- Cart button --}}
-                        <a href="{{route('customer.checkout')}}" class="bilai-h-btn bilai-h-btn--cart">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Cart</span>
-                            <span class="bilai-badge mobilecart-qty">{{Cart::instance('shopping')->count()}}</span>
-                        </a>
-
-                        {{-- Hidden legacy AJAX target — cart_count() replaces #cart-qty HTML --}}
+                        {{-- Hidden legacy AJAX target — cart_count() updates #cart-qty --}}
                         <span id="cart-qty" style="display:none;" aria-hidden="true"></span>
                     </div>
                 </div>
             </div>
 
-            {{-- === NAVIGATION BAR (full width dark-brown bar) === --}}
+            {{-- === NAVIGATION BAR (orange bar — Figma layout) === --}}
             <nav class="bilai-nav" aria-label="Main navigation">
                 <div class="bilai-nav__inner">
 
@@ -671,43 +668,7 @@
                         <span style="font-size:13px;margin-left:6px;font-weight:600;">Menu</span>
                     </button>
 
-                    {{-- All Categories + Mega Menu (≥ 992px) --}}
-                    <div class="bilai-nav__cat-wrapper" id="bilaiCatWrapper">
-                        <button class="bilai-nav__cat-btn" id="bilaiCatBtn" type="button" aria-expanded="false" aria-controls="bilaiMegaMenu">
-                            <i class="fa-solid fa-bars"></i>
-                            ALL CATEGORIES
-                            <i class="fa-solid fa-chevron-down bilai-cat-chevron"></i>
-                        </button>
-
-                        <div class="bilai-mega-menu" id="bilaiMegaMenu" role="region" aria-label="Category menu">
-                            <div class="bilai-mega-menu__grid">
-                                @foreach($menucategories as $category)
-                                <div class="bilai-mega-col">
-                                    <a href="{{ route('category', $category->slug) }}" class="bilai-mega-col__head">
-                                        @if($category->image)
-                                        <img src="{{ asset($category->image) }}" alt="{{ $category->name }}" class="bilai-mega-col__thumb" loading="lazy">
-                                        @else
-                                        <span class="bilai-mega-col__icon"><i class="fas fa-tag"></i></span>
-                                        @endif
-                                        {{ $category->name }}
-                                    </a>
-                                    @if($category->subcategories->count() > 0)
-                                    <ul class="bilai-mega-col__subs">
-                                        @foreach($category->subcategories->take(5) as $sub)
-                                        <li><a href="{{ route('subcategory', $sub->slug) }}">{{ $sub->subcategoryName }}</a></li>
-                                        @endforeach
-                                        @if($category->subcategories->count() > 5)
-                                        <li><a href="{{ route('category', $category->slug) }}" class="bilai-mega-more">View all &rsaquo;</a></li>
-                                        @endif
-                                    </ul>
-                                    @endif
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- BilaiGhor: Parent categories as nav items — subcategories appear only inside hover dropdown --}}
+                    {{-- BilaiGhor: LEFT — parent categories only; subcategories in hover dropdown --}}
                     <ul class="bilai-nav__links">
                         @foreach($menucategories as $cat)
                         <li class="bilai-nav__item{{ $cat->subcategories->count() > 0 ? ' bilai-nav__item--has-drop' : '' }}">
@@ -724,14 +685,23 @@
                             @endif
                         </li>
                         @endforeach
-                        {{-- Static navigation links --}}
-                        <li class="bilai-nav__item"><a href="{{ route('home') }}" class="{{ Route::is('home') ? 'active' : '' }}">Home</a></li>
-                        @if(($generalsetting?->vendor_enabled ?? 1) == 1)
-                        <li class="bilai-nav__item"><a href="{{ route('sellers') }}" class="{{ Route::is('sellers') ? 'active' : '' }}">Sellers</a></li>
-                        @endif
-                        <li class="bilai-nav__item"><a href="{{ route('contact') }}" class="{{ Route::is('contact') ? 'active' : '' }}">Contact</a></li>
-                        <li class="bilai-nav__item"><a href="{{ route('customer.order_track') }}" class="{{ Route::is('customer.order_track') ? 'active' : '' }}">Track Order</a></li>
                     </ul>
+
+                    {{-- BilaiGhor: RIGHT — static links + cart pill (≥ 992px) --}}
+                    <div class="bilai-nav__right">
+                        <ul class="bilai-nav__right-links">
+                            <li><a href="{{ route('home') }}" class="{{ Route::is('home') ? 'active' : '' }}">Home</a></li>
+                            @if(($generalsetting?->vendor_enabled ?? 1) == 1)
+                            <li><a href="{{ route('sellers') }}" class="{{ Route::is('sellers') ? 'active' : '' }}">Sellers</a></li>
+                            @endif
+                            <li><a href="{{ route('contact') }}" class="{{ Route::is('contact') ? 'active' : '' }}">Contact</a></li>
+                            <li><a href="{{ route('customer.order_track') }}" class="{{ Route::is('customer.order_track') ? 'active' : '' }}">Track Order</a></li>
+                        </ul>
+                        <a href="{{ route('customer.checkout') }}" class="bilai-nav__cart-pill">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span class="bilai-nav__cart-count mobilecart-qty">{{ Cart::instance('shopping')->count() }}</span>
+                        </a>
+                    </div>
 
                 </div>
             </nav>

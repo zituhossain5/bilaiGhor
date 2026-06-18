@@ -1,7 +1,7 @@
-@extends('backEnd.layouts.master')
-@section('title','Create Banner')
 
-@section('css')
+<?php $__env->startSection('title','Edit Banner'); ?>
+
+<?php $__env->startSection('css'); ?>
 <style>
     /* 1. PROFESSIONAL CARD CONTAINER */
     .studio-card {
@@ -24,37 +24,27 @@
         background-size: 20px 20px;
         background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         
+        /* Removed padding to let image fill area */
         padding: 0; 
         
         position: relative;
         text-align: center;
         border-bottom: 1px solid #e2e8f0;
-        min-height: 250px; /* Taller default height for empty state */
+        /* Changed from min-height to allow content to dictate height, 
+           but keeping a flexible display */
         display: flex;
         justify-content: center;
         align-items: center;
+        width: 100%;
+        overflow: hidden; /* Ensures no spillover */
     }
 
     .real-view-image {
-        width: 100%; 
-        height: auto; 
-        max-height: 600px; 
-        object-fit: contain; 
-        display: none; /* Hidden by default until upload */
-    }
-
-    /* Empty State Placeholder */
-    .empty-state-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: #94a3b8;
-    }
-    .empty-icon {
-        font-size: 48px;
-        margin-bottom: 15px;
-        color: #cbd5e1;
+        width: 100%; /* Forces image to take full width */
+        height: auto; /* Maintains aspect ratio */
+        display: block;
+        /* Removed max-height restriction to allow full viewing of large banners, 
+           or you can set it if you want to limit vertical scrolling */
     }
     
     /* Upload Button Overlay */
@@ -65,7 +55,7 @@
         background: rgba(255, 255, 255, 0.95);
         color: #0f172a;
         padding: 10px 24px;
-        border-radius: 50px;
+        border-radius: 50px; /* Pill shape for modern look */
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         cursor: pointer;
         font-weight: 600;
@@ -147,28 +137,29 @@
         box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
     }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="container-fluid py-4">
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold m-0 text-dark">Create New Banner</h4>
-            <span class="text-muted small">Upload visual content & configure settings</span>
+            <h4 class="fw-bold m-0 text-dark">Edit Banner</h4>
+            <span class="text-muted small">Update visual content & links</span>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{route('banners.index')}}" class="btn btn-light border fw-bold text-secondary px-3">
+            <a href="<?php echo e(route('banners.index')); ?>" class="btn btn-light border fw-bold text-secondary px-3">
                 Cancel
             </a>
             <button type="submit" form="bannerForm" class="btn btn-primary fw-bold px-4 shadow-sm">
-                <i class="fe-plus me-1"></i> Create Banner
+                <i class="fe-save me-1"></i> Save Changes
             </button>
         </div>
     </div>
 
-    <form action="{{route('banners.store')}}" method="POST" id="bannerForm" enctype="multipart/form-data">
-        @csrf
+    <form action="<?php echo e(route('banners.update')); ?>" method="POST" id="bannerForm" enctype="multipart/form-data">
+        <?php echo csrf_field(); ?>
+        <input type="hidden" value="<?php echo e($edit_data->id); ?>" name="id">
 
         <div class="row justify-content-center">
             <div class="col-xl-9 col-lg-10">
@@ -176,55 +167,59 @@
                 <div class="studio-card">
                     
                     <div class="image-canvas-wrapper">
-                        <div id="emptyState" class="empty-state-content">
-                            <i class="fe-image empty-icon"></i>
-                            <h6 class="text-muted fw-bold">No Image Selected</h6>
-                            <small>Upload a banner to see preview here</small>
-                        </div>
-
-                        <img id="realPreview" src="#" class="real-view-image" alt="Banner Preview">
+                        <img id="realPreview" src="<?php echo e(asset($edit_data->image)); ?>" class="real-view-image" alt="Banner Preview">
                         
                         <label class="upload-overlay-btn" for="imageUpload">
-                            <i class="fe-upload-cloud"></i> <span>Upload Image</span>
+                            <i class="fe-camera"></i> <span>Change Image</span>
                         </label>
-                        <input type="file" name="image" id="imageUpload" class="d-none" accept="image/*" onchange="updateCanvas(this)" required>
+                        <input type="file" name="image" id="imageUpload" class="d-none" accept="image/*" onchange="updateCanvas(this)">
                     </div>
-                    @error('image') 
-                        <div class="text-center bg-soft-danger text-danger p-2 small fw-bold">
-                            <i class="fe-alert-triangle me-1"></i> {{ $message }}
-                        </div> 
-                    @enderror
 
                     <div class="settings-area">
                         <div class="row g-4">
                             
                             <div class="col-lg-7">
-                                <label class="category-label">Select Placement Category <span class="text-danger">*</span></label>
+                                <label class="category-label">Select Placement Category</label>
                                 <div class="radio-tile-group">
-                                    @foreach($categories as $cat)
+                                    <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <label>
                                             <input type="radio" 
                                                    name="category_id" 
                                                    class="radio-input" 
-                                                   value="{{$cat->id}}"
-                                                   {{ old('category_id') == $cat->id ? 'checked' : '' }}>
+                                                   value="<?php echo e($cat->id); ?>"
+                                                   <?php if($edit_data->category_id == $cat->id): ?> checked <?php endif; ?>>
                                             <span class="radio-tile">
-                                                {{$cat->name}}
+                                                <?php echo e($cat->name); ?>
+
                                             </span>
                                         </label>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
-                                @error('category_id') <div class="text-danger small mt-2">{{ $message }}</div> @enderror
+                                <?php $__errorArgs = ['category_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="text-danger small mt-2"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
 
                             <div class="col-lg-5 ps-lg-4 border-start-lg">
                                 <div class="mb-4">
-                                    <label class="category-label">Destination URL <span class="text-danger">*</span></label>
+                                    <label class="category-label">Destination URL</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-white border-end-0 text-muted"><i class="fe-link"></i></span>
-                                        <input type="text" class="form-control input-clean border-start-0" name="link" value="{{ old('link') }}" placeholder="https://example.com/offer" required>
+                                        <input type="text" class="form-control input-clean border-start-0" name="link" value="<?php echo e($edit_data->link); ?>" placeholder="https://example.com/offer">
                                     </div>
-                                    @error('link') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                    <?php $__errorArgs = ['link'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="text-danger small mt-1"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
 
                                 <div>
@@ -232,10 +227,10 @@
                                     <div class="d-flex align-items-center justify-content-between p-3 rounded border bg-light">
                                         <div>
                                             <span class="fw-bold text-dark d-block" style="font-size: 14px;">Active Mode</span>
-                                            <small class="text-muted" style="font-size: 12px;">Visible immediately</small>
+                                            <small class="text-muted" style="font-size: 12px;">Visible on website</small>
                                         </div>
                                         <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="status" value="1" checked style="width: 3em; height: 1.5em; cursor:pointer;">
+                                            <input class="form-check-input" type="checkbox" name="status" value="1" <?php if($edit_data->status==1): ?> checked <?php endif; ?> style="width: 3em; height: 1.5em; cursor:pointer;">
                                         </div>
                                     </div>
                                 </div>
@@ -243,39 +238,39 @@
 
                         </div>
 
-                        {{-- SLIDER CONTENT FIELDS (visible only when Hero Slider category selected) --}}
-                        <div id="sliderContentFields" class="row g-3 mt-3" style="display:none!important;">
+                        
+                        <div id="sliderContentFields" class="row g-3 mt-3" <?php if($edit_data->category_id != 1): ?> style="display:none!important;" <?php endif; ?>>
                             <div class="col-12">
                                 <hr>
                                 <p class="category-label mb-3" style="font-size:12px;color:#2563eb;">Hero Slider Content (optional)</p>
                             </div>
                             <div class="col-md-6">
                                 <label class="category-label">Title</label>
-                                <input type="text" class="form-control input-clean" name="title" value="{{ old('title') }}" placeholder="Premium Cat Food &amp; Accessories">
+                                <input type="text" class="form-control input-clean" name="title" value="<?php echo e(old('title', $edit_data->title)); ?>" placeholder="Premium Cat Food &amp; Accessories">
                             </div>
                             <div class="col-md-6">
                                 <label class="category-label">Highlight Text (orange)</label>
-                                <input type="text" class="form-control input-clean" name="highlight_text" value="{{ old('highlight_text') }}" placeholder="in Bangladesh">
+                                <input type="text" class="form-control input-clean" name="highlight_text" value="<?php echo e(old('highlight_text', $edit_data->highlight_text)); ?>" placeholder="in Bangladesh">
                             </div>
                             <div class="col-md-12">
                                 <label class="category-label">Description</label>
-                                <textarea class="form-control input-clean" name="description" rows="2" placeholder="Short description shown below the title">{{ old('description') }}</textarea>
+                                <textarea class="form-control input-clean" name="description" rows="2" placeholder="Short description shown below the title"><?php echo e(old('description', $edit_data->description)); ?></textarea>
                             </div>
                             <div class="col-md-4">
                                 <label class="category-label">Button Text</label>
-                                <input type="text" class="form-control input-clean" name="button_text" value="{{ old('button_text') }}" placeholder="Shop Now">
+                                <input type="text" class="form-control input-clean" name="button_text" value="<?php echo e(old('button_text', $edit_data->button_text)); ?>" placeholder="Shop Now">
                             </div>
                             <div class="col-md-5">
                                 <label class="category-label">Button URL (leave blank to use Destination URL)</label>
-                                <input type="text" class="form-control input-clean" name="button_link" value="{{ old('button_link') }}" placeholder="https://...">
+                                <input type="text" class="form-control input-clean" name="button_link" value="<?php echo e(old('button_link', $edit_data->button_link)); ?>" placeholder="https://...">
                             </div>
                             <div class="col-md-3">
                                 <label class="category-label">Sort Order</label>
-                                <input type="number" class="form-control input-clean" name="sort_order" value="{{ old('sort_order', 0) }}" min="0">
+                                <input type="number" class="form-control input-clean" name="sort_order" value="<?php echo e(old('sort_order', $edit_data->sort_order ?? 0)); ?>" min="0">
                             </div>
                             <div class="col-md-12">
                                 <label class="category-label">Image Alt Text (SEO)</label>
-                                <input type="text" class="form-control input-clean" name="image_alt" value="{{ old('image_alt') }}" placeholder="Descriptive alt text for the hero image">
+                                <input type="text" class="form-control input-clean" name="image_alt" value="<?php echo e(old('image_alt', $edit_data->image_alt)); ?>" placeholder="Descriptive alt text for the hero image">
                             </div>
                         </div>
 
@@ -285,27 +280,23 @@
         </div>
     </form>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('script')
+<?php $__env->startSection('script'); ?>
 <script>
     function updateCanvas(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function(e) {
                 var img = document.getElementById('realPreview');
-                var emptyState = document.getElementById('emptyState');
-                emptyState.style.display = 'none';
-                img.style.display = 'block';
                 img.src = e.target.result;
-                img.style.opacity = 0;
-                setTimeout(() => { img.style.opacity = 1; }, 100);
+                img.style.opacity = 0.5;
+                setTimeout(() => { img.style.opacity = 1; }, 200);
             }
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    // Show slider content fields only when Hero Slider category is selected
     var SLIDER_CATEGORY_ID = '1';
     function toggleSliderFields() {
         var selected = document.querySelector('input[name="category_id"]:checked');
@@ -323,4 +314,5 @@
     });
     toggleSliderFields();
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('backEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/backEnd/banner/edit.blade.php ENDPATH**/ ?>

@@ -1052,3 +1052,171 @@ header .toggle {
 /* ============================================================
    BilaiGhor Footer End
    ============================================================ */
+
+/* ============================================================
+   BilaiGhor Hero Slider Start
+   ============================================================ */
+.bilai-hero-section {
+    background: var(--bilai-cream, #fbf5e6);
+    padding: 28px 0;
+}
+
+.bilai-hero-owl .owl-nav {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    padding: 0 10px;
+}
+
+.bilai-hero-owl .owl-prev,
+.bilai-hero-owl .owl-next {
+    pointer-events: all;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9) !important;
+    color: var(--bilai-brown, #3a1f0f) !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    transition: background 0.2s, color 0.2s;
+    border: 1px solid var(--bilai-border, #dccab2);
+}
+
+.bilai-hero-owl .owl-prev:hover,
+.bilai-hero-owl .owl-next:hover {
+    background: var(--bilai-primary, #e8861a) !important;
+    color: #fff !important;
+}
+
+.bilai-hero-section .owl-carousel {
+    position: relative;
+}
+
+.bilai-hero-slide {
+    display: flex;
+    align-items: stretch;
+    gap: 20px;
+    min-height: 340px;
+}
+
+.bilai-hero-content {
+    flex: 0 0 42%;
+    background: var(--bilai-brown, #3a1f0f);
+    border-radius: 20px;
+    padding: 40px 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    color: #fff;
+}
+
+.bilai-hero-title {
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: clamp(22px, 2.6vw, 34px);
+    font-weight: 700;
+    line-height: 1.25;
+    color: #fff;
+    margin: 0;
+}
+
+.bilai-hero-highlight {
+    color: var(--bilai-primary, #e8861a);
+    display: block;
+}
+
+.bilai-hero-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.80);
+    line-height: 1.6;
+    margin: 0;
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+}
+
+.bilai-hero-btn {
+    display: inline-block;
+    background: var(--bilai-primary, #e8861a);
+    color: #fff;
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 11px 26px;
+    border-radius: 50px;
+    text-decoration: none;
+    align-self: flex-start;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.bilai-hero-btn:hover {
+    background: var(--bilai-primary-dark, #c96f00);
+    color: #fff;
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+.bilai-hero-image {
+    flex: 1;
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(58, 31, 15, 0.06);
+}
+
+.bilai-hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .bilai-hero-section {
+        padding: 16px 0;
+    }
+    .bilai-hero-slide {
+        flex-direction: column;
+        gap: 0;
+        min-height: unset;
+    }
+    .bilai-hero-content {
+        flex: none;
+        border-radius: 16px 16px 0 0;
+        padding: 28px 22px;
+        gap: 12px;
+    }
+    .bilai-hero-image {
+        border-radius: 0 0 16px 16px;
+        min-height: 200px;
+    }
+    .bilai-hero-image img {
+        max-height: 260px;
+    }
+    .bilai-hero-owl .owl-prev,
+    .bilai-hero-owl .owl-next {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .bilai-hero-content {
+        padding: 20px 16px;
+    }
+    .bilai-hero-image {
+        min-height: 160px;
+    }
+    .bilai-hero-image img {
+        max-height: 200px;
+    }
+}
+/* ============================================================
+   BilaiGhor Hero Slider End
+   ============================================================ */

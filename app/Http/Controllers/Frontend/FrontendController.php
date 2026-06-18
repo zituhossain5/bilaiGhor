@@ -84,7 +84,9 @@ class FrontendController extends Controller
 
         // Banners
         $sliders = Banner::where(['status' => 1, 'category_id' => 1])
-            ->select('id', 'image', 'link')
+            ->select('id', 'image', 'link', 'title', 'highlight_text', 'description', 'button_text', 'button_link', 'sort_order', 'image_alt')
+            ->orderBy('sort_order', 'ASC')
+            ->orderBy('id', 'ASC')
             ->get();
 $brands = Brand::where('status', 1)
     ->select('id', 'name', 'slug', 'image')

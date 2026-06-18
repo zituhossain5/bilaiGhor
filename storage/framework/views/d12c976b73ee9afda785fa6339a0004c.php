@@ -16,77 +16,53 @@
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
-<section class="slider-section">
+
+<section class="bilai-hero-section">
     <div class="container">
-        <div class="row">
+        <div class="main_slider owl-carousel bilai-hero-owl">
+            <?php $__currentLoopData = $sliders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <div class="slider-item">
+                <div class="bilai-hero-slide">
+                    <div class="bilai-hero-content">
+                        <?php if($value->title): ?>
+                            <?php if($key === 0): ?>
+                            <h1 class="bilai-hero-title">
+                                <?php echo e($value->title); ?>
 
-            
-            <div class="col-sm-3 hidetosm">
-                <div class="sidebar-menu">
-                    <ul class="hideshow">
-                        <?php $__currentLoopData = $menucategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <li>
-                                <a href="<?php echo e(route('category', $category->slug)); ?>" style="text-decoration: none;">
-                                    <img src="<?php echo e(asset($category->icon)); ?>"
-                                         alt="<?php echo e($category->name); ?>"
-                                         class="side_cat_img"
-                                         loading="lazy" />
-                                    <span style="color: #000;"><?php echo e($category->name); ?></span>
-                                    <i class="fa-solid fa-chevron-right" style="color: #000;"></i>
-                                </a>
-
-                                <?php if($category->subcategories && $category->subcategories->count() > 0): ?>
-                                <ul class="sidebar-submenu">
-                                    <?php $__currentLoopData = $category->subcategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $subcategory): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <li>
-                                            <a href="<?php echo e(route('subcategory', $subcategory->slug)); ?>"
-                                               style="color: #000; text-decoration: none;">
-                                                <?php echo e($subcategory->subcategoryName); ?>
-
-                                                <i class="fa-solid fa-chevron-right"></i>
-                                            </a>
-                                            <?php if($subcategory->childcategories && $subcategory->childcategories->count() > 0): ?>
-                                            <ul class="sidebar-childmenu">
-                                                <?php $__currentLoopData = $subcategory->childcategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $childcat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                    <li>
-                                                        <a href="<?php echo e(route('products', $childcat->slug)); ?>"
-                                                           style="color: #000; text-decoration: none;">
-                                                            <?php echo e($childcat->childcategoryName); ?>
-
-                                                        </a>
-                                                    </li>
-                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                            </ul>
-                                            <?php endif; ?>
-                                        </li>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                </ul>
+                                <?php if($value->highlight_text): ?>
+                                <span class="bilai-hero-highlight"><?php echo e($value->highlight_text); ?></span>
                                 <?php endif; ?>
-                            </li>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    </ul>
-                </div>
-            </div>
+                            </h1>
+                            <?php else: ?>
+                            <h2 class="bilai-hero-title">
+                                <?php echo e($value->title); ?>
 
-            
-            <div class="col-sm-9">
-                <div class="home-slider-container">
-                    <div class="main_slider owl-carousel">
-                        <?php $__currentLoopData = $sliders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <div class="slider-item">
-                                <img src="<?php echo e(asset($value->image)); ?>"
-                                     alt="Slider"
-                                     class="img-fluid w-100" />
-                            </div>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <?php if($value->highlight_text): ?>
+                                <span class="bilai-hero-highlight"><?php echo e($value->highlight_text); ?></span>
+                                <?php endif; ?>
+                            </h2>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        <?php if($value->description): ?>
+                        <p class="bilai-hero-desc"><?php echo e($value->description); ?></p>
+                        <?php endif; ?>
+                        <?php if($value->button_text): ?>
+                        <a href="<?php echo e($value->button_link ?: $value->link); ?>" class="bilai-hero-btn">
+                            <?php echo e($value->button_text); ?> &rarr;
+                        </a>
+                        <?php endif; ?>
+                    </div>
+                    <div class="bilai-hero-image">
+                        <img src="<?php echo e(asset($value->image)); ?>"
+                             alt="<?php echo e($value->image_alt ?: ($value->title ?: 'Hero Slide')); ?>"
+                             loading="<?php echo e($key === 0 ? 'eager' : 'lazy'); ?>" />
                     </div>
                 </div>
             </div>
-
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
     </div>
 </section>
-<!-- slider end -->
 
 
 <section class="bottoads_area">

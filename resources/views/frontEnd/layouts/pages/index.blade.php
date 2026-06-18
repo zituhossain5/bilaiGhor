@@ -18,75 +18,51 @@
 @endpush
 
 @section('content')
-<section class="slider-section">
+{{-- HERO SLIDER --}}
+<section class="bilai-hero-section">
     <div class="container">
-        <div class="row">
-
-            {{-- LEFT SIDEBAR CATEGORY MENU --}}
-            <div class="col-sm-3 hidetosm">
-                <div class="sidebar-menu">
-                    <ul class="hideshow">
-                        @foreach ($menucategories as $key => $category)
-                            <li>
-                                <a href="{{ route('category', $category->slug) }}" style="text-decoration: none;">
-                                    <img src="{{ asset($category->icon) }}"
-                                         alt="{{ $category->name }}"
-                                         class="side_cat_img"
-                                         loading="lazy" />
-                                    <span style="color: #000;">{{ $category->name }}</span>
-                                    <i class="fa-solid fa-chevron-right" style="color: #000;"></i>
-                                </a>
-
-                                @if($category->subcategories && $category->subcategories->count() > 0)
-                                <ul class="sidebar-submenu">
-                                    @foreach ($category->subcategories as $subcategory)
-                                        <li>
-                                            <a href="{{ route('subcategory', $subcategory->slug) }}"
-                                               style="color: #000; text-decoration: none;">
-                                                {{ $subcategory->subcategoryName }}
-                                                <i class="fa-solid fa-chevron-right"></i>
-                                            </a>
-                                            @if($subcategory->childcategories && $subcategory->childcategories->count() > 0)
-                                            <ul class="sidebar-childmenu">
-                                                @foreach ($subcategory->childcategories as $childcat)
-                                                    <li>
-                                                        <a href="{{ route('products', $childcat->slug) }}"
-                                                           style="color: #000; text-decoration: none;">
-                                                            {{ $childcat->childcategoryName }}
-                                                        </a>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                            @endif
-                                        </li>
-                                    @endforeach
-                                </ul>
+        <div class="main_slider owl-carousel bilai-hero-owl">
+            @foreach ($sliders as $key => $value)
+            <div class="slider-item">
+                <div class="bilai-hero-slide">
+                    <div class="bilai-hero-content">
+                        @if($value->title)
+                            @if($key === 0)
+                            <h1 class="bilai-hero-title">
+                                {{ $value->title }}
+                                @if($value->highlight_text)
+                                <span class="bilai-hero-highlight">{{ $value->highlight_text }}</span>
                                 @endif
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-
-            {{-- MAIN SLIDER --}}
-            <div class="col-sm-9">
-                <div class="home-slider-container">
-                    <div class="main_slider owl-carousel">
-                        @foreach ($sliders as $value)
-                            <div class="slider-item">
-                                <img src="{{ asset($value->image) }}"
-                                     alt="Slider"
-                                     class="img-fluid w-100" />
-                            </div>
-                        @endforeach
+                            </h1>
+                            @else
+                            <h2 class="bilai-hero-title">
+                                {{ $value->title }}
+                                @if($value->highlight_text)
+                                <span class="bilai-hero-highlight">{{ $value->highlight_text }}</span>
+                                @endif
+                            </h2>
+                            @endif
+                        @endif
+                        @if($value->description)
+                        <p class="bilai-hero-desc">{{ $value->description }}</p>
+                        @endif
+                        @if($value->button_text)
+                        <a href="{{ $value->button_link ?: $value->link }}" class="bilai-hero-btn">
+                            {{ $value->button_text }} &rarr;
+                        </a>
+                        @endif
+                    </div>
+                    <div class="bilai-hero-image">
+                        <img src="{{ asset($value->image) }}"
+                             alt="{{ $value->image_alt ?: ($value->title ?: 'Hero Slide') }}"
+                             loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
                     </div>
                 </div>
             </div>
-
+            @endforeach
         </div>
     </div>
 </section>
-<!-- slider end -->
 
 {{-- BOTTOM SLIDER ADS --}}
 <section class="bottoads_area">

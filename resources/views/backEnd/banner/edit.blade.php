@@ -222,6 +222,43 @@
                             </div>
 
                         </div>
+
+                        {{-- SLIDER CONTENT FIELDS --}}
+                        <div id="sliderContentFields" class="row g-3 mt-3" @if($edit_data->category_id != 1) style="display:none!important;" @endif>
+                            <div class="col-12">
+                                <hr>
+                                <p class="category-label mb-3" style="font-size:12px;color:#2563eb;">Hero Slider Content (optional)</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="category-label">Title</label>
+                                <input type="text" class="form-control input-clean" name="title" value="{{ old('title', $edit_data->title) }}" placeholder="Premium Cat Food &amp; Accessories">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="category-label">Highlight Text (orange)</label>
+                                <input type="text" class="form-control input-clean" name="highlight_text" value="{{ old('highlight_text', $edit_data->highlight_text) }}" placeholder="in Bangladesh">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="category-label">Description</label>
+                                <textarea class="form-control input-clean" name="description" rows="2" placeholder="Short description shown below the title">{{ old('description', $edit_data->description) }}</textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="category-label">Button Text</label>
+                                <input type="text" class="form-control input-clean" name="button_text" value="{{ old('button_text', $edit_data->button_text) }}" placeholder="Shop Now">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="category-label">Button URL (leave blank to use Destination URL)</label>
+                                <input type="text" class="form-control input-clean" name="button_link" value="{{ old('button_link', $edit_data->button_link) }}" placeholder="https://...">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="category-label">Sort Order</label>
+                                <input type="number" class="form-control input-clean" name="sort_order" value="{{ old('sort_order', $edit_data->sort_order ?? 0) }}" min="0">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="category-label">Image Alt Text (SEO)</label>
+                                <input type="text" class="form-control input-clean" name="image_alt" value="{{ old('image_alt', $edit_data->image_alt) }}" placeholder="Descriptive alt text for the hero image">
+                            </div>
+                        </div>
+
                     </div>
                     </div>
             </div>
@@ -232,19 +269,34 @@
 
 @section('script')
 <script>
-    // Real-time Canvas Update
     function updateCanvas(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function(e) {
                 var img = document.getElementById('realPreview');
                 img.src = e.target.result;
-                // Fade effect
                 img.style.opacity = 0.5;
                 setTimeout(() => { img.style.opacity = 1; }, 200);
             }
             reader.readAsDataURL(input.files[0]);
         }
     }
+
+    var SLIDER_CATEGORY_ID = '1';
+    function toggleSliderFields() {
+        var selected = document.querySelector('input[name="category_id"]:checked');
+        var fields = document.getElementById('sliderContentFields');
+        if (selected && selected.value === SLIDER_CATEGORY_ID) {
+            fields.style.removeProperty('display');
+            fields.style.display = 'flex';
+            fields.style.flexWrap = 'wrap';
+        } else {
+            fields.style.display = 'none';
+        }
+    }
+    document.querySelectorAll('input[name="category_id"]').forEach(function(radio) {
+        radio.addEventListener('change', toggleSliderFields);
+    });
+    toggleSliderFields();
 </script>
 @endsection

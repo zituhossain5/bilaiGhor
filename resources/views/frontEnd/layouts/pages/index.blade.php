@@ -1,6 +1,12 @@
-@extends('frontEnd.layouts.master')
+﻿@extends('frontEnd.layouts.master')
 
 @section('title', $seo->meta_title ?? 'Home')
+
+@push('css')
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+@endpush
 
 @push('seo')
 <meta name="app-url" content="{{ url('/') }}" />
@@ -25,7 +31,7 @@
             @foreach ($sliders as $key => $value)
             <div class="slider-item">
                 <div class="bilai-hero-slide">
-                    <div class="bilai-hero-content">
+                    <div class="bilai-hero-content" style="background-image: url('{{ asset('public/frontEnd/images/sliderContent.png') }}');">
                         @if($value->title)
                             @if($key === 0)
                             <h1 class="bilai-hero-title">
@@ -64,6 +70,35 @@
     </div>
 </section>
 
+{{-- PROMO STRIP --}}
+<section class="bilai-promo-strip">
+    <div class="container">
+        <div class="bilai-promo-grid">
+            <div class="bilai-promo-item">
+                <span class="bilai-promo-icon">
+                    <img src="{{ asset('public/frontEnd/images/truck.svg') }}" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Free Delivery Icon" width="42" height="42">
+                </span>
+                <span class="bilai-promo-text">ঢাকায় ফ্রী ডেলিভারী <strong>১৫০০ টাকার উপর অর্ডারে</strong></span>
+            </div>
+            <div class="bilai-promo-item">
+                <span class="bilai-promo-icon">
+                    <img src="{{ asset('public/frontEnd/images/percent.svg') }}" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Discount Icon" width="42" height="42">                </span>
+                <span class="bilai-promo-text"><strong>৫% ডিসকাউন্ট</strong> প্রথম অর্ডারে</span>
+            </div>
+            <div class="bilai-promo-item">
+                <span class="bilai-promo-icon">
+                    <img src="{{ asset('public/frontEnd/images/redeem.svg') }}" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Reedem Icon" width="42" height="42">                </span>
+                <span class="bilai-promo-text">প্রতি অর্ডারে <strong>রিডিম পয়েন্ট জিতুন</strong></span>
+            </div>
+            <div class="bilai-promo-item">
+                <span class="bilai-promo-icon">
+                    <img src="{{ asset('public/frontEnd/images/return.svg') }}" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Return" width="42" height="42">                </span>
+                <span class="bilai-promo-text"><strong>সহজ রিটার্ন</strong></span>
+            </div>
+        </div>
+    </div>
+</section>
+
 {{-- BOTTOM SLIDER ADS --}}
 <section class="bottoads_area">
     <div class="container">
@@ -86,194 +121,123 @@
     </div>
 </section>
 
-{{-- CATEGORY SLIDER SECTION --}}
-<section class="homeproduct">
+{{-- CATEGORY GRID SECTION --}}
+<section class="bilai-cat-section">
     <div class="container">
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="sec_title">
-                    <h3 class="section-title-header">
-                        <div class="timer_inner">
-                            <div>
-                                <span class="section-title-name"> Categories </span>
-                            </div>
-                        </div>
-                    </h3>
-                </div>
-            </div>
-            <div class="col-sm-12">
-                <div class="category-slider owl-carousel">
-                    @foreach ($menucategories as $value)
-                        <div class="cat_item">
-                            <div class="cat_img">
-                                <a href="{{ route('category', $value->slug) }}">
-                                    <img src="{{ asset($value->image) }}"
-                                         alt="{{ $value->name }}"
-                                         class="img-fluid"
-                                         loading="lazy" />
-                                </a>
-                            </div>
-                            <div class="cat_name">
-                                <a href="{{ route('category', $value->slug) }}"
-                                   style="color: #000; text-decoration: none;">
-                                    {{ $value->name }}
-                                </a>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
+        <div class="bilai-cat-header">
+            <h2 class="bilai-cat-title">Shop by Category</h2>
+            <a href="#" class="bilai-cat-more">See More</a>
         </div>
-    </div>
-</section>
-
-{{-- HOT DEALS BANNER --}}
-<section>
-    <div class="container">
-        <div class="row">
-            @foreach($hitdealsbaner as $hotads)
-            <div class="col-md-12">
-                <a href="{{ $hotads->link }}?sold=show">
-                    <img class="img-fluid w-100"
-                         src="{{ asset($hotads->image) }}"
-                         alt="Hot Deals Banner"
+        <div class="bilai-cat-grid">
+            @foreach ($menucategories as $value)
+            <a href="{{ route('category', $value->slug) }}" class="bilai-cat-card">
+                <div class="bilai-cat-img">
+                    <img src="{{ asset($value->image) }}"
+                         alt="{{ $value->name }}"
                          loading="lazy" />
-                </a>
-            </div>
+                </div>
+                <span class="bilai-cat-name">{{ $value->name }}</span>
+            </a>
             @endforeach
         </div>
     </div>
 </section>
 
-{{-- HOT DEAL SECTION --}}
-<section class="homeproduct">
+{{-- WEEKLY DEALS SECTION --}}
+<section class="bilai-weekly-deals">
     <div class="container">
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="sec_title">
-                    <h3 class="section-title-header">
-                        <div class="timer_inner">
-                            <div>
-                                <span class="section-title-name"> Hot Deal </span>
-                            </div>
-                            <div>
-                                <div class="offer_timer" id="simple_timer"></div>
-                            </div>
-                        </div>
+        <div class="bilai-deal-header">
+            <div class="bilai-deal-header-left">
+                <h2 class="bilai-deal-title">Weekly Deals</h2>
+                <div class="bilai-deal-timer" id="simple_timer"></div>
+            </div>
+            <a href="{{ route('hotdeals') }}" class="bilai-deal-view-all">View All Deals</a>
+        </div>
+
+        <div class="product_slider owl-carousel">
+            @foreach ($hotdeal_top as $key => $value)
+            <div class="bilai-product-card">
+                <div class="bilai-product-top">
+                    <span class="bilai-stock-badge">Limited Stock</span>
+                    <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+
+                <div class="bilai-product-image">
+                    <a href="{{ route('product', $value->slug) }}">
+                        <img src="{{ asset($value->image ? $value->image->image : '') }}"
+                             alt="{{ $value->name }}"
+                             loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
+                    </a>
+                </div>
+
+                <div class="bilai-product-meta">
+                    @if($value->category)
+                    <p class="bilai-product-category">{{ $value->category->name }}</p>
+                    @endif
+                    <h3 class="bilai-product-title">
+                        <a href="{{ route('product', $value->slug) }}">{{ Str::limit($value->name, 55) }}</a>
                     </h3>
-                </div>
-            </div>
 
-            <div class="col-sm-12">
-                <div class="product_slider owl-carousel">
-                    @foreach ($hotdeal_top as $key => $value)
-                        <div class="product_item wist_item wow zoomIn"
-                             data-wow-duration="1.5s"
-                             data-wow-delay="0.{{ $key }}s">
-                            <div class="product_item_inner">
-                                @if($value->old_price)
-                                <div class="sale-badge">
-                                    <div class="sale-badge-inner">
-                                        <div class="sale-badge-box">
-                                            <span class="sale-badge-text">
-                                                <p>
-                                                    @php
-                                                        $discount = ((($value->old_price - $value->new_price) * 100) / $value->old_price);
-                                                    @endphp
-                                                    {{ number_format($discount, 0) }}%
-                                                </p>
-                                                ছাড়
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                @endif
+                    @php
+                        $averageRating = $value->reviews->avg('ratting');
+                        $filledStars   = floor($averageRating);
+                        $hasHalfStar   = $averageRating - $filledStars >= 0.5;
+                        $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
+                    @endphp
+                    <div class="bilai-product-rating">
+                        @for ($i = 0; $i < $filledStars; $i++)
+                            <i class="fas fa-star"></i>
+                        @endfor
+                        @if ($hasHalfStar)
+                            <i class="fas fa-star-half-alt"></i>
+                        @endif
+                        @for ($i = 0; $i < $emptyStars; $i++)
+                            <i class="far fa-star"></i>
+                        @endfor
+                    </div>
 
-                                <div class="pro_img">
-                                    <a href="{{ route('product', $value->slug) }}">
-                                        <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                                             alt="{{ $value->name }}"
-                                             class="img-fluid"
-                                             loading="lazy" />
-                                    </a>
-                                </div>
-
-                                <div class="pro_des">
-                                    <div class="pro_name">
-                                        <a href="{{ route('product', $value->slug) }}">
-                                            {{ Str::limit($value->name, 35) }}
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            @php
-                                $averageRating = $value->reviews->avg('ratting');
-                                $filledStars   = floor($averageRating);
-                                $hasHalfStar   = $averageRating - $filledStars >= 0.5;
-                                $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
-                            @endphp
-
-                            @if ($averageRating >= 0 && $averageRating <= 5)
-                                @for ($i = 0; $i < $filledStars; $i++)
-                                    <i class="fas fa-star"></i>
-                                @endfor
-                                @if ($hasHalfStar)
-                                    <i class="fas fa-star-half-alt"></i>
-                                @endif
-                                @for ($i = 0; $i < $emptyStars; $i++)
-                                    <i class="far fa-star"></i>
-                                @endfor
-                            @else
-                                <span>Invalid rating range</span>
-                            @endif
-
-                            <div class="pro_price">
-                                <p>
-                                    @if($value->old_price)
-                                        <del>৳ {{ $value->old_price }}</del>
-                                    @endif
-                                    ৳ {{ $value->new_price }}
-                                </p>
-                            </div>
-
-                            {{-- দুইটা বাটন: অর্ডার + কার্ট --}}
-                            @if (!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
-                                {{-- ভ্যারিয়েন্ট প্রোডাক্ট – দুটোই ডিটেইল পেজে --}}
-                                <div class="pro_btn">
-                                    <a href="{{ route('product', $value->slug) }}" class="order-btn-link">
-                                        অর্ডার করুন
-                                    </a>
-                                    <a href="{{ route('product', $value->slug) }}" class="cart-icon-link">
-                                        <i class="fa-solid fa-cart-shopping"></i>
-                                    </a>
-                                </div>
-                            @else
-                                {{-- সিম্পল প্রোডাক্ট --}}
-                                <div class="pro_btn">
-                                    <form action="{{ route('cart.store') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="id" value="{{ $value->id }}" />
-                                        <input type="hidden" name="qty" value="1" />
-                                        <input type="hidden" name="order_now" value="1">
-                                        <button type="submit" class="order-btn">অর্ডার করুন</button>
-                                    </form>
-
-                                    <form action="{{ route('cart.store') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="id" value="{{ $value->id }}" />
-                                        <input type="hidden" name="qty" value="1" />
-                                        <button type="submit" class="cart-icon-btn cart_store" data-id="{{ $value->id }}">
-                                            <i class="fa-solid fa-cart-shopping"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                    <div class="bilai-product-price">
+                        <div class="bilai-price-row">
+                            <span class="bilai-price-new">৳ {{ $value->new_price }}</span>
+                            @if($value->old_price)
+                            <del class="bilai-price-old">৳ {{ $value->old_price }}</del>
                             @endif
                         </div>
-                    @endforeach
+                        @if($value->old_price)
+                        @php $discount = round((($value->old_price - $value->new_price) * 100) / $value->old_price); @endphp
+                        <span class="bilai-discount-badge">{{ $discount }}% OFF</span>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="bilai-product-actions">
+                    @if (!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
+                        <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                        </a>
+                        <a href="{{ route('product', $value->slug) }}" class="bilai-buy-btn">Buy Now</a>
+                    @else
+                        <form action="{{ route('cart.store') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="id" value="{{ $value->id }}" />
+                            <input type="hidden" name="qty" value="1" />
+                            <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                            </button>
+                        </form>
+                        <form action="{{ route('cart.store') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="id" value="{{ $value->id }}" />
+                            <input type="hidden" name="qty" value="1" />
+                            <input type="hidden" name="order_now" value="1">
+                            <button type="submit" class="bilai-buy-btn">Buy Now</button>
+                        </form>
+                    @endif
                 </div>
             </div>
-
+            @endforeach
         </div>
     </div>
 </section>
@@ -1056,12 +1020,12 @@
 <script>
     $("#simple_timer").syotimer({
         date: new Date(2015, 0, 1),
-        layout: "hms",
-        doubleNumbers: false,
+        layout: "dhms",
+        doubleNumbers: true,
         effectType: "opacity",
         periodUnit: "d",
         periodic: true,
-        periodInterval: 1,
+        periodInterval: 7,
     });
 </script>
 @endpush

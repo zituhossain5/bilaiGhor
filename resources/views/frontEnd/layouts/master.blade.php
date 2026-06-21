@@ -27,10 +27,10 @@
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/wsit-menu.css')}}" />
 <link rel="stylesheet" href="{{ url('/style.css') }}?v=1">
 <link rel="stylesheet" href="{{ url('/responsive.css') }}?v=1">
-        {{-- BilaiGhor Figma — DM Sans font --}}
+        {{-- BilaiGhor Figma — DM Sans + Mochiy Pop One fonts --}}
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&display=swap">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         {{-- BilaiGhor Figma — header & footer CSS --}}
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=1">
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/main.css')}}" />
@@ -1442,26 +1442,27 @@ document.getElementById("sidebarCartOverlay")?.addEventListener("click", closeSi
         });
 
         $(".product_slider").owlCarousel({
-            margin: 15,
-            items: 6,
+            margin: 16,
             loop: true,
             dots: false,
+            nav: true,
             autoplay: true,
             autoplayTimeout: 6000,
             autoplayHoverPause: true,
+            navText: ["<i class='fa-solid fa-angle-left'></i>", "<i class='fa-solid fa-angle-right'></i>"],
             responsiveClass: true,
             responsive: {
                 0: {
-                    items: 2,
+                    items: 1,
                     nav: false,
                 },
                 600: {
-                    items: 5,
+                    items: 2,
                     nav: false,
                 },
                 1000: {
-                    items: 5,
-                    nav: false,
+                    items: 4,
+                    nav: true,
                 },
             },
         });

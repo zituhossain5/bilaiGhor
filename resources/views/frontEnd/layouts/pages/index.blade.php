@@ -173,29 +173,31 @@
                 </div>
 
                 <div class="bilai-product-meta">
-                    @if($value->category)
-                    <p class="bilai-product-category">{{ $value->category->name }}</p>
-                    @endif
                     <h3 class="bilai-product-title">
                         <a href="{{ route('product', $value->slug) }}">{{ Str::limit($value->name, 55) }}</a>
                     </h3>
 
-                    @php
-                        $averageRating = $value->reviews->avg('ratting');
-                        $filledStars   = floor($averageRating);
-                        $hasHalfStar   = $averageRating - $filledStars >= 0.5;
-                        $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
-                    @endphp
-                    <div class="bilai-product-rating">
-                        @for ($i = 0; $i < $filledStars; $i++)
-                            <i class="fas fa-star"></i>
-                        @endfor
-                        @if ($hasHalfStar)
-                            <i class="fas fa-star-half-alt"></i>
+                    <div class="bilai-product-cat-rating">
+                        @if($value->category)
+                        <p class="bilai-product-category">{{ $value->category->name }}</p>
                         @endif
-                        @for ($i = 0; $i < $emptyStars; $i++)
-                            <i class="far fa-star"></i>
-                        @endfor
+                        @php
+                            $averageRating = $value->reviews->avg('ratting');
+                            $filledStars   = floor($averageRating);
+                            $hasHalfStar   = $averageRating - $filledStars >= 0.5;
+                            $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
+                        @endphp
+                        <div class="bilai-product-rating">
+                            @for ($i = 0; $i < $filledStars; $i++)
+                                <i class="fas fa-star"></i>
+                            @endfor
+                            @if ($hasHalfStar)
+                                <i class="fas fa-star-half-alt"></i>
+                            @endif
+                            @for ($i = 0; $i < $emptyStars; $i++)
+                                <i class="far fa-star"></i>
+                            @endfor
+                        </div>
                     </div>
 
                     <div class="bilai-product-price">

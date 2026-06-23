@@ -26,14 +26,14 @@
         <link rel="stylesheet" href="<?php echo e(asset('public/backEnd/')); ?>/assets/css/toastr.min.css" />
 
         <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/wsit-menu.css')); ?>" />
-<link rel="stylesheet" href="<?php echo e(url('/style.css')); ?>?v=1">
-<link rel="stylesheet" href="<?php echo e(url('/responsive.css')); ?>?v=1">
+<link rel="stylesheet" href="<?php echo e(url('/style.css')); ?>?v=2">
+<link rel="stylesheet" href="<?php echo e(url('/responsive.css')); ?>?v=2">
         
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         
-        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=1">
+        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=2">
         <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/main.css')); ?>" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
@@ -1845,32 +1845,19 @@ document.getElementById("sidebarCartOverlay")?.addEventListener("click", closeSi
         </script>
 
         <script>
-            // document.addEventListener("DOMContentLoaded", function () {
-            //     window.addEventListener("scroll", function () {
-            //         if (window.scrollY > 200) {
-            //             document.getElementById("navbar_top").classList.add("fixed-top");
-            //         } else {
-            //             document.getElementById("navbar_top").classList.remove("fixed-top");
-            //             document.body.style.paddingTop = "0";
-            //         }
-            //     });
-            // });
-            /*=== Main Menu Fixed === */
-            // document.addEventListener("DOMContentLoaded", function () {
-            //     window.addEventListener("scroll", function () {
-            //         if (window.scrollY > 0) {
-            //             document.getElementById("m_navbar_top").classList.add("fixed-top");
-            //             // add padding top to show content behind navbar
-            //             navbar_height = document.querySelector(".navbar").offsetHeight;
-            //             document.body.style.paddingTop = navbar_height + "px";
-            //         } else {
-            //             document.getElementById("m_navbar_top").classList.remove("fixed-top");
-            //             // remove padding top from body
-            //             document.body.style.paddingTop = "0";
-            //         }
-            //     });
-            // });
-            /*=== Main Menu Fixed === */
+            /* BilaiGhor — scroll-compact header */
+            (function () {
+                var header = document.getElementById('navbar_top');
+                if (!header) return;
+                var topbarHeight = 50; // approx topbar height; compact kicks in after this
+                window.addEventListener('scroll', function () {
+                    if (window.pageYOffset > topbarHeight) {
+                        header.classList.add('scrolled');
+                    } else {
+                        header.classList.remove('scrolled');
+                    }
+                }, { passive: true });
+            })();
 
             $(window).scroll(function () {
                 if ($(this).scrollTop() > 50) {

@@ -137,8 +137,8 @@ $brands = Brand::where('status', 1)
         // Hot deal top – image + reviews eager load
         $hotdeal_top = Product::where(['status' => 1, 'approval_status' => 'approved', 'topsale' => 1])
             ->orderBy('id', 'DESC')
-            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'stock')
-            ->with(['prosizes', 'procolors', 'image', 'reviews'])
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'stock', 'category_id')
+            ->with(['prosizes', 'procolors', 'image', 'reviews', 'category'])
             ->limit(12)
             ->get();
 

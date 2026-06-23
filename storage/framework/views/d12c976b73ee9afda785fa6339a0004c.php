@@ -175,29 +175,31 @@
                 </div>
 
                 <div class="bilai-product-meta">
-                    <?php if($value->category): ?>
-                    <p class="bilai-product-category"><?php echo e($value->category->name); ?></p>
-                    <?php endif; ?>
                     <h3 class="bilai-product-title">
                         <a href="<?php echo e(route('product', $value->slug)); ?>"><?php echo e(Str::limit($value->name, 55)); ?></a>
                     </h3>
 
-                    <?php
-                        $averageRating = $value->reviews->avg('ratting');
-                        $filledStars   = floor($averageRating);
-                        $hasHalfStar   = $averageRating - $filledStars >= 0.5;
-                        $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
-                    ?>
-                    <div class="bilai-product-rating">
-                        <?php for($i = 0; $i < $filledStars; $i++): ?>
-                            <i class="fas fa-star"></i>
-                        <?php endfor; ?>
-                        <?php if($hasHalfStar): ?>
-                            <i class="fas fa-star-half-alt"></i>
+                    <div class="bilai-product-cat-rating">
+                        <?php if($value->category): ?>
+                        <p class="bilai-product-category"><?php echo e($value->category->name); ?></p>
                         <?php endif; ?>
-                        <?php for($i = 0; $i < $emptyStars; $i++): ?>
-                            <i class="far fa-star"></i>
-                        <?php endfor; ?>
+                        <?php
+                            $averageRating = $value->reviews->avg('ratting');
+                            $filledStars   = floor($averageRating);
+                            $hasHalfStar   = $averageRating - $filledStars >= 0.5;
+                            $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
+                        ?>
+                        <div class="bilai-product-rating">
+                            <?php for($i = 0; $i < $filledStars; $i++): ?>
+                                <i class="fas fa-star"></i>
+                            <?php endfor; ?>
+                            <?php if($hasHalfStar): ?>
+                                <i class="fas fa-star-half-alt"></i>
+                            <?php endif; ?>
+                            <?php for($i = 0; $i < $emptyStars; $i++): ?>
+                                <i class="far fa-star"></i>
+                            <?php endfor; ?>
+                        </div>
                     </div>
 
                     <div class="bilai-product-price">

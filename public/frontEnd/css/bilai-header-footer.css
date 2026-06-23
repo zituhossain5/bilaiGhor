@@ -45,6 +45,13 @@
     box-sizing: border-box;
 }
 
+/* Remove any browser / theme top gap */
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
 /* ============================================================
    BilaiGhor Header Start
    ============================================================ */
@@ -54,6 +61,11 @@ header#navbar_top {
     position: sticky;
     top: 0;
     z-index: 500;
+    transition: box-shadow 0.3s;
+}
+
+header#navbar_top.scrolled {
+    box-shadow: 0 2px 12px rgba(58, 31, 15, 0.13);
 }
 
 header .toggle {
@@ -237,9 +249,10 @@ header .toggle {
 
 /* ── MAIN HEADER (logo + search + actions) ──────────────────── */
 .bilai-main-header {
-    background: var(--bilai-cream);
-    padding: 20px 0;
+    background: #fbf5e6;
+    padding: 10px 0;
     display: none;
+    transition: padding 0.3s ease;
 }
 @media (min-width: 992px) {
     .bilai-main-header {
@@ -254,6 +267,7 @@ header .toggle {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
+    transition: gap 0.3s ease;
 }
 
 /* Logo */
@@ -266,6 +280,24 @@ header .toggle {
     height: 88px;
     width: auto;
     display: block;
+    transition: height 0.3s ease;
+}
+
+/* ── SCROLLED STATE — topbar hides, header compacts ────────── */
+header#navbar_top.scrolled .bilai-topbar {
+    display: none;
+}
+
+header#navbar_top.scrolled .bilai-main-header {
+    padding: 4px 0;
+}
+
+header#navbar_top.scrolled .bilai-main-header__inner {
+    gap: 24px;
+}
+
+header#navbar_top.scrolled .bilai-main-header__logo img {
+    height: 52px;
 }
 
 /* Search box */
@@ -283,6 +315,7 @@ header .toggle {
     overflow: hidden;
     transition: border-color 0.2s;
     width: 600px;
+    margin: 0 auto;
 }
 .bilai-main-header__search form:focus-within {
     border-color: var(--bilai-primary);
@@ -1510,24 +1543,26 @@ header .toggle {
 .bilai-deal-timer .syotimer__body {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 20px;
 }
 
 .bilai-deal-timer .syotimer-cell {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--bilai-primary, #e8861a);
-    color: #fff;
-    border-radius: 6px;
+    background: #c4552a;
+    color: #fdfcf8;
+    border-radius: 12px;
     padding: 5px 10px;
-    min-width: 46px;
+    width: 70px;
     text-align: center;
     position: relative;
+    height: 70px;
+    justify-content: center;
 }
 
 .bilai-deal-timer .syotimer-cell + .syotimer-cell::before {
-    content: ':';
+    content: ":";
     position: absolute;
     left: -5px;
     top: 50%;
@@ -1539,18 +1574,19 @@ header .toggle {
 
 .bilai-deal-timer .syotimer-cell__value {
     font-family: var(--bilai-font-main);
-    font-size: 17px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 500;
     line-height: 1.1;
 }
 
 .bilai-deal-timer .syotimer-cell__unit {
+    display: block !important;
     font-family: var(--bilai-font-main);
-    font-size: 9px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 400;
     text-transform: capitalize;
-    margin-top: 1px;
-    opacity: 0.88;
+    margin-top: 2px;
+    letter-spacing: 0.3px;
 }
 
 /* View All button */
@@ -1564,7 +1600,10 @@ header .toggle {
     border: 1.5px solid var(--bilai-border, #dccab2);
     border-radius: 50px;
     white-space: nowrap;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s,
+        border-color 0.2s;
 }
 
 .bilai-deal-view-all:hover {
@@ -1587,7 +1626,9 @@ header .toggle {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s, color 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
 }
 
 .bilai-weekly-deals .owl-nav button:hover {
@@ -1598,13 +1639,14 @@ header .toggle {
 
 /* Product card */
 .bilai-product-card {
-    background: #fff;
-    border: 1px solid var(--bilai-border, #dccab2);
-    border-radius: var(--bilai-radius-md, 14px);
-    padding: 14px;
+    background: #fdf9f4;
+    border: 1px solid #c4a881;
+    border-radius: 20px;
+    padding: 16px 16px 30px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    height: 500px;
 }
 
 .bilai-product-top {
@@ -1632,7 +1674,9 @@ header .toggle {
     cursor: pointer;
     color: var(--bilai-muted, #7a6a5e);
     font-size: 13px;
-    transition: background 0.2s, color 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
     flex-shrink: 0;
 }
 
@@ -1648,6 +1692,7 @@ header .toggle {
     aspect-ratio: 1 / 1;
     overflow: hidden;
     border-radius: 8px;
+    padding-bottom: 10px;
 }
 
 .bilai-product-image img {
@@ -1674,9 +1719,9 @@ header .toggle {
 
 .bilai-product-title {
     font-family: var(--bilai-font-main);
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--bilai-body-title, #2a1505);
+    font-size: 16px;
+    font-weight: 500;
+    color: #4f4f4f;
     margin: 0;
     line-height: 1.4;
     display: -webkit-box;
@@ -1695,9 +1740,17 @@ header .toggle {
     color: var(--bilai-primary, #e8861a);
 }
 
+.bilai-product-cat-rating {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
 .bilai-product-rating {
     font-size: 12px;
     color: #f0a500;
+    flex-shrink: 0;
 }
 
 .bilai-product-price {

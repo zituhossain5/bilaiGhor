@@ -516,11 +516,11 @@ footer {
 
 /*==== HEADER CSS START ====  */
 header {
-    position: fixed;
-    box-shadow: 0px 0px 10px #ddd;
-    top: 0;
+    position: relative;
+    box-shadow: none;
+    top: auto;
     width: 100%;
-    z-index: 9999;
+    z-index: auto;
 }
 
 .header-top {

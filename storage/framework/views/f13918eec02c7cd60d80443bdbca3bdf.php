@@ -26,14 +26,14 @@
         <link rel="stylesheet" href="<?php echo e(asset('public/backEnd/')); ?>/assets/css/toastr.min.css" />
 
         <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/wsit-menu.css')); ?>" />
-<link rel="stylesheet" href="<?php echo e(url('/style.css')); ?>?v=1">
-<link rel="stylesheet" href="<?php echo e(url('/responsive.css')); ?>?v=1">
+<link rel="stylesheet" href="<?php echo e(url('/style.css')); ?>?v=3">
+<link rel="stylesheet" href="<?php echo e(url('/responsive.css')); ?>?v=3">
         
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         
-        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=1">
+        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=4">
         <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/main.css')); ?>" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />

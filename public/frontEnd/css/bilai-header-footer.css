@@ -81,7 +81,9 @@ header .toggle {
     display: none;
     overflow: hidden;
     max-height: 80px;
-    transition: max-height 0.35s ease, padding 0.35s ease;
+    transition:
+        max-height 0.35s ease,
+        padding 0.35s ease;
 }
 @media (min-width: 768px) {
     .bilai-topbar {
@@ -1663,7 +1665,11 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     font-family: var(--bilai-font-main);
     font-size: 11px;
     font-weight: 600;
-    color: var(--bilai-primary, #e8861a);
+    color: #fff;
+    background: var(--bilai-primary, #e8861a);
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
 }
 
 .bilai-wishlist-btn {
@@ -1786,12 +1792,12 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 .bilai-discount-badge {
     font-family: var(--bilai-font-main);
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--bilai-primary, #e8861a);
-    background: #fff3e4;
-    border-radius: 4px;
-    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: 400;
+    color: #fbf5e6;
+    background: #c4552a;
+    border-radius: 20px;
+    padding: 4px 10px;
     white-space: nowrap;
 }
 
@@ -1808,13 +1814,12 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 
 .bilai-cart-btn {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
+    width: 58px;
+    height: 47px;
     background: var(--bilai-primary, #e8861a);
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1822,6 +1827,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     cursor: pointer;
     text-decoration: none;
     transition: background 0.2s;
+    padding: 10px 20px;
 }
 
 .bilai-cart-btn:hover {
@@ -1832,14 +1838,15 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 .bilai-buy-btn {
     flex: 1;
-    background: var(--bilai-brown, #3a1f0f);
-    color: #fff;
+    background: #2a1505;
+    color: #edf4f0;
     border: none;
-    border-radius: 8px;
-    padding: 10px 12px;
+    border-radius: 12px;
+    padding: 14px 20px;
     font-family: var(--bilai-font-main);
-    font-size: 13.5px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 27px;
     text-align: center;
     text-decoration: none;
     cursor: pointer;
@@ -1847,7 +1854,6 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;
 }
 
 .bilai-buy-btn:hover {
@@ -1880,4 +1886,84 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 /* ============================================================
    BilaiGhor Weekly Deals End
+   ============================================================ */
+
+/* ============================================================
+   BilaiGhor Best Sellers Start
+   ============================================================ */
+
+.bilai-best-sellers {
+    padding: 40px 0 50px;
+    background: #fdfcf8;
+}
+
+.bilai-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.bilai-section-title {
+    font-family: var(--bilai-font-main);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--bilai-brown);
+    margin: 0;
+}
+
+.bilai-section-view-all {
+    display: inline-block;
+    padding: 7px 20px;
+    border: 1.5px solid var(--bilai-brown);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--bilai-brown);
+    text-decoration: none;
+    transition:
+        background 0.2s,
+        color 0.2s;
+}
+
+.bilai-section-view-all:hover {
+    background: var(--bilai-brown);
+    color: #fff;
+}
+
+/* Best Seller badge overrides Limited Stock orange to keep same structure */
+.bilai-best-seller-badge {
+    background: var(--bilai-primary) !important;
+}
+
+/* Sold count pill */
+.bilai-sold-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: #4f4f4f;
+    background: #f5ede0;
+    border: 1px solid #aa8453;
+    border-radius: 16px;
+    display: flex;
+    padding: 2px 10px;
+    width: 70px;
+}
+
+@media (max-width: 991px) {
+    .bilai-section-title {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 575px) {
+    .bilai-best-sellers {
+        padding: 24px 0;
+    }
+    .bilai-section-title {
+        font-size: 20px;
+    }
+}
+
+/* ============================================================
+   BilaiGhor Best Sellers End
    ============================================================ */

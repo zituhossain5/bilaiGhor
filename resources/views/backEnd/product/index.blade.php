@@ -345,6 +345,9 @@
                                 <span class="badge {{ $value->feature_product == 1 ? 'badge-soft-primary' : 'badge-soft-light border' }}" style="font-size:10px;">
                                     ফিচার: {{ $value->feature_product == 1 ? 'হ্যাঁ' : 'না' }}
                                 </span>
+                                <span class="badge {{ $value->best_seller == 1 ? 'badge-soft-warning' : 'badge-soft-light border' }}" style="font-size:10px;">
+                                    বেস্ট সেলার: {{ $value->best_seller == 1 ? 'হ্যাঁ' : 'না' }}
+                                </span>
                             </div>
                         </td>
                         <td>

@@ -247,10 +247,112 @@
 </section>
 
 
+<?php if($best_seller_top->isNotEmpty()): ?>
+<section class="bilai-best-sellers">
+    <div class="container">
+        <div class="bilai-section-header">
+             <h2 class="bilai-deal-title">Best Sellers</h2>
+            <a href="<?php echo e(route('hotdeals')); ?>" class="bilai-section-view-all">View More</a>
+        </div>
+
+        <div class="product_slider owl-carousel">
+            <?php $__currentLoopData = $best_seller_top; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <div class="bilai-product-card">
+                <div class="bilai-product-top">
+                    <span class="bilai-stock-badge">Best Seller</span>
+                    <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+
+                <div class="bilai-product-image">
+                    <a href="<?php echo e(route('product', $value->slug)); ?>">
+                        <img src="<?php echo e(asset($value->image ? $value->image->image : '')); ?>"
+                             alt="<?php echo e($value->name); ?>"
+                             loading="<?php echo e($key === 0 ? 'eager' : 'lazy'); ?>" />
+                    </a>
+                </div>
+
+                <?php if($value->best_seller_sold_count > 0): ?>
+                <div class="bilai-sold-count"><?php echo e($value->best_seller_sold_count); ?> Sold</div>
+                <?php endif; ?>
+
+                <div class="bilai-product-meta">
+                    <h3 class="bilai-product-title">
+                        <a href="<?php echo e(route('product', $value->slug)); ?>"><?php echo e(Str::limit($value->name, 55)); ?></a>
+                    </h3>
+
+                    <div class="bilai-product-cat-rating">
+                        <?php if($value->category): ?>
+                        <p class="bilai-product-category"><?php echo e($value->category->name); ?></p>
+                        <?php endif; ?>
+                        <?php
+                            $averageRating = $value->reviews->avg('ratting');
+                            $filledStars   = floor($averageRating);
+                            $hasHalfStar   = $averageRating - $filledStars >= 0.5;
+                            $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
+                        ?>
+                        <div class="bilai-product-rating">
+                            <?php for($i = 0; $i < $filledStars; $i++): ?>
+                                <i class="fas fa-star"></i>
+                            <?php endfor; ?>
+                            <?php if($hasHalfStar): ?>
+                                <i class="fas fa-star-half-alt"></i>
+                            <?php endif; ?>
+                            <?php for($i = 0; $i < $emptyStars; $i++): ?>
+                                <i class="far fa-star"></i>
+                            <?php endfor; ?>
+                        </div>
+                    </div>
+
+                    <div class="bilai-product-price">
+                        <div class="bilai-price-row">
+                            <span class="bilai-price-new">৳ <?php echo e($value->new_price); ?></span>
+                            <?php if($value->old_price): ?>
+                            <del class="bilai-price-old">৳ <?php echo e($value->old_price); ?></del>
+                            <?php endif; ?>
+                        </div>
+                        <?php if($value->old_price): ?>
+                        <?php $discount = round((($value->old_price - $value->new_price) * 100) / $value->old_price); ?>
+                        <span class="bilai-discount-badge"><?php echo e($discount); ?>% OFF</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="bilai-product-actions">
+                    <?php if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty()): ?>
+                        <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-cart-btn">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                        </a>
+                        <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-buy-btn">Buy Now</a>
+                    <?php else: ?>
+                        <form action="<?php echo e(route('cart.store')); ?>" method="POST">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="id" value="<?php echo e($value->id); ?>" />
+                            <input type="hidden" name="qty" value="1" />
+                            <button type="submit" class="bilai-cart-btn cart_store" data-id="<?php echo e($value->id); ?>">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                            </button>
+                        </form>
+                        <form action="<?php echo e(route('cart.store')); ?>" method="POST">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="id" value="<?php echo e($value->id); ?>" />
+                            <input type="hidden" name="qty" value="1" />
+                            <input type="hidden" name="order_now" value="1">
+                            <button type="submit" class="bilai-buy-btn">Buy Now</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 
 <section>
-    <div class="container">
+    <div class="">
         <div class="row">
             <?php $__currentLoopData = $homepageads; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $homeads): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <div class="col-md-12">
@@ -402,7 +504,7 @@
 
 
 <section>
-    <div class="container">
+    <div class="">
         <div class="row">
             <?php $__currentLoopData = $homepageads2; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $homeads2): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <div class="col-md-12">

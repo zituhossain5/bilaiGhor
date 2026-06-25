@@ -18,7 +18,8 @@
       "PowerShell(Invoke-WebRequest -Uri \"http://127.0.0.1:8000\" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue)",
       "PowerShell(Invoke-WebRequest -Uri \"http://127.0.0.1:8000/public/frontEnd/css/style.css\" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue)",
       "PowerShell(Invoke-WebRequest -Uri \"http://127.0.0.1:8000/public/frontEnd/css/all.min.css\" -UseBasicParsing -TimeoutSec 5 | Select-Object StatusCode, @{N=\"ContentType\";E={$_.Headers[\"Content-Type\"]}})",
-      "Bash(grep -E \"\\\\.\\(css|scss\\)$\")"
+      "Bash(grep -E \"\\\\.\\(css|scss\\)$\")",
+      "Bash(php -r ' *)"
     ],
     "additionalDirectories": [
       "C:\\laragon\\etc\\apache2\\sites-enabled"

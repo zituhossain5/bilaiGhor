@@ -312,7 +312,10 @@
                                 @if($value->feature_product == 1)
                                     <span class="badge badge-soft-success" style="font-size:10px;"><i class="fe-star"></i> ফিচার্ড</span>
                                 @endif
-                                @if($value->topsale != 1 && $value->feature_product != 1)
+                                @if($value->best_seller == 1)
+                                    <span class="badge badge-soft-primary" style="font-size:10px;"><i class="fe-trending-up"></i> বেস্ট সেলার</span>
+                                @endif
+                                @if($value->topsale != 1 && $value->feature_product != 1 && $value->best_seller != 1)
                                     <span class="small text-muted">—</span>
                                 @endif
                             </div>

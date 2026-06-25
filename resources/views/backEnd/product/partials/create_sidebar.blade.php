@@ -131,18 +131,26 @@
                 </div>
             </div>
             <div class="row text-center g-compact">
-                <div class="col-4">
+                <div class="col-3">
                     <label class="d-block form-label">Status</label>
                     <label class="switch"><input type="checkbox" value="1" name="status" checked><span class="slider round"></span></label>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <label class="d-block form-label">Hot</label>
                     <label class="switch"><input type="checkbox" value="1" name="topsale"><span class="slider round"></span></label>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <label class="d-block form-label">Flash</label>
                     <label class="switch"><input type="checkbox" value="1" name="flashsale"><span class="slider round"></span></label>
                 </div>
+                <div class="col-3">
+                    <label class="d-block form-label">Best Seller</label>
+                    <label class="switch"><input type="checkbox" value="1" name="best_seller" id="bs_toggle_create"><span class="slider round"></span></label>
+                </div>
+            </div>
+            <div id="bs_sold_wrap_create" style="display:none;" class="mt-2">
+                <label class="form-label">Best Seller Sold Count</label>
+                <input type="number" name="best_seller_sold_count" id="bs_sold_create" class="form-control form-control-sm" min="0" placeholder="e.g. 145">
             </div>
         </div>
 

@@ -197,18 +197,27 @@
                 </div>
             </div>
             <div class="row text-center g-compact">
-                <div class="col-4">
+                <div class="col-3">
                     <label class="d-block form-label">Status</label>
                     <label class="switch"><input type="checkbox" value="1" name="status" @if($edit_data->status==1) checked @endif><span class="slider round"></span></label>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <label class="d-block form-label">Hot</label>
                     <label class="switch"><input type="checkbox" value="1" name="topsale" @if($edit_data->topsale==1) checked @endif><span class="slider round"></span></label>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <label class="d-block form-label">Flash</label>
                     <label class="switch"><input type="checkbox" value="1" name="flashsale" @if($edit_data->flashsale==1) checked @endif><span class="slider round"></span></label>
                 </div>
+                <div class="col-3">
+                    <label class="d-block form-label">Best Seller</label>
+                    <label class="switch"><input type="checkbox" value="1" name="best_seller" id="bs_toggle_edit" @if($edit_data->best_seller==1) checked @endif><span class="slider round"></span></label>
+                </div>
+            </div>
+            <div id="bs_sold_wrap_edit" style="{{ $edit_data->best_seller==1 ? '' : 'display:none;' }}" class="mt-2">
+                <label class="form-label">Best Seller Sold Count</label>
+                <input type="number" name="best_seller_sold_count" id="bs_sold_edit" class="form-control form-control-sm" min="0"
+                       value="{{ old('best_seller_sold_count', $edit_data->best_seller_sold_count ?? 0) }}" placeholder="e.g. 145">
             </div>
         </div>
 

@@ -198,9 +198,11 @@ class ProductController extends Controller
         $input['status']          = $request->status ? 1 : 0;
         $input['free_delivery']   = $request->free_delivery ? 1 : 0;
         $input['approval_status'] = 'approved'; // Admin created products are auto-approved
-        $input['topsale']         = $request->topsale ? 1 : 0;
-        $input['feature_product'] = $request->feature_product ? 1 : 0;
-        $input['product_code']    = 'P' . str_pad($last_id, 4, '0', STR_PAD_LEFT);
+        $input['topsale']               = $request->topsale ? 1 : 0;
+        $input['best_seller']           = $request->best_seller ? 1 : 0;
+        $input['best_seller_sold_count'] = $request->best_seller ? (int) ($request->best_seller_sold_count ?? 0) : 0;
+        $input['feature_product']       = $request->feature_product ? 1 : 0;
+        $input['product_code']          = 'P' . str_pad($last_id, 4, '0', STR_PAD_LEFT);
         
         // Wholesale settings
         $input['is_wholesale'] = $request->is_wholesale ? 1 : 0;
@@ -459,9 +461,11 @@ class ProductController extends Controller
         // Slug & flags
         $input['slug']            = strtolower(preg_replace('/[\/\s]+/', '-', $request->name.'-'.$product->id));
         $input['status']          = $request->status ? 1 : 0;
-        $input['topsale']         = $request->topsale ? 1 : 0;
-        $input['free_delivery']   = $request->free_delivery ? 1 : 0;
-        $input['feature_product'] = $request->feature_product ? 1 : 0;
+        $input['topsale']               = $request->topsale ? 1 : 0;
+        $input['best_seller']           = $request->best_seller ? 1 : 0;
+        $input['best_seller_sold_count'] = $request->best_seller ? (int) ($request->best_seller_sold_count ?? 0) : 0;
+        $input['free_delivery']         = $request->free_delivery ? 1 : 0;
+        $input['feature_product']       = $request->feature_product ? 1 : 0;
 
         // VIDEO — YouTube or local upload
         $this->handleVideoInput($request, $input, $product);

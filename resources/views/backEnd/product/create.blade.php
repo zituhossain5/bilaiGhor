@@ -227,6 +227,16 @@
             $(this).parents(".control-group").remove();
         });
 
+        // Best Seller sold count toggle
+        $('#bs_toggle_create').change(function(){
+            if($(this).is(':checked')){
+                $('#bs_sold_wrap_create').slideDown();
+            } else {
+                $('#bs_sold_wrap_create').slideUp();
+                $('#bs_sold_create').val('');
+            }
+        });
+
         // Product Type Toggle
         $('#product_type').change(function(){
             let type = $(this).val();

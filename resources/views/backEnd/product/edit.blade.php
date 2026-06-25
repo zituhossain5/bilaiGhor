@@ -693,7 +693,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     document.getElementById('product_type').addEventListener('change', toggleFields);
-    
+
+    // Best Seller sold count toggle
+    document.getElementById('bs_toggle_edit').addEventListener('change', function() {
+        var wrap = document.getElementById('bs_sold_wrap_edit');
+        if (this.checked) {
+            wrap.style.display = 'block';
+        } else {
+            wrap.style.display = 'none';
+            document.getElementById('bs_sold_edit').value = '';
+        }
+    });
+
     // Wholesale toggle
     document.getElementById('is_wholesale').addEventListener('change', function() {
         var wholesaleArea = document.getElementById('wholesale_area');

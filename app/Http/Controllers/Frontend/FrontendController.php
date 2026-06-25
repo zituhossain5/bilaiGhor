@@ -149,6 +149,14 @@ $brands = Brand::where('status', 1)
             ->limit(12)
             ->get();
 
+        // Best Sellers
+        $best_seller_top = Product::where(['status' => 1, 'approval_status' => 'approved', 'best_seller' => 1])
+            ->orderBy('id', 'DESC')
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'best_seller_sold_count', 'stock', 'category_id')
+            ->with(['prosizes', 'procolors', 'image', 'reviews', 'category'])
+            ->limit(8)
+            ->get();
+
         // Category wise home products – products এর image + reviews eager load
         if ($generalsetting && $generalsetting->show_category_wise_products) {
             $homeproducts = Category::where(['front_view' => 1, 'status' => 1])
@@ -229,6 +237,7 @@ $brands = Brand::where('status', 1)
             'frontcategory',
             'hotdeal_top',
             'hotdeal_bottom',
+            'best_seller_top',
             'homeproducts',
             'sliderbottomads',
             'footertopads',

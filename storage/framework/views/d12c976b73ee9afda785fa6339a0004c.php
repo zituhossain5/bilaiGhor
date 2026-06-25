@@ -124,6 +124,8 @@
 </section>
 
 
+
+
 <section class="bilai-cat-section">
     <div class="container">
         <div class="bilai-cat-header">
@@ -369,6 +371,58 @@
 </section>
 
 
+<section class="bilai-cat-situation-section">
+    <div class="container">
+        <div class="bilai-cat-situation-header">
+            <h2 class="bilai-deal-title">How is Your Cat Doing?</h2>
+            <p class="bilai-cat-situation-subtitle">Tell us your cat's situation, we will find you the right product.</p>
+        </div>
+        <div class="bilai-cat-situation-grid">
+            <a href="#" class="bilai-situation-card">
+                <div class="bilai-situation-icon">
+                    <img src="<?php echo e(asset('public/frontEnd/images/catDoingIcon1.svg')); ?>" alt="New Kitten" width="56" height="56" loading="lazy">
+                </div>
+                <div class="bilai-situation-body">
+                    <h3 class="bilai-situation-title">I Just Got New Kitten</h3>
+                    <p class="bilai-situation-desc">Bringing home a new kitten? You'll get a starter kit, food, and litter box — all in one package.</p>
+                    <span class="bilai-situation-btn">View Starter Kit &rarr;</span>
+                </div>
+            </a>
+            <a href="#" class="bilai-situation-card">
+                <div class="bilai-situation-icon">
+                    <img src="<?php echo e(asset('public/frontEnd/images/catDoingIcon2.svg')); ?>" alt="Cat Not Eating" width="56" height="56" loading="lazy">
+                </div>
+                <div class="bilai-situation-body">
+                    <h3 class="bilai-situation-title">My Cat is Not Eating</h3>
+                    <p class="bilai-situation-desc">Is your cat not eating? Check out wet food and appetite-boosting treats.</p>
+                    <span class="bilai-situation-btn">Find the Solution &rarr;</span>
+                </div>
+            </a>
+            <a href="#" class="bilai-situation-card">
+                <div class="bilai-situation-icon">
+                    <img src="<?php echo e(asset('public/frontEnd/images/catDoingIcon3.svg')); ?>" alt="Bored Cat" width="56" height="56" loading="lazy">
+                </div>
+                <div class="bilai-situation-body">
+                    <h3 class="bilai-situation-title">My Bilai is Getting Bored</h3>
+                    <p class="bilai-situation-desc">Does you bilai stay alone and do nothing? Check out interactive toys and enrichment packs.</p>
+                    <span class="bilai-situation-btn">See Toys &rarr;</span>
+                </div>
+            </a>
+            <a href="#" class="bilai-situation-card">
+                <div class="bilai-situation-icon">
+                    <img src="<?php echo e(asset('public/frontEnd/images/catDoingIcon4.svg')); ?>" alt="Grooming" width="56" height="56" loading="lazy">
+                </div>
+                <div class="bilai-situation-body">
+                    <h3 class="bilai-situation-title">I Want to Keep the House Clean</h3>
+                    <p class="bilai-situation-desc">Grooming brushes, shampoo, everything you need to keep your bilai clean.</p>
+                    <span class="bilai-situation-btn">See Grooming Kits &rarr;</span>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+
 <?php if($homeproducts && $homeproducts->count() > 0): ?>
     <?php $__currentLoopData = $homeproducts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $homecat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
         <section class="homeproduct">
@@ -501,6 +555,63 @@
         </section>
     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 <?php endif; ?>
+
+
+<section class="bilai-why-section">
+    <div class="container">
+        <div class="bilai-why-card" style="background-image: url('<?php echo e(asset('public/frontEnd/images/sliderContent.png')); ?>');">
+            <div class="bilai-why-header">
+                <h2 class="bilai-why-main-title">Why Choose <span class="bilai-why-highlight">Bilai Ghor ?</span></h2>
+                <p class="bilai-why-subtitle">Because it's not just products, but trust to all the cat parents<br>and cat lovers in Bangladesh</p>
+            </div>
+            <div class="bilai-why-grid">
+                <div class="bilai-why-item">
+                    <div class="bilai-why-icon">
+                        <img src="<?php echo e(asset('public/frontEnd/images/whyBilaighorIcon1.svg')); ?>" alt="Only for Cats" width="36" height="36" loading="lazy">
+                    </div>
+                    <div class="bilai-why-body">
+                        <h3 class="bilai-why-item-title">Only for Cats</h3>
+                        <p class="bilai-why-item-desc">We only sell cat products. We don't sell any other pet products. So our focus is on your cat.</p>
+                    </div>
+                </div>
+                <div class="bilai-why-item">
+                    <div class="bilai-why-icon">
+                        <img src="<?php echo e(asset('public/frontEnd/images/whyBilaighorIcon2.svg')); ?>" alt="Trusted and genuine product" width="36" height="36" loading="lazy">
+                    </div>
+                    <div class="bilai-why-body">
+                        <h3 class="bilai-why-item-title">Trusted and genuine product</h3>
+                        <p class="bilai-why-item-desc">Every product is sourced directly from an authorized distributor. There is no risk of counterfeit or expired products.</p>
+                    </div>
+                </div>
+                <div class="bilai-why-item">
+                    <div class="bilai-why-icon">
+                        <img src="<?php echo e(asset('public/frontEnd/images/whyBilaighorIcon3.svg')); ?>" alt="Help in Bengali" width="36" height="36" loading="lazy">
+                    </div>
+                    <div class="bilai-why-body">
+                        <h3 class="bilai-why-item-title">Help in Bengali</h3>
+                        <p class="bilai-why-item-desc">Our customer support team speaks completely in Bengali. No English or complications — solve your problems in simple Bengali.</p>
+                    </div>
+                </div>
+                <div class="bilai-why-item">
+                    <div class="bilai-why-icon">
+                        <img src="<?php echo e(asset('public/frontEnd/images/whyBilaighorIcon4.svg')); ?>" alt="Safe and fast delivery" width="36" height="36" loading="lazy">
+                    </div>
+                    <div class="bilai-why-body">
+                        <h3 class="bilai-why-item-title">Safe and fast delivery</h3>
+                        <p class="bilai-why-item-desc">Products are carefully packaging. Delivery within 2–3 days in Dhaka, 3–5 days throughout Bangladesh.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bilai-why-photos">
+            <img src="<?php echo e(asset('public/frontEnd/images/bilaiparaImg1.png')); ?>" alt="Cat parent with cats" loading="lazy">
+            <img src="<?php echo e(asset('public/frontEnd/images/bilaiparaImg2.png')); ?>" alt="Cat parent with cats" loading="lazy">
+        </div>
+        <div class="bilai-why-cta">
+            <a href="#" class="bilai-why-btn">Visit Our Bilai Para &rarr;</a>
+        </div>
+    </div>
+</section>
 
 
 <section>
@@ -645,98 +756,49 @@
 <?php endif; ?>
 
 <?php if(isset($blogs) && $blogs->count() > 0): ?>
-<section class="homeproduct blog-home-section">
+<section class="bilai-blog-section">
     <div class="container">
-
-        
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="sec_title">
-                    <h3 class="section-title-header">
-                        <span class="section-title-name">Latest Blogs</span>
-                        <a href="<?php echo e(route('blogs')); ?>" class="view_more_btn">
-                            View All
-                        </a>
-                    </h3>
-                </div>
-            </div>
+        <div class="bilai-blog-header">
+            <h2 class="bilai-blog-main-title">What You Should Know As<br>A Cat Parent</h2>
+            <a href="<?php echo e(route('blogs')); ?>" class="bilai-blog-more-btn">Read More Blogs</a>
         </div>
-
-        
-        <div class="row">
-
-            <?php $__currentLoopData = $blogs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $blog): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-            <div class="col-lg-4 col-md-6 mb-4">
-
-                <div class="blog-home-card">
-
-                    
-                    <div class="blog-home-img">
-                        <a href="<?php echo e(route('blog.details', $blog->slug)); ?>">
-                            <?php if($blog->image): ?>
-                        <img 
-                            src="<?php echo e(url('public/'.$blog->image)); ?>"
-                            alt="<?php echo e($blog->title); ?>"
-                            loading="lazy"
-                            width="100%"
-                            height="220"
-                        >
-                    <?php else: ?>
-                        <img 
-                            src="<?php echo e(url('public/no-image.png')); ?>"
-                            alt="No Image"
-                            loading="lazy"
-                            width="100%"
-                            height="220"
-                        >
-                    <?php endif; ?>
-                        </a>
-                    </div>
-
-                    
-                    <div class="blog-home-content">
-
-                        <div class="blog-home-meta">
-                           <?php echo e($blog->created_at->format('d M Y')); ?>
-
-                            |<?php echo e($blog->views); ?>
-
+        <div class="bilai-blog-grid">
+            <?php $__currentLoopData = $blogs->take(3); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $blog): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <div class="bilai-blog-card">
+                <a href="<?php echo e(route('blog.details', $blog->slug)); ?>" class="bilai-blog-img-wrap">
+                    <img
+                        src="<?php echo e($blog->image ? url('public/'.$blog->image) : url('public/no-image.png')); ?>"
+                        alt="<?php echo e($blog->title); ?>"
+                        loading="lazy"
+                    >
+                    <div class="bilai-blog-img-overlay">
+                        <div class="bilai-blog-brand">
+                            <img src="<?php echo e(asset($generalsetting->dark_logo)); ?>" alt="<?php echo e($generalsetting->name); ?>">
+                            <span>Bilai Ghor</span>
                         </div>
-
-                        <h5 class="blog-home-title">
-                            <a href="<?php echo e(route('blog.details', $blog->slug)); ?>">
-                                <?php echo e(Str::limit($blog->title, 55)); ?>
-
-                            </a>
-                        </h5>
-
-                        <p>
-                            <?php echo e(Str::limit($blog->short_description, 110)); ?>
-
-                        </p>
-
-                        <a href="<?php echo e(route('blog.details', $blog->slug)); ?>"
-                           class="read-more-link">
-                            Read More →
-                        </a>
-
+                        <div class="bilai-blog-img-actions">
+                            <span><i class="fas fa-share-alt"></i></span>
+                            <span><i class="far fa-comment"></i> <?php echo e($blog->views ?? 0); ?></span>
+                        </div>
                     </div>
-
+                </a>
+                <div class="bilai-blog-body">
+                    <div class="bilai-blog-meta">
+                        <span class="bilai-blog-cat">Blog</span>
+                        <span class="bilai-blog-date"><?php echo e($blog->created_at->format('jS F, Y')); ?></span>
+                    </div>
+                    <h5 class="bilai-blog-title">
+                        <a href="<?php echo e(route('blog.details', $blog->slug)); ?>"><?php echo e(Str::limit($blog->title, 55)); ?></a>
+                    </h5>
+                    <p class="bilai-blog-desc"><?php echo e(Str::limit($blog->short_description, 100)); ?></p>
+                    <a href="<?php echo e(route('blog.details', $blog->slug)); ?>" class="bilai-blog-read-btn">Continue Reading</a>
                 </div>
-
             </div>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-
         </div>
-
     </div>
 </section>
 <?php endif; ?>
-
-
-
-
-
 
 
 

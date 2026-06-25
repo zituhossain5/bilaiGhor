@@ -1842,7 +1842,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     color: #edf4f0;
     border: none;
     border-radius: 12px;
-    padding: 14px 20px;
+    padding: 10px 20px;
     font-family: var(--bilai-font-main);
     font-size: 18px;
     font-weight: 400;
@@ -1966,4 +1966,527 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 /* ============================================================
    BilaiGhor Best Sellers End
+   ============================================================ */
+
+/* ============================================================
+   BilaiGhor Why Choose Section Start
+   ============================================================ */
+.bilai-why-section {
+    padding: 52px 0 48px;
+    background: #fff;
+}
+
+.bilai-why-card {
+    border-radius: 20px;
+    padding: 60px 40px;
+}
+
+.bilai-why-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.bilai-why-main-title {
+    font-family: var(--bilai-font-title);
+    font-size: 36px;
+    font-weight: 400;
+    color: #fbf5e6;
+    margin-bottom: 20px;
+    line-height: 48px;
+}
+
+.bilai-why-highlight {
+    color: var(--bilai-primary);
+}
+
+.bilai-why-subtitle {
+    font-family: var(--bilai-font-main);
+    font-size: 18px;
+    color: #f0e6d8;
+    margin: 0;
+    line-height: 27px;
+    text-align: center;
+}
+
+.bilai-why-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.bilai-why-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background: #3c2a1e;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.bilai-why-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bilai-why-icon img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.bilai-why-item-title {
+    font-family: var(--bilai-font-main);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--bilai-primary);
+    margin: 0 0 10px;
+}
+
+.bilai-why-item-desc {
+    font-family: var(--bilai-font-main);
+    font-size: 14px;
+    color: #fbf5e6;
+    margin: 0;
+    line-height: 27px;
+}
+
+.bilai-why-photos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin: 40px 0;
+}
+
+.bilai-why-photos img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 30px;
+    display: block;
+}
+
+.bilai-why-cta {
+    text-align: center;
+}
+
+.bilai-why-btn {
+    display: inline-block;
+    font-family: var(--bilai-font-main);
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--bilai-primary);
+    padding: 10px 28px;
+    border-radius: 24px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.bilai-why-btn:hover {
+    background: var(--bilai-primary-dark);
+    color: #fff;
+    text-decoration: none;
+}
+
+@media (max-width: 767px) {
+    .bilai-why-card {
+        padding: 28px 18px 24px;
+    }
+
+    .bilai-why-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bilai-why-photos {
+        grid-template-columns: 1fr;
+    }
+
+    .bilai-why-photos img {
+        height: 200px;
+    }
+
+    .bilai-why-main-title {
+        font-size: 22px;
+    }
+}
+/* ============================================================
+   BilaiGhor Why Choose Section End
+   ============================================================ */
+
+/* ============================================================
+   BilaiGhor Cat Situation Section Start
+   ============================================================ */
+.bilai-cat-situation-section {
+    background: #fef6e8;
+    padding: 60px 0 60px;
+}
+
+.bilai-cat-situation-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.bilai-cat-situation-title {
+    font-family: var(--bilai-font-main);
+    font-size: 28px;
+    font-weight: 700;
+    color: #2a1a0a;
+    margin-bottom: 8px;
+}
+
+.bilai-cat-situation-subtitle {
+    font-family: var(--bilai-font-main);
+    font-size: 18px;
+    color: #4f4f4f;
+    margin: 0;
+    text-align: center;
+    font-weight: 400;
+    margin-top: 30px;
+    margin-bottom: 60px;
+}
+
+.bilai-cat-situation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.bilai-situation-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background: #fdfcf8;
+    border: 1px solid #f5e9c6;
+    border-radius: 20px;
+    padding: 20px;
+    text-decoration: none;
+    transition:
+        box-shadow 0.2s,
+        border-color 0.2s;
+}
+
+.bilai-situation-card:hover {
+    box-shadow: 0 4px 18px rgba(232, 134, 26, 0.13);
+    border-color: var(--bilai-primary);
+    text-decoration: none;
+}
+
+.bilai-situation-icon {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    background: #fdf5ec;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bilai-situation-icon img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.bilai-situation-body {
+    flex: 1;
+}
+
+.bilai-situation-title {
+    font-family: var(--bilai-font-main);
+    font-size: 24px;
+    font-weight: 600;
+    color: #2a1a0a;
+    margin: 0 0 10px;
+}
+
+.bilai-situation-desc {
+    font-family: var(--bilai-font-main);
+    font-size: 18px;
+    color: #000;
+    margin: 0 0 25px;
+    line-height: 27px;
+}
+
+.bilai-situation-btn {
+    display: inline-block;
+    font-family: var(--bilai-font-main);
+    font-size: 18px;
+    font-weight: 400;
+    color: #fdfcf8;
+    background: var(--bilai-primary);
+    padding: 10px 20px;
+    border-radius: 12px;
+    transition: background 0.2s;
+}
+
+.bilai-situation-card:hover .bilai-situation-btn {
+    background: var(--bilai-primary-dark);
+}
+
+@media (max-width: 767px) {
+    .bilai-cat-situation-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bilai-cat-situation-title {
+        font-size: 22px;
+    }
+}
+/* ============================================================
+   BilaiGhor Cat Situation Section End
+   ============================================================ */
+
+/* ============================================================
+   BilaiGhor Blog Section Start
+   ============================================================ */
+.bilai-blog-section {
+    padding: 56px 0 52px;
+    background: #fffdf8;
+}
+
+.bilai-blog-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 16px;
+}
+
+.bilai-blog-main-title {
+    font-family: var(--bilai-font-main);
+    font-size: 28px;
+    font-weight: 700;
+    color: #2a1a0a;
+    line-height: 1.25;
+    margin: 0;
+}
+
+.bilai-blog-more-btn {
+    flex-shrink: 0;
+    display: inline-block;
+    font-family: var(--bilai-font-main);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bilai-text, #4f4f4f);
+    background: #fff;
+    border: 1.5px solid var(--bilai-border, #dccab2);
+    border-radius: 22px;
+    padding: 8px 20px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.bilai-blog-more-btn:hover {
+    border-color: var(--bilai-primary);
+    color: var(--bilai-primary);
+    text-decoration: none;
+}
+
+.bilai-blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.bilai-blog-card {
+    background: #fff;
+    border-radius: var(--bilai-radius-md, 14px);
+    border: 1px solid var(--bilai-border, #dccab2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s;
+}
+
+.bilai-blog-card:hover {
+    box-shadow: 0 6px 24px rgba(58, 31, 15, 0.1);
+}
+
+.bilai-blog-img-wrap {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 220px;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+.bilai-blog-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.bilai-blog-card:hover .bilai-blog-img-wrap img {
+    transform: scale(1.04);
+}
+
+.bilai-blog-img-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 12px;
+    background: linear-gradient(to top, rgba(30, 15, 5, 0.72) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.bilai-blog-brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bilai-blog-brand img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+}
+
+.bilai-blog-brand span {
+    font-family: var(--bilai-font-main);
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.bilai-blog-img-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bilai-blog-img-actions span {
+    font-family: var(--bilai-font-main);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.85);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    cursor: default;
+}
+
+.bilai-blog-body {
+    padding: 16px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.bilai-blog-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.bilai-blog-cat {
+    font-family: var(--bilai-font-main);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bilai-text, #4f4f4f);
+    background: #f5ede0;
+    border: 1px solid #e0c9aa;
+    border-radius: 20px;
+    padding: 3px 10px;
+    display: inline-block;
+}
+
+.bilai-blog-date {
+    font-family: var(--bilai-font-main);
+    font-size: 12px;
+    color: var(--bilai-muted, #7a6a5e);
+    background: #f5ede0;
+    border: 1px solid #e0c9aa;
+    border-radius: 20px;
+    padding: 3px 10px;
+    display: inline-block;
+}
+
+.bilai-blog-title {
+    font-family: var(--bilai-font-main);
+    font-size: 16px;
+    font-weight: 700;
+    color: #2a1a0a;
+    margin: 0 0 8px;
+    line-height: 1.4;
+}
+
+.bilai-blog-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.bilai-blog-title a:hover {
+    color: var(--bilai-primary);
+}
+
+.bilai-blog-desc {
+    font-family: var(--bilai-font-main);
+    font-size: 13px;
+    color: var(--bilai-muted, #7a6a5e);
+    margin: 0 0 16px;
+    line-height: 1.55;
+    flex: 1;
+}
+
+.bilai-blog-read-btn {
+    display: inline-block;
+    align-self: flex-start;
+    font-family: var(--bilai-font-main);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bilai-text, #4f4f4f);
+    background: #f5ede0;
+    border: 1.5px solid var(--bilai-border, #dccab2);
+    border-radius: 22px;
+    padding: 7px 18px;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.bilai-blog-read-btn:hover {
+    background: var(--bilai-primary);
+    border-color: var(--bilai-primary);
+    color: #fff;
+    text-decoration: none;
+}
+
+@media (max-width: 991px) {
+    .bilai-blog-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 575px) {
+    .bilai-blog-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bilai-blog-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .bilai-blog-main-title {
+        font-size: 22px;
+    }
+}
+/* ============================================================
+   BilaiGhor Blog Section End
    ============================================================ */

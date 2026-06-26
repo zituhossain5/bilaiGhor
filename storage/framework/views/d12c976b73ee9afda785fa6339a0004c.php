@@ -371,6 +371,109 @@
 </section>
 
 
+<?php if(isset($new_arrival_products) && $new_arrival_products->isNotEmpty()): ?>
+<section class="bilai-new-arrivals-section">
+    <div class="container">
+        <div class="bilai-na-header">
+            <h2 class="bilai-na-title">New Arrivals</h2>
+            <a href="<?php echo e(route('shop')); ?>" class="bilai-na-more-btn">View More</a>
+        </div>
+        <div class="bilai-na-grid">
+            <?php $__currentLoopData = $new_arrival_products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <?php
+                $reviewCount = $value->reviews->count();
+                $avgRating   = $reviewCount > 0 ? $value->reviews->avg('rating') : 0;
+                $fullStars   = floor($avgRating);
+                $halfStar    = ($avgRating - $fullStars) >= 0.5;
+                $emptyStars  = 5 - $fullStars - ($halfStar ? 1 : 0);
+                $discount    = ($value->old_price > 0 && $value->new_price > 0 && $value->old_price > $value->new_price)
+                                ? round((($value->old_price - $value->new_price) / $value->old_price) * 100)
+                                : 0;
+                $hasVariants = $value->prosizes->isNotEmpty() || $value->procolors->isNotEmpty();
+            ?>
+            <div class="bilai-na-card">
+                
+                <img src="<?php echo e(asset('public/frontEnd/images/NewIcon.svg')); ?>" class="bilai-na-badge" alt="New" width="54" height="54">
+
+                
+                <div class="bilai-na-left">
+                    <button class="bilai-na-wishlist" type="button" aria-label="Add to wishlist">
+                        <i class="far fa-heart"></i>
+                    </button>
+                    <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-na-img-wrap">
+                        <?php if($value->image): ?>
+                        <img src="<?php echo e(asset($value->image->image)); ?>" alt="<?php echo e($value->name); ?>" loading="lazy">
+                        <?php else: ?>
+                        <img src="<?php echo e(asset('public/no-image.png')); ?>" alt="<?php echo e($value->name); ?>" loading="lazy">
+                        <?php endif; ?>
+                    </a>
+                </div>
+
+                
+                <div class="bilai-na-info">
+
+                    
+                    <h3 class="bilai-na-name">
+                        <a href="<?php echo e(route('product', $value->slug)); ?>"><?php echo e(Str::limit($value->name, 55)); ?></a>
+                    </h3>
+
+                    
+                    <div class="bilai-na-cat-rating">
+                        <?php if($value->category): ?>
+                        <p class="bilai-na-category"><?php echo e($value->category->name); ?></p>
+                        <?php else: ?>
+                        <p class="bilai-na-category"></p>
+                        <?php endif; ?>
+                        <div class="bilai-na-stars">
+                            <?php for($i = 0; $i < $fullStars; $i++): ?><i class="fas fa-star"></i><?php endfor; ?>
+                            <?php if($halfStar): ?><i class="fas fa-star-half-alt"></i><?php endif; ?>
+                            <?php for($i = 0; $i < $emptyStars; $i++): ?><i class="far fa-star"></i><?php endfor; ?>
+                        </div>
+                    </div>
+
+                    
+                    <div class="bilai-na-price-row">
+                        <div class="bilai-na-price-left">
+                            <span class="bilai-na-price">৳ <?php echo e($value->new_price); ?></span>
+                            <?php if($value->old_price > 0): ?>
+                            <del class="bilai-na-old-price">৳ <?php echo e($value->old_price); ?></del>
+                            <?php endif; ?>
+                        </div>
+                        <?php if($discount > 0): ?>
+                        <span class="bilai-na-discount"><?php echo e($discount); ?>% OFF</span>
+                        <?php endif; ?>
+                    </div>
+
+                    
+                    <div class="bilai-na-actions">
+                        <?php if($hasVariants): ?>
+                        <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-na-cart-btn" title="Add to Cart">
+                            <i class="fas fa-shopping-cart"></i>
+                        </a>
+                        <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-na-buy-btn">Buy Now</a>
+                        <?php else: ?>
+                        <form action="<?php echo e(route('cart.store')); ?>" method="POST" class="bilai-na-cart-form">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="id" value="<?php echo e($value->id); ?>">
+                            <input type="hidden" name="name" value="<?php echo e($value->name); ?>">
+                            <input type="hidden" name="price" value="<?php echo e($value->new_price); ?>">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="bilai-na-cart-btn" title="Add to Cart">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </form>
+                        <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-na-buy-btn">Buy Now</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+
 <section class="bilai-cat-situation-section">
     <div class="container">
         <div class="bilai-cat-situation-header">
@@ -636,7 +739,7 @@
 
 
 
-<?php if(isset($brands) && $brands->count() > 0): ?>
+<!-- <?php if(isset($brands) && $brands->count() > 0): ?>
 <section class="homeproduct brand-section">
     <div class="container">
         <div class="row">
@@ -677,83 +780,10 @@
         </div>
     </div>
 </section>
-<?php endif; ?>
+<?php endif; ?> -->
 
 
-<?php if(($generalsetting?->vendor_enabled ?? 1) == 1 && isset($vendors) && $vendors->count() > 0): ?>
-<section class="homeproduct vendor-shops-section">
-    <div class="container">
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="sec_title">
-                    <h3 class="section-title-header">
-                        <span class="section-title-name">Our Featured Shops</span>
-                    </h3>
-                </div>
-            </div>
 
-            <div class="col-sm-12">
-                <div class="row vendor-shop-grid">
-                    <?php $__currentLoopData = $vendors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $vendor): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-                        <a href="<?php echo e(route('vendor.shop', $vendor->slug)); ?>" class="vendor-shop-item">
-                            
-                            <div class="shop-banner-bg" style="background-image: url('<?php echo e($vendor->banner ? asset($vendor->banner) : asset('public/frontEnd/images/default-banner.jpg')); ?>');">
-                            </div>
-                            
-                            
-                            <div class="shop-content-wrapper">
-                                <div class="shop-logo-container">
-                                    <div class="shop-logo-circle">
-                                        <?php if($vendor->logo): ?>
-                                            <img src="<?php echo e(asset($vendor->logo)); ?>" alt="<?php echo e($vendor->shop_name); ?>" />
-                                        <?php else: ?>
-                                            <div class="shop-logo-initial">
-                                                <?php echo e(strtoupper(substr($vendor->shop_name, 0, 1))); ?>
-
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <?php if($vendor->verification_status == 'approved'): ?>
-                                    <div class="shop-verified-badge">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    <?php endif; ?>
-                                </div>
-                                
-                                <div class="shop-details">
-                                    <h4 class="shop-title"><?php echo e($vendor->shop_name); ?></h4>
-                                    
-                                    
-                                    <div class="shop-rating-stars">
-                                        <?php for($i = 1; $i <= 5; $i++): ?>
-                                            <?php if($i <= floor($vendor->average_rating)): ?>
-                                                <i class="fas fa-star"></i>
-                                            <?php elseif($i - 0.5 <= $vendor->average_rating): ?>
-                                                <i class="fas fa-star-half-alt"></i>
-                                            <?php else: ?>
-                                                <i class="far fa-star"></i>
-                                            <?php endif; ?>
-                                        <?php endfor; ?>
-                                        <span class="shop-review-text">(<?php echo e($vendor->total_reviews); ?> reviews)</span>
-                                    </div>
-                                </div>
-                                
-                                
-                                <div class="shop-visit-btn">
-                                    <span class="visit-btn-icon"><i class="fas fa-arrow-right"></i></span>
-                                    <span class="visit-btn-text">VISIT STORE</span>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
 
 <?php if(isset($blogs) && $blogs->count() > 0): ?>
 <section class="bilai-blog-section">
@@ -799,6 +829,57 @@
     </div>
 </section>
 <?php endif; ?>
+
+
+
+
+<?php if(isset($testimonials) && $testimonials->count() > 0): ?>
+<section class="bilai-testimonial-section">
+    
+    <div class="bilai-testimonial-bg" style="background-image: url('<?php echo e(asset('public/frontEnd/images/testimonial-bg.jpg')); ?>');">
+        <div class="container">
+            <div class="bilai-testimonial-header">
+                <h2 class="bilai-deal-title">What Bilai Parent Says</h2>
+            </div>
+            <div class="bilai-testimonial-grid">
+                <?php $__currentLoopData = $testimonials; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <div class="bilai-testimonial-card">
+                    
+                    <div class="bilai-testimonial-avatar">
+                        <?php if($t->image): ?>
+                        <img src="<?php echo e(asset('public/'.$t->image)); ?>" alt="<?php echo e($t->name); ?>" loading="lazy">
+                        <?php else: ?>
+                        <div class="bilai-testimonial-avatar-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <h4 class="bilai-testimonial-name"><?php echo e($t->name); ?></h4>
+                    
+                    <?php if($t->location): ?>
+                    <p class="bilai-testimonial-location"><?php echo e($t->location); ?></p>
+                    <?php endif; ?>
+                    
+                    <div class="bilai-testimonial-stars">
+                        <?php for($i = 1; $i <= 5; $i++): ?>
+                            <?php if($i <= $t->rating): ?>
+                            <i class="fas fa-star"></i>
+                            <?php else: ?>
+                            <i class="far fa-star"></i>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+                    </div>
+                    
+                    <p class="bilai-testimonial-message">"<?php echo e($t->message); ?>"</p>
+                </div>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </div>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
 
 
 

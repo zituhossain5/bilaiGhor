@@ -214,6 +214,12 @@
                     <label class="switch"><input type="checkbox" value="1" name="best_seller" id="bs_toggle_edit" @if($edit_data->best_seller==1) checked @endif><span class="slider round"></span></label>
                 </div>
             </div>
+            <div class="row text-center g-compact mt-2">
+                <div class="col-3">
+                    <label class="d-block form-label">New Arrival</label>
+                    <label class="switch"><input type="checkbox" value="1" name="new_arrival" @if($edit_data->new_arrival==1) checked @endif><span class="slider round"></span></label>
+                </div>
+            </div>
             <div id="bs_sold_wrap_edit" style="{{ $edit_data->best_seller==1 ? '' : 'display:none;' }}" class="mt-2">
                 <label class="form-label">Best Seller Sold Count</label>
                 <input type="number" name="best_seller_sold_count" id="bs_sold_edit" class="form-control form-control-sm" min="0"

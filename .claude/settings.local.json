@@ -19,7 +19,9 @@
       "PowerShell(Invoke-WebRequest -Uri \"http://127.0.0.1:8000/public/frontEnd/css/style.css\" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue)",
       "PowerShell(Invoke-WebRequest -Uri \"http://127.0.0.1:8000/public/frontEnd/css/all.min.css\" -UseBasicParsing -TimeoutSec 5 | Select-Object StatusCode, @{N=\"ContentType\";E={$_.Headers[\"Content-Type\"]}})",
       "Bash(grep -E \"\\\\.\\(css|scss\\)$\")",
-      "Bash(php -r ' *)"
+      "Bash(php -r ' *)",
+      "Bash(php \"d:/projects/bilaiGhor/artisan\" make:migration add_new_arrival_to_products_table --table=products)",
+      "Bash(php \"d:/projects/bilaiGhor/artisan\" migrate --force)"
     ],
     "additionalDirectories": [
       "C:\\laragon\\etc\\apache2\\sites-enabled"

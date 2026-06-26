@@ -40,6 +40,7 @@ use App\Helpers\OrderHelper;
 use App\Models\Brand;
 use App\Models\Blog;
 use App\Models\Vendor;
+use App\Models\Testimonial;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -157,6 +158,14 @@ $brands = Brand::where('status', 1)
             ->limit(8)
             ->get();
 
+        // New Arrivals
+        $new_arrival_products = Product::where(['status' => 1, 'approval_status' => 'approved', 'new_arrival' => 1])
+            ->orderBy('id', 'DESC')
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'stock', 'category_id', 'sold')
+            ->with(['prosizes', 'procolors', 'image', 'reviews', 'category'])
+            ->limit(6)
+            ->get();
+
         // Category wise home products – products এর image + reviews eager load
         if ($generalsetting && $generalsetting->show_category_wise_products) {
             $homeproducts = Category::where(['front_view' => 1, 'status' => 1])
@@ -195,6 +204,13 @@ $brands = Brand::where('status', 1)
         } else {
             $all_products = null;
         }
+
+        // Testimonials for homepage
+        $testimonials = Testimonial::where('status', 1)
+            ->orderBy('sort_order')
+            ->orderBy('id', 'desc')
+            ->limit(3)
+            ->get();
 
         // Active Vendors with shop info - for shop cards display
         $vendors = Vendor::where('status', 1)
@@ -238,6 +254,7 @@ $brands = Brand::where('status', 1)
             'hotdeal_top',
             'hotdeal_bottom',
             'best_seller_top',
+            'new_arrival_products',
             'homeproducts',
             'sliderbottomads',
             'footertopads',
@@ -248,7 +265,8 @@ $brands = Brand::where('status', 1)
             'campaognads',
             'reviews',
             'all_products',
-            'vendors'
+            'vendors',
+            'testimonials'
         );
     }
 

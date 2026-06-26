@@ -368,6 +368,109 @@
     </div>
 </section>
 
+{{-- NEW ARRIVALS SECTION --}}
+@if(isset($new_arrival_products) && $new_arrival_products->isNotEmpty())
+<section class="bilai-new-arrivals-section">
+    <div class="container">
+        <div class="bilai-na-header">
+            <h2 class="bilai-na-title">New Arrivals</h2>
+            <a href="{{ route('shop') }}" class="bilai-na-more-btn">View More</a>
+        </div>
+        <div class="bilai-na-grid">
+            @foreach($new_arrival_products as $value)
+            @php
+                $reviewCount = $value->reviews->count();
+                $avgRating   = $reviewCount > 0 ? $value->reviews->avg('rating') : 0;
+                $fullStars   = floor($avgRating);
+                $halfStar    = ($avgRating - $fullStars) >= 0.5;
+                $emptyStars  = 5 - $fullStars - ($halfStar ? 1 : 0);
+                $discount    = ($value->old_price > 0 && $value->new_price > 0 && $value->old_price > $value->new_price)
+                                ? round((($value->old_price - $value->new_price) / $value->old_price) * 100)
+                                : 0;
+                $hasVariants = $value->prosizes->isNotEmpty() || $value->procolors->isNotEmpty();
+            @endphp
+            <div class="bilai-na-card">
+                {{-- NEW badge — replace src with your SVG/PNG when ready --}}
+                <img src="{{ asset('public/frontEnd/images/NewIcon.svg') }}" class="bilai-na-badge" alt="New" width="54" height="54">
+
+                {{-- Left column: wishlist circle above product image --}}
+                <div class="bilai-na-left">
+                    <button class="bilai-na-wishlist" type="button" aria-label="Add to wishlist">
+                        <i class="far fa-heart"></i>
+                    </button>
+                    <a href="{{ route('product', $value->slug) }}" class="bilai-na-img-wrap">
+                        @if($value->image)
+                        <img src="{{ asset($value->image->image) }}" alt="{{ $value->name }}" loading="lazy">
+                        @else
+                        <img src="{{ asset('public/no-image.png') }}" alt="{{ $value->name }}" loading="lazy">
+                        @endif
+                    </a>
+                </div>
+
+                {{-- Right column: sold → name → category+stars → price → actions --}}
+                <div class="bilai-na-info">
+
+                    {{-- Product name --}}
+                    <h3 class="bilai-na-name">
+                        <a href="{{ route('product', $value->slug) }}">{{ Str::limit($value->name, 55) }}</a>
+                    </h3>
+
+                    {{-- Category left | Stars right --}}
+                    <div class="bilai-na-cat-rating">
+                        @if($value->category)
+                        <p class="bilai-na-category">{{ $value->category->name }}</p>
+                        @else
+                        <p class="bilai-na-category"></p>
+                        @endif
+                        <div class="bilai-na-stars">
+                            @for($i = 0; $i < $fullStars; $i++)<i class="fas fa-star"></i>@endfor
+                            @if($halfStar)<i class="fas fa-star-half-alt"></i>@endif
+                            @for($i = 0; $i < $emptyStars; $i++)<i class="far fa-star"></i>@endfor
+                        </div>
+                    </div>
+
+                    {{-- Price left | Discount badge right --}}
+                    <div class="bilai-na-price-row">
+                        <div class="bilai-na-price-left">
+                            <span class="bilai-na-price">৳ {{ $value->new_price }}</span>
+                            @if($value->old_price > 0)
+                            <del class="bilai-na-old-price">৳ {{ $value->old_price }}</del>
+                            @endif
+                        </div>
+                        @if($discount > 0)
+                        <span class="bilai-na-discount">{{ $discount }}% OFF</span>
+                        @endif
+                    </div>
+
+                    {{-- Actions: cart + buy now --}}
+                    <div class="bilai-na-actions">
+                        @if($hasVariants)
+                        <a href="{{ route('product', $value->slug) }}" class="bilai-na-cart-btn" title="Add to Cart">
+                            <i class="fas fa-shopping-cart"></i>
+                        </a>
+                        <a href="{{ route('product', $value->slug) }}" class="bilai-na-buy-btn">Buy Now</a>
+                        @else
+                        <form action="{{ route('cart.store') }}" method="POST" class="bilai-na-cart-form">
+                            @csrf
+                            <input type="hidden" name="id" value="{{ $value->id }}">
+                            <input type="hidden" name="name" value="{{ $value->name }}">
+                            <input type="hidden" name="price" value="{{ $value->new_price }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="bilai-na-cart-btn" title="Add to Cart">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </form>
+                        <a href="{{ route('product', $value->slug) }}" class="bilai-na-buy-btn">Buy Now</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
 {{-- HOW IS YOUR CAT DOING SECTION --}}
 <section class="bilai-cat-situation-section">
     <div class="container">
@@ -632,7 +735,7 @@
 
 
 {{-- BRAND SECTION --}}
-@if(isset($brands) && $brands->count() > 0)
+<!-- @if(isset($brands) && $brands->count() > 0)
 <section class="homeproduct brand-section">
     <div class="container">
         <div class="row">
@@ -672,82 +775,10 @@
         </div>
     </div>
 </section>
-@endif
+@endif -->
 
-{{-- VENDOR SHOPS SECTION --}}
-@if(($generalsetting?->vendor_enabled ?? 1) == 1 && isset($vendors) && $vendors->count() > 0)
-<section class="homeproduct vendor-shops-section">
-    <div class="container">
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="sec_title">
-                    <h3 class="section-title-header">
-                        <span class="section-title-name">Our Featured Shops</span>
-                    </h3>
-                </div>
-            </div>
 
-            <div class="col-sm-12">
-                <div class="row vendor-shop-grid">
-                    @foreach($vendors as $vendor)
-                    <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-                        <a href="{{ route('vendor.shop', $vendor->slug) }}" class="vendor-shop-item">
-                            {{-- Background Banner --}}
-                            <div class="shop-banner-bg" style="background-image: url('{{ $vendor->banner ? asset($vendor->banner) : asset('public/frontEnd/images/default-banner.jpg') }}');">
-                            </div>
-                            
-                            {{-- Shop Logo & Info --}}
-                            <div class="shop-content-wrapper">
-                                <div class="shop-logo-container">
-                                    <div class="shop-logo-circle">
-                                        @if($vendor->logo)
-                                            <img src="{{ asset($vendor->logo) }}" alt="{{ $vendor->shop_name }}" />
-                                        @else
-                                            <div class="shop-logo-initial">
-                                                {{ strtoupper(substr($vendor->shop_name, 0, 1)) }}
-                                            </div>
-                                        @endif
-                                    </div>
-                                    @if($vendor->verification_status == 'approved')
-                                    <div class="shop-verified-badge">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    @endif
-                                </div>
-                                
-                                <div class="shop-details">
-                                    <h4 class="shop-title">{{ $vendor->shop_name }}</h4>
-                                    
-                                    {{-- Rating --}}
-                                    <div class="shop-rating-stars">
-                                        @for($i = 1; $i <= 5; $i++)
-                                            @if($i <= floor($vendor->average_rating))
-                                                <i class="fas fa-star"></i>
-                                            @elseif($i - 0.5 <= $vendor->average_rating)
-                                                <i class="fas fa-star-half-alt"></i>
-                                            @else
-                                                <i class="far fa-star"></i>
-                                            @endif
-                                        @endfor
-                                        <span class="shop-review-text">({{ $vendor->total_reviews }} reviews)</span>
-                                    </div>
-                                </div>
-                                
-                                {{-- Visit Store Button --}}
-                                <div class="shop-visit-btn">
-                                    <span class="visit-btn-icon"><i class="fas fa-arrow-right"></i></span>
-                                    <span class="visit-btn-text">VISIT STORE</span>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-@endif
+
 
 @if(isset($blogs) && $blogs->count() > 0)
 <section class="bilai-blog-section">
@@ -793,6 +824,57 @@
     </div>
 </section>
 @endif
+
+
+
+{{-- TESTIMONIALS SECTION --}}
+@if(isset($testimonials) && $testimonials->count() > 0)
+<section class="bilai-testimonial-section">
+    {{-- bg image placeholder: replace 'public/frontEnd/images/testimonial-bg.jpg' when ready --}}
+    <div class="bilai-testimonial-bg" style="background-image: url('{{ asset('public/frontEnd/images/testimonial-bg.jpg') }}');">
+        <div class="container">
+            <div class="bilai-testimonial-header">
+                <h2 class="bilai-deal-title">What Bilai Parent Says</h2>
+            </div>
+            <div class="bilai-testimonial-grid">
+                @foreach($testimonials as $t)
+                <div class="bilai-testimonial-card">
+                    {{-- 1. Avatar --}}
+                    <div class="bilai-testimonial-avatar">
+                        @if($t->image)
+                        <img src="{{ asset('public/'.$t->image) }}" alt="{{ $t->name }}" loading="lazy">
+                        @else
+                        <div class="bilai-testimonial-avatar-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        @endif
+                    </div>
+                    {{-- 2. Name --}}
+                    <h4 class="bilai-testimonial-name">{{ $t->name }}</h4>
+                    {{-- 3. Location --}}
+                    @if($t->location)
+                    <p class="bilai-testimonial-location">{{ $t->location }}</p>
+                    @endif
+                    {{-- 4. Stars --}}
+                    <div class="bilai-testimonial-stars">
+                        @for($i = 1; $i <= 5; $i++)
+                            @if($i <= $t->rating)
+                            <i class="fas fa-star"></i>
+                            @else
+                            <i class="far fa-star"></i>
+                            @endif
+                        @endfor
+                    </div>
+                    {{-- 5. Message --}}
+                    <p class="bilai-testimonial-message">"{{ $t->message }}"</p>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</section>
+@endif
+
 
 
 

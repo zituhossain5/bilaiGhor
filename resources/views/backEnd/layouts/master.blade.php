@@ -399,6 +399,30 @@
 </li>
 @endcanany
 
+{{-- Testimonials --}}
+<li>
+    <a href="#sidebar-testimonial" data-bs-toggle="collapse">
+        <i data-feather="star"></i>
+        <span> Testimonials </span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebar-testimonial">
+        <ul class="nav-second-level">
+            <li>
+                <a href="{{ route('admin.testimonial.index') }}">
+                    <i data-feather="list"></i>
+                    All Testimonials
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.testimonial.create') }}">
+                    <i data-feather="plus-circle"></i>
+                    Add New
+                </a>
+            </li>
+        </ul>
+    </div>
+</li>
 
 @canany(['purchase-list', 'purchase-create', 'purchase-edit'])
 <li>

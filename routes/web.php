@@ -73,6 +73,7 @@ use App\Http\Controllers\Admin\FacebookPageController;
 use App\Http\Controllers\Frontend\ContactMessageController as FrontendContactMessageController;
 use App\Http\Controllers\Frontend\BlogController;
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
+use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
 use App\Http\Controllers\Admin\PopupController;
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Vendor\ProductController as VendorProductController;
@@ -410,6 +411,20 @@ Route::prefix('admin')
 
         Route::get('/blog/delete/{id}', [AdminBlogController::class, 'delete'])
             ->name('blog.delete');
+
+        // Testimonial Management
+        Route::get('/testimonials', [AdminTestimonialController::class, 'index'])
+            ->name('testimonial.index');
+        Route::get('/testimonial/create', [AdminTestimonialController::class, 'create'])
+            ->name('testimonial.create');
+        Route::post('/testimonial/store', [AdminTestimonialController::class, 'store'])
+            ->name('testimonial.store');
+        Route::get('/testimonial/edit/{id}', [AdminTestimonialController::class, 'edit'])
+            ->name('testimonial.edit');
+        Route::post('/testimonial/update/{id}', [AdminTestimonialController::class, 'update'])
+            ->name('testimonial.update');
+        Route::get('/testimonial/delete/{id}', [AdminTestimonialController::class, 'delete'])
+            ->name('testimonial.delete');
     });
 
 	

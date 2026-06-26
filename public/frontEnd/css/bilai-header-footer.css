@@ -2509,3 +2509,490 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 /* ============================================================
    BilaiGhor Blog Section End
    ============================================================ */
+
+/* ============================================================
+   BilaiGhor New Arrivals Start
+   ============================================================ */
+.bilai-new-arrivals-section {
+    padding: 52px 0 48px;
+    background: #fffdf8;
+}
+
+.bilai-na-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+}
+
+.bilai-na-title {
+    font-family: var(--bilai-font-main);
+    font-size: 26px;
+    font-weight: 700;
+    color: #2a1a0a;
+    margin: 0;
+}
+
+.bilai-na-more-btn {
+    display: inline-block;
+    font-family: var(--bilai-font-main);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bilai-text, #4f4f4f);
+    background: #fff;
+    border: 1.5px solid var(--bilai-border, #dccab2);
+    border-radius: 22px;
+    padding: 7px 20px;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.bilai-na-more-btn:hover {
+    border-color: var(--bilai-primary);
+    color: var(--bilai-primary);
+    text-decoration: none;
+}
+
+.bilai-na-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* Horizontal card */
+.bilai-na-card {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid #f0e8dd;
+    border-radius: 14px;
+    padding: 14px 14px 14px 16px;
+    box-shadow: 0 2px 8px rgba(58, 31, 15, 0.07);
+    transition: box-shadow 0.2s;
+    overflow: visible;
+}
+
+.bilai-na-card:hover {
+    box-shadow: 0 6px 20px rgba(58, 31, 15, 0.13);
+}
+
+/* NEW badge — positioned <img> tag; drop SVG/PNG into public/frontEnd/images/new-badge.svg */
+.bilai-na-badge {
+    position: absolute;
+    top: -16px;
+    left: -16px;
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    z-index: 2;
+    display: block;
+    pointer-events: none;
+}
+
+/* Left column: wishlist above image */
+.bilai-na-left {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Wishlist button above image — white circle like Figma */
+.bilai-na-wishlist {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #e0d5c8;
+    box-shadow: 0 1px 4px rgba(58, 31, 15, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #bba898;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+}
+
+.bilai-na-wishlist:hover {
+    color: var(--bilai-primary);
+    border-color: var(--bilai-primary);
+}
+
+/* Image */
+.bilai-na-img-wrap {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fdf5ec;
+    border-radius: 10px;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.bilai-na-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Right info column */
+.bilai-na-info {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Sold count pill */
+.bilai-na-sold {
+    display: inline-block;
+    font-family: var(--bilai-font-main);
+    font-size: 11px;
+    font-weight: 500;
+    color: #7a6a5e;
+    background: #f5ede0;
+    border: 1px solid #e8d9c8;
+    border-radius: 20px;
+    padding: 2px 10px;
+    margin-bottom: 6px;
+}
+
+/* Category left | Stars right */
+.bilai-na-cat-rating {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.bilai-na-category {
+    font-family: var(--bilai-font-main);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--bilai-primary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.bilai-na-stars {
+    font-size: 10px;
+    color: #f5a623;
+    flex-shrink: 0;
+}
+
+.bilai-na-name {
+    font-family: var(--bilai-font-main);
+    font-size: 13px;
+    font-weight: 600;
+    color: #2a1a0a;
+    margin: 0 0 6px;
+    line-height: 1.35;
+}
+
+.bilai-na-name a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.bilai-na-name a:hover {
+    color: var(--bilai-primary);
+}
+
+/* Price left | Discount badge right */
+.bilai-na-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.bilai-na-price-left {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.bilai-na-price {
+    font-family: var(--bilai-font-main);
+    font-size: 14px;
+    font-weight: 700;
+    color: #2a1a0a;
+}
+
+.bilai-na-old-price {
+    font-family: var(--bilai-font-main);
+    font-size: 12px;
+    color: var(--bilai-muted, #7a6a5e);
+}
+
+.bilai-na-discount {
+    font-family: var(--bilai-font-main);
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--bilai-primary);
+    border-radius: 4px;
+    padding: 2px 5px;
+    flex-shrink: 0;
+}
+
+.bilai-na-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Cart form must not break flex */
+.bilai-na-cart-form {
+    flex-shrink: 0;
+}
+
+/* Cart button — solid orange with white icon (matches Figma) */
+.bilai-na-cart-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--bilai-primary);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.bilai-na-cart-btn:hover {
+    background: var(--bilai-brown, #3a1f0f);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Buy Now — dark pill, stretches to fill remaining space */
+.bilai-na-buy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    font-family: var(--bilai-font-main);
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: #2a1a0a;
+    border-radius: 8px;
+    padding: 9px 14px;
+    text-decoration: none;
+    transition: background 0.2s;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.bilai-na-buy-btn:hover {
+    background: #3a1f0f;
+    color: #fff;
+    text-decoration: none;
+}
+
+@media (max-width: 991px) {
+    .bilai-na-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 575px) {
+    .bilai-na-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bilai-na-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+/* ============================================================
+   BilaiGhor New Arrivals End
+   ============================================================ */
+
+/* ============================================================
+   BilaiGhor Testimonials Start
+   ============================================================ */
+.bilai-testimonial-section {
+    position: relative;
+}
+
+.bilai-testimonial-bg {
+    background-color: #fdf6ec;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 64px 0 72px;
+    position: relative;
+}
+
+/* Fallback overlay when bg image loads — keeps text readable */
+.bilai-testimonial-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(253, 246, 236, 0.88);
+    pointer-events: none;
+}
+
+.bilai-testimonial-bg .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Header */
+.bilai-testimonial-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.bilai-testimonial-eyebrow {
+    font-family: var(--bilai-font-main);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--bilai-primary);
+    margin: 0 0 6px;
+    letter-spacing: 0.3px;
+}
+
+.bilai-testimonial-title {
+    font-family: var(--bilai-font-main);
+    font-size: 32px;
+    font-weight: 700;
+    color: #2a1a0a;
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* 3-col grid */
+.bilai-testimonial-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+/* Card */
+.bilai-testimonial-card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #f0e8dd;
+    box-shadow: 0 4px 20px rgba(58, 31, 15, 0.07);
+    padding: 32px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.bilai-testimonial-card:hover {
+    box-shadow: 0 8px 32px rgba(58, 31, 15, 0.12);
+    transform: translateY(-4px);
+}
+
+/* Avatar */
+.bilai-testimonial-avatar {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 14px;
+    border: 3px solid var(--bilai-primary);
+    flex-shrink: 0;
+}
+
+.bilai-testimonial-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.bilai-testimonial-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #f5ede0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bilai-primary);
+    font-size: 28px;
+}
+
+/* Stars */
+.bilai-testimonial-stars {
+    color: #f5a623;
+    font-size: 14px;
+    margin-bottom: 14px;
+    letter-spacing: 2px;
+}
+
+/* Message */
+.bilai-testimonial-message {
+    font-family: var(--bilai-font-main);
+    font-size: 14px;
+    line-height: 1.7;
+    color: #5a4a3a;
+    margin: 0 0 16px;
+    flex: 1;
+}
+
+/* Name */
+.bilai-testimonial-name {
+    font-family: var(--bilai-font-main);
+    font-size: 16px;
+    font-weight: 700;
+    color: #2a1a0a;
+    margin: 0 0 4px;
+}
+
+/* Location */
+.bilai-testimonial-location {
+    font-family: var(--bilai-font-main);
+    font-size: 12px;
+    color: var(--bilai-muted, #7a6a5e);
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .bilai-testimonial-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 575px) {
+    .bilai-testimonial-grid {
+        grid-template-columns: 1fr;
+    }
+    .bilai-testimonial-title {
+        font-size: 26px;
+    }
+    .bilai-testimonial-bg {
+        padding: 44px 0 52px;
+    }
+}
+/* ============================================================
+   BilaiGhor Testimonials End
+   ============================================================ */

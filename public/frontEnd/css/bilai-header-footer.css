@@ -288,12 +288,21 @@ header .toggle {
     transition: height 0.3s ease;
 }
 
-/* ── SCROLLED STATE — topbar hides, header compacts ────────── */
-header#navbar_top.scrolled .bilai-topbar {
-    max-height: 0;
-    padding: 0;
+/* ============================================================
+   BilaiGhor Header Sticky Fix Start
+   Topbar is now OUTSIDE header#navbar_top so the sticky element
+   never changes height on scroll — eliminates the feedback loop
+   that caused shaking. Only box-shadow + minor padding transitions
+   remain, which are GPU-composited and cannot trigger reflow.
+   ============================================================ */
+
+/* GPU-promote the sticky header to its own compositor layer */
+header#navbar_top {
+    transform: translateZ(0);
+    will-change: transform;
 }
 
+/* ── SCROLLED STATE — header compacts slightly, topbar already gone ── */
 header#navbar_top.scrolled .bilai-main-header {
     padding: 4px 0;
 }
@@ -305,6 +314,9 @@ header#navbar_top.scrolled .bilai-main-header__inner {
 header#navbar_top.scrolled .bilai-main-header__logo img {
     height: 52px;
 }
+/* ============================================================
+   BilaiGhor Header Sticky Fix End
+   ============================================================ */
 
 /* Search box */
 .bilai-main-header__search {
@@ -497,8 +509,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 .bilai-nav__links > li > a:hover,
 .bilai-nav__links > li > a.active {
-    /* color: #fff;
-    background: rgba(0, 0, 0, 0.13); */
+    opacity: 0.85;
 }
 
 /* ── CATEGORY NAV ITEMS — parent category hover dropdowns ──────── */
@@ -600,8 +611,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 .bilai-nav__right-links li a:hover,
 .bilai-nav__right-links li a.active {
-    /* color: #fff;
-    background: rgba(0, 0, 0, 0.13); */
+    opacity: 0.85;
 }
 
 /* Cart pill — small rounded button on right of nav bar */
@@ -915,8 +925,6 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 
 /* Column headings */
-.bilai-footer__col {
-}
 .bilai-footer__title {
     font-size: 15px;
     font-weight: 700;
@@ -1445,20 +1453,13 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: #fef6e8;
-    border-radius: 20px;
-    padding: 34px 46px;
     text-decoration: none;
-    gap: 14px;
-    transition:
-        transform 0.2s,
-        box-shadow 0.2s;
-    border: 1px solid #dccab2;
+    gap: 10px;
+    transition: transform 0.2s;
 }
 
 .bilai-cat-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(58, 31, 15, 0.1);
     text-decoration: none;
 }
 
@@ -1469,6 +1470,15 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    background: #fef6e8;
+    border-radius: 20px;
+    border: 1px solid #dccab2;
+    padding: 34px 46px;
+    transition: box-shadow 0.2s;
+}
+
+.bilai-cat-card:hover .bilai-cat-img {
+    box-shadow: 0 8px 24px rgba(58, 31, 15, 0.1);
 }
 
 .bilai-cat-img img {
@@ -2281,7 +2291,9 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     padding: 8px 20px;
     text-decoration: none;
     white-space: nowrap;
-    transition: border-color 0.2s, color 0.2s;
+    transition:
+        border-color 0.2s,
+        color 0.2s;
 }
 
 .bilai-blog-more-btn:hover {
@@ -2337,7 +2349,11 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     left: 0;
     right: 0;
     padding: 10px 12px;
-    background: linear-gradient(to top, rgba(30, 15, 5, 0.72) 0%, transparent 100%);
+    background: linear-gradient(
+        to top,
+        rgba(30, 15, 5, 0.72) 0%,
+        transparent 100%
+    );
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -2354,7 +2370,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     height: 22px;
     object-fit: contain;
     border-radius: 50%;
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .bilai-blog-brand span {
@@ -2457,7 +2473,10 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     border-radius: 22px;
     padding: 7px 18px;
     text-decoration: none;
-    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        color 0.2s;
 }
 
 .bilai-blog-read-btn:hover {

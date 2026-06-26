@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8" />
@@ -557,6 +557,38 @@
         </div>
 
         {{-- BilaiGhor Figma Header Start --}}
+        {{-- === TOP INFO BAR — outside sticky header so it scrolls away naturally === --}}
+        <div class="bilai-topbar">
+            <div class="bilai-topbar__inner">
+                <div class="bilai-topbar__left">
+                    @php
+                        $topbarPhone = optional($contact)->hotline ?? optional($contact)->phone ?? null;
+                        $topbarEmail = optional($contact)->email ?? optional($contact)->mail ?? null;
+                    @endphp
+                    @if($topbarPhone)
+                    <a href="tel:{{$topbarPhone}}">
+                        {{-- phone --}}
+                        <img src="{{ asset('public/frontEnd/images/topCallIcon.svg') }}" width="24" height="24" alt="">
+                        Call Us: {{$topbarPhone}}
+                    </a>
+                    @endif
+                    @if($topbarEmail)
+                    <a href="mailto:{{$topbarEmail}}">
+                    <img src="{{ asset('public/frontEnd/images/topMailIcon.svg') }}" width="24" height="24" alt="">
+                      Email Us: {{$topbarEmail}}
+                    </a>
+                    @endif
+                </div>
+                <div class="bilai-topbar__right">
+                    @foreach($socialicons as $si)
+                    <a href="{{ $si->link }}" target="_blank" rel="noopener" title="{{ $si->title }}" class="bilai-topbar__social-icon">
+                        <i class="{{ $si->icon }}"></i>
+                    </a>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
         <header id="navbar_top">
 
             {{-- === MOBILE HEADER (visible on screens < 992px) === --}}
@@ -580,38 +612,6 @@
                     <button type="submit"><i class="fas fa-search"></i></button>
                 </form>
                 <div class="search_result"></div>
-            </div>
-
-            {{-- === TOP INFO BAR (visible on screens ≥ 768px) === --}}
-            <div class="bilai-topbar">
-                <div class="bilai-topbar__inner">
-                    <div class="bilai-topbar__left">
-                        @php
-                            $topbarPhone = optional($contact)->hotline ?? optional($contact)->phone ?? null;
-                            $topbarEmail = optional($contact)->email ?? optional($contact)->mail ?? null;
-                        @endphp
-                        @if($topbarPhone)
-                        <a href="tel:{{$topbarPhone}}">
-                            {{-- phone --}}
-                            <img src="{{ asset('public/frontEnd/images/topCallIcon.svg') }}" width="24" height="24" alt="">
-                            Call Us: {{$topbarPhone}}
-                        </a>
-                        @endif
-                        @if($topbarEmail)
-                        <a href="mailto:{{$topbarEmail}}">
-                        <img src="{{ asset('public/frontEnd/images/topMailIcon.svg') }}" width="24" height="24" alt="">  
-                          Email Us: {{$topbarEmail}}
-                        </a>
-                        @endif
-                    </div>
-                    <div class="bilai-topbar__right">
-                        @foreach($socialicons as $si)
-                        <a href="{{ $si->link }}" target="_blank" rel="noopener" title="{{ $si->title }}" class="bilai-topbar__social-icon">
-                            <i class="{{ $si->icon }}"></i>
-                        </a>
-                        @endforeach
-                    </div>
-                </div>
             </div>
 
             {{-- === MAIN HEADER — logo + search + user/cart (visible ≥ 992px) === --}}
@@ -1375,11 +1375,8 @@ document.getElementById("sidebarCartOverlay")?.addEventListener("click", closeSi
             autoplayHoverPause: false,
             margin: 0,
             mouseDrag: true,
-            smartSpeed: 8000,
-            autoplayTimeout: 3000,
-            animateOut: "fadeOutDown",
-            animateIn: "slideInDown",
-
+            smartSpeed: 700,
+            autoplayTimeout: 5000,
             navText: ["<i class='fa-solid fa-angle-left'></i>",
                 "<i class='fa-solid fa-angle-right'></i>"
             ],

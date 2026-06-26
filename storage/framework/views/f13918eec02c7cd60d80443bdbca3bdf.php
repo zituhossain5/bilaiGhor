@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8" />
@@ -558,6 +558,40 @@
         </div>
 
         
+        
+        <div class="bilai-topbar">
+            <div class="bilai-topbar__inner">
+                <div class="bilai-topbar__left">
+                    <?php
+                        $topbarPhone = optional($contact)->hotline ?? optional($contact)->phone ?? null;
+                        $topbarEmail = optional($contact)->email ?? optional($contact)->mail ?? null;
+                    ?>
+                    <?php if($topbarPhone): ?>
+                    <a href="tel:<?php echo e($topbarPhone); ?>">
+                        
+                        <img src="<?php echo e(asset('public/frontEnd/images/topCallIcon.svg')); ?>" width="24" height="24" alt="">
+                        Call Us: <?php echo e($topbarPhone); ?>
+
+                    </a>
+                    <?php endif; ?>
+                    <?php if($topbarEmail): ?>
+                    <a href="mailto:<?php echo e($topbarEmail); ?>">
+                    <img src="<?php echo e(asset('public/frontEnd/images/topMailIcon.svg')); ?>" width="24" height="24" alt="">
+                      Email Us: <?php echo e($topbarEmail); ?>
+
+                    </a>
+                    <?php endif; ?>
+                </div>
+                <div class="bilai-topbar__right">
+                    <?php $__currentLoopData = $socialicons; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $si): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <a href="<?php echo e($si->link); ?>" target="_blank" rel="noopener" title="<?php echo e($si->title); ?>" class="bilai-topbar__social-icon">
+                        <i class="<?php echo e($si->icon); ?>"></i>
+                    </a>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </div>
+            </div>
+        </div>
+
         <header id="navbar_top">
 
             
@@ -581,40 +615,6 @@
                     <button type="submit"><i class="fas fa-search"></i></button>
                 </form>
                 <div class="search_result"></div>
-            </div>
-
-            
-            <div class="bilai-topbar">
-                <div class="bilai-topbar__inner">
-                    <div class="bilai-topbar__left">
-                        <?php
-                            $topbarPhone = optional($contact)->hotline ?? optional($contact)->phone ?? null;
-                            $topbarEmail = optional($contact)->email ?? optional($contact)->mail ?? null;
-                        ?>
-                        <?php if($topbarPhone): ?>
-                        <a href="tel:<?php echo e($topbarPhone); ?>">
-                            
-                            <img src="<?php echo e(asset('public/frontEnd/images/topCallIcon.svg')); ?>" width="24" height="24" alt="">
-                            Call Us: <?php echo e($topbarPhone); ?>
-
-                        </a>
-                        <?php endif; ?>
-                        <?php if($topbarEmail): ?>
-                        <a href="mailto:<?php echo e($topbarEmail); ?>">
-                        <img src="<?php echo e(asset('public/frontEnd/images/topMailIcon.svg')); ?>" width="24" height="24" alt="">  
-                          Email Us: <?php echo e($topbarEmail); ?>
-
-                        </a>
-                        <?php endif; ?>
-                    </div>
-                    <div class="bilai-topbar__right">
-                        <?php $__currentLoopData = $socialicons; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $si): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <a href="<?php echo e($si->link); ?>" target="_blank" rel="noopener" title="<?php echo e($si->title); ?>" class="bilai-topbar__social-icon">
-                            <i class="<?php echo e($si->icon); ?>"></i>
-                        </a>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    </div>
-                </div>
             </div>
 
             
@@ -1380,11 +1380,8 @@ document.getElementById("sidebarCartOverlay")?.addEventListener("click", closeSi
             autoplayHoverPause: false,
             margin: 0,
             mouseDrag: true,
-            smartSpeed: 8000,
-            autoplayTimeout: 3000,
-            animateOut: "fadeOutDown",
-            animateIn: "slideInDown",
-
+            smartSpeed: 700,
+            autoplayTimeout: 5000,
             navText: ["<i class='fa-solid fa-angle-left'></i>",
                 "<i class='fa-solid fa-angle-right'></i>"
             ],

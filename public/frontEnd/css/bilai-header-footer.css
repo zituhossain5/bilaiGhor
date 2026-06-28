@@ -50,6 +50,7 @@ html,
 body {
     margin: 0;
     padding: 0;
+    background: #fdfcf8;
 }
 
 /* ============================================================
@@ -2309,7 +2310,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 
 .bilai-blog-card {
-    background: #fff;
+    background: #fdf9f4;
     border-radius: var(--bilai-radius-md, 14px);
     border: 1px solid var(--bilai-border, #dccab2);
     overflow: hidden;
@@ -2444,8 +2445,11 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 
 .bilai-blog-title a {
-    color: inherit;
+    color: #000;
     text-decoration: none;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 32px;
 }
 
 .bilai-blog-title a:hover {
@@ -2453,9 +2457,9 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 
 .bilai-blog-desc {
-    font-family: var(--bilai-font-main);
-    font-size: 13px;
-    color: var(--bilai-muted, #7a6a5e);
+    font-family: "Hind Siliguri", "Li Ador Noirrit A-V1", sans-serif;
+    font-size: 16px;
+    color: #4f4f4f;
     margin: 0 0 16px;
     line-height: 1.55;
     flex: 1;
@@ -2544,7 +2548,9 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     border-radius: 22px;
     padding: 7px 20px;
     text-decoration: none;
-    transition: border-color 0.2s, color 0.2s;
+    transition:
+        border-color 0.2s,
+        color 0.2s;
     white-space: nowrap;
 }
 
@@ -2618,7 +2624,9 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     cursor: pointer;
     padding: 0;
     line-height: 1;
-    transition: color 0.2s, border-color 0.2s;
+    transition:
+        color 0.2s,
+        border-color 0.2s;
     flex-shrink: 0;
 }
 
@@ -2845,14 +2853,15 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     background-repeat: no-repeat;
     padding: 64px 0 72px;
     position: relative;
+    height: 520px;
 }
 
 /* Fallback overlay when bg image loads — keeps text readable */
 .bilai-testimonial-bg::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
-    background: rgba(253, 246, 236, 0.88);
+    /* background: rgba(253, 246, 236, 0.72); */
     pointer-events: none;
 }
 
@@ -2864,25 +2873,25 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 /* Header */
 .bilai-testimonial-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 60px;
 }
 
 .bilai-testimonial-eyebrow {
-    font-family: var(--bilai-font-main);
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--bilai-primary);
-    margin: 0 0 6px;
-    letter-spacing: 0.3px;
+    font-family: var(--bilai-font-title);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--bilai-body-title, #2a1505);
+    margin: 0 0 4px;
+    letter-spacing: 0;
 }
 
 .bilai-testimonial-title {
-    font-family: var(--bilai-font-main);
-    font-size: 32px;
-    font-weight: 700;
-    color: #2a1a0a;
+    font-family: var(--bilai-font-title);
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--bilai-body-title, #2a1505);
     margin: 0;
-    line-height: 1.2;
+    line-height: 48px;
 }
 
 /* 3-col grid */
@@ -2894,16 +2903,17 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 /* Card */
 .bilai-testimonial-card {
-    background: #fff;
+    background: #fdf9f4;
     border-radius: 20px;
-    border: 1px solid #f0e8dd;
     box-shadow: 0 4px 20px rgba(58, 31, 15, 0.07);
-    padding: 32px 24px 28px;
+    padding: 60px 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    transition: box-shadow 0.2s, transform 0.2s;
+    transition:
+        box-shadow 0.2s,
+        transform 0.2s;
 }
 
 .bilai-testimonial-card:hover {
@@ -2913,12 +2923,11 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 /* Avatar */
 .bilai-testimonial-avatar {
-    width: 76px;
-    height: 76px;
+    width: 86px;
+    height: 86px;
     border-radius: 50%;
     overflow: hidden;
-    margin-bottom: 14px;
-    border: 3px solid var(--bilai-primary);
+    margin-bottom: 20px;
     flex-shrink: 0;
 }
 
@@ -2944,35 +2953,88 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 .bilai-testimonial-stars {
     color: #f5a623;
     font-size: 14px;
-    margin-bottom: 14px;
+    margin: 10px 0 14px;
     letter-spacing: 2px;
 }
 
 /* Message */
 .bilai-testimonial-message {
-    font-family: var(--bilai-font-main);
-    font-size: 14px;
-    line-height: 1.7;
-    color: #5a4a3a;
-    margin: 0 0 16px;
+    font-family: "Hind Siliguri", "Li Ador Noirrit A-V1", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    color: #4f4f4f;
+    margin: 0;
     flex: 1;
+    text-align: center;
 }
 
 /* Name */
 .bilai-testimonial-name {
     font-family: var(--bilai-font-main);
-    font-size: 16px;
-    font-weight: 700;
-    color: #2a1a0a;
-    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 500;
+    color: #3c2a1e;
+    margin: 0 0 6px;
 }
 
 /* Location */
 .bilai-testimonial-location {
     font-family: var(--bilai-font-main);
-    font-size: 12px;
-    color: var(--bilai-muted, #7a6a5e);
+    font-size: 16px;
+    color: #4f4f4f;
+    margin: 0 0 8px;
+}
+
+/* CTA Banner */
+.bilai-testimonial-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    background: #f1dec2;
+    border-radius: 20px;
+    padding: 30px;
+    margin-top: 135px;
+    margin-bottom: 40px;
+}
+.bilai-testimonial-cta-left {
+    flex: 1;
+}
+.bilai-testimonial-cta-title {
+    font-family: "Hind Siliguri", "Li Ador Noirrit A-V1", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #3c2a1e;
+    margin: 0 0 8px;
+}
+.bilai-testimonial-cta-desc {
+    font-family: "Hind Siliguri", "Li Ador Noirrit A-V1", sans-serif;
+    font-size: 16px;
+    color: #4f4f4f;
     margin: 0;
+    line-height: 24px;
+}
+.bilai-testimonial-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e8861a;
+    color: #f0e6d8;
+    font-family: "Hind Siliguri", "Li Ador Noirrit A-V1", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.bilai-testimonial-cta-btn:hover {
+    background: var(--bilai-primary-dark);
+    color: #fff;
+    text-decoration: none;
 }
 
 /* Responsive */
@@ -2992,7 +3054,32 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     .bilai-testimonial-bg {
         padding: 44px 0 52px;
     }
+    .bilai-testimonial-cta {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+    .bilai-testimonial-cta-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 /* ============================================================
    BilaiGhor Testimonials End
+   ============================================================ */
+
+/* ============================================================
+   BilaiGhor Category Products Start
+   ============================================================ */
+.bilai-category-products {
+    padding: 40px 0 50px;
+    background: #fdfcf8;
+}
+@media (max-width: 575px) {
+    .bilai-category-products {
+        padding: 24px 0;
+    }
+}
+/* ============================================================
+   BilaiGhor Category Products End
    ============================================================ */

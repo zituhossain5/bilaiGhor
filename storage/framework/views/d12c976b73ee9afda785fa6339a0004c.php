@@ -528,131 +528,96 @@
 
 <?php if($homeproducts && $homeproducts->count() > 0): ?>
     <?php $__currentLoopData = $homeproducts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $homecat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-        <section class="homeproduct">
+        <section class="homeproduct bilai-category-products">
             <div class="container">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="sec_title">
-                            <h3 class="section-title-header">
-                                <span class="section-title-name"><?php echo e($homecat->name); ?></span>
-                                <a href="<?php echo e(route('category', $homecat->slug)); ?>" class="view_more_btn">
-                                    View More
-                                </a>
+                <div class="bilai-section-header">
+                    <h2 class="bilai-deal-title"><?php echo e($homecat->name); ?></h2>
+                    <a href="<?php echo e(route('category', $homecat->slug)); ?>" class="bilai-section-view-all">View More</a>
+                </div>
+                <div class="product_slider owl-carousel">
+                    <?php $__currentLoopData = $homecat->products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php
+                        $averageRating = $value->reviews->avg('ratting');
+                        $filledStars   = floor($averageRating);
+                        $hasHalfStar   = $averageRating - $filledStars >= 0.5;
+                        $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
+                        $catDiscount   = ($value->old_price && $value->old_price > $value->new_price)
+                                         ? round((($value->old_price - $value->new_price) * 100) / $value->old_price)
+                                         : 0;
+                    ?>
+                    <div class="bilai-product-card">
+                        <div class="bilai-product-top">
+                            <?php if($catDiscount > 0): ?>
+                            <span class="bilai-stock-badge"><?php echo e($catDiscount); ?>% OFF</span>
+                            <?php else: ?>
+                            <span></span>
+                            <?php endif; ?>
+                            <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+
+                        <div class="bilai-product-image">
+                            <a href="<?php echo e(route('product', $value->slug)); ?>">
+                                <img src="<?php echo e(asset($value->image ? $value->image->image : '')); ?>"
+                                     alt="<?php echo e($value->name); ?>"
+                                     loading="<?php echo e($key === 0 ? 'eager' : 'lazy'); ?>" />
+                            </a>
+                        </div>
+
+                        <div class="bilai-product-meta">
+                            <h3 class="bilai-product-title">
+                                <a href="<?php echo e(route('product', $value->slug)); ?>"><?php echo e(Str::limit($value->name, 55)); ?></a>
                             </h3>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-12">
-                        <div class="product_slider owl-carousel">
-                            <?php $__currentLoopData = $homecat->products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <div class="product_item wist_item wow zoomIn"
-                                     data-wow-duration="1.5s"
-                                     data-wow-delay="0.<?php echo e($key); ?>s">
-                                    <div class="product_item_inner">
-                                        <?php if($value->old_price): ?>
-                                        <div class="sale-badge">
-                                            <div class="sale-badge-inner">
-                                                <div class="sale-badge-box">
-                                                    <span class="sale-badge-text">
-                                                        <p>
-                                                            <?php
-                                                                $discount = ((($value->old_price - $value->new_price) * 100) / $value->old_price);
-                                                            ?>
-                                                            <?php echo e(number_format($discount, 0)); ?>%
-                                                        </p>
-                                                        ছাড়
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <?php endif; ?>
-
-                                        <div class="pro_img">
-                                            <a href="<?php echo e(route('product', $value->slug)); ?>">
-                                                <img src="<?php echo e(asset($value->image ? $value->image->image : '')); ?>"
-                                                     alt="<?php echo e($value->name); ?>"
-                                                     class="img-fluid"
-                                                     loading="lazy" />
-                                            </a>
-                                        </div>
-
-                                        <div class="pro_des">
-                                            <div class="pro_name">
-                                                <a href="<?php echo e(route('product', $value->slug)); ?>">
-                                                    <?php echo e(Str::limit($value->name, 35)); ?>
-
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <?php
-                                        $averageRating = $value->reviews->avg('ratting');
-                                        $filledStars   = floor($averageRating);
-                                        $hasHalfStar   = $averageRating - $filledStars >= 0.5;
-                                        $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
-                                    ?>
-
-                                    <?php if($averageRating >= 0 && $averageRating <= 5): ?>
-                                        <?php for($i = 0; $i < $filledStars; $i++): ?>
-                                            <i class="fas fa-star"></i>
-                                        <?php endfor; ?>
-                                        <?php if($hasHalfStar): ?>
-                                            <i class="fas fa-star-half-alt"></i>
-                                        <?php endif; ?>
-                                        <?php for($i = 0; $i < $emptyStars; $i++): ?>
-                                            <i class="far fa-star"></i>
-                                        <?php endfor; ?>
-                                    <?php else: ?>
-                                        <span>Invalid rating range</span>
-                                    <?php endif; ?>
-
-                                    <div class="pro_price">
-                                        <p>
-                                            <?php if($value->old_price): ?>
-                                                <del>৳ <?php echo e($value->old_price); ?></del>
-                                            <?php endif; ?>
-                                            ৳ <?php echo e($value->new_price); ?>
-
-                                        </p>
-                                    </div>
-
-                                    
-                                    <?php if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty()): ?>
-                                        <div class="pro_btn">
-                                            <a href="<?php echo e(route('product', $value->slug)); ?>" class="order-btn-link">
-                                                অর্ডার করুন
-                                            </a>
-                                            <a href="<?php echo e(route('product', $value->slug)); ?>" class="cart-icon-link">
-                                                <i class="fa-solid fa-cart-shopping"></i>
-                                            </a>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="pro_btn">
-                                            <form action="<?php echo e(route('cart.store')); ?>" method="POST">
-                                                <?php echo csrf_field(); ?>
-                                                <input type="hidden" name="id" value="<?php echo e($value->id); ?>" />
-                                                <input type="hidden" name="qty" value="1" />
-                                                <input type="hidden" name="order_now" value="1">
-                                                <button type="submit" class="order-btn">অর্ডার করুন</button>
-                                            </form>
-
-                                            <form action="<?php echo e(route('cart.store')); ?>" method="POST">
-                                                <?php echo csrf_field(); ?>
-                                                <input type="hidden" name="id" value="<?php echo e($value->id); ?>" />
-                                                <input type="hidden" name="qty" value="1" />
-                                                <button type="submit" class="cart-icon-btn cart_store" data-id="<?php echo e($value->id); ?>">
-                                                    <i class="fa-solid fa-cart-shopping"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    <?php endif; ?>
-
+                            <div class="bilai-product-cat-rating">
+                                <?php if($value->category): ?>
+                                <p class="bilai-product-category"><?php echo e($value->category->name); ?></p>
+                                <?php endif; ?>
+                                <div class="bilai-product-rating">
+                                    <?php for($i = 0; $i < $filledStars; $i++): ?><i class="fas fa-star"></i><?php endfor; ?>
+                                    <?php if($hasHalfStar): ?><i class="fas fa-star-half-alt"></i><?php endif; ?>
+                                    <?php for($i = 0; $i < $emptyStars; $i++): ?><i class="far fa-star"></i><?php endfor; ?>
                                 </div>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </div>
+                            <div class="bilai-product-price">
+                                <div class="bilai-price-row">
+                                    <span class="bilai-price-new">&#2547; <?php echo e($value->new_price); ?></span>
+                                    <?php if($value->old_price): ?>
+                                    <del class="bilai-price-old">&#2547; <?php echo e($value->old_price); ?></del>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if($catDiscount > 0): ?>
+                                <span class="bilai-discount-badge"><?php echo e($catDiscount); ?>% OFF</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                    </div>
 
+                        <div class="bilai-product-actions">
+                            <?php if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty()): ?>
+                                <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-cart-btn">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                </a>
+                                <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-buy-btn">Buy Now</a>
+                            <?php else: ?>
+                                <form action="<?php echo e(route('cart.store')); ?>" method="POST">
+                                    <?php echo csrf_field(); ?>
+                                    <input type="hidden" name="id" value="<?php echo e($value->id); ?>" />
+                                    <input type="hidden" name="qty" value="1" />
+                                    <button type="submit" class="bilai-cart-btn cart_store" data-id="<?php echo e($value->id); ?>">
+                                        <i class="fa-solid fa-cart-shopping"></i>
+                                    </button>
+                                </form>
+                                <form action="<?php echo e(route('cart.store')); ?>" method="POST">
+                                    <?php echo csrf_field(); ?>
+                                    <input type="hidden" name="id" value="<?php echo e($value->id); ?>" />
+                                    <input type="hidden" name="qty" value="1" />
+                                    <input type="hidden" name="order_now" value="1">
+                                    <button type="submit" class="bilai-buy-btn">Buy Now</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    </div><!-- end .bilai-product-card -->
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
             </div>
         </section>
@@ -789,7 +754,7 @@
 <section class="bilai-blog-section">
     <div class="container">
         <div class="bilai-blog-header">
-            <h2 class="bilai-blog-main-title">What You Should Know As<br>A Cat Parent</h2>
+            <h2 class="bilai-testimonial-title">What You Should Know As<br>A Cat Parent</h2>
             <a href="<?php echo e(route('blogs')); ?>" class="bilai-blog-more-btn">Read More Blogs</a>
         </div>
         <div class="bilai-blog-grid">
@@ -835,16 +800,14 @@
 
 <?php if(isset($testimonials) && $testimonials->count() > 0): ?>
 <section class="bilai-testimonial-section">
-    
-    <div class="bilai-testimonial-bg" style="background-image: url('<?php echo e(asset('public/frontEnd/images/testimonial-bg.jpg')); ?>');">
+    <div class="bilai-testimonial-bg" style="background-image: url('<?php echo e(asset('public/frontEnd/images/testiBg.png')); ?>');">
         <div class="container">
             <div class="bilai-testimonial-header">
-                <h2 class="bilai-deal-title">What Bilai Parent Says</h2>
+                <h2 class="bilai-testimonial-title">What Bilai Parent Says <br> About Us</h2>
             </div>
             <div class="bilai-testimonial-grid">
                 <?php $__currentLoopData = $testimonials; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="bilai-testimonial-card">
-                    
                     <div class="bilai-testimonial-avatar">
                         <?php if($t->image): ?>
                         <img src="<?php echo e(asset('public/'.$t->image)); ?>" alt="<?php echo e($t->name); ?>" loading="lazy">
@@ -854,13 +817,10 @@
                         </div>
                         <?php endif; ?>
                     </div>
-                    
                     <h4 class="bilai-testimonial-name"><?php echo e($t->name); ?></h4>
-                    
                     <?php if($t->location): ?>
                     <p class="bilai-testimonial-location"><?php echo e($t->location); ?></p>
                     <?php endif; ?>
-                    
                     <div class="bilai-testimonial-stars">
                         <?php for($i = 1; $i <= 5; $i++): ?>
                             <?php if($i <= $t->rating): ?>
@@ -870,13 +830,24 @@
                             <?php endif; ?>
                         <?php endfor; ?>
                     </div>
-                    
                     <p class="bilai-testimonial-message">"<?php echo e($t->message); ?>"</p>
                 </div>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
+            
         </div>
     </div>
+    
+        <div class="container">
+            <div class="bilai-testimonial-cta">
+                    <div class="bilai-testimonial-cta-left">
+                        <h3 class="bilai-testimonial-cta-title">আপনার বিলাইর ছবি শেয়ার করুন</h3>
+                        <p class="bilai-testimonial-cta-desc">যে কোন প্রজাতি বিলাই নিয়ে তোলা আপনার ছবি আমাদের ওয়েবসাইটে আপনার বিলাইর ছবি বিখ্যাত করার সুযোগ। (গর্ব প্রচার)</p>
+                    </div>
+                    <a href="#" class="bilai-testimonial-cta-btn">বিলাইগর প্যারেন্ট &rarr;</a>
+                
+            </div>
+        </div>
 </section>
 <?php endif; ?>
 
@@ -1286,4 +1257,5 @@
     });
 </script>
 <?php $__env->stopPush(); ?>
+
 <?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/pages/index.blade.php ENDPATH**/ ?>

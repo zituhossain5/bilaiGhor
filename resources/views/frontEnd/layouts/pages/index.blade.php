@@ -526,131 +526,98 @@
 {{-- CATEGORY WISE HOME PRODUCTS --}}
 @if($homeproducts && $homeproducts->count() > 0)
     @foreach ($homeproducts as $homecat)
-        <section class="homeproduct">
+        <section class="homeproduct bilai-category-products">
             <div class="container">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="sec_title">
-                            <h3 class="section-title-header">
-                                <span class="section-title-name">{{ $homecat->name }}</span>
-                                <a href="{{ route('category', $homecat->slug) }}" class="view_more_btn">
-                                    View More
-                                </a>
-                            </h3>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-12">
-                        <div class="product_slider owl-carousel">
-                            @foreach ($homecat->products as $key => $value)
-                                <div class="product_item wist_item wow zoomIn"
-                                     data-wow-duration="1.5s"
-                                     data-wow-delay="0.{{ $key }}s">
-                                    <div class="product_item_inner">
-                                        @if($value->old_price)
-                                        <div class="sale-badge">
-                                            <div class="sale-badge-inner">
-                                                <div class="sale-badge-box">
-                                                    <span class="sale-badge-text">
-                                                        <p>
-                                                            @php
-                                                                $discount = ((($value->old_price - $value->new_price) * 100) / $value->old_price);
-                                                            @endphp
-                                                            {{ number_format($discount, 0) }}%
-                                                        </p>
-                                                        ছাড়
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        @endif
-
-                                        <div class="pro_img">
-                                            <a href="{{ route('product', $value->slug) }}">
-                                                <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                                                     alt="{{ $value->name }}"
-                                                     class="img-fluid"
-                                                     loading="lazy" />
-                                            </a>
-                                        </div>
-
-                                        <div class="pro_des">
-                                            <div class="pro_name">
-                                                <a href="{{ route('product', $value->slug) }}">
-                                                    {{ Str::limit($value->name, 35) }}
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    @php
-                                        $averageRating = $value->reviews->avg('ratting');
-                                        $filledStars   = floor($averageRating);
-                                        $hasHalfStar   = $averageRating - $filledStars >= 0.5;
-                                        $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
-                                    @endphp
-
-                                    @if ($averageRating >= 0 && $averageRating <= 5)
-                                        @for ($i = 0; $i < $filledStars; $i++)
-                                            <i class="fas fa-star"></i>
-                                        @endfor
-                                        @if ($hasHalfStar)
-                                            <i class="fas fa-star-half-alt"></i>
-                                        @endif
-                                        @for ($i = 0; $i < $emptyStars; $i++)
-                                            <i class="far fa-star"></i>
-                                        @endfor
-                                    @else
-                                        <span>Invalid rating range</span>
-                                    @endif
-
-                                    <div class="pro_price">
-                                        <p>
-                                            @if($value->old_price)
-                                                <del>৳ {{ $value->old_price }}</del>
-                                            @endif
-                                            ৳ {{ $value->new_price }}
-                                        </p>
-                                    </div>
-
-                                    {{-- দুইটা বাটন: অর্ডার + কার্ট --}}
-                                    @if (!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
-                                        <div class="pro_btn">
-                                            <a href="{{ route('product', $value->slug) }}" class="order-btn-link">
-                                                অর্ডার করুন
-                                            </a>
-                                            <a href="{{ route('product', $value->slug) }}" class="cart-icon-link">
-                                                <i class="fa-solid fa-cart-shopping"></i>
-                                            </a>
-                                        </div>
-                                    @else
-                                        <div class="pro_btn">
-                                            <form action="{{ route('cart.store') }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="id" value="{{ $value->id }}" />
-                                                <input type="hidden" name="qty" value="1" />
-                                                <input type="hidden" name="order_now" value="1">
-                                                <button type="submit" class="order-btn">অর্ডার করুন</button>
-                                            </form>
-
-                                            <form action="{{ route('cart.store') }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="id" value="{{ $value->id }}" />
-                                                <input type="hidden" name="qty" value="1" />
-                                                <button type="submit" class="cart-icon-btn cart_store" data-id="{{ $value->id }}">
-                                                    <i class="fa-solid fa-cart-shopping"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    @endif
-
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
+                <div class="bilai-section-header">
+                    <h2 class="bilai-deal-title">{{ $homecat->name }}</h2>
+                    <a href="{{ route('category', $homecat->slug) }}" class="bilai-section-view-all">View More</a>
                 </div>
-            </div>
+                <div class="product_slider owl-carousel">
+                    @foreach ($homecat->products as $key => $value)
+                    @php
+                        $averageRating = $value->reviews->avg('ratting');
+                        $filledStars   = floor($averageRating);
+                        $hasHalfStar   = $averageRating - $filledStars >= 0.5;
+                        $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
+                        $catDiscount   = ($value->old_price && $value->old_price > $value->new_price)
+                                         ? round((($value->old_price - $value->new_price) * 100) / $value->old_price)
+                                         : 0;
+                    @endphp
+                    <div class="bilai-product-card">
+                        <div class="bilai-product-top">
+                            @if($catDiscount > 0)
+                            <span class="bilai-stock-badge">{{ $catDiscount }}% OFF</span>
+                            @else
+                            <span></span>
+                            @endif
+                            <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+
+                        <div class="bilai-product-image">
+                            <a href="{{ route('product', $value->slug) }}">
+                                <img src="{{ asset($value->image ? $value->image->image : '') }}"
+                                     alt="{{ $value->name }}"
+                                     loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
+                            </a>
+                        </div>
+
+                        <div class="bilai-product-meta">
+                            <h3 class="bilai-product-title">
+                                <a href="{{ route('product', $value->slug) }}">{{ Str::limit($value->name, 55) }}</a>
+                            </h3>
+                            <div class="bilai-product-cat-rating">
+                                @if($value->category)
+                                <p class="bilai-product-category">{{ $value->category->name }}</p>
+                                @endif
+                                <div class="bilai-product-rating">
+                                    @for ($i = 0; $i < $filledStars; $i++)<i class="fas fa-star"></i>@endfor
+                                    @if ($hasHalfStar)<i class="fas fa-star-half-alt"></i>@endif
+                                    @for ($i = 0; $i < $emptyStars; $i++)<i class="far fa-star"></i>@endfor
+                                </div>
+                            </div>
+                            <div class="bilai-product-price">
+                                <div class="bilai-price-row">
+                                    <span class="bilai-price-new">&#2547; {{ $value->new_price }}</span>
+                                    @if($value->old_price)
+                                    <del class="bilai-price-old">&#2547; {{ $value->old_price }}</del>
+                                    @endif
+                                </div>
+                                @if($catDiscount > 0)
+                                <span class="bilai-discount-badge">{{ $catDiscount }}% OFF</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="bilai-product-actions">
+                            @if (!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
+                                <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                </a>
+                                <a href="{{ route('product', $value->slug) }}" class="bilai-buy-btn">Buy Now</a>
+                            @else
+                                <form action="{{ route('cart.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="id" value="{{ $value->id }}" />
+                                    <input type="hidden" name="qty" value="1" />
+                                    <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}">
+                                        <i class="fa-solid fa-cart-shopping"></i>
+                                    </button>
+                                </form>
+                                <form action="{{ route('cart.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="id" value="{{ $value->id }}" />
+                                    <input type="hidden" name="qty" value="1" />
+                                    <input type="hidden" name="order_now" value="1">
+                                    <button type="submit" class="bilai-buy-btn">Buy Now</button>
+                                </form>
+                            @endif
+                        </div>
+                    </div><!-- end .bilai-product-card -->
+                    @endforeach
+                </div>{{-- product_slider --}}
+            </div>{{-- container --}}
         </section>
     @endforeach
 @endif
@@ -784,7 +751,7 @@
 <section class="bilai-blog-section">
     <div class="container">
         <div class="bilai-blog-header">
-            <h2 class="bilai-blog-main-title">What You Should Know As<br>A Cat Parent</h2>
+            <h2 class="bilai-testimonial-title">What You Should Know As<br>A Cat Parent</h2>
             <a href="{{ route('blogs') }}" class="bilai-blog-more-btn">Read More Blogs</a>
         </div>
         <div class="bilai-blog-grid">
@@ -830,16 +797,14 @@
 {{-- TESTIMONIALS SECTION --}}
 @if(isset($testimonials) && $testimonials->count() > 0)
 <section class="bilai-testimonial-section">
-    {{-- bg image placeholder: replace 'public/frontEnd/images/testimonial-bg.jpg' when ready --}}
-    <div class="bilai-testimonial-bg" style="background-image: url('{{ asset('public/frontEnd/images/testimonial-bg.jpg') }}');">
+    <div class="bilai-testimonial-bg" style="background-image: url('{{ asset('public/frontEnd/images/testiBg.png') }}');">
         <div class="container">
             <div class="bilai-testimonial-header">
-                <h2 class="bilai-deal-title">What Bilai Parent Says</h2>
+                <h2 class="bilai-testimonial-title">What Bilai Parent Says <br> About Us</h2>
             </div>
             <div class="bilai-testimonial-grid">
                 @foreach($testimonials as $t)
                 <div class="bilai-testimonial-card">
-                    {{-- 1. Avatar --}}
                     <div class="bilai-testimonial-avatar">
                         @if($t->image)
                         <img src="{{ asset('public/'.$t->image) }}" alt="{{ $t->name }}" loading="lazy">
@@ -849,13 +814,10 @@
                         </div>
                         @endif
                     </div>
-                    {{-- 2. Name --}}
                     <h4 class="bilai-testimonial-name">{{ $t->name }}</h4>
-                    {{-- 3. Location --}}
                     @if($t->location)
                     <p class="bilai-testimonial-location">{{ $t->location }}</p>
                     @endif
-                    {{-- 4. Stars --}}
                     <div class="bilai-testimonial-stars">
                         @for($i = 1; $i <= 5; $i++)
                             @if($i <= $t->rating)
@@ -865,13 +827,24 @@
                             @endif
                         @endfor
                     </div>
-                    {{-- 5. Message --}}
                     <p class="bilai-testimonial-message">"{{ $t->message }}"</p>
                 </div>
                 @endforeach
             </div>
+            
         </div>
     </div>
+    {{-- CTA Banner --}}
+        <div class="container">
+            <div class="bilai-testimonial-cta">
+                    <div class="bilai-testimonial-cta-left">
+                        <h3 class="bilai-testimonial-cta-title">আপনার বিলাইর ছবি শেয়ার করুন</h3>
+                        <p class="bilai-testimonial-cta-desc">যে কোন প্রজাতি বিলাই নিয়ে তোলা আপনার ছবি আমাদের ওয়েবসাইটে আপনার বিলাইর ছবি বিখ্যাত করার সুযোগ। (গর্ব প্রচার)</p>
+                    </div>
+                    <a href="#" class="bilai-testimonial-cta-btn">বিলাইগর প্যারেন্ট &rarr;</a>
+                
+            </div>
+        </div>
 </section>
 @endif
 

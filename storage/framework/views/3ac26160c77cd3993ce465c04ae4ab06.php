@@ -1,9 +1,9 @@
-@extends('backEnd.layouts.master')
-@section('title','Edit Subcategory')
 
-@section('css')
-<link href="{{asset('public/backEnd')}}/assets/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
-<link href="{{asset('public/backEnd')}}/assets/libs/summernote/summernote-lite.min.css" rel="stylesheet" type="text/css" />
+<?php $__env->startSection('title','Edit Subcategory'); ?>
+
+<?php $__env->startSection('css'); ?>
+<link href="<?php echo e(asset('public/backEnd')); ?>/assets/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="<?php echo e(asset('public/backEnd')); ?>/assets/libs/summernote/summernote-lite.min.css" rel="stylesheet" type="text/css" />
 
 <style>
     /* Premium Card Design */
@@ -104,20 +104,20 @@
         box-shadow: 0 6px 20px rgba(10, 207, 151, 0.4);
     }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="container-fluid">
     
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-flex align-items-center justify-content-between py-4">
                 <div>
-                    <h4 class="page-title mb-1 text-dark fw-bold">Edit Subcategory: {{ $edit_data->subcategoryName }}</h4>
+                    <h4 class="page-title mb-1 text-dark fw-bold">Edit Subcategory: <?php echo e($edit_data->subcategoryName); ?></h4>
                     <p class="text-muted font-size-13 mb-0">Update subcategory details and configuration.</p>
                 </div>
                 <div class="page-title-right">
-                    <a href="{{route('subcategories.index')}}" class="btn btn-light rounded-pill border shadow-sm px-4">
+                    <a href="<?php echo e(route('subcategories.index')); ?>" class="btn btn-light rounded-pill border shadow-sm px-4">
                         <i class="fe-arrow-left me-1"></i> Back to List
                     </a>
                 </div>
@@ -125,9 +125,9 @@
         </div>
     </div>
 
-    <form action="{{route('subcategories.update')}}" method="POST" name="editForm" enctype="multipart/form-data" data-parsley-validate>
-        @csrf
-        <input type="hidden" value="{{$edit_data->id}}" name="id">
+    <form action="<?php echo e(route('subcategories.update')); ?>" method="POST" name="editForm" enctype="multipart/form-data" data-parsley-validate>
+        <?php echo csrf_field(); ?>
+        <input type="hidden" value="<?php echo e($edit_data->id); ?>" name="id">
 
         <div class="row">
             
@@ -143,29 +143,58 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-4">
                                     <label for="category_id" class="form-label">Parent Category <span class="text-danger">*</span></label>
-                                    <select class="form-control select2 @error('category_id') is-invalid @enderror" 
+                                    <select class="form-control select2 <?php $__errorArgs = ['category_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                             id="category_id" name="category_id" required>
                                         <option value="">Select Category</option>
-                                        @foreach($categories as $category)
-                                            <option value="{{ $category->id }}" {{ $edit_data->category_id == $category->id ? 'selected' : '' }}>
-                                                {{ $category->name }}
+                                        <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($category->id); ?>" <?php echo e($edit_data->category_id == $category->id ? 'selected' : ''); ?>>
+                                                <?php echo e($category->name); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
-                                    @error('category_id')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
+                                    <?php $__errorArgs = ['category_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback d-block"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group mb-4">
                                     <label for="subcategoryName" class="form-label">Subcategory Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('subcategoryName') is-invalid @enderror" 
-                                           name="subcategoryName" value="{{ $edit_data->subcategoryName }}" 
+                                    <input type="text" class="form-control <?php $__errorArgs = ['subcategoryName'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                           name="subcategoryName" value="<?php echo e($edit_data->subcategoryName); ?>" 
                                            id="subcategoryName" required>
-                                    @error('subcategoryName')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <?php $__errorArgs = ['subcategoryName'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
                         </div>
@@ -180,20 +209,48 @@
                     <div class="card-body">
                         <div class="form-group mb-4">
                             <label for="meta_title" class="form-label">Meta Title</label>
-                            <input type="text" class="form-control @error('meta_title') is-invalid @enderror" 
-                                   name="meta_title" value="{{ $edit_data->meta_title }}" id="meta_title">
-                            @error('meta_title')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <input type="text" class="form-control <?php $__errorArgs = ['meta_title'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                   name="meta_title" value="<?php echo e($edit_data->meta_title); ?>" id="meta_title">
+                            <?php $__errorArgs = ['meta_title'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <div class="invalid-feedback"><?php echo e($message); ?></div>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </div>
 
                         <div class="form-group mb-0">
                             <label for="meta_description" class="form-label">Meta Description</label>
-                            <textarea class="summernote form-control @error('meta_description') is-invalid @enderror" 
-                                      name="meta_description" id="meta_description">{!! $edit_data->meta_description !!}</textarea>
-                            @error('meta_description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <textarea class="summernote form-control <?php $__errorArgs = ['meta_description'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                      name="meta_description" id="meta_description"><?php echo $edit_data->meta_description; ?></textarea>
+                            <?php $__errorArgs = ['meta_description'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <div class="invalid-feedback"><?php echo e($message); ?></div>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </div>
                     </div>
                 </div>
@@ -207,13 +264,13 @@
                         <h5 class="card-title">Subcategory Image</h5>
                     </div>
                     <div class="card-body">
-                        @if($edit_data->image)
+                        <?php if($edit_data->image): ?>
                         <div class="mb-3 text-center">
-                            <img src="{{ asset($edit_data->image) }}" alt="Current image"
+                            <img src="<?php echo e(asset($edit_data->image)); ?>" alt="Current image"
                                  style="width:80px;height:80px;object-fit:contain;border-radius:10px;background:#f5ede0;padding:6px;">
                             <p class="text-muted font-size-12 mt-1 mb-0">Current image</p>
                         </div>
-                        @endif
+                        <?php endif; ?>
                         <label class="form-label">Replace Image <small class="text-muted">(Square, ~300×300px)</small></label>
                         <input type="file" name="image" class="form-control" accept="image/jpeg,image/png,image/webp">
                         <small class="text-muted d-block mt-1">Leave blank to keep current image.</small>
@@ -232,7 +289,7 @@
                                 <p class="text-muted font-size-12 mb-0">Enable or disable subcategory</p>
                             </div>
                             <label class="switch">
-                                <input type="checkbox" name="status" value="1" {{ $edit_data->status == 1 ? 'checked' : '' }}>
+                                <input type="checkbox" name="status" value="1" <?php echo e($edit_data->status == 1 ? 'checked' : ''); ?>>
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -258,13 +315,13 @@
         </div>
     </form>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('script')
-<script src="{{asset('public/backEnd/')}}/assets/libs/parsleyjs/parsley.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/assets/js/pages/form-validation.init.js"></script>
-<script src="{{asset('public/backEnd/')}}/assets/libs/select2/js/select2.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/assets/libs/summernote/summernote-lite.min.js"></script>
+<?php $__env->startSection('script'); ?>
+<script src="<?php echo e(asset('public/backEnd/')); ?>/assets/libs/parsleyjs/parsley.min.js"></script>
+<script src="<?php echo e(asset('public/backEnd/')); ?>/assets/js/pages/form-validation.init.js"></script>
+<script src="<?php echo e(asset('public/backEnd/')); ?>/assets/libs/select2/js/select2.min.js"></script>
+<script src="<?php echo e(asset('public/backEnd/')); ?>/assets/libs/summernote/summernote-lite.min.js"></script>
 
 <script>
     $(document).ready(function(){
@@ -285,4 +342,5 @@
         });
     });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('backEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/backEnd/subcategory/edit.blade.php ENDPATH**/ ?>

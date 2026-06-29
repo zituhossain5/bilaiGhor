@@ -47,11 +47,13 @@
                     : route('category', $category->slug) . '?' . http_build_query(array_merge($otherParams, ['subcategory' => $subcat->slug]));
             @endphp
             <a href="{{ $subCardUrl }}" class="bilai-cat-sub-card {{ $isActiveSub ? 'active' : '' }}">
-                @if($subcat->image)
-                <img src="{{ asset('public/' . $subcat->image) }}" alt="{{ $subcat->subcategoryName }}" loading="lazy">
-                @else
-                <div class="bilai-cat-sub-placeholder"><i class="fas fa-tag"></i></div>
-                @endif
+                <div class="bilai-cat-sub-img-box">
+                    @if($subcat->image)
+                    <img src="{{ asset($subcat->image) }}" alt="{{ $subcat->subcategoryName }}" loading="lazy">
+                    @else
+                    <i class="fas fa-tag"></i>
+                    @endif
+                </div>
                 <span>{{ $subcat->subcategoryName }}</span>
             </a>
             @endforeach

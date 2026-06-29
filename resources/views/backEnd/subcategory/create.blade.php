@@ -199,6 +199,18 @@
 
             <div class="col-lg-4">
                 
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="header-icon"><i class="fe-image"></i></div>
+                        <h5 class="card-title">Subcategory Image</h5>
+                    </div>
+                    <div class="card-body">
+                        <label class="form-label">Upload Image <small class="text-muted">(Square, ~300×300px)</small></label>
+                        <input type="file" name="image" class="form-control" accept="image/jpeg,image/png,image/webp">
+                        <small class="text-muted d-block mt-1">JPG, PNG or WebP. Will be converted to WebP.</small>
+                    </div>
+                </div>
+
                 <div class="card">
                     <div class="card-header">
                         <div class="header-icon"><i class="fe-settings"></i></div>

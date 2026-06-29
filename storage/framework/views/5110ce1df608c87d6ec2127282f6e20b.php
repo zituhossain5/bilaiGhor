@@ -46,11 +46,13 @@
                     : route('category', $category->slug) . '?' . http_build_query(array_merge($otherParams, ['subcategory' => $subcat->slug]));
             ?>
             <a href="<?php echo e($subCardUrl); ?>" class="bilai-cat-sub-card <?php echo e($isActiveSub ? 'active' : ''); ?>">
-                <?php if($subcat->image): ?>
-                <img src="<?php echo e(asset('public/' . $subcat->image)); ?>" alt="<?php echo e($subcat->subcategoryName); ?>" loading="lazy">
-                <?php else: ?>
-                <div class="bilai-cat-sub-placeholder"><i class="fas fa-tag"></i></div>
-                <?php endif; ?>
+                <div class="bilai-cat-sub-img-box">
+                    <?php if($subcat->image): ?>
+                    <img src="<?php echo e(asset($subcat->image)); ?>" alt="<?php echo e($subcat->subcategoryName); ?>" loading="lazy">
+                    <?php else: ?>
+                    <i class="fas fa-tag"></i>
+                    <?php endif; ?>
+                </div>
                 <span><?php echo e($subcat->subcategoryName); ?></span>
             </a>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>

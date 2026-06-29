@@ -33,7 +33,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         
-        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=21">
+        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=23">
         <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/main.css')); ?>" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
@@ -2356,4 +2356,6 @@ document.getElementById("sidebarCartOverlay")?.addEventListener("click", closeSi
 <?php endif; ?>
     </body>
 </html>
+
+
 <?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/master.blade.php ENDPATH**/ ?>

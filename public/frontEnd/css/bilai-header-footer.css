@@ -3083,3 +3083,179 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 /* ============================================================
    BilaiGhor Category Products End
    ============================================================ */
+
+/* ============================================================
+   BilaiGhor Category Page Start
+   ============================================================ */
+
+.bilai-cat-page {
+    background: var(--bilai-cream, #fdfcf8);
+    padding: 20px 0 60px;
+    min-height: 60vh;
+}
+.bilai-cat-breadcrumb {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--bilai-font-main); font-size: 14px;
+    color: var(--bilai-muted); margin-bottom: 20px;
+}
+.bilai-cat-breadcrumb a { color: var(--bilai-muted); text-decoration: none; }
+.bilai-cat-breadcrumb a:hover { color: var(--bilai-primary); }
+.bilai-cat-breadcrumb-sep { font-size: 11px; color: var(--bilai-muted); }
+.bilai-cat-breadcrumb-current { color: var(--bilai-primary); font-weight: 600; }
+.bilai-cat-sub-row {
+    display: flex; gap: 12px; flex-wrap: nowrap;
+    overflow-x: auto; padding-bottom: 8px; margin-bottom: 28px; scrollbar-width: thin;
+}
+.bilai-cat-sub-row::-webkit-scrollbar { height: 4px; }
+.bilai-cat-sub-row::-webkit-scrollbar-thumb { background: var(--bilai-border); border-radius: 4px; }
+.bilai-cat-sub-card {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 12px 16px; background: #fff;
+    border: 1.5px solid var(--bilai-border, #dccab2);
+    border-radius: var(--bilai-radius-md, 14px); text-decoration: none;
+    min-width: 80px; flex-shrink: 0; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.bilai-cat-sub-card:hover { border-color: var(--bilai-primary); box-shadow: 0 2px 10px rgba(232,134,26,0.15); }
+.bilai-cat-sub-card img { width: 52px; height: 52px; object-fit: contain; border-radius: 8px; }
+.bilai-cat-sub-placeholder {
+    width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+    background: #f5ede0; border-radius: 8px; color: var(--bilai-primary); font-size: 20px;
+}
+.bilai-cat-sub-card span {
+    font-family: var(--bilai-font-main); font-size: 12px;
+    color: var(--bilai-body-title, #2a1505); font-weight: 500;
+    text-align: center; white-space: nowrap;
+}
+.bilai-cat-layout { display: flex; gap: 28px; align-items: flex-start; }
+.bilai-cat-sidebar {
+    width: 240px; flex-shrink: 0; background: #fff;
+    border: 1.5px solid var(--bilai-border, #dccab2);
+    border-radius: var(--bilai-radius-md, 14px); padding: 20px;
+    position: sticky; top: 90px;
+}
+.bilai-cat-filter-block { border-bottom: 1px solid #f0e4d0; padding-bottom: 16px; margin-bottom: 16px; }
+.bilai-cat-filter-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.bilai-cat-filter-title {
+    font-family: var(--bilai-font-main); font-size: 14px; font-weight: 700;
+    color: var(--bilai-body-title, #2a1505); margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.bilai-cat-filter-toggle { cursor: pointer; user-select: none; }
+.bilai-cat-toggle-icon { font-size: 11px; color: var(--bilai-muted); }
+.bilai-cat-price-display { font-family: var(--bilai-font-main); font-size: 13px; color: var(--bilai-muted); margin-bottom: 12px; }
+.bilai-price-slider { margin: 8px 4px 4px; height: 4px; border-radius: 4px; }
+.bilai-price-slider .ui-slider-range { background: var(--bilai-primary); }
+.bilai-price-slider .ui-slider-handle {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--bilai-primary); top: -6px; cursor: grab;
+}
+.bilai-cat-filter-search { position: relative; margin-bottom: 10px; }
+.bilai-brand-search-input {
+    width: 100%; border: 1.5px solid var(--bilai-border, #dccab2); border-radius: 8px;
+    padding: 7px 30px 7px 10px; font-size: 13px; font-family: var(--bilai-font-main);
+    color: var(--bilai-text); background: #fdfcf8; outline: none; box-sizing: border-box;
+}
+.bilai-cat-filter-search .fa-search {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--bilai-muted); font-size: 12px;
+}
+.bilai-cat-check-list { list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; scrollbar-width: thin; }
+.bilai-cat-check-list::-webkit-scrollbar { width: 3px; }
+.bilai-cat-check-list::-webkit-scrollbar-thumb { background: var(--bilai-border); border-radius: 4px; }
+.bilai-cat-check-label {
+    display: flex; align-items: center; gap: 8px; padding: 5px 0;
+    cursor: pointer; font-family: var(--bilai-font-main); font-size: 13px; color: var(--bilai-text);
+}
+.bilai-cat-check-label input[type="checkbox"] { accent-color: var(--bilai-primary); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
+.bilai-cat-main { flex: 1; min-width: 0; }
+.bilai-cat-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; }
+.bilai-cat-count { font-family: var(--bilai-font-main); font-size: 14px; color: var(--bilai-text); margin: 0; }
+.bilai-cat-sort-select {
+    font-family: var(--bilai-font-main); font-size: 13px; color: var(--bilai-body-title, #2a1505);
+    border: 1.5px solid var(--bilai-border, #dccab2); border-radius: 8px;
+    padding: 7px 12px; background: #fff; cursor: pointer; outline: none; min-width: 160px;
+}
+.bilai-cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.bilai-cat-sold-pill {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    background: rgba(42,21,5,0.75); color: #fff;
+    font-family: var(--bilai-font-main); font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px; white-space: nowrap; pointer-events: none;
+}
+.bilai-product-image { position: relative; }
+.bilai-cat-empty { text-align: center; padding: 60px 20px; color: var(--bilai-muted); font-family: var(--bilai-font-main); }
+.bilai-cat-empty i { font-size: 48px; margin-bottom: 16px; display: block; }
+.bilai-cat-pagination { margin-top: 36px; }
+.bilai-cat-pagination .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0; margin: 0; list-style: none; flex-wrap: wrap; }
+.bilai-cat-pagination .page-item .page-link {
+    font-family: var(--bilai-font-main); font-size: 14px; font-weight: 500;
+    color: var(--bilai-body-title, #2a1505); background: #fff;
+    border: 1.5px solid var(--bilai-border, #dccab2); border-radius: 8px;
+    padding: 7px 13px; line-height: 1; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; min-width: 36px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.bilai-cat-pagination .page-item.active .page-link { background: var(--bilai-primary); border-color: var(--bilai-primary); color: #fff; }
+.bilai-cat-pagination .page-item .page-link:hover { background: #f5ede0; border-color: var(--bilai-primary); color: var(--bilai-primary); }
+.bilai-cat-pagination .page-item.disabled .page-link { color: var(--bilai-muted); background: #fafaf8; border-color: #e8e0d4; cursor: default; }
+.bilai-cat-desc-accordion { background: #fff; border-top: 1px solid var(--bilai-border, #dccab2); margin-top: 20px; }
+.bilai-cat-desc-toggle {
+    width: 100%; background: var(--bilai-primary); color: #fff; border: none;
+    padding: 14px 24px; font-family: var(--bilai-font-main); font-size: 15px; font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between; cursor: pointer; border-radius: 0;
+}
+.bilai-cat-desc-icon { transition: transform 0.2s; }
+.bilai-cat-desc-body { background: #fff; }
+.bilai-cat-desc-content { padding: 24px; font-family: var(--bilai-font-main); font-size: 14px; color: var(--bilai-text); line-height: 1.8; max-width: 900px; }
+@media (max-width: 991px) {
+    .bilai-cat-layout { flex-direction: column; }
+    .bilai-cat-sidebar { width: 100%; position: static; }
+    .bilai-cat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575px) {
+    .bilai-cat-page { padding: 16px 0 40px; }
+    .bilai-cat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .bilai-cat-topbar { flex-direction: column; align-items: flex-start; }
+    .bilai-cat-sort-select { width: 100%; }
+}
+
+/* ============================================================
+   BilaiGhor Category Page End
+   ============================================================ */
+
+/* ============================================================
+   BilaiGhor Category Page Filter Fix Start
+   ============================================================ */
+
+/* Active subcategory card */
+.bilai-cat-sub-card.active {
+    border-color: var(--bilai-primary);
+    box-shadow: 0 0 0 2px rgba(232,134,26,0.25);
+    background: #fff8f0;
+}
+.bilai-cat-sub-card.active span { color: var(--bilai-primary); font-weight: 700; }
+
+/* Brand count badge */
+.bilai-cat-check-label {
+    justify-content: space-between;
+}
+.bilai-cat-check-name { flex: 1; }
+.bilai-cat-count-badge {
+    background: #f0e4d0;
+    color: var(--bilai-body-title, #2a1505);
+    font-family: var(--bilai-font-main);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    min-width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* Remove the old search input block from sidebar (brand search is gone) */
+.bilai-cat-filter-search { display: none; }
+
+/* ============================================================
+   BilaiGhor Category Page Filter Fix End
+   ============================================================ */

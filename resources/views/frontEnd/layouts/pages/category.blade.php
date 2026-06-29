@@ -8,17 +8,13 @@
     <meta name="robots" content="index, follow" />
     <meta name="description" content="{{ $category->meta_description }}" />
     <meta name="keywords" content="{{ $category->slug }}" />
-
-    <!-- Twitter Card data -->
     <meta name="twitter:card" content="product" />
     <meta name="twitter:site" content="{{ $category->name }}" />
     <meta name="twitter:title" content="{{ $category->name }}" />
     <meta name="twitter:description" content="{{ $category->meta_description }}" />
-    <meta name="twitter:creator" content="gomobd.com" />
+    <meta name="twitter:creator" content="bilaighor.bd" />
     <meta property="og:url" content="{{ route('category', $category->slug) }}" />
     <meta name="twitter:image" content="{{ asset($category->image) }}" />
-
-    <!-- Open Graph data -->
     <meta property="og:title" content="{{ $category->name }}" />
     <meta property="og:type" content="product" />
     <meta property="og:url" content="{{ route('category', $category->slug) }}" />
@@ -26,363 +22,309 @@
     <meta property="og:description" content="{{ $category->meta_description }}" />
     <meta property="og:site_name" content="{{ $category->name }}" />
 @endpush
+
 @section('content')
-    <section class="product-section">
-        <div class="container">
-            <div class="sorting-section">
-                <div class="row">
-                    <div class="col-sm-6">
-                        <div class="category-breadcrumb d-flex align-items-center">
-                            <a href="{{ route('home') }}">Home</a>
-                            <span>/</span>
-                            <strong>{{ $category->name }}</strong>
+<div class="bilai-cat-page">
+    <div class="container">
+
+        {{-- BREADCRUMB --}}
+        <nav class="bilai-cat-breadcrumb" aria-label="breadcrumb">
+            <a href="{{ route('home') }}">Home</a>
+            <span class="bilai-cat-breadcrumb-sep"><i class="fas fa-chevron-right"></i></span>
+            <span class="bilai-cat-breadcrumb-current">{{ $category->name }}</span>
+        </nav>
+
+        {{-- SUBCATEGORY CARDS — act as filters --}}
+        @if($subcategories->count() > 0)
+        <div class="bilai-cat-sub-row">
+            @foreach($subcategories as $subcat)
+            @php
+                $isActiveSub = $activeSubcatSlug === $subcat->slug;
+                // Build the filter URL: keep all current params except subcategory and page
+                $otherParams = request()->except(['subcategory', 'page']);
+                $subCardUrl  = $isActiveSub
+                    ? route('category', $category->slug) . ($otherParams ? '?' . http_build_query($otherParams) : '')
+                    : route('category', $category->slug) . '?' . http_build_query(array_merge($otherParams, ['subcategory' => $subcat->slug]));
+            @endphp
+            <a href="{{ $subCardUrl }}" class="bilai-cat-sub-card {{ $isActiveSub ? 'active' : '' }}">
+                @if($subcat->image)
+                <img src="{{ asset('public/' . $subcat->image) }}" alt="{{ $subcat->subcategoryName }}" loading="lazy">
+                @else
+                <div class="bilai-cat-sub-placeholder"><i class="fas fa-tag"></i></div>
+                @endif
+                <span>{{ $subcat->subcategoryName }}</span>
+            </a>
+            @endforeach
+        </div>
+        @endif
+
+        {{-- MAIN LAYOUT --}}
+        <div class="bilai-cat-layout">
+
+            {{-- LEFT SIDEBAR --}}
+            <aside class="bilai-cat-sidebar">
+                <form action="" method="GET" class="bilai-cat-filter-form" id="bilaiCatFilterForm">
+                    {{-- preserve sort and active subcategory --}}
+                    @if(request('sort'))
+                    <input type="hidden" name="sort" value="{{ request('sort') }}">
+                    @endif
+                    @if($activeSubcatSlug)
+                    <input type="hidden" name="subcategory" value="{{ $activeSubcatSlug }}">
+                    @endif
+
+                    {{-- FILTER BY PRICE --}}
+                    <div class="bilai-cat-filter-block">
+                        <div class="bilai-cat-filter-title">Filter by Price</div>
+                        <div class="bilai-cat-price-display">
+                            Price: <strong>&#2547;<span id="bilai-min-val">{{ request('min_price', $min_price) }}</span></strong>
+                            &nbsp;—&nbsp;
+                            <strong>&#2547;<span id="bilai-max-val">{{ request('max_price', $max_price) }}</span></strong>
+                        </div>
+                        <div id="bilai-price-range" class="bilai-price-slider"></div>
+                        <input type="hidden" name="min_price" id="bilai_min_price" value="{{ request('min_price', $min_price) }}">
+                        <input type="hidden" name="max_price" id="bilai_max_price" value="{{ request('max_price', $max_price) }}">
+                    </div>
+
+                    {{-- BRAND (no search, checkbox list with count badge) --}}
+                    @if($brands->count() > 0)
+                    <div class="bilai-cat-filter-block">
+                        <div class="bilai-cat-filter-title bilai-cat-filter-toggle" data-target="bilai-brand-list">
+                            Brand <i class="fas fa-chevron-up bilai-cat-toggle-icon"></i>
+                        </div>
+                        <div class="bilai-cat-filter-body" id="bilai-brand-list">
+                            <ul class="bilai-cat-check-list">
+                                @foreach($brands as $brand)
+                                <li>
+                                    <label class="bilai-cat-check-label">
+                                        <input type="checkbox" name="brand[]" value="{{ $brand->id }}"
+                                            class="bilai-cat-auto-submit"
+                                            @if(is_array(request('brand')) && in_array($brand->id, request('brand'))) checked @endif>
+                                        <span class="bilai-cat-check-name">{{ $brand->name }}</span>
+                                        <span class="bilai-cat-count-badge">{{ str_pad($brandCountMap[$brand->id] ?? 0, 2, '0', STR_PAD_LEFT) }}</span>
+                                    </label>
+                                </li>
+                                @endforeach
+                            </ul>
                         </div>
                     </div>
-                    <div class="col-sm-6">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <div class="showing-data">
-                                    <span>Showing {{ $products->firstItem() }}-{{ $products->lastItem() }} of
-                                        {{ $products->total() }} Results</span>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="filter_sort">
-                                    <div class="filter_btn">
-                                        <i class="fa fa-list-ul"></i>
-                                    </div>
-                                    <div class="page-sort">
-                                        <form action="" class="sort-form">
-                                            <select name="sort" class="form-control form-select sort">
-                                                <option value="1" @if(request()->get('sort')==1)selected @endif>Product: Latest</option>
-                                                <option value="2" @if(request()->get('sort')==2)selected @endif>Product: Oldest</option>
-                                                <option value="3" @if(request()->get('sort')==3)selected @endif>Price: High To Low</option>
-                                                <option value="4" @if(request()->get('sort')==4)selected @endif>Price: Low To High</option>
-                                                <option value="5" @if(request()->get('sort')==5)selected @endif>Name: A-Z</option>
-                                                <option value="6" @if(request()->get('sort')==6)selected @endif>Name: Z-A</option>
-                                            </select>
-                                            <input type="hidden" name="min_price" value="{{request()->get('min_price')}}" />
-                                            <input type="hidden" name="max_price" value="{{request()->get('max_price')}}" />
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    @endif
 
-            <div class="row">
+                </form>
+            </aside>
 
-                <div class="col-sm-3 filter_sidebar">
-                    <div class="filter_close"><i class="fa fa-long-arrow-left"></i> Filter</div>
-                    <form action="" class="attribute-submit">
-                        <div class="sidebar_item wraper__item">
-                            <div class="accordion" id="category_sidebar">
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#collapseCat" aria-expanded="true" aria-controls="collapseOne">
-                                            {{ $category->name }}
-                                        </button>
-                                    </h2>
-                                    <div id="collapseCat" class="accordion-collapse collapse show"
-                                        data-bs-parent="#category_sidebar">
-                                        <div class="accordion-body cust_according_body">
-                                            <ul>
-                                                @foreach ($category->subcategories as $key => $subcat)
-                                                    <li>
-                                                        <a
-                                                            href="{{ url('subcategory/' . $subcat->slug) }}">{{ $subcat->subcategoryName }}</a>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--sidebar item end-->
-                        <div class="sidebar_item wraper__item">
-                            <div class="accordion" id="price_sidebar">
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#collapsePrice" aria-expanded="true" aria-controls="collapseOne">
-                                            Price
-                                        </button>
-                                    </h2>
-                                    <div id="collapsePrice" class="accordion-collapse collapse show"
-                                        data-bs-parent="#price_sidebar">
-                                        <div class="accordion-body cust_according_body">
-                                            <div class="category-filter-box category__wraper" id="categoryFilterBox">
-                                                <div class="category-filter-item">
-                                                    <div class="filter-body">
-                                                        <div class="slider-box">
-                                                            <div class="filter-price-inputs">
-                                                                <p class="min-price">৳<input type="text"
-                                                                        name="min_price" id="min_price" readonly="" />
-                                                                </p>
-                                                                <p class="max-price">৳<input type="text"
-                                                                        name="max_price" id="max_price" readonly="" />
-                                                                </p>
-                                                            </div>
-                                                            <div id="price-range" class="slider form-attribute"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--sidebar item end-->
-                        <div class="sidebar_item wraper__item">
-                            <div class="accordion" id="filter_sidebar">
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#collapseFilter" aria-expanded="true"
-                                            aria-controls="collapseOne">
-                                            Filter
-                                        </button>
-                                    </h2>
-                                    <div id="collapseFilter" class="accordion-collapse collapse show"
-                                        data-bs-parent="#filter_sidebar">
-                                        <div class="accordion-body cust_according_body">
-                                            <div class="filter-body">
-                                                <ul class="space-y-3">
-                                                    @foreach ($subcategories as $subcategory)
-                                                        <li class="subcategory-filter-list">
-                                                            <label for="{{ $subcategory->slug . '-' . $subcategory->id }}"
-                                                                class="subcategory-filter-label">
-                                                                <input class="form-checkbox form-attribute"
-                                                                    id="{{ $subcategory->slug . '-' . $subcategory->id }}"
-                                                                    name="subcategory[]" value="{{ $subcategory->id }}"
-                                                                    type="checkbox"
-                                                                    @if (is_array(request()->get('subcategory')) && in_array($subcategory->id, request()->get('subcategory'))) checked @endif />
-                                                                <p class="subcategory-filter-name">
-                                                                    {{ $subcategory->subcategoryName }}</p>
-                                                            </label>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--sidebar item end-->
+            {{-- RIGHT PRODUCT AREA --}}
+            <div class="bilai-cat-main">
+
+                {{-- TOP BAR --}}
+                <div class="bilai-cat-topbar">
+                    <p class="bilai-cat-count">
+                        @if($products->total() > 0)
+                            Showing {{ $products->firstItem() }}–{{ $products->lastItem() }} of {{ $products->total() }} results
+                        @else
+                            No products found
+                        @endif
+                    </p>
+                    <form action="" method="GET" id="bilaiSortForm">
+                        {{-- preserve all active filters in sort form --}}
+                        @foreach(request()->except(['sort', 'page']) as $key => $val)
+                            @if(is_array($val))
+                                @foreach($val as $v)
+                                <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+                                @endforeach
+                            @else
+                            <input type="hidden" name="{{ $key }}" value="{{ $val }}">
+                            @endif
+                        @endforeach
+                        <select name="sort" class="bilai-cat-sort-select" id="bilaiSortSelect">
+                            <option value="1" @if(request('sort')==1) selected @endif>Sort by Latest</option>
+                            <option value="2" @if(request('sort')==2) selected @endif>Oldest First</option>
+                            <option value="3" @if(request('sort')==3) selected @endif>Price: High to Low</option>
+                            <option value="4" @if(request('sort')==4) selected @endif>Price: Low to High</option>
+                            <option value="5" @if(request('sort')==5) selected @endif>Name: A–Z</option>
+                            <option value="6" @if(request('sort')==6) selected @endif>Name: Z–A</option>
+                        </select>
                     </form>
                 </div>
-                <div class="col-sm-9">
-                    <div class="category-product main_product_inner">
-                        @foreach ($products as $key => $value)
-                           <div class="product_item wist_item wow zoomIn" data-wow-duration="1.5s"
-                            data-wow-delay="0.{{ $key }}s">
-                                <div class="product_item_inner">
-                                    @if($value->old_price)
-                                        <div class="sale-badge">
-                                            <div class="sale-badge-inner">
-                                                <div class="sale-badge-box">
-                                                    <span class="sale-badge-text">
-                                                        <p>
-                                                            @php
-                                                                $discount = (((($value->old_price)-($value->new_price))*100) / ($value->old_price))
-                                                            @endphp
-                                                            {{ number_format($discount, 0) }}%
-                                                        </p>
-                                                        ছাড়
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endif
-                                    <div class="pro_img">
-                                        <a href="{{ route('product', $value->slug) }}">
-                                            <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                                                alt="{{ $value->name }}" />
-                                        </a>
-                                    </div>
-                                    <div class="pro_des">
-                                        <div class="pro_name">
-                                            <a href="{{ route('product', $value->slug) }}">
-                                                {{ Str::limit($value->name, 35) }}
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                @php
-                                    $averageRating = $value->reviews->avg('ratting');
-                                    $filledStars   = floor($averageRating);
-                                    $hasHalfStar   = $averageRating - $filledStars >= 0.5;
-                                    $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
-                                @endphp
-
-                                @if ($averageRating >= 0 && $averageRating <= 5)
-                                    @for ($i = 0; $i < $filledStars; $i++)
-                                        <i class="fas fa-star"></i>
-                                    @endfor
-
-                                    @if ($hasHalfStar)
-                                        <i class="fas fa-star-half-alt"></i>
-                                    @endif
-
-                                    @for ($i = 0; $i < $emptyStars; $i++)
-                                        <i class="far fa-star"></i>
-                                    @endfor
-                                @else
-                                    <span>Invalid rating range</span>
+                {{-- PRODUCT GRID --}}
+                @if($products->count() > 0)
+                <div class="bilai-cat-grid">
+                    @foreach($products as $key => $value)
+                    @php
+                        $avgRating   = $value->reviews->avg('ratting');
+                        $filledStars = floor($avgRating);
+                        $hasHalf     = $avgRating - $filledStars >= 0.5;
+                        $emptyStars  = 5 - $filledStars - ($hasHalf ? 1 : 0);
+                        $discount    = ($value->old_price && $value->old_price > $value->new_price)
+                                       ? round((($value->old_price - $value->new_price) * 100) / $value->old_price)
+                                       : 0;
+                    @endphp
+                    <div class="bilai-product-card">
+                        <div class="bilai-product-top">
+                            @if($discount > 0)
+                            <span class="bilai-stock-badge">{{ $discount }}% OFF</span>
+                            @else
+                            <span></span>
+                            @endif
+                            <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="bilai-product-image">
+                            <a href="{{ route('product', $value->slug) }}">
+                                <img src="{{ asset($value->image ? $value->image->image : '') }}"
+                                     alt="{{ $value->name }}"
+                                     loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
+                            </a>
+                            @if($value->sold && $value->sold > 0)
+                            <span class="bilai-cat-sold-pill">{{ $value->sold }} Sold</span>
+                            @endif
+                        </div>
+                        <div class="bilai-product-meta">
+                            <h3 class="bilai-product-title">
+                                <a href="{{ route('product', $value->slug) }}">{{ Str::limit($value->name, 55) }}</a>
+                            </h3>
+                            <div class="bilai-product-cat-rating">
+                                @if($value->category)
+                                <p class="bilai-product-category">{{ $value->category->name }}</p>
                                 @endif
-
-                                <div class="pro_price">
-                                    <p>
-                                        <del>৳ {{ $value->old_price }}</del>
-                                        ৳ {{ $value->new_price }}
-                                    </p>
+                                <div class="bilai-product-rating">
+                                    @for($i = 0; $i < $filledStars; $i++)<i class="fas fa-star"></i>@endfor
+                                    @if($hasHalf)<i class="fas fa-star-half-alt"></i>@endif
+                                    @for($i = 0; $i < $emptyStars; $i++)<i class="far fa-star"></i>@endfor
                                 </div>
-
-                                {{-- ✅ এখানে নতুন দুইটা বাটন লাগানো হলো --}}
-                                @if (!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
-                                    {{-- ভ্যারিয়েন্ট আছে → Details পেজে নেবে --}}
-                                    <div class="pro_btn">
-                                        {{-- বড় অর্ডার বাটন --}}
-                                        <a href="{{ route('product', $value->slug) }}"
-                                           class="order-btn-link order-btn">
-                                            অর্ডার করুন
-                                        </a>
-
-                                        {{-- ছোট কার্ট আইকন বাটন --}}
-                                        <a href="{{ route('product', $value->slug) }}"
-                                           class="cart-icon-link cart-icon-btn">
-                                            <i class="fa-solid fa-cart-shopping"></i>
-                                        </a>
-                                    </div>
-                                @else
-                                    {{-- ভ্যারিয়েন্ট নেই → সরাসরি কার্ট + অর্ডার --}}
-                                    <div class="pro_btn">
-
-                                        {{-- Order Now --}}
-                                        <form action="{{ route('cart.store') }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="id" value="{{ $value->id }}">
-                                            <input type="hidden" name="qty" value="1">
-                                            <input type="hidden" name="order_now" value="1">
-                                            <button type="submit" class="order-btn">
-                                                অর্ডার করুন
-                                            </button>
-                                        </form>
-
-                                        {{-- Add to Cart --}}
-                                        <form action="{{ route('cart.store') }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="id" value="{{ $value->id }}">
-                                            <input type="hidden" name="qty" value="1">
-                                            <button type="submit" class="cart-icon-btn cart_store" data-id="{{ $value->id }}">
-                                                <i class="fa-solid fa-cart-shopping"></i>
-                                            </button>
-                                        </form>
-
-                                    </div>
+                            </div>
+                            <div class="bilai-product-price">
+                                <div class="bilai-price-row">
+                                    <span class="bilai-price-new">&#2547; {{ $value->new_price }}</span>
+                                    @if($value->old_price)
+                                    <del class="bilai-price-old">&#2547; {{ $value->old_price }}</del>
+                                    @endif
+                                </div>
+                                @if($discount > 0)
+                                <span class="bilai-discount-badge">{{ $discount }}% OFF</span>
                                 @endif
                             </div>
-                        @endforeach
+                        </div>
+                        <div class="bilai-product-actions">
+                            @if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
+                                <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                </a>
+                                <a href="{{ route('product', $value->slug) }}" class="bilai-buy-btn">Buy Now</a>
+                            @else
+                                <form action="{{ route('cart.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="id" value="{{ $value->id }}" />
+                                    <input type="hidden" name="qty" value="1" />
+                                    <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}">
+                                        <i class="fa-solid fa-cart-shopping"></i>
+                                    </button>
+                                </form>
+                                <form action="{{ route('cart.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="id" value="{{ $value->id }}" />
+                                    <input type="hidden" name="qty" value="1" />
+                                    <input type="hidden" name="order_now" value="1">
+                                    <button type="submit" class="bilai-buy-btn">Buy Now</button>
+                                </form>
+                            @endif
+                        </div>
                     </div>
+                    @endforeach
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="custom_paginate">
-                        {{ $products->links('pagination::bootstrap-4') }}
-                    </div>
+                @else
+                <div class="bilai-cat-empty">
+                    <i class="fas fa-box-open"></i>
+                    <p>No products found.</p>
                 </div>
+                @endif
+
+                {{-- PAGINATION --}}
+                @if($products->hasPages())
+                <div class="bilai-cat-pagination">
+                    {{ $products->links('pagination::bootstrap-4') }}
+                </div>
+                @endif
+
+            </div>{{-- end .bilai-cat-main --}}
+        </div>{{-- end .bilai-cat-layout --}}
+
+    </div>{{-- end .container --}}
+</div>{{-- end .bilai-cat-page --}}
+
+{{-- BOTTOM DESCRIPTION ACCORDION --}}
+@if($category->meta_description)
+<div class="bilai-cat-desc-accordion">
+    <div class="container">
+        <button class="bilai-cat-desc-toggle" id="bilaiDescToggle" aria-expanded="false">
+            View Full Description
+            <i class="fas fa-chevron-down bilai-cat-desc-icon"></i>
+        </button>
+        <div class="bilai-cat-desc-body" id="bilaiDescBody" style="display:none;">
+            <div class="bilai-cat-desc-content">
+                {!! $category->meta_description !!}
             </div>
         </div>
-    </section>
-    <section class="homeproduct">
-        <div class="container">
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="meta_des">
-                        {!! $category->meta_description !!}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    </div>
+</div>
+@endif
 
 @endsection
+
 @push('script')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
     <script>
-        $("#price-range").click(function() {
-            $(".price-submit").submit();
-        })
-        $(".form-attribute").on('change click',function(){
-            $(".attribute-submit").submit();
-        })
-        $(".sort").change(function() {
-            $(".sort-form").submit();
-        })
-        $(".form-checkbox").change(function() {
-            $(".subcategory-submit").submit();
-        })
-    </script>
-    <script>
-        $(function() {
-            $("#price-range").slider({
-                step: 5,
-                range: true,
-                min: {{ $min_price }},
-                max: {{ $max_price }},
-                values: [
-                    {{ request()->get('min_price') ? request()->get('min_price') : $min_price }},
-                    {{ request()->get('max_price') ? request()->get('max_price') : $max_price }}
-                ],
-                slide: function(event, ui) {
-                    $("#min_price").val(ui.values[0]);
-                    $("#max_price").val(ui.values[1]);
-                }
-            });
-            $("#min_price").val({{ request()->get('min_price') ? request()->get('min_price') : $min_price }});
-            $("#max_price").val({{ request()->get('max_price') ? request()->get('max_price') : $max_price }});
-            $("#priceRange").val($("#price-range").slider("values", 0) + " - " + $("#price-range").slider("values",
-                1));
+    $(function () {
+        var minP   = {{ $min_price ?? 0 }};
+        var maxP   = {{ $max_price ?? 10000 }};
+        var curMin = {{ request('min_price') ?: ($min_price ?? 0) }};
+        var curMax = {{ request('max_price') ?: ($max_price ?? 10000) }};
 
-            $("#mobile-price-range").slider({
-                step: 5,
-                range: true,
-                min: {{ $min_price }},
-                max: {{ $max_price }},
-                values: [
-                    {{ request()->get('min_price') ? request()->get('min_price') : $min_price }},
-                    {{ request()->get('max_price') ? request()->get('max_price') : $max_price }}
-                ],
-                slide: function(event, ui) {
-                    $("#min_price").val(ui.values[0]);
-                    $("#max_price").val(ui.values[1]);
-                }
-            });
-            $("#min_price").val({{ request()->get('min_price') ? request()->get('min_price') : $min_price }});
-            $("#max_price").val({{ request()->get('max_price') ? request()->get('max_price') : $max_price }});
-            $("#priceRange").val($("#price-range").slider("values", 0) + " - " + $("#price-range").slider("values",
-                1));
-
+        $("#bilai-price-range").slider({
+            range: true, step: 5, min: minP, max: maxP,
+            values: [curMin, curMax],
+            slide: function (event, ui) {
+                $("#bilai-min-val").text(ui.values[0]);
+                $("#bilai-max-val").text(ui.values[1]);
+                $("#bilai_min_price").val(ui.values[0]);
+                $("#bilai_max_price").val(ui.values[1]);
+            },
+            stop: function () { $("#bilaiCatFilterForm").submit(); }
         });
+        $("#bilai-min-val").text(curMin);
+        $("#bilai-max-val").text(curMax);
+
+        $(".bilai-cat-auto-submit").on("change", function () {
+            $("#bilaiCatFilterForm").submit();
+        });
+
+        $("#bilaiSortSelect").on("change", function () {
+            $("#bilaiSortForm").submit();
+        });
+
+        $(".bilai-cat-filter-toggle").on("click", function () {
+            var target = $(this).data("target");
+            $("#" + target).slideToggle(200);
+            $(this).find(".bilai-cat-toggle-icon").toggleClass("fa-chevron-up fa-chevron-down");
+        });
+
+        $("#bilaiDescToggle").on("click", function () {
+            var expanded = $(this).attr("aria-expanded") === "true";
+            $(this).attr("aria-expanded", String(!expanded));
+            $(this).find(".bilai-cat-desc-icon").toggleClass("fa-chevron-down fa-chevron-up");
+            $("#bilaiDescBody").slideToggle(250);
+        });
+    });
     </script>
 
-    {{-- 🔹 GA4 DataLayer + Facebook Pixel for Category Page --}}
+    {{-- GA4 + Facebook Pixel --}}
     <script type="text/javascript">
         window.dataLayer = window.dataLayer || [];
-
         (function () {
             var categoryName = @json($category->name);
             var categorySlug = @json($category->slug);
-
             var categoryItems = [
                 @foreach($products as $index => $value)
                 {
@@ -399,31 +341,20 @@
                 }@if(!$loop->last),@endif
                 @endforeach
             ];
-
             if (categoryItems.length) {
                 window.dataLayer.push({ ecommerce: null });
                 window.dataLayer.push({
                     event: "view_item_list",
                     ecommerce: {
-                        item_list_id: categorySlug,
-                        item_list_name: categoryName,
+                        item_list_id: categorySlug, item_list_name: categoryName,
                         items: categoryItems.map(function (item) {
-                            return {
-                                item_id: item.item_id,
-                                item_name: item.item_name,
-                                index: item.index,
-                                price: item.price,
-                                item_brand: item.item_brand,
-                                item_category: item.item_category,
-                                item_list_id: item.item_list_id,
-                                item_list_name: item.item_list_name,
-                                currency: item.currency
-                            };
+                            return { item_id: item.item_id, item_name: item.item_name, index: item.index,
+                                price: item.price, item_brand: item.item_brand, item_category: item.item_category,
+                                item_list_id: item.item_list_id, item_list_name: item.item_list_name, currency: item.currency };
                         })
                     }
                 });
             }
-
             if (typeof fbq === "function") {
                 fbq("trackCustom", "ViewCategory", {
                     content_category: categoryName,
@@ -431,54 +362,6 @@
                     currency: "BDT"
                 });
             }
-
-            function findItemByHref(href) {
-                if (!href) return null;
-                try {
-                    var parts = href.split("/");
-                    var last = parts[parts.length - 1].split("?")[0];
-                    return categoryItems.find(function (i) { return i.slug === last; }) || null;
-                } catch (e) {
-                    return null;
-                }
-            }
-
-            $(document).on("click", ".category-product .product_item a", function () {
-                var href = $(this).attr("href") || "";
-                var item = findItemByHref(href);
-                if (!item) return;
-
-                window.dataLayer.push({ ecommerce: null });
-                window.dataLayer.push({
-                    event: "select_item",
-                    ecommerce: {
-                        item_list_id: categorySlug,
-                        item_list_name: categoryName,
-                        items: [{
-                            item_id: item.item_id,
-                            item_name: item.item_name,
-                            index: item.index,
-                            price: item.price,
-                            item_brand: item.item_brand,
-                            item_category: item.item_category,
-                            item_list_id: item.item_list_id,
-                            item_list_name: item.item_list_name,
-                            currency: item.currency
-                        }]
-                    }
-                });
-
-                if (typeof fbq === "function") {
-                    fbq("trackCustom", "CategoryProductClick", {
-                        content_ids: [item.item_id],
-                        content_name: item.item_name,
-                        content_category: item.item_category,
-                        value: item.price,
-                        currency: "BDT"
-                    });
-                }
-            });
-
         })();
     </script>
 @endpush

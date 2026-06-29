@@ -823,12 +823,22 @@ $brands = Brand::where('status', 1)
 
     public function category($slug, Request $request)
     {
-        $soldShow = $request->sold=='show'?true:false;
+        $soldShow = $request->sold == 'show' ? true : false;
         $category = Category::where(['slug' => $slug, 'status' => 1])->first();
 
-        $products = Product::where(['status' => 1, 'approval_status' => 'approved', 'category_id' => $category->id])
-            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id','sold','stock');
         $subcategories = Subcategory::where('category_id', $category->id)->get();
+
+        // Brand counts: products in this category grouped by brand
+        $brandCountMap = Product::where(['status' => 1, 'approval_status' => 'approved', 'category_id' => $category->id])
+            ->whereNotNull('brand_id')
+            ->select('brand_id', DB::raw('count(*) as cnt'))
+            ->groupBy('brand_id')
+            ->pluck('cnt', 'brand_id');
+        $brands = Brand::whereIn('id', $brandCountMap->keys())->orderBy('name')->get();
+
+        $products = Product::where(['status' => 1, 'approval_status' => 'approved', 'category_id' => $category->id])
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'sold', 'stock', 'brand_id')
+            ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'brand']);
 
         if ($request->sort == 1) {
             $products = $products->orderBy('created_at', 'desc');
@@ -848,20 +858,30 @@ $brands = Brand::where('status', 1)
 
         $min_price = $products->min('new_price');
         $max_price = $products->max('new_price');
-        if($request->min_price && $request->max_price){
-            $products = $products->where('new_price','>=',$request->min_price);
-            $products = $products->where('new_price','<=',$request->max_price);
+        if ($request->min_price && $request->max_price) {
+            $products = $products->where('new_price', '>=', $request->min_price);
+            $products = $products->where('new_price', '<=', $request->max_price);
         }
 
-        $selectedSubcategories = $request->input('subcategory', []);
-        $products = $products->when($selectedSubcategories, function ($query) use ($selectedSubcategories) {
-            return $query->whereHas('subcategory', function ($subQuery) use ($selectedSubcategories) {
-                $subQuery->whereIn('id', $selectedSubcategories);
-            });
+        // Subcategory filter via single slug from top cards
+        $activeSubcatSlug = $request->input('subcategory');
+        if ($activeSubcatSlug) {
+            $activeSubcat = $subcategories->firstWhere('slug', $activeSubcatSlug);
+            if ($activeSubcat) {
+                $products = $products->where('subcategory_id', $activeSubcat->id);
+            }
+        }
+
+        $selectedBrands = $request->input('brand', []);
+        $products = $products->when($selectedBrands, function ($query) use ($selectedBrands) {
+            return $query->whereIn('brand_id', $selectedBrands);
         });
 
-        $products = $products->paginate(24);
-        return view('frontEnd.layouts.pages.category', compact('category', 'products', 'subcategories', 'min_price', 'max_price','soldShow'));
+        $products = $products->paginate(12)->withQueryString();
+        return view('frontEnd.layouts.pages.category', compact(
+            'category', 'products', 'subcategories', 'min_price', 'max_price', 'soldShow',
+            'brands', 'brandCountMap', 'activeSubcatSlug'
+        ));
     }
 
     public function subcategory($slug, Request $request)

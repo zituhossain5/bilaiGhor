@@ -21,7 +21,8 @@
       "Bash(grep -E \"\\\\.\\(css|scss\\)$\")",
       "Bash(php -r ' *)",
       "Bash(php \"d:/projects/bilaiGhor/artisan\" make:migration add_new_arrival_to_products_table --table=products)",
-      "Bash(php \"d:/projects/bilaiGhor/artisan\" migrate --force)"
+      "Bash(php \"d:/projects/bilaiGhor/artisan\" migrate --force)",
+      "Bash(grep -n 'protected $fillable\\\\|'\\\\''brand_id'\\\\''\\\\|'\\\\''weight'\\\\''\\\\|'\\\\''life_stage'\\\\''\\\\|'\\\\''flavor'\\\\''\\\\|'\\\\''sold'\\\\''\\\\|'\\\\''stock'\\\\''' d:/projects/bilaiGhor/app/Models/Product.php)"
     ],
     "additionalDirectories": [
       "C:\\laragon\\etc\\apache2\\sites-enabled"

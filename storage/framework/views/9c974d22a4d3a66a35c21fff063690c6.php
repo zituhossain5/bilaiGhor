@@ -3,27 +3,27 @@
   <head>
     <meta charset="utf-8" />
 
-    <title>@yield('title')@if(isset($generalsetting) && $generalsetting) - {{$generalsetting->name}}@endif</title>
+    <title><?php echo $__env->yieldContent('title'); ?><?php if(isset($generalsetting) && $generalsetting): ?> - <?php echo e($generalsetting->name); ?><?php endif; ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{asset(isset($generalsetting->favicon) ? $generalsetting->favicon : 'public/backEnd/assets/images/favicon.ico')}}" />
+    <link rel="shortcut icon" href="<?php echo e(asset(isset($generalsetting->favicon) ? $generalsetting->favicon : 'public/backEnd/assets/images/favicon.ico')); ?>" />
 
     <!-- Bootstrap css -->
-    <link href="{{asset('public/backEnd/')}}/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="<?php echo e(asset('public/backEnd/')); ?>/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <!-- App css -->
-    <link href="{{asset('public/backEnd/')}}/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="<?php echo e(asset('public/backEnd/')); ?>/assets/css/app.min.css" rel="stylesheet" type="text/css" />
     <!-- icons -->
-    <link href="{{asset('public/backEnd/')}}/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link href="<?php echo e(asset('public/backEnd/')); ?>/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
     <!-- toastr css -->
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/assets/css/toastr.min.css" />
+    <link rel="stylesheet" href="<?php echo e(asset('public/backEnd/')); ?>/assets/css/toastr.min.css" />
     <!-- SweetAlert2 - ডেমো মুড পপআপের জন্য -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <!-- custom css -->
-    <link href="{{asset('public/backEnd/')}}/assets/css/custom.css" rel="stylesheet" type="text/css" />
+    <link href="<?php echo e(asset('public/backEnd/')); ?>/assets/css/custom.css" rel="stylesheet" type="text/css" />
     <!-- Head js -->
-    @yield('css')
-    <script src="{{asset('public/backEnd/')}}/assets/js/head.js"></script>
+    <?php echo $__env->yieldContent('css'); ?>
+    <script src="<?php echo e(asset('public/backEnd/')); ?>/assets/js/head.js"></script>
   </head>
 
   <!-- body start -->
@@ -51,23 +51,23 @@
               </a>
             </li>
 
-            @if(isset($demoMode) && $demoMode)
+            <?php if(isset($demoMode) && $demoMode): ?>
             <li class="dropdown d-none d-lg-inline-block">
               <span class="badge bg-warning text-dark px-2 py-1 mt-1" title=".env থেকে DEMO_MODE=true সেট করা আছে"><i class="fe-eye me-1"></i>ডেমো</span>
             </li>
-            @endif
+            <?php endif; ?>
 
             <li class="dropdown notification-list topbar-dropdown">
               <a class="nav-link dropdown-toggle waves-effect waves-light" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                 <i class="fe-bell noti-icon"></i>
-                <span class="badge bg-danger rounded-circle noti-icon-badge">{{$neworder}}</span>
+                <span class="badge bg-danger rounded-circle noti-icon-badge"><?php echo e($neworder); ?></span>
               </a>
               <div class="dropdown-menu dropdown-menu-end dropdown-lg">
                 <!-- item-->
                 <div class="dropdown-item noti-title">
                   <h5 class="m-0">
                     <span class="float-end">
-                      <a href="{{route('admin.orders',['slug'=>'pending'])}}" class="text-dark">
+                      <a href="<?php echo e(route('admin.orders',['slug'=>'pending'])); ?>" class="text-dark">
                         <small>View All</small>
                       </a>
                     </span>
@@ -76,24 +76,24 @@
                 </div>
 
                 <div class="noti-scroll" data-simplebar>
-                  @foreach($pendingorder as $porder)
+                  <?php $__currentLoopData = $pendingorder; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $porder): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                   <!-- item-->
-                  <a href="{{route('admin.orders',['slug'=>'pending'])}}" class="dropdown-item notify-item active">
+                  <a href="<?php echo e(route('admin.orders',['slug'=>'pending'])); ?>" class="dropdown-item notify-item active">
                     <div class="notify-icon">
-                      <img src="{{asset($porder->customer?$porder->customer->image:'')}}" class="img-fluid rounded-circle" alt="" />
+                      <img src="<?php echo e(asset($porder->customer?$porder->customer->image:'')); ?>" class="img-fluid rounded-circle" alt="" />
                     </div>
-                    <p class="notify-details">{{$porder->customer?$porder->customer->name:''}}</p>
+                    <p class="notify-details"><?php echo e($porder->customer?$porder->customer->name:''); ?></p>
                     <p class="text-muted mb-0 user-msg">
-                      <small>Invoice : {{$porder->invoice_id}}</small>
+                      <small>Invoice : <?php echo e($porder->invoice_id); ?></small>
                     </p>
                   </a>
-                  @endforeach
+                  <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
                   <!-- item-->
                 </div>
 
                 <!-- All-->
-                <a href="{{route('admin.orders',['slug'=>'pending'])}}" class="dropdown-item text-center text-primary notify-item notify-all">
+                <a href="<?php echo e(route('admin.orders',['slug'=>'pending'])); ?>" class="dropdown-item text-center text-primary notify-item notify-all">
                   View all
                   <i class="fe-arrow-right"></i>
                 </a>
@@ -102,8 +102,8 @@
 
             <li class="dropdown notification-list topbar-dropdown">
               <a class="nav-link dropdown-toggle nav-user me-0 waves-effect waves-light" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                <img src="{{asset(Auth::guard('admin')->user()->image)}}" alt="user-image" class="rounded-circle" />
-                <span class="pro-user-name ms-1"> {{Auth::guard('admin')->user()->name}} <i class="mdi mdi-chevron-down"></i> </span>
+                <img src="<?php echo e(asset(Auth::guard('admin')->user()->image)); ?>" alt="user-image" class="rounded-circle" />
+                <span class="pro-user-name ms-1"> <?php echo e(Auth::guard('admin')->user()->name); ?> <i class="mdi mdi-chevron-down"></i> </span>
               </a>
               <div class="dropdown-menu dropdown-menu-end profile-dropdown">
                 <!-- item-->
@@ -112,7 +112,7 @@
                 </div>
 
                 <!-- item-->
-                <a href="{{url('admin/dashboard')}}" class="dropdown-item notify-item">
+                <a href="<?php echo e(url('admin/dashboard')); ?>" class="dropdown-item notify-item">
                   <i class="fe-user"></i>
                   <span>Dashboard</span>
                 </a>
@@ -123,7 +123,7 @@
 
                 <!-- item-->
                 <a
-                  href="{{ route('logout') }}"
+                  href="<?php echo e(route('logout')); ?>"
                   onclick="event.preventDefault();
                   document.getElementById('logout-form').submit();"
                   class="dropdown-item notify-item"
@@ -131,8 +131,8 @@
                   <i class="fe-log-out me-1"></i>
                   <span>Logout</span>
                 </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                  @csrf
+                <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" style="display: none;">
+                  <?php echo csrf_field(); ?>
                 </form>
               </div>
             </li>
@@ -146,23 +146,23 @@
 
           <!-- LOGO -->
           <div class="logo-box">
-            <a href="{{url('admin/dashboard')}}" class="logo logo-dark text-center">
+            <a href="<?php echo e(url('admin/dashboard')); ?>" class="logo logo-dark text-center">
               <span class="logo-sm">
-                <img src="{{asset(isset($generalsetting->white_logo) ? $generalsetting->white_logo : 'public/backEnd/assets/images/logo.png')}}" alt="" height="50" />
+                <img src="<?php echo e(asset(isset($generalsetting->white_logo) ? $generalsetting->white_logo : 'public/backEnd/assets/images/logo.png')); ?>" alt="" height="50" />
                 <!-- <span class="logo-lg-text-light">UBold</span> -->
               </span>
               <span class="logo-lg">
-                <img src="{{asset(isset($generalsetting->white_logo) ? $generalsetting->white_logo : 'public/backEnd/assets/images/logo.png')}}" alt="" height="50" />
+                <img src="<?php echo e(asset(isset($generalsetting->white_logo) ? $generalsetting->white_logo : 'public/backEnd/assets/images/logo.png')); ?>" alt="" height="50" />
                 <!-- <span class="logo-lg-text-light">U</span> -->
               </span>
             </a>
 
-            <a href="{{url('admin/dashboard')}}" class="logo logo-light text-center">
+            <a href="<?php echo e(url('admin/dashboard')); ?>" class="logo logo-light text-center">
               <span class="logo-sm">
-                <img src="{{asset(isset($generalsetting->white_logo) ? $generalsetting->white_logo : 'public/backEnd/assets/images/logo.png')}}" alt="" height="50" />
+                <img src="<?php echo e(asset(isset($generalsetting->white_logo) ? $generalsetting->white_logo : 'public/backEnd/assets/images/logo.png')); ?>" alt="" height="50" />
               </span>
               <span class="logo-lg">
-                <img src="{{asset(isset($generalsetting->white_logo) ? $generalsetting->white_logo : 'public/backEnd/assets/images/logo.png')}}" alt="" height="50" />
+                <img src="<?php echo e(asset(isset($generalsetting->white_logo) ? $generalsetting->white_logo : 'public/backEnd/assets/images/logo.png')); ?>" alt="" height="50" />
               </span>
             </a>
           </div>
@@ -187,7 +187,7 @@
             </li>
 
             <li class="dropdown d-none d-xl-block">
-              <a class="nav-link dropdown-toggle waves-effect waves-light" href="{{route('home')}}" target="_blank"> <i data-feather="globe"></i> Visit Site </a>
+              <a class="nav-link dropdown-toggle waves-effect waves-light" href="<?php echo e(route('home')); ?>" target="_blank"> <i data-feather="globe"></i> Visit Site </a>
             </li>
           </ul>
           <div class="clearfix"></div>
@@ -200,9 +200,9 @@
         <div class="h-100" data-simplebar>
           <!-- User box -->
           <div class="user-box text-center">
-            <img src="{{asset('public/backEnd/')}}/assets/images/users/user-1.jpg" alt="user-img" title="Mat Helme" class="rounded-circle avatar-md" />
+            <img src="<?php echo e(asset('public/backEnd/')); ?>/assets/images/users/user-1.jpg" alt="user-img" title="Mat Helme" class="rounded-circle avatar-md" />
             <div class="dropdown">
-              <a href="javascript: void(0);" class="text-dark dropdown-toggle h5 mt-2 mb-1 d-block" data-bs-toggle="dropdown">{{Auth::guard('admin')->user()->name}}</a>
+              <a href="javascript: void(0);" class="text-dark dropdown-toggle h5 mt-2 mb-1 d-block" data-bs-toggle="dropdown"><?php echo e(Auth::guard('admin')->user()->name); ?></a>
               <div class="dropdown-menu user-pro-dropdown">
                 <!-- item-->
                 <a href="javascript:void(0);" class="dropdown-item notify-item">
@@ -224,7 +224,7 @@
 
                 <!-- item-->
                 <a
-                  href="{{ route('logout') }}"
+                  href="<?php echo e(route('logout')); ?>"
                   onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();"
                   class="dropdown-item notify-item"
@@ -232,8 +232,8 @@
                   <i class="fe-log-out me-1"></i>
                   <span>Logout</span>
                 </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                  @csrf
+                <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" style="display: none;">
+                  <?php echo csrf_field(); ?>
                 </form>
               </div>
             </div>
@@ -243,33 +243,33 @@
           <!--- Sidemenu -->
           <div id="sidebar-menu">
             <ul id="side-menu">
-@can('dashboard-view')
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('dashboard-view')): ?>
 <li>
-  <a href="{{ url('admin/dashboard') }}">
+  <a href="<?php echo e(url('admin/dashboard')); ?>">
     <i data-feather="airplay"></i>
     <span> Dashboard </span>
   </a>
 </li>
-@endcan
+<?php endif; ?>
 
-@can('order-create')
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('order-create')): ?>
 <li>
-  <a href="{{route('admin.order.create')}}">
+  <a href="<?php echo e(route('admin.order.create')); ?>">
     <i data-feather="cpu"></i>
     <span>POS System</span>
   </a>
 </li>
-@endcan
+<?php endif; ?>
 
-@php
+<?php
   use Illuminate\Support\Facades\Auth;
   // ✅ Use admin guard for permission checks
   $user = Auth::guard('admin')->user();
   $pending_reviews = \App\Models\Review::where('status', 'pending')->count();
-@endphp
+?>
 
-{{-- ЁЯЫТ Orders --}}
-@canany(['order-list', 'order-edit', 'order-create'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['order-list', 'order-edit', 'order-create'])): ?>
 <li>
   <a href="#sidebar-orders" data-bs-toggle="collapse">
     <i data-feather="shopping-cart"></i>
@@ -278,53 +278,53 @@
   </a>
   <div class="collapse" id="sidebar-orders">
     <ul class="nav-second-level">
-      @can('order-list')
-      <li><a href="{{ route('admin.orders', ['slug'=>'all']) }}"><i data-feather="file-plus"></i> All Order</a></li>
-	        @can('order-list')
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('order-list')): ?>
+      <li><a href="<?php echo e(route('admin.orders', ['slug'=>'all'])); ?>"><i data-feather="file-plus"></i> All Order</a></li>
+	        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('order-list')): ?>
       <li>
-        <a href="{{ route('admin.reseller-orders.index') }}"><i data-feather="users"></i> Reseller Orders</a>
+        <a href="<?php echo e(route('admin.reseller-orders.index')); ?>"><i data-feather="users"></i> Reseller Orders</a>
       </li>
-      @endcan
-      <li><a href="{{ route('admin.incomplete-orders.index') }}"><i data-feather="file-plus"></i> Incomplete Orders</a></li>
-      @foreach($orderstatus as $value)
-        <li><a href="{{ route('admin.orders', ['slug'=>$value->slug]) }}"><i data-feather="file-plus"></i>{{ $value->name }}</a></li>
-      @endforeach
-      @endcan
-      @can('order-edit')
-      <li><a href="{{ route('orderstatus.index') }}"><i data-feather="file-plus"></i> Order Status</a></li>
-      @endcan
-      @can('order-manage')
+      <?php endif; ?>
+      <li><a href="<?php echo e(route('admin.incomplete-orders.index')); ?>"><i data-feather="file-plus"></i> Incomplete Orders</a></li>
+      <?php $__currentLoopData = $orderstatus; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        <li><a href="<?php echo e(route('admin.orders', ['slug'=>$value->slug])); ?>"><i data-feather="file-plus"></i><?php echo e($value->name); ?></a></li>
+      <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('order-edit')): ?>
+      <li><a href="<?php echo e(route('orderstatus.index')); ?>"><i data-feather="file-plus"></i> Order Status</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('order-manage')): ?>
       <li>
-        <a href="{{route('customers.ip_block')}}"><i data-feather="file-plus"></i> IP Block</a>
+        <a href="<?php echo e(route('customers.ip_block')); ?>"><i data-feather="file-plus"></i> IP Block</a>
       </li>
-      @endcan
+      <?php endif; ?>
 
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- Refunds --}}
-@canany(['order-list', 'order-edit'])
-<li class="{{ request()->routeIs('admin.refunds.*') ? 'active' : '' }}">
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['order-list', 'order-edit'])): ?>
+<li class="<?php echo e(request()->routeIs('admin.refunds.*') ? 'active' : ''); ?>">
   <a href="#sidebar-refunds" data-bs-toggle="collapse">
     <i data-feather="rotate-ccw"></i>
     <span> Refunds </span>
     <span class="menu-arrow"></span>
   </a>
-  <div class="collapse {{ request()->routeIs('admin.refunds.*') ? 'show' : '' }}" id="sidebar-refunds">
+  <div class="collapse <?php echo e(request()->routeIs('admin.refunds.*') ? 'show' : ''); ?>" id="sidebar-refunds">
     <ul class="nav-second-level">
-      <li><a href="{{ route('admin.refunds.index') }}"><i data-feather="list"></i> All Refunds</a></li>
-      <li><a href="{{ route('admin.refunds.index', ['status' => 'pending']) }}"><i data-feather="clock"></i> Pending Refunds</a></li>
-      <li><a href="{{ route('admin.refunds.index', ['status' => 'approved']) }}"><i data-feather="check-circle"></i> Approved Refunds</a></li>
-      <li><a href="{{ route('admin.refunds.index', ['status' => 'processed']) }}"><i data-feather="check"></i> Processed Refunds</a></li>
+      <li><a href="<?php echo e(route('admin.refunds.index')); ?>"><i data-feather="list"></i> All Refunds</a></li>
+      <li><a href="<?php echo e(route('admin.refunds.index', ['status' => 'pending'])); ?>"><i data-feather="clock"></i> Pending Refunds</a></li>
+      <li><a href="<?php echo e(route('admin.refunds.index', ['status' => 'approved'])); ?>"><i data-feather="check-circle"></i> Approved Refunds</a></li>
+      <li><a href="<?php echo e(route('admin.refunds.index', ['status' => 'processed'])); ?>"><i data-feather="check"></i> Processed Refunds</a></li>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- ЁЯУж Products --}}
-@canany(['product-list', 'category-list', 'subcategory-list', 'childcategory-list'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['product-list', 'category-list', 'subcategory-list', 'childcategory-list'])): ?>
 <li>
   <a href="#siebar-product" data-bs-toggle="collapse">
     <i data-feather="database"></i>
@@ -333,44 +333,44 @@
   </a>
   <div class="collapse" id="siebar-product">
     <ul class="nav-second-level">
-      @can('product-list')
-      <li><a href="{{ route('inhouse.products.index') }}"><i data-feather="package"></i> All Inhouse Products</a></li>
-      <li><a href="{{ route('products.index') }}"><i data-feather="shopping-bag"></i> All Vendor Products</a></li>
-      <li><a href="{{ route('products.pending') }}"><i data-feather="clock"></i> Pending Products</a></li>
-      <li><a href="{{ route('admin.products.wholesale') }}"><i data-feather="layers"></i> Wholesale Products</a></li>
-      @endcan
-      @can('product-create')
-      <li><a href="{{ route('products.create') }}"><i data-feather="plus-circle"></i> Add Product</a></li>
-      @endcan
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('product-list')): ?>
+      <li><a href="<?php echo e(route('inhouse.products.index')); ?>"><i data-feather="package"></i> All Inhouse Products</a></li>
+      <li><a href="<?php echo e(route('products.index')); ?>"><i data-feather="shopping-bag"></i> All Vendor Products</a></li>
+      <li><a href="<?php echo e(route('products.pending')); ?>"><i data-feather="clock"></i> Pending Products</a></li>
+      <li><a href="<?php echo e(route('admin.products.wholesale')); ?>"><i data-feather="layers"></i> Wholesale Products</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('product-create')): ?>
+      <li><a href="<?php echo e(route('products.create')); ?>"><i data-feather="plus-circle"></i> Add Product</a></li>
+      <?php endif; ?>
       <li><hr class="dropdown-divider"></li>
-      @can('category-list')
-      <li><a href="{{ route('categories.index') }}"><i data-feather="file-plus"></i> Categories</a></li>
-      @endcan
-      @can('subcategory-list')
-      <li><a href="{{ route('subcategories.index') }}"><i data-feather="file-plus"></i> Subcategories</a></li>
-      @endcan
-      @can('childcategory-list')
-      <li><a href="{{ route('childcategories.index') }}"><i data-feather="file-plus"></i> Childcategories</a></li>
-      @endcan
-      @canany(['brand-list', 'brand-create', 'brand-edit'])
-      <li><a href="{{ route('brands.index') }}"><i data-feather="file-plus"></i> Brands</a></li>
-      @endcanany
-      @canany(['color-list', 'color-create', 'color-edit'])
-      <li><a href="{{ route('colors.index') }}"><i data-feather="file-plus"></i> Colors</a></li>
-      @endcanany
-      @canany(['size-list', 'size-create', 'size-edit'])
-      <li><a href="{{ route('sizes.index') }}"><i data-feather="file-plus"></i> Sizes</a></li>
-      @endcanany
-      <li><a href="{{ route('weights.index') }}"><i data-feather="file-plus"></i> Weights</a></li>
-      <li><a href="{{ route('lifestages.index') }}"><i data-feather="file-plus"></i> Life Stages</a></li>
-      <li><a href="{{ route('flavors.index') }}"><i data-feather="file-plus"></i> Flavors</a></li>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('category-list')): ?>
+      <li><a href="<?php echo e(route('categories.index')); ?>"><i data-feather="file-plus"></i> Categories</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('subcategory-list')): ?>
+      <li><a href="<?php echo e(route('subcategories.index')); ?>"><i data-feather="file-plus"></i> Subcategories</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('childcategory-list')): ?>
+      <li><a href="<?php echo e(route('childcategories.index')); ?>"><i data-feather="file-plus"></i> Childcategories</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['brand-list', 'brand-create', 'brand-edit'])): ?>
+      <li><a href="<?php echo e(route('brands.index')); ?>"><i data-feather="file-plus"></i> Brands</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['color-list', 'color-create', 'color-edit'])): ?>
+      <li><a href="<?php echo e(route('colors.index')); ?>"><i data-feather="file-plus"></i> Colors</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['size-list', 'size-create', 'size-edit'])): ?>
+      <li><a href="<?php echo e(route('sizes.index')); ?>"><i data-feather="file-plus"></i> Sizes</a></li>
+      <?php endif; ?>
+      <li><a href="<?php echo e(route('weights.index')); ?>"><i data-feather="file-plus"></i> Weights</a></li>
+      <li><a href="<?php echo e(route('lifestages.index')); ?>"><i data-feather="file-plus"></i> Life Stages</a></li>
+      <li><a href="<?php echo e(route('flavors.index')); ?>"><i data-feather="file-plus"></i> Flavors</a></li>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- ЁЯУЭ Blog Management --}}
-@canany(['blog-list','blog-create','blog-edit','blog-delete'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['blog-list','blog-create','blog-edit','blog-delete'])): ?>
 <li>
     <a href="#sidebar-blog" data-bs-toggle="collapse">
         <i data-feather="edit"></i>
@@ -380,29 +380,29 @@
 
     <div class="collapse" id="sidebar-blog">
         <ul class="nav-second-level">
-            @can('blog-list')
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('blog-list')): ?>
             <li>
-                <a href="{{ route('admin.blog.index') }}">
+                <a href="<?php echo e(route('admin.blog.index')); ?>">
                     <i data-feather="list"></i>
                     All Blogs
                 </a>
             </li>
-            @endcan
+            <?php endif; ?>
 
-            @can('blog-create')
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('blog-create')): ?>
             <li>
-                <a href="{{ route('admin.blog.create') }}">
+                <a href="<?php echo e(route('admin.blog.create')); ?>">
                     <i data-feather="plus-circle"></i>
                     Add New Blog
                 </a>
             </li>
-            @endcan
+            <?php endif; ?>
         </ul>
     </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- Testimonials --}}
+
 <li>
     <a href="#sidebar-testimonial" data-bs-toggle="collapse">
         <i data-feather="star"></i>
@@ -412,13 +412,13 @@
     <div class="collapse" id="sidebar-testimonial">
         <ul class="nav-second-level">
             <li>
-                <a href="{{ route('admin.testimonial.index') }}">
+                <a href="<?php echo e(route('admin.testimonial.index')); ?>">
                     <i data-feather="list"></i>
                     All Testimonials
                 </a>
             </li>
             <li>
-                <a href="{{ route('admin.testimonial.create') }}">
+                <a href="<?php echo e(route('admin.testimonial.create')); ?>">
                     <i data-feather="plus-circle"></i>
                     Add New
                 </a>
@@ -427,25 +427,25 @@
     </div>
 </li>
 
-@canany(['purchase-list', 'purchase-create', 'purchase-edit'])
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['purchase-list', 'purchase-create', 'purchase-edit'])): ?>
 <li>
-  <a href="{{ route('purchases.index') }}">
+  <a href="<?php echo e(route('purchases.index')); ?>">
     <i data-feather="file-text"></i>
     <span>Purchases</span>
   </a>
 </li>
-@endcanany
-@canany(['supplier-list', 'supplier-create', 'supplier-edit'])
+<?php endif; ?>
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['supplier-list', 'supplier-create', 'supplier-edit'])): ?>
 <li>
-  <a href="{{ route('admin.suppliers.index') }}">
+  <a href="<?php echo e(route('admin.suppliers.index')); ?>">
     <i data-feather="truck"></i>
     <span>Suppliers</span>
   </a>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- 👥 CRM - Employee Management --}}
-@canany(['employee-list', 'attendance-list', 'leave-list', 'salary-list', 'bonus-list', 'salary-payment-list'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['employee-list', 'attendance-list', 'leave-list', 'salary-list', 'bonus-list', 'salary-payment-list'])): ?>
 <li>
   <a href="#sidebar-crm" data-bs-toggle="collapse">
     <i data-feather="users"></i>
@@ -454,59 +454,59 @@
   </a>
   <div class="collapse" id="sidebar-crm">
     <ul class="nav-second-level">
-      @can('employee-list')
-      <li><a href="{{ route('admin.employees.index') }}"><i data-feather="user"></i> Employees</a></li>
-      @endcan
-      @can('attendance-list')
-      <li><a href="{{ route('admin.attendances.index') }}"><i data-feather="check-circle"></i> Attendance</a></li>
-      @endcan
-      @can('leave-list')
-      <li><a href="{{ route('admin.leaves.index') }}"><i data-feather="calendar"></i> Leaves</a></li>
-      @endcan
-      @can('salary-list')
-      <li><a href="{{ route('admin.salaries.index') }}"><i data-feather="dollar-sign"></i> Salaries</a></li>
-      @endcan
-      @can('bonus-list')
-      <li><a href="{{ route('admin.bonuses.index') }}"><i data-feather="gift"></i> Bonuses</a></li>
-      @endcan
-      @can('salary-payment-list')
-      <li><a href="{{ route('admin.salary_payments.index') }}"><i data-feather="credit-card"></i> Salary Payments</a></li>
-      @endcan
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('employee-list')): ?>
+      <li><a href="<?php echo e(route('admin.employees.index')); ?>"><i data-feather="user"></i> Employees</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('attendance-list')): ?>
+      <li><a href="<?php echo e(route('admin.attendances.index')); ?>"><i data-feather="check-circle"></i> Attendance</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('leave-list')): ?>
+      <li><a href="<?php echo e(route('admin.leaves.index')); ?>"><i data-feather="calendar"></i> Leaves</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('salary-list')): ?>
+      <li><a href="<?php echo e(route('admin.salaries.index')); ?>"><i data-feather="dollar-sign"></i> Salaries</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('bonus-list')): ?>
+      <li><a href="<?php echo e(route('admin.bonuses.index')); ?>"><i data-feather="gift"></i> Bonuses</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('salary-payment-list')): ?>
+      <li><a href="<?php echo e(route('admin.salary_payments.index')); ?>"><i data-feather="credit-card"></i> Salary Payments</a></li>
+      <?php endif; ?>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
 
-{{-- ЁЯОЯя╕П Coupon Management --}}
-@canany(['coupon-list', 'coupon-create', 'coupon-edit', 'coupon-delete'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['coupon-list', 'coupon-create', 'coupon-edit', 'coupon-delete'])): ?>
 <li>
   <a href="#sidebar-coupon" data-bs-toggle="collapse">
-    <i data-feather="gift"></i> {{-- ЁЯОБ ржирждрзБржи ржЖржЗржХржи --}}
+    <i data-feather="gift"></i> 
     <span> Coupons </span>
     <span class="menu-arrow"></span>
   </a>
   <div class="collapse" id="sidebar-coupon">
     <ul class="nav-second-level">
-      @can('coupon-list')
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('coupon-list')): ?>
       <li>
-        <a href="{{ route('admin.coupons.index') }}">
+        <a href="<?php echo e(route('admin.coupons.index')); ?>">
           <i data-feather="list"></i> All Coupons
         </a>
       </li>
-      @endcan
+      <?php endif; ?>
 
-      @can('coupon-create')
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('coupon-create')): ?>
       <li>
-        <a href="{{ route('admin.coupons.create') }}">
+        <a href="<?php echo e(route('admin.coupons.create')); ?>">
           <i data-feather="plus-circle"></i> Add New
         </a>
       </li>
-      @endcan
+      <?php endif; ?>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
 
 
@@ -517,8 +517,8 @@
 
 
 
-{{-- тнР Reviews --}}
-@can('review-list')
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('review-list')): ?>
 <li>
   <a href="#sidebar-product-review" data-bs-toggle="collapse">
     <i data-feather="star"></i>
@@ -527,20 +527,20 @@
   </a>
   <div class="collapse" id="sidebar-product-review">
     <ul class="nav-second-level">
-      @can('review-list')
-      <li><a href="{{ route('reviews.pending') }}"><i data-feather="file-plus"></i> Pending Reviews ({{ $pending_reviews }})</a></li>
-      <li><a href="{{ route('reviews.index') }}"><i data-feather="file-plus"></i> All Reviews</a></li>
-      @endcan
-      @can('review-create')
-      <li><a href="{{ route('reviews.pending') }}"><i data-feather="file-plus"></i> Create</a></li>
-      @endcan
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('review-list')): ?>
+      <li><a href="<?php echo e(route('reviews.pending')); ?>"><i data-feather="file-plus"></i> Pending Reviews (<?php echo e($pending_reviews); ?>)</a></li>
+      <li><a href="<?php echo e(route('reviews.index')); ?>"><i data-feather="file-plus"></i> All Reviews</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('review-create')): ?>
+      <li><a href="<?php echo e(route('reviews.pending')); ?>"><i data-feather="file-plus"></i> Create</a></li>
+      <?php endif; ?>
     </ul>
   </div>
 </li>
-@endcan
+<?php endif; ?>
 
-{{-- ЁЯз╛ Landing Page --}}
-@canany(['campaign-list', 'campaign-create'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['campaign-list', 'campaign-create'])): ?>
 <li>
   <a href="#sidebar-landing-page" data-bs-toggle="collapse">
     <i data-feather="airplay"></i>
@@ -549,181 +549,181 @@
   </a>
   <div class="collapse" id="sidebar-landing-page">
     <ul class="nav-second-level">
-      @can('campaign-list')
-      <li><a href="{{ route('campaign.index') }}"><i data-feather="file-plus"></i> Campaign</a></li>
-      @endcan
-      @can('campaign-create')
-      <li><a href="{{ route('campaign.create') }}"><i data-feather="file-plus"></i> Create</a></li>
-      @endcan
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('campaign-list')): ?>
+      <li><a href="<?php echo e(route('campaign.index')); ?>"><i data-feather="file-plus"></i> Campaign</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('campaign-create')): ?>
+      <li><a href="<?php echo e(route('campaign.create')); ?>"><i data-feather="file-plus"></i> Create</a></li>
+      <?php endif; ?>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- ЁЯФН Manual Fraud --}}
-@can('fraud-check')
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('fraud-check')): ?>
 <li>
-  <a href="{{ route('manualFraud.page') }}">
+  <a href="<?php echo e(route('manualFraud.page')); ?>">
     <i data-feather="search"></i>
     <span>Manual Fraud Check</span>
   </a>
 </li>
-@endcan
+<?php endif; ?>
 
 
 
-{{-- тЬЙя╕П Custom SMS --}}
-@can('sms-send')
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('sms-send')): ?>
 <li>
-  <a href="{{ route('admin.sms.custom.page') }}">
+  <a href="<?php echo e(route('admin.sms.custom.page')); ?>">
     <i data-feather="send"></i>
     <span>Send Custom SMS</span>
   </a>
 </li>
-@endcan
-{{-- ЁЯУЭ Complaints --}}
-@canany(['complaint-list', 'complaint-create', 'complaint-edit'])
-<li class="{{ request()->routeIs('backEnd.complaints.*') ? 'active' : '' }}">
-    <a href="{{ route('backEnd.complaints.index') }}">
+<?php endif; ?>
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['complaint-list', 'complaint-create', 'complaint-edit'])): ?>
+<li class="<?php echo e(request()->routeIs('backEnd.complaints.*') ? 'active' : ''); ?>">
+    <a href="<?php echo e(route('backEnd.complaints.index')); ?>">
         <i data-feather="alert-circle"></i>
         <span> Complaints </span>
     </a>
 </li>
-@endcanany
-@can('contact-list')
-<li class="{{ request()->routeIs('admin.contact.messages*') ? 'active' : '' }}">
-    <a href="{{ route('admin.contact.messages') }}">
+<?php endif; ?>
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('contact-list')): ?>
+<li class="<?php echo e(request()->routeIs('admin.contact.messages*') ? 'active' : ''); ?>">
+    <a href="<?php echo e(route('admin.contact.messages')); ?>">
         <i data-feather="mail"></i>
         <span> Contact Messages </span>
     </a>
 </li>
-@endcan
-@can('newsletter-list')
-<li class="{{ request()->routeIs('admin.newsletter.subscribers*') ? 'active' : '' }}">
-    <a href="{{ route('admin.newsletter.subscribers') }}">
+<?php endif; ?>
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('newsletter-list')): ?>
+<li class="<?php echo e(request()->routeIs('admin.newsletter.subscribers*') ? 'active' : ''); ?>">
+    <a href="<?php echo e(route('admin.newsletter.subscribers')); ?>">
         <i data-feather="mail"></i>
         <span> Newsletter Subscribers </span>
     </a>
 </li>
-@endcan
-{{-- ЁЯТ░ Fund / рждрж╣ржмрж┐рж▓ рж╕рж┐рж╕рзНржЯрзЗржо --}}
-@canany(['fund-list', 'fund-create', 'fund-edit'])
+<?php endif; ?>
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['fund-list', 'fund-create', 'fund-edit'])): ?>
 <li>
-  <a href="{{ route('admin.fund.index') }}">
+  <a href="<?php echo e(route('admin.fund.index')); ?>">
     <i data-feather="briefcase"></i>
     <span> Fund / Account</span>
   </a>
 </li>
-@endcanany
+<?php endif; ?>
 
-@canany(['expense-list', 'expense-create', 'expense-edit'])
-<li class="{{ request()->routeIs('admin.expenses.*') ? 'active' : '' }}">
-  <a href="{{ route('admin.expenses.index') }}">
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['expense-list', 'expense-create', 'expense-edit'])): ?>
+<li class="<?php echo e(request()->routeIs('admin.expenses.*') ? 'active' : ''); ?>">
+  <a href="<?php echo e(route('admin.expenses.index')); ?>">
     <i data-feather="credit-card"></i>
     <span>Expenses</span>
   </a>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- Vendors --}}
-@php
+
+<?php
   $vendorEnabled = (isset($generalsetting) && $generalsetting) ? (isset($generalsetting->vendor_enabled) ? $generalsetting->vendor_enabled : 1) : 1;
-@endphp
-@if($vendorEnabled == 1)
-@canany(['vendor-list', 'vendor-create', 'vendor-edit', 'vendor-verification', 'vendor-withdrawal'])
-@php
+?>
+<?php if($vendorEnabled == 1): ?>
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['vendor-list', 'vendor-create', 'vendor-edit', 'vendor-verification', 'vendor-withdrawal'])): ?>
+<?php
   $pendingVerificationCount = \App\Models\Vendor::where('verification_status', 'pending')->count();
-@endphp
+?>
 <li>
   <a href="#sidebar-vendors" data-bs-toggle="collapse">
     <i data-feather="users"></i>
     <span> Vendors </span>
     <span class="menu-arrow"></span>
   </a>
-  <div class="collapse {{ request()->routeIs('admin.vendors.*') || request()->routeIs('admin.vendor.verification.*') || request()->routeIs('admin.vendor.withdrawals.*') ? 'show' : '' }}" id="sidebar-vendors">
+  <div class="collapse <?php echo e(request()->routeIs('admin.vendors.*') || request()->routeIs('admin.vendor.verification.*') || request()->routeIs('admin.vendor.withdrawals.*') ? 'show' : ''); ?>" id="sidebar-vendors">
     <ul class="nav-second-level">
-      @can('vendor-list')
-      <li><a href="{{ route('admin.vendors.index') }}"><i data-feather="file-plus"></i> All Vendors</a></li>
-      @endcan
-      @can('vendor-verification')
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('vendor-list')): ?>
+      <li><a href="<?php echo e(route('admin.vendors.index')); ?>"><i data-feather="file-plus"></i> All Vendors</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('vendor-verification')): ?>
       <li>
-        <a href="{{ route('admin.vendor.verification.index') }}">
+        <a href="<?php echo e(route('admin.vendor.verification.index')); ?>">
           <i data-feather="shield"></i> Vendor Verifications
-          @if($pendingVerificationCount > 0)
-            <span class="badge bg-danger rounded-pill float-end"> {{ $pendingVerificationCount }}</span>
-          @endif
+          <?php if($pendingVerificationCount > 0): ?>
+            <span class="badge bg-danger rounded-pill float-end"> <?php echo e($pendingVerificationCount); ?></span>
+          <?php endif; ?>
         </a>
       </li>
-      @endcan
-      @can('vendor-withdrawal')
-      <li><a href="{{ route('admin.vendor.withdrawals.index') }}"><i data-feather="dollar-sign"></i> Vendor Withdrawals</a></li>
-      @endcan
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('vendor-withdrawal')): ?>
+      <li><a href="<?php echo e(route('admin.vendor.withdrawals.index')); ?>"><i data-feather="dollar-sign"></i> Vendor Withdrawals</a></li>
+      <?php endif; ?>
     </ul>
   </div>
 </li>
-@endcanany
-@endif
+<?php endif; ?>
+<?php endif; ?>
 
-{{-- Resellers --}}
-@php
+
+<?php
   $resellerEnabled = (isset($generalsetting) && $generalsetting) ? (isset($generalsetting->reseller_enabled) ? $generalsetting->reseller_enabled : 1) : 1;
-@endphp
-@if($resellerEnabled == 1)
-@canany(['reseller-list', 'reseller-create', 'reseller-edit', 'reseller-verification', 'reseller-withdrawal'])
-@php
+?>
+<?php if($resellerEnabled == 1): ?>
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['reseller-list', 'reseller-create', 'reseller-edit', 'reseller-verification', 'reseller-withdrawal'])): ?>
+<?php
   $pendingResellerVerificationCount = \App\Models\User::where('role', 'reseller')->where('verification_status', 'pending')->count();
   $pendingResellerWithdrawalCount = \App\Models\ResellerWithdrawal::where('status', 'pending')->count();
-@endphp
+?>
 <li>
   <a href="#sidebar-resellers" data-bs-toggle="collapse">
     <i data-feather="user-check"></i>
     <span> Resellers </span>
     <span class="menu-arrow"></span>
   </a>
-  <div class="collapse {{ request()->routeIs('admin.resellers.*') || request()->routeIs('admin.reseller.verification.*') || request()->routeIs('admin.reseller.withdrawals.*') || request()->routeIs('admin.reseller-deposits.*') ? 'show' : '' }}" id="sidebar-resellers">
+  <div class="collapse <?php echo e(request()->routeIs('admin.resellers.*') || request()->routeIs('admin.reseller.verification.*') || request()->routeIs('admin.reseller.withdrawals.*') || request()->routeIs('admin.reseller-deposits.*') ? 'show' : ''); ?>" id="sidebar-resellers">
     <ul class="nav-second-level">
-      @can('reseller-list')
-      <li><a href="{{ route('admin.resellers.index') }}"><i data-feather="file-plus"></i> All Resellers</a></li>
-      @endcan
-      @can('reseller-withdrawal')
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('reseller-list')): ?>
+      <li><a href="<?php echo e(route('admin.resellers.index')); ?>"><i data-feather="file-plus"></i> All Resellers</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('reseller-withdrawal')): ?>
       <li>
-        <a href="{{ route('admin.reseller-deposits.index') }}">
+        <a href="<?php echo e(route('admin.reseller-deposits.index')); ?>">
           <i data-feather="credit-card"></i> Reseller Deposits
-          @php $pendingDepositCount = \App\Models\ResellerDeposit::where('status', 'pending')->count(); @endphp
-          @if($pendingDepositCount > 0)
-            <span class="badge bg-warning rounded-pill float-end">{{ $pendingDepositCount }}</span>
-          @endif
+          <?php $pendingDepositCount = \App\Models\ResellerDeposit::where('status', 'pending')->count(); ?>
+          <?php if($pendingDepositCount > 0): ?>
+            <span class="badge bg-warning rounded-pill float-end"><?php echo e($pendingDepositCount); ?></span>
+          <?php endif; ?>
         </a>
       </li>
-      @endcan
-      @can('reseller-verification')
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('reseller-verification')): ?>
       <li>
-        <a href="{{ route('admin.reseller.verification.index') }}">
+        <a href="<?php echo e(route('admin.reseller.verification.index')); ?>">
           <i data-feather="shield"></i> Verifications
-          @if($pendingResellerVerificationCount > 0)
-            <span class="badge bg-danger rounded-pill float-end">{{ $pendingResellerVerificationCount }}</span>
-          @endif
+          <?php if($pendingResellerVerificationCount > 0): ?>
+            <span class="badge bg-danger rounded-pill float-end"><?php echo e($pendingResellerVerificationCount); ?></span>
+          <?php endif; ?>
         </a>
       </li>
-      @endcan
-      @can('reseller-withdrawal')
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('reseller-withdrawal')): ?>
       <li>
-        <a href="{{ route('admin.reseller.withdrawals.index') }}">
+        <a href="<?php echo e(route('admin.reseller.withdrawals.index')); ?>">
           <i data-feather="dollar-sign"></i> Withdrawals
-          @if($pendingResellerWithdrawalCount > 0)
-            <span class="badge bg-warning rounded-pill float-end">{{ $pendingResellerWithdrawalCount }}</span>
-          @endif
+          <?php if($pendingResellerWithdrawalCount > 0): ?>
+            <span class="badge bg-warning rounded-pill float-end"><?php echo e($pendingResellerWithdrawalCount); ?></span>
+          <?php endif; ?>
         </a>
       </li>
-      @endcan
+      <?php endif; ?>
     </ul>
   </div>
 </li>
-@endcanany
-@endif
+<?php endif; ?>
+<?php endif; ?>
 
-{{-- ЁЯСе Users --}}
-@canany(['user-list', 'role-list', 'permission-list'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['user-list', 'role-list', 'permission-list'])): ?>
 <li>
   <a href="#sidebar-users" data-bs-toggle="collapse">
     <i data-feather="user"></i>
@@ -732,48 +732,48 @@
   </a>
   <div class="collapse" id="sidebar-users">
     <ul class="nav-second-level">
-      @can('user-list')
-      <li><a href="{{ route('users.index') }}"><i data-feather="file-plus"></i> User</a></li>
-      @endcan
-      @can('role-list')
-      <li><a href="{{ route('roles.index') }}"><i data-feather="file-plus"></i> Roles</a></li>
-      @endcan
-      @can('permission-list')
-      <li><a href="{{ route('permissions.index') }}"><i data-feather="file-plus"></i> Permissions</a></li>
-      @endcan
-      @canany(['customer-list', 'customer-create', 'customer-edit'])
-      <li><a href="{{ route('customers.index') }}"><i data-feather="file-plus"></i> Customers</a></li>
-      @endcanany
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('user-list')): ?>
+      <li><a href="<?php echo e(route('users.index')); ?>"><i data-feather="file-plus"></i> User</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('role-list')): ?>
+      <li><a href="<?php echo e(route('roles.index')); ?>"><i data-feather="file-plus"></i> Roles</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('permission-list')): ?>
+      <li><a href="<?php echo e(route('permissions.index')); ?>"><i data-feather="file-plus"></i> Permissions</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['customer-list', 'customer-create', 'customer-edit'])): ?>
+      <li><a href="<?php echo e(route('customers.index')); ?>"><i data-feather="file-plus"></i> Customers</a></li>
+      <?php endif; ?>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-@canany(['shipping-list', 'shipping-create', 'shipping-edit', 'delivery-boy-list', 'delivery-withdrawal-list', 'delivery-location-list'])
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['shipping-list', 'shipping-create', 'shipping-edit', 'delivery-boy-list', 'delivery-withdrawal-list', 'delivery-location-list'])): ?>
 <li>
-  <a href="#sidebar-delivery-module" data-bs-toggle="collapse" class="{{ request()->routeIs('admin.delivery.*', 'admin.delivery-boys.*') ? 'active' : '' }}">
+  <a href="#sidebar-delivery-module" data-bs-toggle="collapse" class="<?php echo e(request()->routeIs('admin.delivery.*', 'admin.delivery-boys.*') ? 'active' : ''); ?>">
     <i data-feather="truck"></i>
     <span>Delivery</span>
     <span class="menu-arrow"></span>
   </a>
-  <div class="collapse {{ request()->routeIs('admin.delivery.*', 'admin.delivery-boys.*') ? 'show' : '' }}" id="sidebar-delivery-module">
+  <div class="collapse <?php echo e(request()->routeIs('admin.delivery.*', 'admin.delivery-boys.*') ? 'show' : ''); ?>" id="sidebar-delivery-module">
     <ul class="nav-second-level">
-      @can('delivery-boy-list')
-      <li><a href="{{ route('admin.delivery-boys.index') }}"><i data-feather="users"></i> Delivery persons</a></li>
-      @endcan
-      @can('delivery-withdrawal-list')
-      <li><a href="{{ route('admin.delivery-boys.withdrawals') }}"><i data-feather="dollar-sign"></i> Rider withdrawals</a></li>
-      @endcan
-      @can('delivery-location-list')
-      <li><a href="{{ route('admin.delivery.divisions.index') }}"><i data-feather="map-pin"></i> Delivery locations <span class="text-muted" style="font-size:.75rem;">(Division → District → Upazila)</span></a></li>
-      @endcan
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delivery-boy-list')): ?>
+      <li><a href="<?php echo e(route('admin.delivery-boys.index')); ?>"><i data-feather="users"></i> Delivery persons</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delivery-withdrawal-list')): ?>
+      <li><a href="<?php echo e(route('admin.delivery-boys.withdrawals')); ?>"><i data-feather="dollar-sign"></i> Rider withdrawals</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delivery-location-list')): ?>
+      <li><a href="<?php echo e(route('admin.delivery.divisions.index')); ?>"><i data-feather="map-pin"></i> Delivery locations <span class="text-muted" style="font-size:.75rem;">(Division → District → Upazila)</span></a></li>
+      <?php endif; ?>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- тЪЩя╕П Site Setting --}}
-@canany(['setting-list', 'social-list', 'contact-list'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['setting-list', 'social-list', 'contact-list'])): ?>
 <li>
   <a href="#siebar-sitesetting" data-bs-toggle="collapse">
     <i data-feather="settings"></i>
@@ -782,34 +782,34 @@
   </a>
   <div class="collapse" id="siebar-sitesetting">
     <ul class="nav-second-level">
-      @can('setting-list')
-      <li><a href="{{ route('settings.index') }}"><i data-feather="file-plus"></i> General Setting</a></li>
-      @endcan
-      @can('social-list')
-      <li><a href="{{ route('socialmedias.index') }}"><i data-feather="file-plus"></i> Social Media</a></li>
-      @endcan
-      @can('contact-list')
-      <li><a href="{{ route('contact.index') }}"><i data-feather="file-plus"></i> Contact</a></li>
-      @endcan
-      @canany(['page-list', 'page-create', 'page-edit'])
-      <li><a href="{{ route('pages.index') }}"><i data-feather="file-plus"></i> Create Page</a></li>
-      @endcanany
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('setting-list')): ?>
+      <li><a href="<?php echo e(route('settings.index')); ?>"><i data-feather="file-plus"></i> General Setting</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('social-list')): ?>
+      <li><a href="<?php echo e(route('socialmedias.index')); ?>"><i data-feather="file-plus"></i> Social Media</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('contact-list')): ?>
+      <li><a href="<?php echo e(route('contact.index')); ?>"><i data-feather="file-plus"></i> Contact</a></li>
+      <?php endif; ?>
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['page-list', 'page-create', 'page-edit'])): ?>
+      <li><a href="<?php echo e(route('pages.index')); ?>"><i data-feather="file-plus"></i> Create Page</a></li>
+      <?php endif; ?>
     </ul>
   </div>
 </li>
-@endcanany
-{{-- ЁЯУз Email Settings --}}
-@can('email-setting-list')
-<li class="{{ request()->routeIs('email_setting*') ? 'active' : '' }}">
-  <a href="{{ route('email_setting') }}">
+<?php endif; ?>
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('email-setting-list')): ?>
+<li class="<?php echo e(request()->routeIs('email_setting*') ? 'active' : ''); ?>">
+  <a href="<?php echo e(route('email_setting')); ?>">
     <i data-feather="mail"></i>
     <span>Email Settings</span>
   </a>
 </li>
-@endcan
+<?php endif; ?>
 
-{{-- ЁЯЫбя╕П Fraud API Settings --}}
-@canany(['fraud-setting-list', 'fraud-setting-edit'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['fraud-setting-list', 'fraud-setting-edit'])): ?>
 <li>
   <a href="#sidebar-fraud" data-bs-toggle="collapse">
     <i data-feather="shield"></i>
@@ -819,35 +819,35 @@
   <div class="collapse" id="sidebar-fraud">
     <ul class="nav-second-level">
 
-      @can('fraud-setting-list')
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('fraud-setting-list')): ?>
       <li>
-        <a href="{{ route('admin.fraud.index') }}">
+        <a href="<?php echo e(route('admin.fraud.index')); ?>">
           <i data-feather="key"></i> Manage Fraud API
         </a>
       </li>
-      @endcan
+      <?php endif; ?>
 
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- Order Restriction Settings --}}
-@canany(['setting-list', 'setting-edit'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['setting-list', 'setting-edit'])): ?>
 <li>
-  <a href="{{ route('admin.order.restriction.setting.index') }}">
+  <a href="<?php echo e(route('admin.order.restriction.setting.index')); ?>">
     <i data-feather="clock"></i>
     <span> Order Restriction</span>
   </a>
 </li>
-@endcanany
+<?php endif; ?>
 
 
 
 
 
-{{-- ЁЯФМ API Integration --}}
-@canany(['api-manage'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['api-manage'])): ?>
 <li>
   <a href="#sidebar-api-integration" data-bs-toggle="collapse">
     <i data-feather="save"></i>
@@ -856,28 +856,28 @@
   </a>
   <div class="collapse" id="sidebar-api-integration">
     <ul class="nav-second-level">
-      <li><a href="{{ route('paymentgeteway.manage') }}"><i data-feather="file-plus"></i> Payment Gateway</a></li>
-      <li><a href="{{ route('manual-payment-gateway.manage') }}"><i data-feather="credit-card"></i> Manual Payment</a></li>
-      <li><a href="{{ route('smsgeteway.manage') }}"><i data-feather="file-plus"></i> SMS Gateway</a></li>
-      <li><a href="{{ route('courierapi.manage') }}"><i data-feather="file-plus"></i> Courier API</a></li>
-      <li><a href="{{ route('admin.facebook_capi.edit') }}"><i data-feather="facebook"></i> Facebook CAPI</a></li>
+      <li><a href="<?php echo e(route('paymentgeteway.manage')); ?>"><i data-feather="file-plus"></i> Payment Gateway</a></li>
+      <li><a href="<?php echo e(route('manual-payment-gateway.manage')); ?>"><i data-feather="credit-card"></i> Manual Payment</a></li>
+      <li><a href="<?php echo e(route('smsgeteway.manage')); ?>"><i data-feather="file-plus"></i> SMS Gateway</a></li>
+      <li><a href="<?php echo e(route('courierapi.manage')); ?>"><i data-feather="file-plus"></i> Courier API</a></li>
+      <li><a href="<?php echo e(route('admin.facebook_capi.edit')); ?>"><i data-feather="facebook"></i> Facebook CAPI</a></li>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- Cron Job Management --}}
-@canany(['api-manage'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['api-manage'])): ?>
 <li>
-  <a href="{{ route('admin.cron.index') }}">
+  <a href="<?php echo e(route('admin.cron.index')); ?>">
     <i data-feather="clock"></i>
     <span> Cron Job </span>
   </a>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- ЁЯзй G. Pixel & GTM --}}
-@canany(['pixel-manage'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['pixel-manage'])): ?>
 <li>
   <a href="#sidebar-pixel-gtm" data-bs-toggle="collapse">
     <i data-feather="save"></i>
@@ -886,66 +886,66 @@
   </a>
   <div class="collapse" id="sidebar-pixel-gtm">
     <ul class="nav-second-level">
-      <li><a href="{{ route('tagmanagers.index') }}"><i data-feather="file-plus"></i> Tag Manager</a></li>
-      <li><a href="{{ route('pixels.index') }}"><i data-feather="file-plus"></i> Pixel Manage</a></li>
-      <li><a href="{{ route('tiktok.pixels.index') }}"><i data-feather="film"></i> TikTok Pixel</a></li>
+      <li><a href="<?php echo e(route('tagmanagers.index')); ?>"><i data-feather="file-plus"></i> Tag Manager</a></li>
+      <li><a href="<?php echo e(route('pixels.index')); ?>"><i data-feather="file-plus"></i> Pixel Manage</a></li>
+      <li><a href="<?php echo e(route('tiktok.pixels.index')); ?>"><i data-feather="film"></i> TikTok Pixel</a></li>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- Live Ads Result - separate pages for each platform --}}
-@canany(['pixel-manage'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['pixel-manage'])): ?>
 <li>
   <a href="#sidebar-ads-analytics" data-bs-toggle="collapse">
     <i data-feather="trending-up"></i>
     <span> Live Ads Result </span>
     <span class="menu-arrow"></span>
   </a>
-  <div class="collapse {{ request()->routeIs('admin.ads_analytics.*') ? 'show' : '' }}" id="sidebar-ads-analytics">
+  <div class="collapse <?php echo e(request()->routeIs('admin.ads_analytics.*') ? 'show' : ''); ?>" id="sidebar-ads-analytics">
     <ul class="nav-second-level">
-      <li><a href="{{ route('admin.ads_analytics.dashboard') }}"><i data-feather="layout"></i> Overview</a></li>
-      <li><a href="{{ route('admin.ads_analytics.facebook') }}"><i data-feather="facebook"></i> Facebook Ads</a></li>
-      <li><a href="{{ route('admin.ads_analytics.google') }}"><i data-feather="globe"></i> Google Ads</a></li>
-      <li><a href="{{ route('admin.ads_analytics.tiktok') }}"><i data-feather="video"></i> TikTok Ads</a></li>
+      <li><a href="<?php echo e(route('admin.ads_analytics.dashboard')); ?>"><i data-feather="layout"></i> Overview</a></li>
+      <li><a href="<?php echo e(route('admin.ads_analytics.facebook')); ?>"><i data-feather="facebook"></i> Facebook Ads</a></li>
+      <li><a href="<?php echo e(route('admin.ads_analytics.google')); ?>"><i data-feather="globe"></i> Google Ads</a></li>
+      <li><a href="<?php echo e(route('admin.ads_analytics.tiktok')); ?>"><i data-feather="video"></i> TikTok Ads</a></li>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- Facebook Page Post - separate option --}}
-@canany(['pixel-manage'])
-<li class="{{ request()->routeIs('admin.facebook_page.*') ? 'active' : '' }}">
-  <a href="{{ route('admin.facebook_page.settings') }}">
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['pixel-manage'])): ?>
+<li class="<?php echo e(request()->routeIs('admin.facebook_page.*') ? 'active' : ''); ?>">
+  <a href="<?php echo e(route('admin.facebook_page.settings')); ?>">
     <i data-feather="share-2"></i>
     <span> Facebook Page Post </span>
   </a>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- Banner & Ads --}}
-@canany(['banner-list'])
-<li class="{{ request()->routeIs('banners.index.*') ? 'active' : '' }}">
-    <a href="{{ route('banners.index') }}">
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['banner-list'])): ?>
+<li class="<?php echo e(request()->routeIs('banners.index.*') ? 'active' : ''); ?>">
+    <a href="<?php echo e(route('banners.index')); ?>">
       <i data-feather="image"></i>
         <span> Banner & Sliders </span>
     </a>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- 📢 Popup Offer --}}
-@canany(['popup-list','popup-manage'])
-<li class="{{ request()->routeIs('admin.popup.*') ? 'active' : '' }}">
-    <a href="{{ route('admin.popup.index') }}">
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['popup-list','popup-manage'])): ?>
+<li class="<?php echo e(request()->routeIs('admin.popup.*') ? 'active' : ''); ?>">
+    <a href="<?php echo e(route('admin.popup.index')); ?>">
         <i data-feather="message-square"></i>
         <span> Popup Offer </span>
     </a>
 </li>
-@endcanany
+<?php endif; ?>
 
 
-{{-- ЁЯУК Reports --}}
-@canany(['report-view','order-report','purchase-report','expense-report','stock-report','profit-loss-report'])
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['report-view','order-report','purchase-report','expense-report','stock-report','profit-loss-report'])): ?>
 <li>
   <a href="#sidebar-report" data-bs-toggle="collapse">
     <i data-feather="pie-chart"></i>
@@ -954,109 +954,109 @@
   </a>
   <div class="collapse" id="sidebar-report">
     <ul class="nav-second-level">
-      @canany(['order-report','report-view'])
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['order-report','report-view'])): ?>
       <li>
-        <a href="{{ route('admin.reports.orders') }}">
+        <a href="<?php echo e(route('admin.reports.orders')); ?>">
           <i data-feather="file-text"></i> Order Report
         </a>
       </li>
-      @endcanany
+      <?php endif; ?>
 
-      @canany(['purchase-report','report-view'])
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['purchase-report','report-view'])): ?>
       <li>
-        <a href="{{ route('admin.reports.purchases') }}">
+        <a href="<?php echo e(route('admin.reports.purchases')); ?>">
           <i data-feather="shopping-bag"></i> Purchase Report
         </a>
       </li>
-      @endcanany
+      <?php endif; ?>
 
-      @canany(['expense-report','report-view'])
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['expense-report','report-view'])): ?>
       <li>
-        <a href="{{ route('admin.reports.expenses') }}">
+        <a href="<?php echo e(route('admin.reports.expenses')); ?>">
           <i data-feather="trending-down"></i> Expense Report
         </a>
       </li>
-      @endcanany
+      <?php endif; ?>
 
-      @canany(['stock-report','report-view'])
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['stock-report','report-view'])): ?>
       <li>
-        <a href="{{ route('admin.reports.stock') }}">
+        <a href="<?php echo e(route('admin.reports.stock')); ?>">
           <i data-feather="archive"></i> Stock Report
         </a>
       </li>
-      @endcanany
+      <?php endif; ?>
 
-      @canany(['profit-loss-report','report-view'])
+      <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['profit-loss-report','report-view'])): ?>
       <li>
-        <a href="{{ route('admin.reports.profit_loss') }}">
+        <a href="<?php echo e(route('admin.reports.profit_loss')); ?>">
           <i data-feather="activity"></i> Profit & Loss
         </a>
       </li>
-      @endcanany
+      <?php endif; ?>
     </ul>
   </div>
 </li>
-@endcanany
+<?php endif; ?>
 
-{{-- SEO Settings --}}
-@can('seo-manage') {{-- permission ржЖржЫрзЗ ржХрж┐ржирж╛ --}}
-<li class="{{ request()->routeIs('admin.seo_settings.*') ? 'active' : '' }}">
-  <a href="{{ route('admin.seo_settings.index') }}">
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('seo-manage')): ?> 
+<li class="<?php echo e(request()->routeIs('admin.seo_settings.*') ? 'active' : ''); ?>">
+  <a href="<?php echo e(route('admin.seo_settings.index')); ?>">
     <i data-feather="globe"></i>
     <span>SEO Settings</span>
   </a>
 </li>
-@endcan
+<?php endif; ?>
 
 			  
-{{-- ЁЯЧ║ Sitemap Settings --}}
-@can('sitemap-manage') {{-- ржкрж╛рж░ржорж┐рж╢ржи рж╕рж┐рж╕рзНржЯрзЗржо ржерж╛ржХрж▓рзЗ --}}
-<li class="{{ request()->routeIs('admin.sitemap.*') ? 'active' : '' }}">
-    <a href="{{ route('admin.sitemap.index') }}">
+
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('sitemap-manage')): ?> 
+<li class="<?php echo e(request()->routeIs('admin.sitemap.*') ? 'active' : ''); ?>">
+    <a href="<?php echo e(route('admin.sitemap.index')); ?>">
         <i data-feather="map"></i>
         <span> Sitemap Settings </span>
     </a>
 </li>
-@endcan
+<?php endif; ?>
 
 
 
-@canany(['license-info', 'api-manage'])
-<li class="{{ request()->routeIs('admin.license.info') ? 'active' : '' }}">
-  <a href="{{ route('admin.license.info') }}">
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['license-info', 'api-manage'])): ?>
+<li class="<?php echo e(request()->routeIs('admin.license.info') ? 'active' : ''); ?>">
+  <a href="<?php echo e(route('admin.license.info')); ?>">
     <i data-feather="key"></i>
     <span> License </span>
   </a>
 </li>
-@endcanany
+<?php endif; ?>
 
-@can('license-info')
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('license-info')): ?>
 <li>
-  <a href="{{ route('admin.updates.index') }}">
+  <a href="<?php echo e(route('admin.updates.index')); ?>">
     <i data-feather="refresh-cw"></i>
     <span>System Updates</span>
   </a>
 </li>
-@endcan
+<?php endif; ?>
 
-@can('cache-clear')
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('cache-clear')): ?>
 <li>
-  <a href="{{ route('admin.clear.cache') }}"
+  <a href="<?php echo e(route('admin.clear.cache')); ?>"
      onclick="return confirm('Are you sure you want to clear all cache?')">
     <i data-feather="refresh-cw"></i>
     <span>Clear Cache</span>
   </a>
 </li>
-@endcan
+<?php endif; ?>
 
-@can('error-log-view')
+<?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('error-log-view')): ?>
 <li>
-  <a href="{{ route('error-log.index') }}">
+  <a href="<?php echo e(route('error-log.index')); ?>">
     <i data-feather="file-text"></i>
     <span>Error Log</span>
   </a>
 </li>
-@endcan
+<?php endif; ?>
 
 			  
             </ul>
@@ -1074,7 +1074,7 @@
 
       <div class="content-page">
         <div class="content">
-          @yield('content')
+          <?php echo $__env->yieldContent('content'); ?>
         </div>
         <!-- content -->
 
@@ -1240,13 +1240,12 @@
     <div class="rightbar-overlay"></div>
 
     <!-- Vendor js -->
-    <script src="{{asset('public/backEnd/')}}/assets/js/vendor.min.js"></script>
+    <script src="<?php echo e(asset('public/backEnd/')); ?>/assets/js/vendor.min.js"></script>
 
     <!-- App js -->
-    <script src="{{asset('public/backEnd/')}}/assets/js/app.min.js"></script>
+    <script src="<?php echo e(asset('public/backEnd/')); ?>/assets/js/app.min.js"></script>
     
-    {{-- vendor.min এ Feather থাকলেও সম্পূর্ণ আইকন সেট / টাইমিং ভিন্ন হতে পারে; CDN সংস্করণ লোড করে window.feather নিশ্চিত করা হয়।
-         MutationObserver ব্যবহার করবেন না (সেখান থেকেই ট্যাব লোডিং লাগছিল); শুধু নির্দিষ্ট ইভেন্টে replace। --}}
+    
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script>
         (function () {
@@ -1286,24 +1285,25 @@
             }
         })();
     </script>
-    <script src="{{asset('public/backEnd/')}}/assets/js/toastr.min.js"></script>
-    <script src="{{asset('public/backEnd/')}}/assets/js/sweetalert.min.js"></script>
+    <script src="<?php echo e(asset('public/backEnd/')); ?>/assets/js/toastr.min.js"></script>
+    <script src="<?php echo e(asset('public/backEnd/')); ?>/assets/js/sweetalert.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    {!! Toastr::message() !!}
+    <?php echo Toastr::message(); ?>
+
 	<script>
-@if(Session::has('success'))
-    toastr.success(@json(Session::get('success')));
-@endif
-@if(Session::has('error') && !Session::has('demo_mode_blocked'))
-    toastr.error(@json(Session::get('error')));
-@endif
-@if(Session::has('info'))
-    toastr.info(@json(Session::get('info')));
-@endif
-@if(Session::has('warning'))
-    toastr.warning(@json(Session::get('warning')));
-@endif
-@if(Session::has('demo_mode_blocked'))
+<?php if(Session::has('success')): ?>
+    toastr.success(<?php echo json_encode(Session::get('success'), 15, 512) ?>);
+<?php endif; ?>
+<?php if(Session::has('error') && !Session::has('demo_mode_blocked')): ?>
+    toastr.error(<?php echo json_encode(Session::get('error'), 15, 512) ?>);
+<?php endif; ?>
+<?php if(Session::has('info')): ?>
+    toastr.info(<?php echo json_encode(Session::get('info'), 15, 512) ?>);
+<?php endif; ?>
+<?php if(Session::has('warning')): ?>
+    toastr.warning(<?php echo json_encode(Session::get('warning'), 15, 512) ?>);
+<?php endif; ?>
+<?php if(Session::has('demo_mode_blocked')): ?>
     if (typeof Swal !== 'undefined') {
         Swal.fire({
             icon: 'info',
@@ -1318,7 +1318,7 @@
     } else {
         toastr.info("ডেমো মুড চালু আছে। অ্যাডমিন প্যানেল থেকে কোন পরিবর্তন করা যাবে না।");
     }
-@endif
+<?php endif; ?>
 </script>
     <style>
     .demo-mode-popup { border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
@@ -1354,10 +1354,10 @@
       $(document).on('click', '.delete-confirm', function (event) {
         event.preventDefault();
         var form = $(this).closest("form");
-        @if(isset($demoMode) && $demoMode)
+        <?php if(isset($demoMode) && $demoMode): ?>
         showDemoModeAlert();
         return;
-        @endif
+        <?php endif; ?>
         if (typeof Swal !== 'undefined') {
           Swal.fire({
             title: 'Are you sure?',
@@ -1377,10 +1377,10 @@
       $(document).on('click', '.change-confirm', function (event) {
         event.preventDefault();
         var form = $(this).closest("form");
-        @if(isset($demoMode) && $demoMode)
+        <?php if(isset($demoMode) && $demoMode): ?>
         showDemoModeAlert();
         return;
-        @endif
+        <?php endif; ?>
         swal({
           title: `Are you sure you want to change this record?`,
           icon: "warning",
@@ -1392,7 +1392,7 @@
           }
         });
       });
-      @if(isset($demoMode) && $demoMode)
+      <?php if(isset($demoMode) && $demoMode): ?>
       $(document).on('submit', 'form', function(e) {
         var action = (this.action || '').toLowerCase();
         if (action.indexOf('logout') !== -1) return;
@@ -1412,7 +1412,7 @@
           return false;
         }
       }, true);
-      @endif
+      <?php endif; ?>
     </script>
     <!--patho courier-->
     <script type="text/javascript">
@@ -1422,7 +1422,7 @@
                 if (id) {
                     $.ajax({
                         type: "GET",
-                        url: "{{ url('admin/pathao-city') }}?city_id=" + id,
+                        url: "<?php echo e(url('admin/pathao-city')); ?>?city_id=" + id,
                         success: function(res) {
                             if (res && res.data && res.data.data) {
                                 $(".pathaozone").empty();
@@ -1451,7 +1451,7 @@
                 if (id) {
                     $.ajax({
                         type: "GET",
-                        url: "{{ url('admin/pathao-zone') }}?zone_id=" + id,
+                        url: "<?php echo e(url('admin/pathao-zone')); ?>?zone_id=" + id,
                         success: function(res) {
                             if (res && res.data && res.data.data) {
                                 $(".pathaoarea").empty();
@@ -1471,7 +1471,7 @@
             });
         });
     </script>
-    {{-- Admin-wide: সাধারণ চেকবক্স → kill switch / form-switch (টেবিল বাল্ক সেলেক্ট ছাড়া) --}}
+    
     <style>
         .content-page .form-switch .form-check-input[type="checkbox"] {
             cursor: pointer;
@@ -1515,9 +1515,10 @@
             window.adminApplyKillSwitches = applyAdminKillSwitches;
         })();
     </script>
-    @auth('admin')
-        @include('backEnd.layouts.partials.admin_order_live_notify')
-    @endauth
-    @yield('script')
+    <?php if(auth()->guard('admin')->check()): ?>
+        <?php echo $__env->make('backEnd.layouts.partials.admin_order_live_notify', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <?php endif; ?>
+    <?php echo $__env->yieldContent('script'); ?>
   </body>
 </html>
+<?php /**PATH D:\projects\bilaiGhor\resources\views/backEnd/layouts/master.blade.php ENDPATH**/ ?>

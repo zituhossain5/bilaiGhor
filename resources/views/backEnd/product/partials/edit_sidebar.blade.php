@@ -48,6 +48,33 @@
                     </select>
                     @error('brand_id')<span class="invalid-feedback"><strong>{{ $message }}</strong></span>@enderror
                 </div>
+                <div class="col-12">
+                    <label class="form-label">Weight</label>
+                    <select class="form-control form-control-sm select2" name="weight_id">
+                        <option value="">None</option>
+                        @foreach($weights as $w)
+                            <option value="{{$w->id}}" @if($edit_data->weight_id==$w->id) selected @endif>{{$w->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Life Stage</label>
+                    <select class="form-control form-control-sm select2" name="life_stage_id">
+                        <option value="">None</option>
+                        @foreach($lifeStages as $ls)
+                            <option value="{{$ls->id}}" @if($edit_data->life_stage_id==$ls->id) selected @endif>{{$ls->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Flavor</label>
+                    <select class="form-control form-control-sm select2" name="flavor_id">
+                        <option value="">None</option>
+                        @foreach($flavors as $fl)
+                            <option value="{{$fl->id}}" @if($edit_data->flavor_id==$fl->id) selected @endif>{{$fl->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
 

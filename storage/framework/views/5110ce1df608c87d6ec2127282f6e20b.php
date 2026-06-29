@@ -70,6 +70,9 @@
                     <?php if($activeSubcatSlug): ?>
                     <input type="hidden" name="subcategory" value="<?php echo e($activeSubcatSlug); ?>">
                     <?php endif; ?>
+                    <?php if($activeBrandId): ?>
+                    <input type="hidden" name="brand" value="<?php echo e($activeBrandId); ?>">
+                    <?php endif; ?>
 
                     
                     <div class="bilai-cat-filter-block">
@@ -91,15 +94,89 @@
                             Brand <i class="fas fa-chevron-up bilai-cat-toggle-icon"></i>
                         </div>
                         <div class="bilai-cat-filter-body" id="bilai-brand-list">
-                            <ul class="bilai-cat-check-list">
+                            <ul class="bilai-cat-attr-link-list">
                                 <?php $__currentLoopData = $brands; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $brand): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php
+                                    $isBrandActive = (string)$activeBrandId === (string)$brand->id;
+                                    $brandParams    = array_merge(request()->except(['brand', 'page']), $isBrandActive ? [] : ['brand' => $brand->id]);
+                                    $brandUrl       = route('category', $category->slug) . '?' . http_build_query($brandParams);
+                                ?>
+                                <li>
+                                    <a href="<?php echo e($brandUrl); ?>" class="bilai-cat-attr-link <?php echo e($isBrandActive ? 'active' : ''); ?>">
+                                        <span class="bilai-cat-attr-name"><?php echo e($brand->name); ?></span>
+                                        <span class="bilai-cat-count-badge"><?php echo e(str_pad($brandCountMap[$brand->id] ?? 0, 2, '0', STR_PAD_LEFT)); ?></span>
+                                    </a>
+                                </li>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </ul>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    
+                    <?php if($weights->count() > 0): ?>
+                    <div class="bilai-cat-filter-block">
+                        <div class="bilai-cat-filter-title bilai-cat-filter-toggle" data-target="bilai-weight-list">
+                            Weight <i class="fas fa-chevron-up bilai-cat-toggle-icon"></i>
+                        </div>
+                        <div class="bilai-cat-filter-body" id="bilai-weight-list">
+                            <ul class="bilai-cat-check-list">
+                                <?php $__currentLoopData = $weights; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $w): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <li>
                                     <label class="bilai-cat-check-label">
-                                        <input type="checkbox" name="brand[]" value="<?php echo e($brand->id); ?>"
+                                        <input type="checkbox" name="weight[]" value="<?php echo e($w->id); ?>"
                                             class="bilai-cat-auto-submit"
-                                            <?php if(is_array(request('brand')) && in_array($brand->id, request('brand'))): ?> checked <?php endif; ?>>
-                                        <span class="bilai-cat-check-name"><?php echo e($brand->name); ?></span>
-                                        <span class="bilai-cat-count-badge"><?php echo e(str_pad($brandCountMap[$brand->id] ?? 0, 2, '0', STR_PAD_LEFT)); ?></span>
+                                            <?php if(in_array($w->id, $selectedWeights)): ?> checked <?php endif; ?>>
+                                        <span class="bilai-cat-check-name"><?php echo e($w->name); ?></span>
+                                        <span class="bilai-cat-count-badge"><?php echo e(str_pad($weightCountMap[$w->id] ?? 0, 2, '0', STR_PAD_LEFT)); ?></span>
+                                    </label>
+                                </li>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </ul>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    
+                    <?php if($lifeStages->count() > 0): ?>
+                    <div class="bilai-cat-filter-block">
+                        <div class="bilai-cat-filter-title bilai-cat-filter-toggle" data-target="bilai-lifestage-list">
+                            Life Stage <i class="fas fa-chevron-up bilai-cat-toggle-icon"></i>
+                        </div>
+                        <div class="bilai-cat-filter-body" id="bilai-lifestage-list">
+                            <ul class="bilai-cat-check-list">
+                                <?php $__currentLoopData = $lifeStages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ls): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li>
+                                    <label class="bilai-cat-check-label">
+                                        <input type="checkbox" name="life_stage[]" value="<?php echo e($ls->id); ?>"
+                                            class="bilai-cat-auto-submit"
+                                            <?php if(in_array($ls->id, $selectedLifeStages)): ?> checked <?php endif; ?>>
+                                        <span class="bilai-cat-check-name"><?php echo e($ls->name); ?></span>
+                                        <span class="bilai-cat-count-badge"><?php echo e(str_pad($lifeStageCountMap[$ls->id] ?? 0, 2, '0', STR_PAD_LEFT)); ?></span>
+                                    </label>
+                                </li>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </ul>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    
+                    <?php if($flavors->count() > 0): ?>
+                    <div class="bilai-cat-filter-block">
+                        <div class="bilai-cat-filter-title bilai-cat-filter-toggle" data-target="bilai-flavor-list">
+                            Flavor <i class="fas fa-chevron-up bilai-cat-toggle-icon"></i>
+                        </div>
+                        <div class="bilai-cat-filter-body" id="bilai-flavor-list">
+                            <ul class="bilai-cat-check-list">
+                                <?php $__currentLoopData = $flavors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li>
+                                    <label class="bilai-cat-check-label">
+                                        <input type="checkbox" name="flavor[]" value="<?php echo e($fl->id); ?>"
+                                            class="bilai-cat-auto-submit"
+                                            <?php if(in_array($fl->id, $selectedFlavors)): ?> checked <?php endif; ?>>
+                                        <span class="bilai-cat-check-name"><?php echo e($fl->name); ?></span>
+                                        <span class="bilai-cat-count-badge"><?php echo e(str_pad($flavorCountMap[$fl->id] ?? 0, 2, '0', STR_PAD_LEFT)); ?></span>
                                     </label>
                                 </li>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>

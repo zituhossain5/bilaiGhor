@@ -3259,3 +3259,47 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 /* ============================================================
    BilaiGhor Category Page Filter Fix End
    ============================================================ */
+
+/* ============================================================
+   BilaiGhor Attribute Filters Start
+   ============================================================ */
+
+/* Brand as clickable link rows (not checkboxes) */
+.bilai-cat-attr-link-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+.bilai-cat-attr-link-list::-webkit-scrollbar { width: 3px; }
+.bilai-cat-attr-link-list::-webkit-scrollbar-thumb { background: var(--bilai-border); border-radius: 4px; }
+.bilai-cat-attr-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    text-decoration: none;
+    color: var(--bilai-text);
+    font-family: var(--bilai-font-main);
+    font-size: 13px;
+    transition: color 0.15s;
+    cursor: pointer;
+}
+.bilai-cat-attr-link:hover,
+.bilai-cat-attr-link.active {
+    color: var(--bilai-primary);
+}
+.bilai-cat-attr-link.active .bilai-cat-attr-name {
+    font-weight: 700;
+}
+.bilai-cat-attr-link.active .bilai-cat-count-badge {
+    background: var(--bilai-primary);
+    color: #fff;
+}
+.bilai-cat-attr-name { flex: 1; }
+
+/* ============================================================
+   BilaiGhor Attribute Filters End
+   ============================================================ */

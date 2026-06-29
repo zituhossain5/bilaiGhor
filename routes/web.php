@@ -1027,8 +1027,38 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::post('size/inactive', [SizeController::class,'inactive'])->name('sizes.inactive');
     Route::post('size/active', [SizeController::class,'active'])->name('sizes.active');
     Route::post('size/destroy', [SizeController::class,'destroy'])->name('sizes.destroy');
-   
-   
+
+    // Product attribute: Weights
+    Route::get('weights/manage', [\App\Http\Controllers\Admin\WeightController::class,'index'])->name('weights.index');
+    Route::get('weights/create', [\App\Http\Controllers\Admin\WeightController::class,'create'])->name('weights.create');
+    Route::post('weights/save', [\App\Http\Controllers\Admin\WeightController::class,'store'])->name('weights.store');
+    Route::get('weights/{id}/edit', [\App\Http\Controllers\Admin\WeightController::class,'edit'])->name('weights.edit');
+    Route::post('weights/update', [\App\Http\Controllers\Admin\WeightController::class,'update'])->name('weights.update');
+    Route::post('weights/inactive', [\App\Http\Controllers\Admin\WeightController::class,'inactive'])->name('weights.inactive');
+    Route::post('weights/active', [\App\Http\Controllers\Admin\WeightController::class,'active'])->name('weights.active');
+    Route::post('weights/destroy', [\App\Http\Controllers\Admin\WeightController::class,'destroy'])->name('weights.destroy');
+
+    // Product attribute: Life Stages
+    Route::get('lifestages/manage', [\App\Http\Controllers\Admin\LifeStageController::class,'index'])->name('lifestages.index');
+    Route::get('lifestages/create', [\App\Http\Controllers\Admin\LifeStageController::class,'create'])->name('lifestages.create');
+    Route::post('lifestages/save', [\App\Http\Controllers\Admin\LifeStageController::class,'store'])->name('lifestages.store');
+    Route::get('lifestages/{id}/edit', [\App\Http\Controllers\Admin\LifeStageController::class,'edit'])->name('lifestages.edit');
+    Route::post('lifestages/update', [\App\Http\Controllers\Admin\LifeStageController::class,'update'])->name('lifestages.update');
+    Route::post('lifestages/inactive', [\App\Http\Controllers\Admin\LifeStageController::class,'inactive'])->name('lifestages.inactive');
+    Route::post('lifestages/active', [\App\Http\Controllers\Admin\LifeStageController::class,'active'])->name('lifestages.active');
+    Route::post('lifestages/destroy', [\App\Http\Controllers\Admin\LifeStageController::class,'destroy'])->name('lifestages.destroy');
+
+    // Product attribute: Flavors
+    Route::get('flavors/manage', [\App\Http\Controllers\Admin\FlavorController::class,'index'])->name('flavors.index');
+    Route::get('flavors/create', [\App\Http\Controllers\Admin\FlavorController::class,'create'])->name('flavors.create');
+    Route::post('flavors/save', [\App\Http\Controllers\Admin\FlavorController::class,'store'])->name('flavors.store');
+    Route::get('flavors/{id}/edit', [\App\Http\Controllers\Admin\FlavorController::class,'edit'])->name('flavors.edit');
+    Route::post('flavors/update', [\App\Http\Controllers\Admin\FlavorController::class,'update'])->name('flavors.update');
+    Route::post('flavors/inactive', [\App\Http\Controllers\Admin\FlavorController::class,'inactive'])->name('flavors.inactive');
+    Route::post('flavors/active', [\App\Http\Controllers\Admin\FlavorController::class,'active'])->name('flavors.active');
+    Route::post('flavors/destroy', [\App\Http\Controllers\Admin\FlavorController::class,'destroy'])->name('flavors.destroy');
+
+
     // product
     Route::get('products/manage', [ProductController::class,'index'])->name('products.index');
     Route::get('products/wholesale', [ProductController::class,'wholesale'])->name('admin.products.wholesale');

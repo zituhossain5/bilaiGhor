@@ -16,6 +16,9 @@ use App\Models\Childcategory;
 use App\Models\Brand;
 use App\Models\Color;
 use App\Models\Size;
+use App\Models\ProductWeight;
+use App\Models\ProductLifeStage;
+use App\Models\ProductFlavor;
 use Toastr;
 use File;
 use Illuminate\Support\Str;
@@ -109,10 +112,13 @@ class ProductController extends Controller
     public function create()
     {
         return view('backEnd.product.create', [
-            'categories' => Category::where('parent_id', 0)->where('status', 1)->select('id', 'name')->with('childrenCategories')->get(),
-            'brands'     => Brand::where('status', 1)->select('id', 'name')->get(),
-            'colors'     => Color::where('status', 1)->get(),
-            'sizes'      => Size::where('status', 1)->get(),
+            'categories'  => Category::where('parent_id', 0)->where('status', 1)->select('id', 'name')->with('childrenCategories')->get(),
+            'brands'      => Brand::where('status', 1)->select('id', 'name')->get(),
+            'colors'      => Color::where('status', 1)->get(),
+            'sizes'       => Size::where('status', 1)->get(),
+            'weights'     => ProductWeight::where('status', 1)->orderBy('sort_order')->orderBy('name')->get(),
+            'lifeStages'  => ProductLifeStage::where('status', 1)->orderBy('sort_order')->orderBy('name')->get(),
+            'flavors'     => ProductFlavor::where('status', 1)->orderBy('sort_order')->orderBy('name')->get(),
         ]);
     }
 
@@ -383,6 +389,9 @@ class ProductController extends Controller
             'brands'        => Brand::where('status', 1)->get(),
             'totalsizes'    => Size::where('status', 1)->get(),
             'totalcolors'   => Color::where('status', 1)->get(),
+            'weights'       => ProductWeight::where('status', 1)->orderBy('sort_order')->orderBy('name')->get(),
+            'lifeStages'    => ProductLifeStage::where('status', 1)->orderBy('sort_order')->orderBy('name')->get(),
+            'flavors'       => ProductFlavor::where('status', 1)->orderBy('sort_order')->orderBy('name')->get(),
             'selectcolors'  => Productcolor::where('product_id', $id)->get(),
             'selectsizes'   => Productsize::where('product_id', $id)->get(),
             'wholesalePrices' => \App\Models\ProductWholesalePrice::where('product_id', $id)->get(),

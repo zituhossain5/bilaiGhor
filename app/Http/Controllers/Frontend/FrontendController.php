@@ -38,6 +38,9 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\OrderHelper;
 use App\Models\Brand;
+use App\Models\ProductWeight;
+use App\Models\ProductLifeStage;
+use App\Models\ProductFlavor;
 use App\Models\Blog;
 use App\Models\Vendor;
 use App\Models\Testimonial;
@@ -828,16 +831,27 @@ $brands = Brand::where('status', 1)
 
         $subcategories = Subcategory::where('category_id', $category->id)->get();
 
-        // Brand counts: products in this category grouped by brand
-        $brandCountMap = Product::where(['status' => 1, 'approval_status' => 'approved', 'category_id' => $category->id])
-            ->whereNotNull('brand_id')
-            ->select('brand_id', DB::raw('count(*) as cnt'))
-            ->groupBy('brand_id')
-            ->pluck('cnt', 'brand_id');
+        // Attribute counts for sidebar (all from current category, before other filters)
+        $catBase = ['status' => 1, 'approval_status' => 'approved', 'category_id' => $category->id];
+
+        $brandCountMap = Product::where($catBase)->whereNotNull('brand_id')
+            ->select('brand_id', DB::raw('count(*) as cnt'))->groupBy('brand_id')->pluck('cnt', 'brand_id');
         $brands = Brand::whereIn('id', $brandCountMap->keys())->orderBy('name')->get();
 
-        $products = Product::where(['status' => 1, 'approval_status' => 'approved', 'category_id' => $category->id])
-            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'sold', 'stock', 'brand_id')
+        $weightCountMap = Product::where($catBase)->whereNotNull('weight_id')
+            ->select('weight_id', DB::raw('count(*) as cnt'))->groupBy('weight_id')->pluck('cnt', 'weight_id');
+        $weights = ProductWeight::whereIn('id', $weightCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $lifeStageCountMap = Product::where($catBase)->whereNotNull('life_stage_id')
+            ->select('life_stage_id', DB::raw('count(*) as cnt'))->groupBy('life_stage_id')->pluck('cnt', 'life_stage_id');
+        $lifeStages = ProductLifeStage::whereIn('id', $lifeStageCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $flavorCountMap = Product::where($catBase)->whereNotNull('flavor_id')
+            ->select('flavor_id', DB::raw('count(*) as cnt'))->groupBy('flavor_id')->pluck('cnt', 'flavor_id');
+        $flavors = ProductFlavor::whereIn('id', $flavorCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $products = Product::where($catBase)
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id')
             ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'brand']);
 
         if ($request->sort == 1) {
@@ -872,15 +886,29 @@ $brands = Brand::where('status', 1)
             }
         }
 
-        $selectedBrands = $request->input('brand', []);
-        $products = $products->when($selectedBrands, function ($query) use ($selectedBrands) {
-            return $query->whereIn('brand_id', $selectedBrands);
-        });
+        // Brand filter (link-based, single ID)
+        $activeBrandId = $request->input('brand');
+        if ($activeBrandId) {
+            $products = $products->where('brand_id', $activeBrandId);
+        }
+
+        // Attribute filters (checkboxes)
+        $selectedWeights = $request->input('weight', []);
+        $products = $products->when($selectedWeights, fn($q) => $q->whereIn('weight_id', $selectedWeights));
+
+        $selectedLifeStages = $request->input('life_stage', []);
+        $products = $products->when($selectedLifeStages, fn($q) => $q->whereIn('life_stage_id', $selectedLifeStages));
+
+        $selectedFlavors = $request->input('flavor', []);
+        $products = $products->when($selectedFlavors, fn($q) => $q->whereIn('flavor_id', $selectedFlavors));
 
         $products = $products->paginate(12)->withQueryString();
         return view('frontEnd.layouts.pages.category', compact(
             'category', 'products', 'subcategories', 'min_price', 'max_price', 'soldShow',
-            'brands', 'brandCountMap', 'activeSubcatSlug'
+            'brands', 'brandCountMap', 'activeSubcatSlug', 'activeBrandId',
+            'weights', 'weightCountMap', 'selectedWeights',
+            'lifeStages', 'lifeStageCountMap', 'selectedLifeStages',
+            'flavors', 'flavorCountMap', 'selectedFlavors'
         ));
     }
 

@@ -108,6 +108,33 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-12">
+                    <label class="form-label">Weight</label>
+                    <select class="form-control form-control-sm select2" name="weight_id">
+                        <option value="">None</option>
+                        @foreach($weights as $w)
+                            <option value="{{$w->id}}">{{$w->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Life Stage</label>
+                    <select class="form-control form-control-sm select2" name="life_stage_id">
+                        <option value="">None</option>
+                        @foreach($lifeStages as $ls)
+                            <option value="{{$ls->id}}">{{$ls->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Flavor</label>
+                    <select class="form-control form-control-sm select2" name="flavor_id">
+                        <option value="">None</option>
+                        @foreach($flavors as $fl)
+                            <option value="{{$fl->id}}">{{$fl->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
             <div class="d-flex align-items-center pf-free-delivery mb-2">
                 <label class="switch me-2 mb-0">

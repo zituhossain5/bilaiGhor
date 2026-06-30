@@ -1,410 +1,405 @@
- 
-<?php $__env->startSection('title',$subcategory->subcategoryName); ?> 
+<?php $__env->startSection('title', $subcategory->subcategoryName); ?>
 <?php $__env->startPush('css'); ?>
-<link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/jquery-ui.css')); ?>" />
-<?php $__env->stopPush(); ?> 
+    <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/jquery-ui.css')); ?>" />
+<?php $__env->stopPush(); ?>
 <?php $__env->startPush('seo'); ?>
-<meta name="app-url" content="<?php echo e(route('subcategory',$subcategory->slug)); ?>" />
-<meta name="robots" content="index, follow" />
-<meta name="description" content="<?php echo e($subcategory->meta_description); ?>" />
-<meta name="keywords" content="<?php echo e($subcategory->slug); ?>" />
+    <meta name="app-url" content="<?php echo e(route('subcategory', $subcategory->slug)); ?>" />
+    <meta name="robots" content="index, follow" />
+    <meta name="description" content="<?php echo e($subcategory->meta_description); ?>" />
+    <meta name="keywords" content="<?php echo e($subcategory->slug); ?>" />
+    <meta name="twitter:card" content="product" />
+    <meta name="twitter:site" content="<?php echo e($subcategory->subcategoryName); ?>" />
+    <meta name="twitter:title" content="<?php echo e($subcategory->subcategoryName); ?>" />
+    <meta name="twitter:description" content="<?php echo e($subcategory->meta_description); ?>" />
+    <meta name="twitter:creator" content="bilaighor.bd" />
+    <meta property="og:url" content="<?php echo e(route('subcategory', $subcategory->slug)); ?>" />
+    <meta name="twitter:image" content="<?php echo e(asset($subcategory->image)); ?>" />
+    <meta property="og:title" content="<?php echo e($subcategory->subcategoryName); ?>" />
+    <meta property="og:type" content="product" />
+    <meta property="og:url" content="<?php echo e(route('subcategory', $subcategory->slug)); ?>" />
+    <meta property="og:image" content="<?php echo e(asset($subcategory->image)); ?>" />
+    <meta property="og:description" content="<?php echo e($subcategory->meta_description); ?>" />
+    <meta property="og:site_name" content="<?php echo e($subcategory->subcategoryName); ?>" />
+<?php $__env->stopPush(); ?>
 
-<!-- Twitter Card data -->
-<meta name="twitter:card" content="product" />
-<meta name="twitter:site" content="<?php echo e($subcategory->subcategoryName); ?>" />
-<meta name="twitter:title" content="<?php echo e($subcategory->subcategoryName); ?>" />
-<meta name="twitter:description" content="<?php echo e($subcategory->meta_description); ?>" />
-<meta name="twitter:creator" content="gomobd.com" />
-<meta property="og:url" content="<?php echo e(route('subcategory',$subcategory->slug)); ?>" />
-<meta name="twitter:image" content="<?php echo e(asset($subcategory->image)); ?>" />
-
-<!-- Open Graph data -->
-<meta property="og:title" content="<?php echo e($subcategory->subcategoryName); ?>" />
-<meta property="og:type" content="product" />
-<meta property="og:url" content="<?php echo e(route('subcategory',$subcategory->slug)); ?>" />
-<meta property="og:image" content="<?php echo e(asset($subcategory->image)); ?>" />
-<meta property="og:description" content="<?php echo e($subcategory->meta_description); ?>" />
-<meta property="og:site_name" content="<?php echo e($subcategory->subcategoryName); ?>" />
-<?php $__env->stopPush(); ?> 
 <?php $__env->startSection('content'); ?>
-<section class="product-section">
+<div class="bilai-cat-page">
     <div class="container">
-        <div class="sorting-section">
-            <div class="row">
-                <div class="col-sm-6">
-                    <div class="category-breadcrumb d-flex align-items-center">
-                        <a href="<?php echo e(route('home')); ?>">Home</a>
-                        <span>/</span>
-                        <strong><?php echo e($subcategory->subcategoryName); ?></strong>
-                    </div>
-                </div>
-                <div class="col-sm-6">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="showing-data">
-                                <span>Showing <?php echo e($products->firstItem()); ?>-<?php echo e($products->lastItem()); ?> of <?php echo e($products->total()); ?> Results</span>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="filter_sort">
-                                <div class="filter_btn">
-                                    <i class="fa fa-list-ul"></i>
-                                </div>
-                                <div class="page-sort">
-                                    <form action="" class="sort-form">
-                                        <select name="sort" class="form-control form-select sort">
-                                            <option value="1" <?php if(request()->get('sort')==1): ?>selected <?php endif; ?>>Product: Latest</option>
-                                            <option value="2" <?php if(request()->get('sort')==2): ?>selected <?php endif; ?>>Product: Oldest</option>
-                                            <option value="3" <?php if(request()->get('sort')==3): ?>selected <?php endif; ?>>Price: High To Low</option>
-                                            <option value="4" <?php if(request()->get('sort')==4): ?>selected <?php endif; ?>>Price: Low To High</option>
-                                            <option value="5" <?php if(request()->get('sort')==5): ?>selected <?php endif; ?>>Name: A-Z</option>
-                                            <option value="6" <?php if(request()->get('sort')==6): ?>selected <?php endif; ?>>Name: Z-A</option>
-                                        </select>
-                                        <input type="hidden" name="min_price" value="<?php echo e(request()->get('min_price')); ?>" />
-                                        <input type="hidden" name="max_price" value="<?php echo e(request()->get('max_price')); ?>" />
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                </div>
-            </div>
-        </div>
+
         
-        <div class="row">
-            <div class="col-sm-3 filter_sidebar">
-                
-                <div class="filter_close"><i class="fa fa-long-arrow-left"></i> Filter</div>
-                <form action="" class="attribute-submit">
-                    <div class="sidebar_item wraper__item">
-                        <div class="accordion" id="category_sidebar">
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#collapseCat" aria-expanded="true" aria-controls="collapseOne">
-                                        <?php echo e($subcategory->subcategoryName); ?>
+        <nav class="bilai-cat-breadcrumb" aria-label="breadcrumb">
+            <a href="<?php echo e(route('home')); ?>">Home</a>
+            <span class="bilai-cat-breadcrumb-sep"><i class="fas fa-chevron-right"></i></span>
+            <?php if($category): ?>
+            <a href="<?php echo e(route('category', $category->slug)); ?>"><?php echo e($category->name); ?></a>
+            <span class="bilai-cat-breadcrumb-sep"><i class="fas fa-chevron-right"></i></span>
+            <?php endif; ?>
+            <span class="bilai-cat-breadcrumb-current"><?php echo e($subcategory->subcategoryName); ?></span>
+        </nav>
 
-                                    </button>
-                                </h2>
-                                <div id="collapseCat" class="accordion-collapse collapse show"
-                                    data-bs-parent="#category_sidebar">
-                                    <div class="accordion-body cust_according_body">
-                                        <ul>
-                                            <?php $__currentLoopData = $subcategory->childcategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $childcat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                <li>
-                                                    <a
-                                                        href="<?php echo e(url('products/' . $childcat->slug)); ?>"><?php echo e($childcat->childcategoryName); ?></a>
-                                                </li>
-                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+        
+        <?php if($siblings->count() > 0): ?>
+        <div class="bilai-cat-sub-row">
+            <?php $__currentLoopData = $siblings; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sibling): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <?php
+                $isActive = $sibling->slug === $subcategory->slug;
+            ?>
+            <a href="<?php echo e(route('subcategory', $sibling->slug)); ?>"
+               class="bilai-cat-sub-card <?php echo e($isActive ? 'active' : ''); ?>">
+                <div class="bilai-cat-sub-img-box">
+                    <?php if($sibling->image): ?>
+                    <img src="<?php echo e(asset($sibling->image)); ?>" alt="<?php echo e($sibling->subcategoryName); ?>" loading="lazy">
+                    <?php else: ?>
+                    <i class="fas fa-tag"></i>
+                    <?php endif; ?>
+                </div>
+                <span><?php echo e($sibling->subcategoryName); ?></span>
+            </a>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </div>
+        <?php endif; ?>
+
+        
+        <div class="bilai-cat-layout">
+
+            
+            <aside class="bilai-cat-sidebar">
+                <form action="" method="GET" class="bilai-cat-filter-form" id="bilaiCatFilterForm">
+                    <?php if(request('sort')): ?>
+                    <input type="hidden" name="sort" value="<?php echo e(request('sort')); ?>">
+                    <?php endif; ?>
+                    <?php if($activeBrandId): ?>
+                    <input type="hidden" name="brand" value="<?php echo e($activeBrandId); ?>">
+                    <?php endif; ?>
+
+                    
+                    <div class="bilai-cat-filter-block">
+                        <div class="bilai-cat-filter-title">Filter by Price</div>
+                        <div class="bilai-cat-price-display">
+                            Price: <strong>&#2547;<span id="bilai-min-val"><?php echo e(request('min_price', $min_price)); ?></span></strong>
+                            &nbsp;—&nbsp;
+                            <strong>&#2547;<span id="bilai-max-val"><?php echo e(request('max_price', $max_price)); ?></span></strong>
+                        </div>
+                        <div id="bilai-price-range" class="bilai-price-slider"></div>
+                        <input type="hidden" name="min_price" id="bilai_min_price" value="<?php echo e(request('min_price', $min_price)); ?>">
+                        <input type="hidden" name="max_price" id="bilai_max_price" value="<?php echo e(request('max_price', $max_price)); ?>">
+                    </div>
+
+                    
+                    <?php if($brands->count() > 0): ?>
+                    <div class="bilai-cat-filter-block">
+                        <div class="bilai-cat-filter-title bilai-cat-filter-toggle" data-target="bilai-brand-list">
+                            Brand <i class="fas fa-chevron-up bilai-cat-toggle-icon"></i>
+                        </div>
+                        <div class="bilai-cat-filter-body" id="bilai-brand-list">
+                            <ul class="bilai-cat-attr-link-list">
+                                <?php $__currentLoopData = $brands; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $brand): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php
+                                    $isBrandActive = (string)$activeBrandId === (string)$brand->id;
+                                    $brandParams   = array_merge(request()->except(['brand', 'page']), $isBrandActive ? [] : ['brand' => $brand->id]);
+                                    $brandUrl      = route('subcategory', $subcategory->slug) . '?' . http_build_query($brandParams);
+                                ?>
+                                <li>
+                                    <a href="<?php echo e($brandUrl); ?>" class="bilai-cat-attr-link <?php echo e($isBrandActive ? 'active' : ''); ?>">
+                                        <span class="bilai-cat-attr-name"><?php echo e($brand->name); ?></span>
+                                        <span class="bilai-cat-count-badge"><?php echo e(str_pad($brandCountMap[$brand->id] ?? 0, 2, '0', STR_PAD_LEFT)); ?></span>
+                                    </a>
+                                </li>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </ul>
                         </div>
                     </div>
-                    <!--sidebar item end-->
-                    <div class="sidebar_item wraper__item">
-                        <div class="accordion" id="price_sidebar">
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#collapsePrice" aria-expanded="true" aria-controls="collapseOne">
-                                        Price
-                                    </button>
-                                </h2>
-                                <div id="collapsePrice" class="accordion-collapse collapse show"
-                                    data-bs-parent="#price_sidebar">
-                                    <div class="accordion-body cust_according_body">
-                                        <div class="category-filter-box category__wraper" id="categoryFilterBox">
-                                            <div class="category-filter-item">
-                                                <div class="filter-body">
-                                                    <div class="slider-box">
-                                                        <form action="" class="price-submit">
-                                                            <div class="filter-price-inputs">
-                                                                <p class="min-price">৳<input type="text"
-                                                                        name="min_price" id="min_price" readonly="" />
-                                                                </p>
-                                                                <p class="max-price">৳<input type="text"
-                                                                        name="max_price" id="max_price" readonly="" />
-                                                                </p>
-                                                            </div>
-    
-                                                            <div id="price-range" class="slider form-attribute"></div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <?php endif; ?>
+
+                    
+                    <?php if($weights->count() > 0): ?>
+                    <div class="bilai-cat-filter-block">
+                        <div class="bilai-cat-filter-title bilai-cat-filter-toggle" data-target="bilai-weight-list">
+                            Weight <i class="fas fa-chevron-up bilai-cat-toggle-icon"></i>
+                        </div>
+                        <div class="bilai-cat-filter-body" id="bilai-weight-list">
+                            <ul class="bilai-cat-check-list">
+                                <?php $__currentLoopData = $weights; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $w): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li>
+                                    <label class="bilai-cat-check-label">
+                                        <input type="checkbox" name="weight[]" value="<?php echo e($w->id); ?>"
+                                            class="bilai-cat-auto-submit"
+                                            <?php if(in_array($w->id, $selectedWeights)): ?> checked <?php endif; ?>>
+                                        <span class="bilai-cat-check-name"><?php echo e($w->name); ?></span>
+                                        <span class="bilai-cat-count-badge"><?php echo e(str_pad($weightCountMap[$w->id] ?? 0, 2, '0', STR_PAD_LEFT)); ?></span>
+                                    </label>
+                                </li>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </ul>
                         </div>
                     </div>
-                    <!--sidebar item end-->
-                    <div class="sidebar_item wraper__item">
-                        <div class="accordion" id="filter_sidebar">
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#collapseFilter" aria-expanded="true"
-                                        aria-controls="collapseOne">
-                                        Filter
-                                    </button>
-                                </h2>
-                                <div id="collapseFilter" class="accordion-collapse collapse show"
-                                    data-bs-parent="#filter_sidebar">
-                                    <div class="accordion-body cust_according_body">
-                                        <div class="filter-body">
-                                            <form action="" class="subcategory-submit">
-                                                <ul class="space-y-3">
-                                                    <?php $__currentLoopData = $childcategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $childcategory): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                        <li class="subcategory-filter-list">
-                                                            <label for="<?php echo e($childcategory->slug . '-' . $childcategory->id); ?>"
-                                                                class="subcategory-filter-label">
-                                                                <input class="form-checkbox form-attribute"
-                                                                    id="<?php echo e($childcategory->slug . '-' . $childcategory->id); ?>"
-                                                                    name="childcategory[]" value="<?php echo e($childcategory->id); ?>"
-                                                                    type="checkbox"
-                                                                    <?php if(is_array(request()->get('childcategory')) && in_array($childcategory->id, request()->get('childcategory'))): ?> checked <?php endif; ?> />
-                                                                <p class="subcategory-filter-name">
-                                                                    <?php echo e($childcategory->childcategoryName); ?></p>
-                                                            </label>
-                                                        </li>
-                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                                </ul>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <?php endif; ?>
+
+                    
+                    <?php if($lifeStages->count() > 0): ?>
+                    <div class="bilai-cat-filter-block">
+                        <div class="bilai-cat-filter-title bilai-cat-filter-toggle" data-target="bilai-lifestage-list">
+                            Life Stage <i class="fas fa-chevron-up bilai-cat-toggle-icon"></i>
+                        </div>
+                        <div class="bilai-cat-filter-body" id="bilai-lifestage-list">
+                            <ul class="bilai-cat-check-list">
+                                <?php $__currentLoopData = $lifeStages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ls): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li>
+                                    <label class="bilai-cat-check-label">
+                                        <input type="checkbox" name="life_stage[]" value="<?php echo e($ls->id); ?>"
+                                            class="bilai-cat-auto-submit"
+                                            <?php if(in_array($ls->id, $selectedLifeStages)): ?> checked <?php endif; ?>>
+                                        <span class="bilai-cat-check-name"><?php echo e($ls->name); ?></span>
+                                        <span class="bilai-cat-count-badge"><?php echo e(str_pad($lifeStageCountMap[$ls->id] ?? 0, 2, '0', STR_PAD_LEFT)); ?></span>
+                                    </label>
+                                </li>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </ul>
                         </div>
                     </div>
-                    <!--sidebar item end-->
+                    <?php endif; ?>
+
+                    
+                    <?php if($flavors->count() > 0): ?>
+                    <div class="bilai-cat-filter-block">
+                        <div class="bilai-cat-filter-title bilai-cat-filter-toggle" data-target="bilai-flavor-list">
+                            Flavor <i class="fas fa-chevron-up bilai-cat-toggle-icon"></i>
+                        </div>
+                        <div class="bilai-cat-filter-body" id="bilai-flavor-list">
+                            <ul class="bilai-cat-check-list">
+                                <?php $__currentLoopData = $flavors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li>
+                                    <label class="bilai-cat-check-label">
+                                        <input type="checkbox" name="flavor[]" value="<?php echo e($fl->id); ?>"
+                                            class="bilai-cat-auto-submit"
+                                            <?php if(in_array($fl->id, $selectedFlavors)): ?> checked <?php endif; ?>>
+                                        <span class="bilai-cat-check-name"><?php echo e($fl->name); ?></span>
+                                        <span class="bilai-cat-count-badge"><?php echo e(str_pad($flavorCountMap[$fl->id] ?? 0, 2, '0', STR_PAD_LEFT)); ?></span>
+                                    </label>
+                                </li>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </ul>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
                 </form>
-            </div>
-            <div class="col-sm-9">
-                <div class="category-product main_product_inner">
-                    <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key=>$value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <div class="product_item wist_item wow zoomIn" data-wow-duration="1.5s"
-                                data-wow-delay="0.<?php echo e($key); ?>s">
-                            <div class="product_item_inner">
-                                <?php if($value->old_price): ?>
-                                    <div class="sale-badge">
-                                        <div class="sale-badge-inner">
-                                            <div class="sale-badge-box">
-                                                <span class="sale-badge-text">
-                                                    <p>
-                                                        <?php
-                                                            $discount=(((($value->old_price)-($value->new_price))*100) / ($value->old_price))
-                                                        ?>
-                                                        <?php echo e(number_format($discount, 0)); ?>%
-                                                    </p>
-                                                    ছাড়
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                                <div class="pro_img">
-                                    <a href="<?php echo e(route('product', $value->slug)); ?>">
-                                        <img src="<?php echo e(asset($value->image ? $value->image->image : '')); ?>"
-                                            alt="<?php echo e($value->name); ?>" />
-                                    </a>
-                                </div>
-                                <div class="pro_des">
-                                    <div class="pro_name">
-                                        <a href="<?php echo e(route('product', $value->slug)); ?>">
-                                            <?php echo e(Str::limit($value->name, 35)); ?>
+            </aside>
 
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+            
+            <div class="bilai-cat-main">
 
-                            <?php
-                                $averageRating = $value->reviews->avg('ratting'); 
-                                $filledStars   = floor($averageRating);
-                                $hasHalfStar   = $averageRating - $filledStars >= 0.5;
-                                $emptyStars    = 5 - $filledStars - ($hasHalfStar ? 1 : 0);
-                            ?>
-
-                            <?php if($averageRating >= 0 && $averageRating <= 5): ?>
-                                
-                                <?php for($i = 0; $i < $filledStars; $i++): ?>
-                                    <i class="fas fa-star"></i>
-                                <?php endfor; ?>
-
-                                
-                                <?php if($hasHalfStar): ?>
-                                    <i class="fas fa-star-half-alt"></i>
-                                <?php endif; ?>
-
-                                
-                                <?php for($i = 0; $i < $emptyStars; $i++): ?>
-                                    <i class="far fa-star"></i>
-                                <?php endfor; ?>
+                
+                <div class="bilai-cat-topbar">
+                    <p class="bilai-cat-count">
+                        <?php if($products->total() > 0): ?>
+                            Showing <?php echo e($products->firstItem()); ?>–<?php echo e($products->lastItem()); ?> of <?php echo e($products->total()); ?> results
+                        <?php else: ?>
+                            No products found
+                        <?php endif; ?>
+                    </p>
+                    <form action="" method="GET" id="bilaiSortForm">
+                        <?php $__currentLoopData = request()->except(['sort', 'page']); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $val): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php if(is_array($val)): ?>
+                                <?php $__currentLoopData = $val; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $v): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <input type="hidden" name="<?php echo e($key); ?>[]" value="<?php echo e($v); ?>">
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             <?php else: ?>
-                                <span>Invalid rating range</span>
+                            <input type="hidden" name="<?php echo e($key); ?>" value="<?php echo e($val); ?>">
                             <?php endif; ?>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        <select name="sort" class="bilai-cat-sort-select" id="bilaiSortSelect">
+                            <option value="1" <?php if(request('sort')==1): ?> selected <?php endif; ?>>Sort by Latest</option>
+                            <option value="2" <?php if(request('sort')==2): ?> selected <?php endif; ?>>Oldest First</option>
+                            <option value="3" <?php if(request('sort')==3): ?> selected <?php endif; ?>>Price: High to Low</option>
+                            <option value="4" <?php if(request('sort')==4): ?> selected <?php endif; ?>>Price: Low to High</option>
+                            <option value="5" <?php if(request('sort')==5): ?> selected <?php endif; ?>>Name: A–Z</option>
+                            <option value="6" <?php if(request('sort')==6): ?> selected <?php endif; ?>>Name: Z–A</option>
+                        </select>
+                    </form>
+                </div>
 
-                            <div class="pro_price">
-                                <p>
-                                    <del>৳ <?php echo e($value->old_price); ?></del>
-                                    ৳ <?php echo e($value->new_price); ?>
-
-                                </p>
-                            </div>
-
-                             
-                            <?php if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty()): ?>
-                                
-                                <div class="pro_btn">
-                                    
-                                    <a href="<?php echo e(route('product', $value->slug)); ?>"
-                                       class="order-btn-link order-btn">
-                                        অর্ডার করুন
-                                    </a>
-
-                                    
-                                    <a href="<?php echo e(route('product', $value->slug)); ?>"
-                                       class="cart-icon-link cart-icon-btn">
-                                        <i class="fa-solid fa-cart-shopping"></i>
-                                    </a>
-                                </div>
+                
+                <?php if($products->count() > 0): ?>
+                <div class="bilai-cat-grid">
+                    <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php
+                        $avgRating   = $value->reviews->avg('ratting');
+                        $filledStars = floor($avgRating);
+                        $hasHalf     = $avgRating - $filledStars >= 0.5;
+                        $emptyStars  = 5 - $filledStars - ($hasHalf ? 1 : 0);
+                        $discount    = ($value->old_price && $value->old_price > $value->new_price)
+                                       ? round((($value->old_price - $value->new_price) * 100) / $value->old_price)
+                                       : 0;
+                    ?>
+                    <div class="bilai-product-card">
+                        <div class="bilai-product-top">
+                            <?php if($discount > 0): ?>
+                            <span class="bilai-stock-badge"><?php echo e($discount); ?>% OFF</span>
                             <?php else: ?>
-                                
-                                <div class="pro_btn">
-                                    
-                                    <form action="<?php echo e(route('cart.store')); ?>" method="POST">
-                                        <?php echo csrf_field(); ?>
-                                        <input type="hidden" name="id" value="<?php echo e($value->id); ?>">
-                                        <input type="hidden" name="qty" value="1">
-                                        <input type="hidden" name="order_now" value="1">
-                                        <button type="submit" class="order-btn">
-                                            অর্ডার করুন
-                                        </button>
-                                    </form>
-
-                                    
-                                    <form action="<?php echo e(route('cart.store')); ?>" method="POST">
-                                        <?php echo csrf_field(); ?>
-                                        <input type="hidden" name="id" value="<?php echo e($value->id); ?>">
-                                        <input type="hidden" name="qty" value="1">
-                                        <button type="submit" class="cart-icon-btn cart_store" data-id="<?php echo e($value->id); ?>">
-                                            <i class="fa-solid fa-cart-shopping"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                            <span></span>
+                            <?php endif; ?>
+                            <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="bilai-product-image">
+                            <a href="<?php echo e(route('product', $value->slug)); ?>">
+                                <img src="<?php echo e(asset($value->image ? $value->image->image : '')); ?>"
+                                     alt="<?php echo e($value->name); ?>"
+                                     loading="<?php echo e($key === 0 ? 'eager' : 'lazy'); ?>" />
+                            </a>
+                            <?php if($value->sold && $value->sold > 0): ?>
+                            <span class="bilai-cat-sold-pill"><?php echo e($value->sold); ?> Sold</span>
                             <?php endif; ?>
                         </div>
+                        <div class="bilai-product-meta">
+                            <h3 class="bilai-product-title">
+                                <a href="<?php echo e(route('product', $value->slug)); ?>"><?php echo e(Str::limit($value->name, 55)); ?></a>
+                            </h3>
+                            <div class="bilai-product-cat-rating">
+                                <?php if($value->category): ?>
+                                <p class="bilai-product-category"><?php echo e($value->category->name); ?></p>
+                                <?php endif; ?>
+                                <div class="bilai-product-rating">
+                                    <?php for($i = 0; $i < $filledStars; $i++): ?><i class="fas fa-star"></i><?php endfor; ?>
+                                    <?php if($hasHalf): ?><i class="fas fa-star-half-alt"></i><?php endif; ?>
+                                    <?php for($i = 0; $i < $emptyStars; $i++): ?><i class="far fa-star"></i><?php endfor; ?>
+                                </div>
+                            </div>
+                            <div class="bilai-product-price">
+                                <div class="bilai-price-row">
+                                    <span class="bilai-price-new">&#2547; <?php echo e($value->new_price); ?></span>
+                                    <?php if($value->old_price): ?>
+                                    <del class="bilai-price-old">&#2547; <?php echo e($value->old_price); ?></del>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if($discount > 0): ?>
+                                <span class="bilai-discount-badge"><?php echo e($discount); ?>% OFF</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="bilai-product-actions">
+                            <?php if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty()): ?>
+                                <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-cart-btn">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                </a>
+                                <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-buy-btn">Buy Now</a>
+                            <?php else: ?>
+                                <form action="<?php echo e(route('cart.store')); ?>" method="POST">
+                                    <?php echo csrf_field(); ?>
+                                    <input type="hidden" name="id" value="<?php echo e($value->id); ?>" />
+                                    <input type="hidden" name="qty" value="1" />
+                                    <button type="submit" class="bilai-cart-btn cart_store" data-id="<?php echo e($value->id); ?>">
+                                        <i class="fa-solid fa-cart-shopping"></i>
+                                    </button>
+                                </form>
+                                <form action="<?php echo e(route('cart.store')); ?>" method="POST">
+                                    <?php echo csrf_field(); ?>
+                                    <input type="hidden" name="id" value="<?php echo e($value->id); ?>" />
+                                    <input type="hidden" name="qty" value="1" />
+                                    <input type="hidden" name="order_now" value="1">
+                                    <button type="submit" class="bilai-buy-btn">Buy Now</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="custom_paginate">
+                <?php else: ?>
+                <div class="bilai-cat-empty">
+                    <i class="fas fa-box-open"></i>
+                    <p>No products found.</p>
+                </div>
+                <?php endif; ?>
+
+                
+                <?php if($products->hasPages()): ?>
+                <div class="bilai-cat-pagination">
                     <?php echo e($products->links('pagination::bootstrap-4')); ?>
 
-                   
                 </div>
+                <?php endif; ?>
+
             </div>
         </div>
-    </div>
-</section>
 
-<section class="homeproduct">
+    </div>
+</div>
+
+
+<?php if($subcategory->meta_description): ?>
+<div class="bilai-cat-desc-accordion">
     <div class="container">
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="meta_des">
-                    <?php echo $subcategory->meta_description; ?>
+        <button class="bilai-cat-desc-toggle" id="bilaiDescToggle" aria-expanded="false">
+            View Full Description
+            <i class="fas fa-chevron-down bilai-cat-desc-icon"></i>
+        </button>
+        <div class="bilai-cat-desc-body" id="bilaiDescBody" style="display:none;">
+            <div class="bilai-cat-desc-content">
+                <?php echo $subcategory->meta_description; ?>
 
-                </div>
             </div>
         </div>
     </div>
-</section>
+</div>
+<?php endif; ?>
 
 <?php $__env->stopSection(); ?>
+
 <?php $__env->startPush('script'); ?>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
     <script>
-        $("#price-range").click(function() {
-            $(".price-submit").submit();
-        })
-        $(".form-attribute").on('change click',function(){
-            $(".attribute-submit").submit();
-        })
-        $(".sort").change(function() {
-            $(".sort-form").submit();
-        })
-        $(".form-checkbox").change(function() {
-            $(".subcategory-submit").submit();
-        })
-    </script>
-    <script>
-        $(function() {
-            $("#price-range").slider({
-                step: 5,
-                range: true,
-                min: <?php echo e($min_price); ?>,
-                max: <?php echo e($max_price); ?>,
-                values: [
-                    <?php echo e(request()->get('min_price') ? request()->get('min_price') : $min_price); ?>,
-                    <?php echo e(request()->get('max_price') ? request()->get('max_price') : $max_price); ?>
+    $(function () {
+        var minP   = <?php echo e($min_price ?? 0); ?>;
+        var maxP   = <?php echo e($max_price ?? 10000); ?>;
+        var curMin = <?php echo e(request('min_price') ?: ($min_price ?? 0)); ?>;
+        var curMax = <?php echo e(request('max_price') ?: ($max_price ?? 10000)); ?>;
 
-                ],
-                slide: function(event, ui) {
-                    $("#min_price").val(ui.values[0]);
-                    $("#max_price").val(ui.values[1]);
-                }
-            });
-            $("#min_price").val(<?php echo e(request()->get('min_price') ? request()->get('min_price') : $min_price); ?>);
-            $("#max_price").val(<?php echo e(request()->get('max_price') ? request()->get('max_price') : $max_price); ?>);
-            $("#priceRange").val($("#price-range").slider("values", 0) + " - " + $("#price-range").slider("values",
-                1));
-
-            $("#mobile-price-range").slider({
-                step: 5,
-                range: true,
-                min: <?php echo e($min_price); ?>,
-                max: <?php echo e($max_price); ?>,
-                values: [
-                    <?php echo e(request()->get('min_price') ? request()->get('min_price') : $min_price); ?>,
-                    <?php echo e(request()->get('max_price') ? request()->get('max_price') : $max_price); ?>
-
-                ],
-                slide: function(event, ui) {
-                    $("#min_price").val(ui.values[0]);
-                    $("#max_price").val(ui.values[1]);
-                }
-            });
-            $("#min_price").val(<?php echo e(request()->get('min_price') ? request()->get('min_price') : $min_price); ?>);
-            $("#max_price").val(<?php echo e(request()->get('max_price') ? request()->get('max_price') : $max_price); ?>);
-            $("#priceRange").val($("#price-range").slider("values", 0) + " - " + $("#price-range").slider("values",
-                1));
-
+        $("#bilai-price-range").slider({
+            range: true, step: 5, min: minP, max: maxP,
+            values: [curMin, curMax],
+            slide: function (event, ui) {
+                $("#bilai-min-val").text(ui.values[0]);
+                $("#bilai-max-val").text(ui.values[1]);
+                $("#bilai_min_price").val(ui.values[0]);
+                $("#bilai_max_price").val(ui.values[1]);
+            },
+            stop: function () { $("#bilaiCatFilterForm").submit(); }
         });
-    </script>
+        $("#bilai-min-val").text(curMin);
+        $("#bilai-max-val").text(curMax);
 
-<script>
-    // $(".sort").change(function(){
-    //   $('#loading').show();
-    //   $(".sort-form").submit();
-    // })
-</script>
+        $(".bilai-cat-auto-submit").on("change", function () {
+            $("#bilaiCatFilterForm").submit();
+        });
+
+        $("#bilaiSortSelect").on("change", function () {
+            $("#bilaiSortForm").submit();
+        });
+
+        $(".bilai-cat-filter-toggle").on("click", function () {
+            var target = $(this).data("target");
+            $("#" + target).slideToggle(200);
+            $(this).find(".bilai-cat-toggle-icon").toggleClass("fa-chevron-up fa-chevron-down");
+        });
+
+        $("#bilaiDescToggle").on("click", function () {
+            var expanded = $(this).attr("aria-expanded") === "true";
+            $(this).attr("aria-expanded", String(!expanded));
+            $(this).find(".bilai-cat-desc-icon").toggleClass("fa-chevron-down fa-chevron-up");
+            $("#bilaiDescBody").slideToggle(250);
+        });
+    });
+    </script>
 
     
     <script type="text/javascript">
         window.dataLayer = window.dataLayer || [];
-
         (function () {
             var listName = <?php echo json_encode($subcategory->subcategoryName, 15, 512) ?>;
             var listSlug = <?php echo json_encode($subcategory->slug, 15, 512) ?>;
-
             var listItems = [
                 <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 {
@@ -421,33 +416,20 @@
                 }<?php if(!$loop->last): ?>,<?php endif; ?>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             ];
-
-            // GA4: view_item_list
             if (listItems.length) {
                 window.dataLayer.push({ ecommerce: null });
                 window.dataLayer.push({
                     event: "view_item_list",
                     ecommerce: {
-                        item_list_id: listSlug,
-                        item_list_name: listName,
+                        item_list_id: listSlug, item_list_name: listName,
                         items: listItems.map(function (item) {
-                            return {
-                                item_id: item.item_id,
-                                item_name: item.item_name,
-                                index: item.index,
-                                price: item.price,
-                                item_brand: item.item_brand,
-                                item_category: item.item_category,
-                                item_list_id: item.item_list_id,
-                                item_list_name: item.item_list_name,
-                                currency: item.currency
-                            };
+                            return { item_id: item.item_id, item_name: item.item_name, index: item.index,
+                                price: item.price, item_brand: item.item_brand, item_category: item.item_category,
+                                item_list_id: item.item_list_id, item_list_name: item.item_list_name, currency: item.currency };
                         })
                     }
                 });
             }
-
-            // Facebook Pixel: ViewSubcategory (custom)
             if (typeof fbq === "function") {
                 fbq("trackCustom", "ViewSubcategory", {
                     content_category: listName,
@@ -455,55 +437,6 @@
                     currency: "BDT"
                 });
             }
-
-            function findItemByHref(href) {
-                if (!href) return null;
-                try {
-                    var parts = href.split("/");
-                    var last = parts[parts.length - 1].split("?")[0];
-                    return listItems.find(function (i) { return i.slug === last; }) || null;
-                } catch (e) {
-                    return null;
-                }
-            }
-
-            // product click -> select_item + FB event
-            $(document).on("click", ".category-product .product_item a", function () {
-                var href = $(this).attr("href") || "";
-                var item = findItemByHref(href);
-                if (!item) return;
-
-                window.dataLayer.push({ ecommerce: null });
-                window.dataLayer.push({
-                    event: "select_item",
-                    ecommerce: {
-                        item_list_id: listSlug,
-                        item_list_name: listName,
-                        items: [{
-                            item_id: item.item_id,
-                            item_name: item.item_name,
-                            index: item.index,
-                            price: item.price,
-                            item_brand: item.item_brand,
-                            item_category: item.item_category,
-                            item_list_id: item.item_list_id,
-                            item_list_name: item.item_list_name,
-                            currency: item.currency
-                        }]
-                    }
-                });
-
-                if (typeof fbq === "function") {
-                    fbq("trackCustom", "SubcategoryProductClick", {
-                        content_ids: [item.item_id],
-                        content_name: item.item_name,
-                        content_category: item.item_category,
-                        value: item.price,
-                        currency: "BDT"
-                    });
-                }
-            });
-
         })();
     </script>
 <?php $__env->stopPush(); ?>

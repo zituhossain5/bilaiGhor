@@ -914,15 +914,43 @@ $brands = Brand::where('status', 1)
 
     public function subcategory($slug, Request $request)
     {
-        $soldShow = $request->sold=='show'?true:false;
-        $subcategory = Subcategory::where(['slug' => $slug, 'status' => 1])->first();
-        $products = Product::where(['status' => 1, 'approval_status' => 'approved', 'subcategory_id' => $subcategory->id])
-            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id','sold','stock');
-        $childcategories = Childcategory::where('subcategory_id', $subcategory->id)->get();
+        $soldShow    = $request->sold == 'show' ? true : false;
+        $subcategory = Subcategory::where(['slug' => $slug, 'status' => 1])->firstOrFail();
+        $category    = Category::find($subcategory->category_id);
 
-        if ($request->sort == 1) {
-            $products = $products->orderBy('created_at', 'desc');
-        } elseif ($request->sort == 2) {
+        // Sibling subcategories (same parent, excluding current) for top cards
+        $siblings = Subcategory::where('category_id', $subcategory->category_id)
+            ->where('status', 1)
+            ->get();
+
+        // Base scope: products in this subcategory only
+        $subBase = ['status' => 1, 'approval_status' => 'approved', 'subcategory_id' => $subcategory->id];
+
+        // Filter counts (computed from base scope, before filters)
+        $brandCountMap = Product::where($subBase)->whereNotNull('brand_id')
+            ->select('brand_id', DB::raw('count(*) as cnt'))->groupBy('brand_id')->pluck('cnt', 'brand_id');
+        $brands = Brand::whereIn('id', $brandCountMap->keys())->orderBy('name')->get();
+
+        $weightCountMap = Product::where($subBase)->whereNotNull('weight_id')
+            ->select('weight_id', DB::raw('count(*) as cnt'))->groupBy('weight_id')->pluck('cnt', 'weight_id');
+        $weights = ProductWeight::whereIn('id', $weightCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $lifeStageCountMap = Product::where($subBase)->whereNotNull('life_stage_id')
+            ->select('life_stage_id', DB::raw('count(*) as cnt'))->groupBy('life_stage_id')->pluck('cnt', 'life_stage_id');
+        $lifeStages = ProductLifeStage::whereIn('id', $lifeStageCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $flavorCountMap = Product::where($subBase)->whereNotNull('flavor_id')
+            ->select('flavor_id', DB::raw('count(*) as cnt'))->groupBy('flavor_id')->pluck('cnt', 'flavor_id');
+        $flavors = ProductFlavor::whereIn('id', $flavorCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        // Build product query
+        $products = Product::where($subBase)
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id',
+                     'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id')
+            ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'brand']);
+
+        // Sort
+        if ($request->sort == 2) {
             $products = $products->orderBy('created_at', 'asc');
         } elseif ($request->sort == 3) {
             $products = $products->orderBy('new_price', 'desc');
@@ -938,26 +966,35 @@ $brands = Brand::where('status', 1)
 
         $min_price = $products->min('new_price');
         $max_price = $products->max('new_price');
-        if($request->min_price && $request->max_price){
-            $products = $products->where('new_price','>=',$request->min_price);
-            $products = $products->where('new_price','<=',$request->max_price);
+        if ($request->min_price && $request->max_price) {
+            $products = $products->where('new_price', '>=', $request->min_price)
+                                 ->where('new_price', '<=', $request->max_price);
         }
 
-        $selectedChildcategories = $request->input('childcategory', []);
-        $products = $products->when($selectedChildcategories, function ($query) use ($selectedChildcategories) {
-            return $query->whereHas('childcategory', function ($subQuery) use ($selectedChildcategories) {
-                $subQuery->whereIn('id', $selectedChildcategories);
-            });
-        });
+        // Brand filter (single link-based)
+        $activeBrandId = $request->input('brand');
+        if ($activeBrandId) $products = $products->where('brand_id', $activeBrandId);
 
-        $products = $products->paginate(24);
-        $impproducts = Product::where(['status' => 1, 'topsale' => 1])
-            ->with('image')
-            ->limit(6)
-            ->select('id', 'name', 'slug')
-            ->get();
+        // Checkbox filters
+        $selectedWeights = $request->input('weight', []);
+        $products = $products->when($selectedWeights, fn($q) => $q->whereIn('weight_id', $selectedWeights));
 
-        return view('frontEnd.layouts.pages.subcategory', compact('subcategory', 'products', 'impproducts', 'childcategories', 'max_price', 'min_price','soldShow'));
+        $selectedLifeStages = $request->input('life_stage', []);
+        $products = $products->when($selectedLifeStages, fn($q) => $q->whereIn('life_stage_id', $selectedLifeStages));
+
+        $selectedFlavors = $request->input('flavor', []);
+        $products = $products->when($selectedFlavors, fn($q) => $q->whereIn('flavor_id', $selectedFlavors));
+
+        $products = $products->paginate(12)->withQueryString();
+
+        return view('frontEnd.layouts.pages.subcategory', compact(
+            'subcategory', 'category', 'siblings', 'products',
+            'min_price', 'max_price', 'soldShow',
+            'brands', 'brandCountMap', 'activeBrandId',
+            'weights', 'weightCountMap', 'selectedWeights',
+            'lifeStages', 'lifeStageCountMap', 'selectedLifeStages',
+            'flavors', 'flavorCountMap', 'selectedFlavors'
+        ));
     }
 
     public function products($slug, Request $request)

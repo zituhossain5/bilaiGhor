@@ -160,11 +160,20 @@
                             @enderror
                         </div>
 
-                        <div class="form-group mb-0">
+                        <div class="form-group mb-3">
                             <label for="meta_description" class="form-label">Meta Description</label>
-                            <textarea class="summernote form-control @error('meta_description') is-invalid @enderror" 
+                            <textarea class="summernote form-control @error('meta_description') is-invalid @enderror"
                                       name="meta_description" id="meta_description">{!! $edit_data->meta_description !!}</textarea>
                             @error('meta_description')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="full_description" class="form-label">Full Description / SEO Content</label>
+                            <textarea class="summernote form-control @error('full_description') is-invalid @enderror"
+                                      name="full_description" id="full_description">{!! $edit_data->full_description !!}</textarea>
+                            <small class="text-muted">Shown in accordion below the product grid on the category page.</small>
+                            @error('full_description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

@@ -209,6 +209,7 @@ class ProductController extends Controller
         $input['best_seller_sold_count'] = $request->best_seller ? (int) ($request->best_seller_sold_count ?? 0) : 0;
         $input['new_arrival']           = $request->new_arrival ? 1 : 0;
         $input['feature_product']       = $request->feature_product ? 1 : 0;
+        $input['product_badge']         = $request->product_badge ?: null;
         $input['product_code']          = 'P' . str_pad($last_id, 4, '0', STR_PAD_LEFT);
         
         // Wholesale settings
@@ -477,6 +478,7 @@ class ProductController extends Controller
         $input['new_arrival']           = $request->new_arrival ? 1 : 0;
         $input['free_delivery']         = $request->free_delivery ? 1 : 0;
         $input['feature_product']       = $request->feature_product ? 1 : 0;
+        $input['product_badge']         = $request->product_badge ?: null;
 
         // VIDEO — YouTube or local upload
         $this->handleVideoInput($request, $input, $product);

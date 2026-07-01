@@ -185,6 +185,23 @@
                 <label class="form-label">Best Seller Sold Count</label>
                 <input type="number" name="best_seller_sold_count" id="bs_sold_create" class="form-control form-control-sm" min="0" placeholder="e.g. 145">
             </div>
+            <div class="mt-2">
+                <label class="form-label">Product Badge</label>
+                <select name="product_badge" class="form-control form-control-sm">
+                    <option value="">— No Badge —</option>
+                    <option value="Best Seller">Best Seller</option>
+                    <option value="Limited Offer">Limited Offer</option>
+                    <option value="New Arrival">New Arrival</option>
+                    <option value="Top Rated">Top Rated</option>
+                    <option value="Exclusive Deal">Exclusive Deal</option>
+                    <option value="Limited Stock">Limited Stock</option>
+                    <option value="Customer Favorite">Customer Favorite</option>
+                    <option value="Best Value">Best Value</option>
+                    <option value="Editor's Pick">Editor's Pick</option>
+                    <option value="Hot Deal">Hot Deal</option>
+                    <option value="Trending">Trending</option>
+                </select>
+            </div>
         </div>
 
         <div class="pf-side-foot">

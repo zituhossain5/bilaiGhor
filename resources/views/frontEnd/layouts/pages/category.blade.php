@@ -240,8 +240,8 @@
                     @endphp
                     <div class="bilai-product-card">
                         <div class="bilai-product-top">
-                            @if($discount > 0)
-                            <span class="bilai-stock-badge">{{ $discount }}% OFF</span>
+                            @if(!empty($value->product_badge))
+                            <span class="bilai-card-badge">{{ $value->product_badge }}</span>
                             @else
                             <span></span>
                             @endif
@@ -333,16 +333,16 @@
 </div>{{-- end .bilai-cat-page --}}
 
 {{-- BOTTOM DESCRIPTION ACCORDION --}}
-@if($category->meta_description)
-<div class="bilai-cat-desc-accordion">
-    <div class="container">
-        <button class="bilai-cat-desc-toggle" id="bilaiDescToggle" aria-expanded="false">
-            View Full Description
-            <i class="fas fa-chevron-down bilai-cat-desc-icon"></i>
+@if($category->full_description)
+<div class="container">
+<div class="bilai-seo-accordion">
+        <button class="bilai-seo-toggle" id="bilaiSeoToggle" type="button" aria-expanded="false">
+            <span>View Full Description</span>
+            <i class="fas fa-chevron-down bilai-seo-icon"></i>
         </button>
-        <div class="bilai-cat-desc-body" id="bilaiDescBody" style="display:none;">
-            <div class="bilai-cat-desc-content">
-                {!! $category->meta_description !!}
+        <div class="bilai-seo-body" id="bilaiSeoBody" style="display:none;">
+            <div class="bilai-seo-content">
+                {!! $category->full_description !!}
             </div>
         </div>
     </div>
@@ -389,11 +389,11 @@
             $(this).find(".bilai-cat-toggle-icon").toggleClass("fa-chevron-up fa-chevron-down");
         });
 
-        $("#bilaiDescToggle").on("click", function () {
+        $("#bilaiSeoToggle").on("click", function () {
             var expanded = $(this).attr("aria-expanded") === "true";
             $(this).attr("aria-expanded", String(!expanded));
-            $(this).find(".bilai-cat-desc-icon").toggleClass("fa-chevron-down fa-chevron-up");
-            $("#bilaiDescBody").slideToggle(250);
+            $(this).find(".bilai-seo-icon").toggleClass("fa-chevron-down fa-chevron-up");
+            $("#bilaiSeoBody").slideToggle(250);
         });
     });
     </script>

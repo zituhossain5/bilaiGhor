@@ -130,7 +130,7 @@
             <h2 class="bilai-cat-title">Shop by Category</h2>
             <a href="#" class="bilai-cat-more">See More</a>
         </div>
-        <div class="bilai-cat-grid">
+        <div class="bilai-cat-grid-home">
             @foreach ($menucategories as $value)
             <a href="{{ route('category', $value->slug) }}" class="bilai-cat-card">
                 <div class="bilai-cat-img">

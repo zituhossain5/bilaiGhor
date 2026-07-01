@@ -851,7 +851,7 @@ $brands = Brand::where('status', 1)
         $flavors = ProductFlavor::whereIn('id', $flavorCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
 
         $products = Product::where($catBase)
-            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id')
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
             ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'brand']);
 
         if ($request->sort == 1) {
@@ -902,7 +902,7 @@ $brands = Brand::where('status', 1)
         $selectedFlavors = $request->input('flavor', []);
         $products = $products->when($selectedFlavors, fn($q) => $q->whereIn('flavor_id', $selectedFlavors));
 
-        $products = $products->paginate(12)->withQueryString();
+        $products = $products->paginate(24)->withQueryString();
         return view('frontEnd.layouts.pages.category', compact(
             'category', 'products', 'subcategories', 'min_price', 'max_price', 'soldShow',
             'brands', 'brandCountMap', 'activeSubcatSlug', 'activeBrandId',
@@ -946,7 +946,7 @@ $brands = Brand::where('status', 1)
         // Build product query
         $products = Product::where($subBase)
             ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id',
-                     'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id')
+                     'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
             ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'brand']);
 
         // Sort
@@ -985,7 +985,7 @@ $brands = Brand::where('status', 1)
         $selectedFlavors = $request->input('flavor', []);
         $products = $products->when($selectedFlavors, fn($q) => $q->whereIn('flavor_id', $selectedFlavors));
 
-        $products = $products->paginate(12)->withQueryString();
+        $products = $products->paginate(24)->withQueryString();
 
         return view('frontEnd.layouts.pages.subcategory', compact(
             'subcategory', 'category', 'siblings', 'products',

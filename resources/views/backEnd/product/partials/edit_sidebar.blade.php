@@ -252,6 +252,15 @@
                 <input type="number" name="best_seller_sold_count" id="bs_sold_edit" class="form-control form-control-sm" min="0"
                        value="{{ old('best_seller_sold_count', $edit_data->best_seller_sold_count ?? 0) }}" placeholder="e.g. 145">
             </div>
+            <div class="mt-2">
+                <label class="form-label">Product Badge</label>
+                <select name="product_badge" class="form-control form-control-sm">
+                    <option value="">— No Badge —</option>
+                    @foreach(['Best Seller','Limited Offer','New Arrival','Top Rated','Exclusive Deal','Limited Stock','Customer Favorite','Best Value',"Editor's Pick",'Hot Deal','Trending'] as $badge)
+                    <option value="{{ $badge }}" @if(old('product_badge', $edit_data->product_badge) === $badge) selected @endif>{{ $badge }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
 
         <div class="pf-side-foot">

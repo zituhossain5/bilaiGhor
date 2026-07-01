@@ -132,7 +132,7 @@
             <h2 class="bilai-cat-title">Shop by Category</h2>
             <a href="#" class="bilai-cat-more">See More</a>
         </div>
-        <div class="bilai-cat-grid">
+        <div class="bilai-cat-grid-home">
             <?php $__currentLoopData = $menucategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <a href="<?php echo e(route('category', $value->slug)); ?>" class="bilai-cat-card">
                 <div class="bilai-cat-img">

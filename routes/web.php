@@ -631,7 +631,12 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ip
 
    Route::get('/order-track', [CustomerController::class, 'order_track'])->name('customer.order_track');
     Route::get('/order-track/result', [CustomerController::class, 'order_track_result'])->name('customer.order_track_result');
-    
+
+    // Social login placeholders — install laravel/socialite and implement a SocialAuthController to replace these
+    Route::get('/auth/{provider}/redirect', function (string $provider) {
+        return redirect()->route('customer.login')
+            ->with('info', 'সোশ্যাল লগিন শীঘ্রই চালু হবে। (Laravel Socialite ইনস্টল করুন)');
+    })->name('customer.social.redirect')->where('provider', 'google|facebook');
 
 });
 // customer auth

@@ -1,9 +1,8 @@
-@extends('frontEnd.layouts.master')
-@section('title','Customer Login')
-@php
+<?php $__env->startSection('title','Customer Login'); ?>
+<?php
     $generalsetting = \App\Models\GeneralSetting::first();
-@endphp
-@section('content')
+?>
+<?php $__env->startSection('content'); ?>
 
 <style>
 /* BilaiGhor Customer Auth Start */
@@ -222,68 +221,97 @@
 <section class="bilai-auth-bg">
     <div class="bilai-auth-card">
 
-        {{-- Tab switch --}}
+        
         <div class="bilai-auth-tabs">
-            <a href="{{ route('customer.login') }}" class="bilai-auth-tab active">Login</a>
-            <a href="{{ route('customer.register') }}" class="bilai-auth-tab">Register</a>
+            <a href="<?php echo e(route('customer.login')); ?>" class="bilai-auth-tab active">Login</a>
+            <a href="<?php echo e(route('customer.register')); ?>" class="bilai-auth-tab">Register</a>
         </div>
 
-        {{-- Flash messages --}}
-        @if(session('info'))
+        
+        <?php if(session('info')): ?>
         <div style="padding:10px 14px;margin-bottom:16px;background:#fff8f0;border:1px solid var(--bilai-primary,#e8861a);border-radius:8px;font-size:13px;color:#5a3a10;">
-            {{ session('info') }}
+            <?php echo e(session('info')); ?>
+
         </div>
-        @endif
+        <?php endif; ?>
 
-        {{-- Login form --}}
-        <form action="{{ route('customer.signin') }}" method="POST">
-            @csrf
+        
+        <form action="<?php echo e(route('customer.signin')); ?>" method="POST">
+            <?php echo csrf_field(); ?>
 
-            {{-- Email / Mobile --}}
+            
             <div class="bilai-auth-field">
                 <label class="bilai-auth-label" for="login">Email / Mobile <span class="text-danger">*</span></label>
                 <input type="text" id="login" name="login"
-                       class="bilai-auth-input no-icon @error('login') is-invalid @enderror"
-                       value="{{ old('login') }}"
+                       class="bilai-auth-input no-icon <?php $__errorArgs = ['login'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                       value="<?php echo e(old('login')); ?>"
                        placeholder="0167-1518782">
-                @error('login')
-                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['login'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Password --}}
+            
             <div class="bilai-auth-field">
                 <label class="bilai-auth-label" for="password">Password <span class="text-danger">*</span></label>
                 <div style="position:relative;">
                     <input type="password" id="password" name="password"
-                           class="bilai-auth-input @error('password') is-invalid @enderror"
+                           class="bilai-auth-input <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                            placeholder="••••••••" required>
                     <button type="button" class="bilai-eye-btn" onclick="bilaiTogglePass('password', this)" aria-label="Show password">
                         <i class="fa fa-eye" id="eye-password"></i>
                     </button>
                 </div>
-                @error('password')
-                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Remember + Forgot --}}
+            
             <div class="bilai-auth-row">
                 <label class="bilai-auth-check-label">
-                    <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
+                    <input type="checkbox" name="remember" <?php echo e(old('remember') ? 'checked' : ''); ?>>
                     Remember Password
                 </label>
-                <a href="{{ route('customer.forgot.password') }}" class="bilai-auth-forgot">
+                <a href="<?php echo e(route('customer.forgot.password')); ?>" class="bilai-auth-forgot">
                     <i class="fa-solid fa-lock" style="font-size:11px;"></i> Forgot Password?
                 </a>
             </div>
 
-            {{-- Submit --}}
+            
             <button type="submit" class="bilai-auth-btn">লগিন করুন</button>
         </form>
 
-        {{-- Demo credentials (only in demo mode) --}}
-        @if(isset($demoMode) && $demoMode)
+        
+        <?php if(isset($demoMode) && $demoMode): ?>
         <div class="bilai-demo-block">
             <small class="text-muted d-block mb-1">রিসেলার ইউজার</small>
             <div class="bilai-demo-row">
@@ -298,16 +326,16 @@
                 <button type="button" class="bilai-demo-use-btn" onclick="bilaiDemoFill('01870829343','123456789')">Use</button>
             </div>
         </div>
-        @endif
+        <?php endif; ?>
 
-        {{-- Or divider --}}
+        
         <div class="bilai-auth-divider">Or</div>
 
-        {{-- Social login (placeholders — install Socialite to enable) --}}
-        <a href="{{ route('customer.social.redirect', 'google') }}" class="bilai-social-btn">
+        
+        <a href="<?php echo e(route('customer.social.redirect', 'google')); ?>" class="bilai-social-btn">
             <i class="fab fa-google"></i> Continue with Google
         </a>
-        <a href="{{ route('customer.social.redirect', 'facebook') }}" class="bilai-social-btn">
+        <a href="<?php echo e(route('customer.social.redirect', 'facebook')); ?>" class="bilai-social-btn">
             <i class="fab fa-facebook-f"></i> Continue with Facebook
         </a>
 
@@ -332,9 +360,11 @@ function bilaiDemoFill(login, pass) {
 }
 </script>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('script')
-<script src="{{ asset('public/frontEnd/js/parsley.min.js') }}"></script>
-<script src="{{ asset('public/frontEnd/js/form-validation.init.js') }}"></script>
-@endpush
+<?php $__env->startPush('script'); ?>
+<script src="<?php echo e(asset('public/frontEnd/js/parsley.min.js')); ?>"></script>
+<script src="<?php echo e(asset('public/frontEnd/js/form-validation.init.js')); ?>"></script>
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/customer/login.blade.php ENDPATH**/ ?>

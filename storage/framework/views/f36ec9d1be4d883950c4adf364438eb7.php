@@ -1,9 +1,8 @@
-@extends('frontEnd.layouts.master')
-@section('title','Customer Register')
-@php
+<?php $__env->startSection('title','Customer Register'); ?>
+<?php
     $generalsetting = \App\Models\GeneralSetting::first();
-@endphp
-@section('content')
+?>
+<?php $__env->startSection('content'); ?>
 
 <style>
 /* BilaiGhor Customer Auth Start */
@@ -191,120 +190,232 @@ input[type="file"].bilai-auth-input,
 <section class="bilai-auth-bg">
     <div class="bilai-auth-card">
 
-        {{-- Tab switch --}}
+        
         <div class="bilai-auth-tabs">
-            <a href="{{ route('customer.login') }}" class="bilai-auth-tab">Login</a>
-            <a href="{{ route('customer.register') }}" class="bilai-auth-tab active">Register</a>
+            <a href="<?php echo e(route('customer.login')); ?>" class="bilai-auth-tab">Login</a>
+            <a href="<?php echo e(route('customer.register')); ?>" class="bilai-auth-tab active">Register</a>
         </div>
 
-        <form action="{{ route('customer.store') }}" method="POST" enctype="multipart/form-data" data-parsley-validate="">
-            @csrf
+        <form action="<?php echo e(route('customer.store')); ?>" method="POST" enctype="multipart/form-data" data-parsley-validate="">
+            <?php echo csrf_field(); ?>
 
-            {{-- Name --}}
+            
             <div class="bilai-auth-field">
                 <label class="bilai-auth-label" for="name">
                     আপনার নাম <span id="owner_name_label" style="display:none;">(মালিকের নাম)</span>
                     <span class="text-danger">*</span>
                 </label>
                 <input type="text" id="name" name="name"
-                       class="bilai-auth-input no-icon @error('name') is-invalid @enderror"
-                       value="{{ old('name') }}"
+                       class="bilai-auth-input no-icon <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                       value="<?php echo e(old('name')); ?>"
                        placeholder="পুরো নাম লিখুন" required>
-                @error('name')
-                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Phone --}}
+            
             <div class="bilai-auth-field">
                 <label class="bilai-auth-label" for="phone">মোবাইল নাম্বার <span class="text-danger">*</span></label>
                 <input type="text" id="phone" name="phone"
-                       class="bilai-auth-input no-icon @error('phone') is-invalid @enderror"
-                       value="{{ old('phone') }}"
+                       class="bilai-auth-input no-icon <?php $__errorArgs = ['phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                       value="<?php echo e(old('phone')); ?>"
                        placeholder="017xxxxxxxx" required>
-                @error('phone')
-                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Email (hidden — shown for seller/reseller via JS) --}}
+            
             <div class="custom-input-group" id="email_field" style="display:none;">
                 <label for="email">ইমেইল <span class="text-danger">*</span></label>
                 <i class="fas fa-envelope input-icon"></i>
                 <input type="email" id="email"
-                       class="custom-input @error('email') is-invalid @enderror"
-                       name="email" value="{{ old('email') }}"
+                       class="custom-input <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                       name="email" value="<?php echo e(old('email')); ?>"
                        placeholder="email@example.com">
-                @error('email')
-                    <span class="text-danger small mt-1 d-block">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger small mt-1 d-block"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Shop Name (hidden — shown for seller) --}}
+            
             <div class="custom-input-group" id="shop_name_field" style="display:none;">
                 <label for="shop_name">শপের নাম <span class="text-danger">*</span></label>
                 <i class="fas fa-store input-icon"></i>
                 <input type="text" id="shop_name"
-                       class="custom-input @error('shop_name') is-invalid @enderror"
-                       name="shop_name" value="{{ old('shop_name') }}"
+                       class="custom-input <?php $__errorArgs = ['shop_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                       name="shop_name" value="<?php echo e(old('shop_name')); ?>"
                        placeholder="আপনার শপের নাম লিখুন">
-                @error('shop_name')
-                    <span class="text-danger small mt-1 d-block">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['shop_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger small mt-1 d-block"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Shop Slug (hidden — shown for seller) --}}
+            
             <div class="custom-input-group" id="slug_field" style="display:none;">
                 <label for="slug">শপ URL (Slug) <span class="text-danger">*</span></label>
                 <i class="fas fa-link input-icon"></i>
                 <input type="text" id="slug"
-                       class="custom-input @error('slug') is-invalid @enderror"
-                       name="slug" value="{{ old('slug') }}"
+                       class="custom-input <?php $__errorArgs = ['slug'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                       name="slug" value="<?php echo e(old('slug')); ?>"
                        placeholder="my-shop-name">
                 <small class="text-muted">শুধুমাত্র ইংরেজি অক্ষর, সংখ্যা ও হাইফেন (-)</small>
-                @error('slug')
-                    <span class="text-danger small mt-1 d-block">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['slug'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger small mt-1 d-block"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Address (hidden — shown for seller) --}}
+            
             <div class="custom-input-group" id="address_field" style="display:none;">
                 <label for="address">ঠিকানা</label>
                 <i class="fas fa-map-marker-alt input-icon"></i>
                 <textarea id="address"
-                          class="custom-input @error('address') is-invalid @enderror"
+                          class="custom-input <?php $__errorArgs = ['address'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                           name="address" rows="2"
-                          placeholder="আপনার শপের ঠিকানা">{{ old('address') }}</textarea>
-                @error('address')
-                    <span class="text-danger small mt-1 d-block">{{ $message }}</span>
-                @enderror
+                          placeholder="আপনার শপের ঠিকানা"><?php echo e(old('address')); ?></textarea>
+                <?php $__errorArgs = ['address'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger small mt-1 d-block"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Logo (hidden — shown for seller) --}}
+            
             <div class="custom-input-group" id="logo_field" style="display:none;">
                 <label for="logo">শপ লোগো</label>
                 <input type="file" id="logo"
-                       class="custom-input no-icon @error('logo') is-invalid @enderror"
+                       class="custom-input no-icon <?php $__errorArgs = ['logo'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                        name="logo" accept="image/*">
                 <small class="text-muted">সর্বোচ্চ 2MB</small>
-                @error('logo')
-                    <span class="text-danger small mt-1 d-block">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['logo'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger small mt-1 d-block"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Banner (hidden — shown for seller) --}}
+            
             <div class="custom-input-group" id="banner_field" style="display:none;">
                 <label for="banner">শপ ব্যানার</label>
                 <input type="file" id="banner"
-                       class="custom-input no-icon @error('banner') is-invalid @enderror"
+                       class="custom-input no-icon <?php $__errorArgs = ['banner'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                        name="banner" accept="image/*">
                 <small class="text-muted">সর্বোচ্চ 3MB</small>
-                @error('banner')
-                    <span class="text-danger small mt-1 d-block">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['banner'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger small mt-1 d-block"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Seller verification note (hidden) --}}
+            
             <div id="seller_verification_note" style="display:none;">
                 <div style="padding:14px 16px;margin:0 0 12px;border-radius:8px;border:1px solid rgba(232,134,26,0.3);background:#fff8f0;color:#5a3a10;font-size:13px;line-height:1.55;">
                     <strong style="display:block;margin-bottom:4px;"><i class="fas fa-info-circle" style="color:var(--bilai-primary,#e8861a);margin-right:4px;"></i> একাউন্ট ভেরিফিকেশন</strong>
@@ -312,98 +423,142 @@ input[type="file"].bilai-auth-input,
                 </div>
             </div>
 
-            {{-- Password --}}
+            
             <div class="bilai-auth-field">
                 <label class="bilai-auth-label" for="password">পাসওয়ার্ড <span class="text-danger">*</span></label>
                 <div style="position:relative;">
                     <input type="password" id="password" name="password"
-                           class="bilai-auth-input @error('password') is-invalid @enderror"
+                           class="bilai-auth-input <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                            placeholder="••••••••" required>
                     <button type="button" class="bilai-eye-btn" onclick="bilaiTogglePass('password', this)" aria-label="Show password">
                         <i class="fa fa-eye"></i>
                     </button>
                 </div>
-                @error('password')
-                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Password Confirmation (always visible) --}}
+            
             <div class="bilai-auth-field" id="password_confirmation_field">
                 <label class="bilai-auth-label" for="password_confirmation">পাসওয়ার্ড নিশ্চিত করুন</label>
                 <div style="position:relative;">
                     <input type="password" id="password_confirmation" name="password_confirmation"
-                           class="bilai-auth-input @error('password_confirmation') is-invalid @enderror"
+                           class="bilai-auth-input <?php $__errorArgs = ['password_confirmation'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                            placeholder="••••••••">
                     <button type="button" class="bilai-eye-btn" onclick="bilaiTogglePass('password_confirmation', this)" aria-label="Show password">
                         <i class="fa fa-eye"></i>
                     </button>
                 </div>
-                @error('password_confirmation')
-                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['password_confirmation'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Reseller toggle --}}
-            @if(($generalsetting?->reseller_enabled ?? 1) == 1)
+            
+            <?php if(($generalsetting?->reseller_enabled ?? 1) == 1): ?>
             <div class="bilai-auth-field" style="margin-top:8px;">
                 <label class="bilai-toggle-label">
                     <input type="checkbox" id="is_reseller" name="is_reseller" value="1"
-                           {{ old('is_reseller') ? 'checked' : '' }}
+                           <?php echo e(old('is_reseller') ? 'checked' : ''); ?>
+
                            onchange="toggleResellerFields()">
                     আমি রিসেলার একাউন্ট তৈরি করতে চাই
                 </label>
             </div>
 
-            {{-- Reseller shop name (hidden) --}}
+            
             <div class="custom-input-group" id="reseller_shop_name_field" style="display:none;">
                 <label for="reseller_shop_name">Shop Name <span class="text-danger">*</span></label>
                 <i class="fas fa-store input-icon"></i>
                 <input type="text" id="reseller_shop_name"
-                       class="custom-input @error('reseller_shop_name') is-invalid @enderror"
-                       name="reseller_shop_name" value="{{ old('reseller_shop_name') }}"
+                       class="custom-input <?php $__errorArgs = ['reseller_shop_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                       name="reseller_shop_name" value="<?php echo e(old('reseller_shop_name')); ?>"
                        placeholder="Enter your shop name">
-                @error('reseller_shop_name')
-                    <span class="text-danger small mt-1 d-block">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['reseller_shop_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-danger small mt-1 d-block"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Reseller verification note (hidden) --}}
+            
             <div id="reseller_verification_note" style="display:none;">
                 <div style="padding:14px 16px;margin:0 0 12px;border-radius:8px;border:1px solid rgba(232,134,26,0.3);background:#fff8f0;color:#5a3a10;font-size:13px;line-height:1.55;">
                     <strong style="display:block;margin-bottom:4px;"><i class="fas fa-info-circle" style="color:var(--bilai-primary,#e8861a);margin-right:4px;"></i> একাউন্ট ভেরিফিকেশন</strong>
                     রেজিস্ট্রেশনের পর লগইন করে <strong>রিসেলার ড্যাশবোর্ড → ভেরিফিকেশন</strong> পেজ থেকে ভোটার আইডি ও আপনার ছবি আপলোড করুন।
                 </div>
             </div>
-            @endif
+            <?php endif; ?>
 
-            {{-- Seller toggle --}}
-            @if(($generalsetting?->vendor_enabled ?? 1) == 1)
+            
+            <?php if(($generalsetting?->vendor_enabled ?? 1) == 1): ?>
             <div class="bilai-auth-field" style="margin-top:4px;">
                 <label class="bilai-toggle-label">
                     <input type="checkbox" id="is_seller" name="is_seller" value="1"
-                           {{ old('is_seller') ? 'checked' : '' }}
+                           <?php echo e(old('is_seller') ? 'checked' : ''); ?>
+
                            onchange="toggleSellerFields()">
                     আমি সেলার একাউন্ট তৈরি করতে চাই
                 </label>
             </div>
-            @endif
+            <?php endif; ?>
 
-            {{-- Submit --}}
+            
             <div style="margin-top:20px;">
                 <button class="bilai-auth-btn" type="submit">রেজিস্ট্রেশন করুন</button>
             </div>
 
         </form>
 
-        {{-- Or divider --}}
+        
         <div class="bilai-auth-divider">Or</div>
 
-        {{-- Social login (placeholders — install Laravel Socialite to enable) --}}
-        <a href="{{ route('customer.social.redirect', 'google') }}" class="bilai-social-btn">
+        
+        <a href="<?php echo e(route('customer.social.redirect', 'google')); ?>" class="bilai-social-btn">
             <i class="fab fa-google"></i> Continue with Google
         </a>
-        <a href="{{ route('customer.social.redirect', 'facebook') }}" class="bilai-social-btn">
+        <a href="<?php echo e(route('customer.social.redirect', 'facebook')); ?>" class="bilai-social-btn">
             <i class="fab fa-facebook-f"></i> Continue with Facebook
         </a>
 
@@ -548,9 +703,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('script')
-<script src="{{ asset('public/frontEnd/js/parsley.min.js') }}"></script>
-<script src="{{ asset('public/frontEnd/js/form-validation.init.js') }}"></script>
-@endpush
+<?php $__env->startPush('script'); ?>
+<script src="<?php echo e(asset('public/frontEnd/js/parsley.min.js')); ?>"></script>
+<script src="<?php echo e(asset('public/frontEnd/js/form-validation.init.js')); ?>"></script>
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/customer/register.blade.php ENDPATH**/ ?>

@@ -94,6 +94,7 @@ class CustomerController extends Controller
 
         $login    = $request->input('login');   // phone or email
         $password = $request->input('password');
+        $remember = $request->boolean('remember');
 
         // Check if login is phone number and if it belongs to a vendor or reseller
         $isVendorPhone = false;
@@ -129,7 +130,7 @@ class CustomerController extends Controller
         // Also check if customer exists with this phone number
         if (!$isVendorPhone && !$isResellerPhone && preg_match('/^[0-9+]+$/', $login)) {
             $customerExists = Customer::where('phone', $login)->exists();
-            if ($customerExists && Auth::guard('customer')->attempt(['phone' => $login, 'password' => $password])) {
+            if ($customerExists && Auth::guard('customer')->attempt(['phone' => $login, 'password' => $password], $remember)) {
                 Toastr::success('You are login successfully', 'success!');
                 if (Cart::instance('shopping')->count() > 0) {
                     return redirect()->route('customer.checkout');
@@ -190,7 +191,7 @@ class CustomerController extends Controller
                         })
                         ->exists();
                     
-                    if ($customerExists && !$isResellerCustomer && Auth::guard('customer')->attempt(['email' => $login, 'password' => $password])) {
+                    if ($customerExists && !$isResellerCustomer && Auth::guard('customer')->attempt(['email' => $login, 'password' => $password], $remember)) {
                         Toastr::success('You are login successfully', 'success!');
                         if (Cart::instance('shopping')->count() > 0) {
                             return redirect()->route('customer.checkout');

@@ -31,12 +31,22 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'google' => [
+        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect'      => env('GOOGLE_REDIRECT_URI'),
+    ],
+
     'facebook' => [
-        'access_token' => env('FACEBOOK_ACCESS_TOKEN'),
-        'pixel_id' => env('FACEBOOK_PIXEL_ID'),
+        'access_token'  => env('FACEBOOK_ACCESS_TOKEN'),
+        'pixel_id'      => env('FACEBOOK_PIXEL_ID'),
         'test_event_code' => env('FACEBOOK_TEST_EVENT_CODE'),
-        'app_id' => env('FACEBOOK_APP_ID'),
-        'app_secret' => env('FACEBOOK_APP_SECRET'),
+        'app_id'        => env('FACEBOOK_APP_ID'),
+        'app_secret'    => env('FACEBOOK_APP_SECRET'),
+        // Socialite fields
+        'client_id'     => env('FACEBOOK_APP_ID'),
+        'client_secret' => env('FACEBOOK_APP_SECRET'),
+        'redirect'      => env('FACEBOOK_REDIRECT_URI'),
     ],
 
     'bdcourier' => [

@@ -25,7 +25,8 @@
       "Bash(grep -n 'protected $fillable\\\\|'\\\\''brand_id'\\\\''\\\\|'\\\\''weight'\\\\''\\\\|'\\\\''life_stage'\\\\''\\\\|'\\\\''flavor'\\\\''\\\\|'\\\\''sold'\\\\''\\\\|'\\\\''stock'\\\\''' d:/projects/bilaiGhor/app/Models/Product.php)",
       "Bash(grep -n \"use App\\\\\\\\\\\\\\\\Models\\\\\\\\\\\\\\\\Brand\" d:/projects/bilaiGhor/app/Http/Controllers/Frontend/FrontendController.php)",
       "PowerShell(\\(Get-Content \"d:\\\\projects\\\\bilaiGhor\\\\resources\\\\views\\\\frontEnd\\\\layouts\\\\master.blade.php\" -Raw\\) -replace \"bilai-header-footer\\\\.css'\\\\}\\\\}\\\\?v=21\", \"bilai-header-footer.css'}}?v=22\" | Set-Content \"d:\\\\projects\\\\bilaiGhor\\\\resources\\\\views\\\\frontEnd\\\\layouts\\\\master.blade.php\" -Encoding utf8)",
-      "PowerShell(\\(Get-Content \"d:\\\\projects\\\\bilaiGhor\\\\resources\\\\views\\\\frontEnd\\\\layouts\\\\master.blade.php\" -Raw\\) -replace [regex]::Escape\\(\"bilai-header-footer.css'}}?v=21\"\\), \"bilai-header-footer.css'}}?v=22\" | Set-Content \"d:\\\\projects\\\\bilaiGhor\\\\resources\\\\views\\\\frontEnd\\\\layouts\\\\master.blade.php\" -Encoding utf8)"
+      "PowerShell(\\(Get-Content \"d:\\\\projects\\\\bilaiGhor\\\\resources\\\\views\\\\frontEnd\\\\layouts\\\\master.blade.php\" -Raw\\) -replace [regex]::Escape\\(\"bilai-header-footer.css'}}?v=21\"\\), \"bilai-header-footer.css'}}?v=22\" | Set-Content \"d:\\\\projects\\\\bilaiGhor\\\\resources\\\\views\\\\frontEnd\\\\layouts\\\\master.blade.php\" -Encoding utf8)",
+      "Bash(php -r \"echo json_decode\\(file_get_contents\\('d:/projects/bilaiGhor/composer.json'\\), true\\)['require']['laravel/framework'];\")"
     ],
     "additionalDirectories": [
       "C:\\laragon\\etc\\apache2\\sites-enabled"

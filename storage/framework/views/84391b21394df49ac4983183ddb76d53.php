@@ -1,162 +1,177 @@
-<?php $__env->startSection('title','Customer Login'); ?>
+<?php $__env->startSection('title', 'Customer Login'); ?>
 <?php
     $generalsetting = \App\Models\GeneralSetting::first();
 ?>
 <?php $__env->startSection('content'); ?>
 
 <style>
-/* BilaiGhor Customer Auth Start */
-.bilai-auth-bg {
+/* BilaiGhor Customer Auth Figma Fix Start */
+:root {
+    --bilai-auth-primary: #F28C00;
+    --bilai-auth-brown:   #3A1F0F;
+    --bilai-auth-cream:   #FFF8EC;
+    --bilai-auth-tab:     #F5E3AD;
+    --bilai-auth-border:  #E8CDA5;
+    --bilai-auth-text:    #2B1A10;
+    --bilai-auth-muted:   #77706A;
+}
+.ba-section {
     min-height: 80vh;
-    background: #fdf8f3;
+    background: var(--bilai-auth-cream);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 48px 15px;
+    padding: 48px 16px;
 }
-.bilai-auth-card {
-    background: #fff;
+.ba-card {
+    background: var(--bilai-auth-cream);
+    border: 1.5px solid var(--bilai-auth-border);
     border-radius: 16px;
-    border: 1px solid var(--bilai-border, #dccab2);
-    box-shadow: 0 4px 32px rgba(42,21,5,0.09);
     width: 100%;
     max-width: 420px;
-    padding: 32px 36px 36px;
-    font-family: var(--bilai-font-main, 'DM Sans', sans-serif);
+    padding: 32px 32px 36px;
 }
-.bilai-auth-tabs {
+/* Tabs */
+.ba-tabs {
     display: flex;
-    background: #f5ede0;
+    background: #EDD98A;
     border-radius: 10px;
     padding: 4px;
-    margin-bottom: 28px;
     gap: 4px;
+    margin-bottom: 28px;
 }
-.bilai-auth-tab {
+.ba-tab {
     flex: 1;
     text-align: center;
     padding: 9px 0;
     border-radius: 7px;
     font-size: 14px;
     font-weight: 600;
-    color: var(--bilai-text, #4a3728);
+    color: var(--bilai-auth-text);
     text-decoration: none !important;
-    transition: background 0.18s, color 0.18s;
+    transition: background 0.15s;
+    font-family: inherit;
 }
-.bilai-auth-tab.active {
-    background: #fff;
-    color: var(--bilai-body-title, #2a1505);
-    box-shadow: 0 1px 5px rgba(42,21,5,0.10);
+.ba-tab:hover { color: var(--bilai-auth-brown); text-decoration: none !important; }
+.ba-tab.active {
+    background: var(--bilai-auth-tab);
+    color: var(--bilai-auth-brown);
+    box-shadow: 0 1px 4px rgba(58,31,15,0.12);
 }
-.bilai-auth-tab:hover { color: var(--bilai-body-title, #2a1505); }
-.bilai-auth-label {
+/* Flash */
+.ba-flash {
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+.ba-flash-info  { background: #fff8f0; border: 1px solid var(--bilai-auth-primary); color: #5a3a10; }
+.ba-flash-error { background: #fff5f5; border: 1px solid #dc3545; color: #842029; }
+/* Label */
+.ba-label {
     display: block;
     font-size: 13px;
     font-weight: 600;
-    color: var(--bilai-body-title, #2a1505);
+    color: var(--bilai-auth-text);
     margin-bottom: 6px;
 }
-.bilai-auth-field {
-    position: relative;
-    margin-bottom: 16px;
-}
-.bilai-auth-input,
-.bilai-auth-card .custom-input {
+.ba-label .req { color: var(--bilai-auth-primary); margin-left: 2px; }
+/* Field wrapper */
+.ba-field { margin-bottom: 16px; }
+/* Input */
+.ba-input {
+    display: block;
     width: 100%;
     height: 46px;
     padding: 0 44px 0 14px;
-    border: 1.5px solid var(--bilai-border, #dccab2);
+    border: 1.5px solid var(--bilai-auth-border);
     border-radius: 8px;
     font-size: 14px;
-    color: var(--bilai-text, #4a3728);
-    background: #fdfaf7;
-    transition: border-color 0.18s;
+    color: var(--bilai-auth-text);
+    background: #fff;
     outline: none;
     box-shadow: none;
-    font-family: var(--bilai-font-main, 'DM Sans', sans-serif);
+    transition: border-color 0.15s;
+    font-family: inherit;
 }
-.bilai-auth-input:focus,
-.bilai-auth-card .custom-input:focus { border-color: var(--bilai-primary, #e8861a); background: #fff; box-shadow: none; }
-.bilai-auth-input.is-invalid,
-.bilai-auth-card .custom-input.is-invalid { border-color: #dc3545; }
-.bilai-auth-input.no-icon { padding-right: 14px; }
-.bilai-eye-btn {
+.ba-input.no-icon { padding-right: 14px; }
+.ba-input:focus   { border-color: var(--bilai-auth-primary); }
+.ba-input.is-invalid { border-color: #dc3545; }
+/* Eye button */
+.ba-eye {
     position: absolute;
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
     background: none;
     border: none;
-    color: #c0aa90;
+    color: var(--bilai-auth-muted);
     cursor: pointer;
     padding: 2px;
-    line-height: 1;
     font-size: 15px;
+    line-height: 1;
 }
-.bilai-eye-btn:focus { outline: none; }
-.bilai-auth-row {
+.ba-eye:focus { outline: none; }
+.ba-pw-wrap { position: relative; }
+/* Remember + forgot row */
+.ba-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 18px;
     font-size: 13px;
 }
-.bilai-auth-check-label {
+.ba-check-label {
     display: flex;
     align-items: center;
     gap: 7px;
     cursor: pointer;
-    color: var(--bilai-text, #4a3728);
+    color: var(--bilai-auth-text);
     font-weight: 500;
 }
-.bilai-auth-check-label input[type="checkbox"] {
+.ba-check-label input[type="checkbox"] {
     width: 15px;
     height: 15px;
-    accent-color: var(--bilai-primary, #e8861a);
+    accent-color: var(--bilai-auth-primary);
     cursor: pointer;
     flex-shrink: 0;
 }
-.bilai-auth-forgot {
-    color: var(--bilai-text, #4a3728);
-    font-size: 13px;
+.ba-forgot {
+    color: var(--bilai-auth-muted);
     text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    font-size: 13px;
 }
-.bilai-auth-forgot:hover { color: var(--bilai-primary, #e8861a); }
-.bilai-auth-btn {
+.ba-forgot:hover { color: var(--bilai-auth-primary); text-decoration: none !important; }
+/* Submit */
+.ba-btn {
     display: block;
     width: 100%;
     height: 48px;
-    background: var(--bilai-body-title, #2a1505);
+    background: var(--bilai-auth-primary);
     color: #fff;
     border: none;
     border-radius: 10px;
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    transition: opacity 0.18s;
-    font-family: var(--bilai-font-main, 'DM Sans', sans-serif);
+    transition: opacity 0.15s;
+    font-family: inherit;
     letter-spacing: 0.3px;
 }
-.bilai-auth-btn:hover { opacity: 0.85; }
-.bilai-auth-divider {
+.ba-btn:hover { opacity: 0.88; }
+/* Or divider */
+.ba-divider {
     display: flex;
     align-items: center;
     gap: 10px;
     margin: 20px 0;
     font-size: 13px;
-    color: #b0a080;
+    color: var(--bilai-auth-muted);
 }
-.bilai-auth-divider::before,
-.bilai-auth-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--bilai-border, #dccab2);
-}
-.bilai-social-btn {
+.ba-divider::before,
+.ba-divider::after { content: ''; flex: 1; height: 1px; background: var(--bilai-auth-border); }
+/* Social */
+.ba-social {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -164,86 +179,50 @@
     width: 100%;
     height: 44px;
     background: #fff;
-    border: 1.5px solid var(--bilai-border, #dccab2);
+    border: 1.5px solid var(--bilai-auth-border);
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
-    color: var(--bilai-body-title, #2a1505);
+    color: var(--bilai-auth-text);
     text-decoration: none !important;
     margin-bottom: 10px;
-    transition: border-color 0.18s, background 0.18s;
-    font-family: var(--bilai-font-main, 'DM Sans', sans-serif);
+    transition: border-color 0.15s;
+    font-family: inherit;
 }
-.bilai-social-btn:last-child { margin-bottom: 0; }
-.bilai-social-btn:hover { border-color: var(--bilai-primary, #e8861a); background: #fdf8f3; color: var(--bilai-body-title, #2a1505); }
-.bilai-social-btn .fab.fa-google { color: #ea4335; font-size: 16px; }
-.bilai-social-btn .fab.fa-facebook-f { color: #1877f2; font-size: 16px; }
-/* demo credentials block */
-.bilai-demo-block {
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px dashed var(--bilai-border, #dccab2);
-    font-size: 13px;
-}
-.bilai-demo-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-}
-.bilai-demo-row input.form-control {
-    flex: 1;
-    min-width: 0;
-    height: 32px;
-    font-size: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-.bilai-demo-use-btn {
-    border: 1.5px solid var(--bilai-primary, #e8861a);
-    color: var(--bilai-primary, #e8861a);
-    background: transparent;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-}
-.bilai-demo-use-btn:hover { background: var(--bilai-primary, #e8861a); color: #fff; }
+.ba-social:last-child { margin-bottom: 0; }
+.ba-social:hover { border-color: var(--bilai-auth-primary); color: var(--bilai-auth-text); text-decoration: none !important; }
+.ba-social .fab.fa-google    { color: #EA4335; font-size: 16px; }
+.ba-social .fab.fa-facebook-f { color: #1877F2; font-size: 16px; }
+/* Validation */
+.ba-err { font-size: 12px; color: #dc3545; display: block; margin-top: 4px; }
 @media (max-width: 480px) {
-    .bilai-auth-card { padding: 24px 18px 28px; }
+    .ba-card { padding: 24px 18px 28px; }
 }
-/* BilaiGhor Customer Auth End */
+/* BilaiGhor Customer Auth Figma Fix End */
 </style>
 
-<section class="bilai-auth-bg">
-    <div class="bilai-auth-card">
+<section class="ba-section">
+    <div class="ba-card">
 
-        
-        <div class="bilai-auth-tabs">
-            <a href="<?php echo e(route('customer.login')); ?>" class="bilai-auth-tab active">Login</a>
-            <a href="<?php echo e(route('customer.register')); ?>" class="bilai-auth-tab">Register</a>
+        <div class="ba-tabs">
+            <a href="<?php echo e(route('customer.login')); ?>" class="ba-tab active">Login</a>
+            <a href="<?php echo e(route('customer.register')); ?>" class="ba-tab">Register</a>
         </div>
 
-        
         <?php if(session('info')): ?>
-        <div style="padding:10px 14px;margin-bottom:16px;background:#fff8f0;border:1px solid var(--bilai-primary,#e8861a);border-radius:8px;font-size:13px;color:#5a3a10;">
-            <?php echo e(session('info')); ?>
-
-        </div>
+            <div class="ba-flash ba-flash-info"><?php echo e(session('info')); ?></div>
+        <?php endif; ?>
+        <?php if(session('error')): ?>
+            <div class="ba-flash ba-flash-error"><?php echo e(session('error')); ?></div>
         <?php endif; ?>
 
-        
         <form action="<?php echo e(route('customer.signin')); ?>" method="POST">
             <?php echo csrf_field(); ?>
 
-            
-            <div class="bilai-auth-field">
-                <label class="bilai-auth-label" for="login">Email / Mobile <span class="text-danger">*</span></label>
+            <div class="ba-field">
+                <label class="ba-label" for="login">Email / Mobile <span class="req">*</span></label>
                 <input type="text" id="login" name="login"
-                       class="bilai-auth-input no-icon <?php $__errorArgs = ['login'];
+                       class="ba-input no-icon <?php $__errorArgs = ['login'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -252,25 +231,22 @@ if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>"
                        value="<?php echo e(old('login')); ?>"
-                       placeholder="0167-1518782">
+                       placeholder="email or 017xxxxxxxx" required>
                 <?php $__errorArgs = ['login'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;"><?php echo e($message); ?></span>
-                <?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?><span class="ba-err"><?php echo e($message); ?></span><?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
             </div>
 
-            
-            <div class="bilai-auth-field">
-                <label class="bilai-auth-label" for="password">Password <span class="text-danger">*</span></label>
-                <div style="position:relative;">
+            <div class="ba-field">
+                <label class="ba-label" for="password">Password <span class="req">*</span></label>
+                <div class="ba-pw-wrap">
                     <input type="password" id="password" name="password"
-                           class="bilai-auth-input <?php $__errorArgs = ['password'];
+                           class="ba-input <?php $__errorArgs = ['password'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -279,84 +255,60 @@ if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>"
                            placeholder="••••••••" required>
-                    <button type="button" class="bilai-eye-btn" onclick="bilaiTogglePass('password', this)" aria-label="Show password">
-                        <i class="fa fa-eye" id="eye-password"></i>
+                    <button type="button" class="ba-eye" onclick="baToggle('password',this)" aria-label="Toggle password">
+                        <i class="fa fa-eye"></i>
                     </button>
                 </div>
                 <?php $__errorArgs = ['password'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                    <span class="text-danger" style="font-size:12px;display:block;margin-top:4px;"><?php echo e($message); ?></span>
-                <?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?><span class="ba-err"><?php echo e($message); ?></span><?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
             </div>
 
-            
-            <div class="bilai-auth-row">
-                <label class="bilai-auth-check-label">
+            <div class="ba-row">
+                <label class="ba-check-label">
                     <input type="checkbox" name="remember" <?php echo e(old('remember') ? 'checked' : ''); ?>>
-                    Remember Password
+                    Remember me
                 </label>
-                <a href="<?php echo e(route('customer.forgot.password')); ?>" class="bilai-auth-forgot">
-                    <i class="fa-solid fa-lock" style="font-size:11px;"></i> Forgot Password?
-                </a>
+                <?php if(Route::has('customer.forgot.password')): ?>
+                <a href="<?php echo e(route('customer.forgot.password')); ?>" class="ba-forgot">Forgot Password?</a>
+                <?php endif; ?>
             </div>
 
-            
-            <button type="submit" class="bilai-auth-btn">লগিন করুন</button>
+            <button type="submit" class="ba-btn">Login</button>
         </form>
 
-        
-        <?php if(isset($demoMode) && $demoMode): ?>
-        <div class="bilai-demo-block">
-            <small class="text-muted d-block mb-1">রিসেলার ইউজার</small>
-            <div class="bilai-demo-row">
-                <input type="text" class="form-control form-control-sm bg-light" value="01631843149" readonly>
-                <input type="text" class="form-control form-control-sm bg-light" value="12345678" readonly style="width:90px;flex:none;">
-                <button type="button" class="bilai-demo-use-btn" onclick="bilaiDemoFill('01631843149','12345678')">Use</button>
-            </div>
-            <small class="text-muted d-block mb-1 mt-2">ভেন্ড্রর ইউজার</small>
-            <div class="bilai-demo-row">
-                <input type="text" class="form-control form-control-sm bg-light" value="01870829343" readonly>
-                <input type="text" class="form-control form-control-sm bg-light" value="123456789" readonly style="width:90px;flex:none;">
-                <button type="button" class="bilai-demo-use-btn" onclick="bilaiDemoFill('01870829343','123456789')">Use</button>
-            </div>
-        </div>
-        <?php endif; ?>
+        <div class="ba-divider">Or</div>
 
-        
-        <div class="bilai-auth-divider">Or</div>
-
-        
-        <a href="<?php echo e(route('customer.social.redirect', 'google')); ?>" class="bilai-social-btn">
+        <?php if(Route::has('customer.social.redirect')): ?>
+        <a href="<?php echo e(route('customer.social.redirect', 'google')); ?>" class="ba-social">
             <i class="fab fa-google"></i> Continue with Google
         </a>
-        <a href="<?php echo e(route('customer.social.redirect', 'facebook')); ?>" class="bilai-social-btn">
+        <a href="<?php echo e(route('customer.social.redirect', 'facebook')); ?>" class="ba-social">
             <i class="fab fa-facebook-f"></i> Continue with Facebook
         </a>
+        <?php else: ?>
+        <a href="#" class="ba-social" onclick="return false;">
+            <i class="fab fa-google"></i> Continue with Google
+        </a>
+        <a href="#" class="ba-social" onclick="return false;">
+            <i class="fab fa-facebook-f"></i> Continue with Facebook
+        </a>
+        <?php endif; ?>
 
     </div>
 </section>
 
 <script>
-function bilaiTogglePass(fieldId, btn) {
-    var field = document.getElementById(fieldId);
-    var icon  = btn.querySelector('i');
-    if (field.type === 'password') {
-        field.type = 'text';
-        icon.classList.replace('fa-eye', 'fa-eye-slash');
-    } else {
-        field.type = 'password';
-        icon.classList.replace('fa-eye-slash', 'fa-eye');
-    }
-}
-function bilaiDemoFill(login, pass) {
-    document.getElementById('login').value    = login;
-    document.getElementById('password').value = pass;
+function baToggle(id, btn) {
+    var f = document.getElementById(id);
+    var i = btn.querySelector('i');
+    if (f.type === 'password') { f.type = 'text'; i.classList.replace('fa-eye','fa-eye-slash'); }
+    else { f.type = 'password'; i.classList.replace('fa-eye-slash','fa-eye'); }
 }
 </script>
 

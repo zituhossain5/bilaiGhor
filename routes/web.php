@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\Frontend\ShoppingController;
 use App\Http\Controllers\Frontend\CustomerController;
+use App\Http\Controllers\Frontend\SocialAuthController;
 use App\Http\Controllers\Frontend\BkashController;
 use App\Http\Controllers\Frontend\ShurjopayControllers;
 use App\Http\Controllers\Admin\RoleController;
@@ -632,11 +633,13 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ip
    Route::get('/order-track', [CustomerController::class, 'order_track'])->name('customer.order_track');
     Route::get('/order-track/result', [CustomerController::class, 'order_track_result'])->name('customer.order_track_result');
 
-    // Social login placeholders — install laravel/socialite and implement a SocialAuthController to replace these
-    Route::get('/auth/{provider}/redirect', function (string $provider) {
-        return redirect()->route('customer.login')
-            ->with('info', 'সোশ্যাল লগিন শীঘ্রই চালু হবে। (Laravel Socialite ইনস্টল করুন)');
-    })->name('customer.social.redirect')->where('provider', 'google|facebook');
+    // Social auth (Google / Facebook via Laravel Socialite)
+    Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
+        ->name('customer.social.redirect')
+        ->where('provider', 'google|facebook');
+    Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])
+        ->name('customer.social.callback')
+        ->where('provider', 'google|facebook');
 
 });
 // customer auth

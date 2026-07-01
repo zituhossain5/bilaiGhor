@@ -13,6 +13,7 @@
         "intervention/image": "^2.7",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
+        "laravel/socialite": "^5.28",
         "laravel/tinker": "^2.7",
         "laravel/ui": "^4.2",
         "shurjopayv2/laravel8": "dev-master",

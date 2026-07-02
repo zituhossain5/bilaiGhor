@@ -61,19 +61,28 @@ class CustomerController extends Controller
 
     public function review(Request $request)
     {
-        $this->validate($request,[
-            'ratting'=>'required',
-            'review'=>'required',
+        $this->validate($request, [
+            'ratting' => 'required|integer|min:1|max:5',
+            'review'  => 'required',
+            'image'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $review = new Review();
-        $review->name = Auth::guard('customer')->user()->name ?? 'N / A';
-        $review->email = Auth::guard('customer')->user()->email ?? 'N / A';
+        $review->name       = Auth::guard('customer')->user()->name ?? 'N / A';
+        $review->email      = Auth::guard('customer')->user()->email ?? 'N / A';
         $review->product_id = $request->product_id;
-        $review->review = $request->review;
-        $review->ratting = $request->ratting;
+        $review->review     = $request->review;
+        $review->ratting    = $request->ratting;
         $review->customer_id = Auth::guard('customer')->user()->id;
-        $review->status = 'pending';
+        $review->status     = 'pending';
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $name = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('review_images'), $name);
+            $review->image = 'public/review_images/' . $name;
+        }
+
         $review->save();
 
         Toastr::success('Thanks, Your review send successfully', 'Success!');

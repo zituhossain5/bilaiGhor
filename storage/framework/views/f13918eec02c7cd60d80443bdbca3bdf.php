@@ -1296,6 +1296,15 @@ document.getElementById("floatingCartBtn")?.addEventListener("click", function(e
     openSidebarCart();
 });
 document.getElementById("sidebarCartOverlay")?.addEventListener("click", closeSidebarCart);
+
+// When browser restores page from bfcache (back/forward), refresh cart count + sidebar
+window.addEventListener('pageshow', function (e) {
+    if (e.persisted) {
+        if (typeof cart_count === 'function') cart_count();
+        if (typeof mobile_cart === 'function') mobile_cart();
+        if (typeof sidebarCartRefresh === 'function') sidebarCartRefresh();
+    }
+});
 </script>
 
 <script>

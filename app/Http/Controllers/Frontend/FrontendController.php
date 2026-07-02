@@ -333,6 +333,9 @@ $brands = Brand::where('status', 1)
 
         $product = Product::with(['image', 'wholesalePrices'])->findOrFail($request->id);
 
+        // Buy Now uses SET semantics (replace qty); Add to Cart uses ADD semantics (accumulate)
+        $isBuyNow = $request->has('order_now');
+
         // 1) প্রোডাক্টের স্টক বের করি
         $availableStock = $this->getAvailableStock($product);
         $requestedQty   = max(1, (int)($request->qty ?? 1));
@@ -350,7 +353,8 @@ $brands = Brand::where('status', 1)
             }
 
             // কার্টে আগে থেকে একই প্রোডাক্ট (একই ভ্যারিয়েন্ট) কত qty আছে, সেটা বের করি
-            $alreadyInCart = Cart::instance('shopping')
+            // For Buy Now we replace the qty, so do not count existing cart qty toward stock limit
+            $alreadyInCart = $isBuyNow ? 0 : Cart::instance('shopping')
                 ->search(function ($cartItem, $rowId) use ($product, $request) {
                     if ($cartItem->id != $product->id) {
                         return false;
@@ -421,7 +425,8 @@ $brands = Brand::where('status', 1)
         });
 
         if ($existingRow) {
-            $cartQty = $product->is_wholesale
+            // Buy Now or wholesale: set the qty to what was requested (do not accumulate)
+            $cartQty = ($isBuyNow || $product->is_wholesale)
                 ? $requestedQty
                 : ((int) $existingRow->qty + $requestedQty);
             $finalPrice = $product->resolveSalePrice($cartQty, $colorId, $sizeId);
@@ -1063,7 +1068,7 @@ $brands = Brand::where('status', 1)
             ->where('id', '!=', $details->id)
             ->where(['status' => 1, 'approval_status' => 'approved'])
             ->with(['image', 'category', 'brand', 'reviews', 'prosizes', 'procolors'])
-            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'stock', 'category_id', 'brand_id', 'pro_unit')
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'stock', 'category_id', 'brand_id', 'pro_unit', 'product_badge')
             ->limit(12)
             ->get();
 

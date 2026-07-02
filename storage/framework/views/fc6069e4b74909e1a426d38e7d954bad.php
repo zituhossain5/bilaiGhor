@@ -199,7 +199,7 @@ input.bpd-btn { cursor: pointer; }
 
 /* BilaiGhor Product Accordions Start */
 .bpd-delivery-section { padding: 0 0 24px; background: #fff; }
-.bpd-delivery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.bpd-delivery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 @media (max-width: 768px) { .bpd-delivery-grid { grid-template-columns: 1fr; } }
 .bpd-accordion {
     background: var(--bilai-cream); border: 1.5px solid var(--bilai-border);
@@ -213,6 +213,7 @@ input.bpd-btn { cursor: pointer; }
 .bpd-accordion-btn:hover { background: rgba(242,140,0,0.06); }
 .bpd-accordion-ico { display: flex; align-items: center; gap: 10px; }
 .bpd-accordion-ico i.bpd-acc-icon { color: var(--bilai-primary); font-size: 15px; }
+.bpd-accordion-ico svg.bpd-acc-icon { color: var(--bilai-primary); flex-shrink: 0; }
 .bpd-acc-chevron { font-size: 12px; color: var(--bilai-muted); transition: transform 0.2s; }
 .bpd-acc-chevron.collapsed { transform: rotate(180deg); }
 .bpd-accordion-body { padding: 6px 18px 18px; font-size: 13px; color: var(--bilai-text); line-height: 1.75; }
@@ -319,25 +320,51 @@ input.bpd-btn { cursor: pointer; }
     border: 1.5px solid var(--bilai-border); border-radius: var(--bilai-radius-md);
     font-size: 14px; cursor: pointer; font-family: inherit;
 }
-.bpd-star-pick { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 2px; margin-top: 4px; }
-.bpd-star-pick label { font-size: 26px; color: #ddd; cursor: pointer; line-height: 1; }
-.bpd-star-pick input[type="radio"] { display: none; }
-.bpd-star-pick label:hover,
-.bpd-star-pick label:hover ~ label,
-.bpd-star-pick input[type="radio"]:checked ~ label { color: #F8B400; }
 /* BilaiGhor Product Reviews End */
 
-/* Related Products */
-.bpd-related-section { padding: 20px 0 48px; background: #fafafa; }
-.bpd-related-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.bpd-related-title { font-size: 22px; font-weight: 700; color: var(--bilai-text); margin: 0; }
-.bpd-view-all {
-    color: var(--bilai-primary); font-size: 13px; font-weight: 600;
-    text-decoration: none; border: 1.5px solid var(--bilai-primary);
-    padding: 6px 18px; border-radius: var(--bilai-radius-md);
-    transition: all 0.15s;
+/* BilaiGhor Review Rating Fix Start */
+.bilai-star-picker { display: flex; gap: 6px; margin-top: 4px; }
+.bilai-rating-star { font-size: 30px; color: #ddd; background: none; border: none; cursor: pointer; padding: 0; line-height: 1; transition: color 0.1s; }
+.bilai-rating-star.active { color: #F8B400; }
+.bilai-rating-star.hover { color: #F8B400; }
+/* BilaiGhor Review Rating Fix End */
+
+/* BilaiGhor Review Photo Upload Start */
+.bilai-photo-upload-box {
+    border: 2px dashed var(--bilai-border); border-radius: var(--bilai-radius-md);
+    background: #fff; padding: 28px 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.15s; position: relative;
 }
-.bpd-view-all:hover { background: var(--bilai-primary); color: #fff; }
+.bilai-photo-upload-box:hover, .bilai-photo-upload-box.drag-over { border-color: var(--bilai-primary); }
+.bilai-photo-upload-icon { font-size: 26px; color: var(--bilai-muted); margin-bottom: 8px; }
+.bilai-photo-upload-text { font-size: 13px; color: var(--bilai-muted); }
+.bilai-photo-upload-text span { color: var(--bilai-primary); font-weight: 600; cursor: pointer; }
+.bilai-photo-upload-input { display: none; }
+.bilai-photo-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.bilai-photo-preview-item { position: relative; width: 72px; height: 72px; border-radius: 8px; overflow: hidden; border: 1.5px solid var(--bilai-border); }
+.bilai-photo-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+.bpd-rcard-img-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.bpd-rcard-img { width: 72px; height: 72px; border-radius: 8px; object-fit: cover; border: 1px solid var(--bilai-border); cursor: pointer; }
+/* BilaiGhor Review Photo Upload End */
+
+/* BilaiGhor Review Scroll Fix Start */
+/* (scroll fix is in JS — see bpdShowReviewForm) */
+/* BilaiGhor Review Scroll Fix End */
+
+/* BilaiGhor Related Products Figma Start */
+.bpd-related-section { padding: 36px 0 52px; background: var(--bilai-cream); }
+.bpd-related-hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; gap: 12px; }
+.bpd-related-title { font-size: 28px; font-weight: 800; color: var(--bilai-brown); margin: 0; line-height: 1.2; }
+.bpd-view-all {
+    color: var(--bilai-text); font-size: 13px; font-weight: 500;
+    text-decoration: none; border: 1.5px solid var(--bilai-border);
+    padding: 7px 18px; border-radius: 20px; background: #fff;
+    white-space: nowrap; flex-shrink: 0; margin-top: 4px; transition: all 0.15s;
+}
+.bpd-view-all:hover { border-color: var(--bilai-primary); color: var(--bilai-primary); }
+@media (max-width: 991px) { .bpd-related-section .bilai-cat-grid-home { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .bpd-related-section .bilai-cat-grid-home { grid-template-columns: 1fr; } }
+/* BilaiGhor Related Products Figma End */
 
 /* Wholesale tier styles preserved */
 .wholesale-tier-row:hover { background: #f0f8f0 !important; }
@@ -426,7 +453,9 @@ input.bpd-btn { cursor: pointer; }
     $videoType    = $details->pro_video_type ?? ($details->pro_video ? 'youtube' : null);
     $hasVideo     = ($videoType === 'youtube' && $details->pro_video) ||
                     ($videoType === 'upload' && !empty($details->pro_video_path));
-    $soldCount    = $details->best_seller_sold_count ?? 0;
+    /* BilaiGhor Product Sold Fix Start */
+    $soldCount    = $details->sold ?? 0;
+    /* BilaiGhor Product Sold Fix End */
 ?>
 
 
@@ -696,7 +725,7 @@ input.bpd-btn { cursor: pointer; }
                         <i class="fas fa-box bpd-card-icon"></i>
                         <div>
                             <div class="bpd-card-label">Sold</div>
-                            <div class="bpd-card-value"><?php echo e($soldCount); ?>+ sold in last 7 days</div>
+                            <div class="bpd-card-value"><?php echo e($soldCount > 0 ? $soldCount . '+' : '0'); ?> sold in last 7 days</div>
                         </div>
                     </div>
                 </div>
@@ -712,14 +741,17 @@ input.bpd-btn { cursor: pointer; }
         <div class="bpd-delivery-grid">
 
             
+            
             <div class="bpd-accordion">
                 <button class="bpd-accordion-btn" onclick="bpdAccordion(this)" type="button">
                     <span class="bpd-accordion-ico">
-                        <i class="fas fa-truck bpd-acc-icon"></i> Delivery Details
+                        
+                        <svg class="bpd-acc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        Delivery Details
                     </span>
-                    <i class="fas fa-chevron-up bpd-acc-chevron"></i>
+                    <i class="fas fa-chevron-up bpd-acc-chevron collapsed"></i>
                 </button>
-                <div class="bpd-accordion-body">
+                <div class="bpd-accordion-body" style="display:none;">
                     <p><strong>Estimated Delivery Time</strong></p>
                     <ul>
                         <li>Inside Dhaka City: Up to 3 working days. (Mostly within 48 hours.)</li>
@@ -734,14 +766,17 @@ input.bpd-btn { cursor: pointer; }
             </div>
 
             
+            
             <div class="bpd-accordion">
                 <button class="bpd-accordion-btn" onclick="bpdAccordion(this)" type="button">
                     <span class="bpd-accordion-ico">
-                        <i class="fas fa-tag bpd-acc-icon"></i> Delivery Charges
+                        
+                        <svg class="bpd-acc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Delivery Charges
                     </span>
-                    <i class="fas fa-chevron-up bpd-acc-chevron"></i>
+                    <i class="fas fa-chevron-up bpd-acc-chevron collapsed"></i>
                 </button>
-                <div class="bpd-accordion-body">
+                <div class="bpd-accordion-body" style="display:none;">
                     <ul>
                         <li>Inside Dhaka Metro: BDT 70</li>
                         <li>Outside Dhaka Metro: BDT 100</li>
@@ -774,19 +809,7 @@ input.bpd-btn { cursor: pointer; }
                 <?php echo $details->description; ?>
 
             </div>
-            <?php if($hasVideo): ?>
-            <div class="bpd-video-wrap">
-                <?php if($videoType === 'youtube' && $details->pro_video): ?>
-                <iframe width="100%" height="360"
-                    src="https://www.youtube.com/embed/<?php echo e($details->pro_video); ?>"
-                    frameborder="0" allowfullscreen></iframe>
-                <?php elseif($videoType === 'upload' && !empty($details->pro_video_path)): ?>
-                <video width="100%" height="360" controls>
-                    <source src="<?php echo e(asset($details->pro_video_path)); ?>" type="video/mp4">
-                </video>
-                <?php endif; ?>
-            </div>
-            <?php endif; ?>
+            
         </div>
 
         
@@ -841,6 +864,19 @@ input.bpd-btn { cursor: pointer; }
                                 </div>
                             </div>
                             <div class="bpd-rcard-body"><?php echo e($review->review); ?></div>
+                            <?php if($review->image): ?>
+                            
+                            <?php
+                                $rImgSrc = Str::startsWith($review->image, 'public/')
+                                    ? asset($review->image)
+                                    : asset('public/review_images/' . $review->image);
+                            ?>
+                            <div class="bpd-rcard-img-row">
+                                <img src="<?php echo e($rImgSrc); ?>" alt="Review photo" class="bpd-rcard-img"
+                                     onerror="this.closest('.bpd-rcard-img-row').style.display='none'" />
+                            </div>
+                            
+                            <?php endif; ?>
                         </div>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     <?php else: ?>
@@ -853,26 +889,33 @@ input.bpd-btn { cursor: pointer; }
                     
                     <div id="bpd-review-form" style="display:none;">
                         <?php if(Auth::guard('customer')->user()): ?>
-                        <form action="<?php echo e(route('customer.review')); ?>" method="POST" class="bpd-rform">
+                        <form action="<?php echo e(route('customer.review')); ?>" method="POST" class="bpd-rform" enctype="multipart/form-data">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="product_id" value="<?php echo e($details->id); ?>" />
                             <h4 class="bpd-rform-title">Write Your Review</h4>
                             <div class="bpd-rform-field">
                                 <label class="bpd-rform-lbl">Give Rating</label>
-                                <div class="bpd-star-pick">
-                                    <?php $__currentLoopData = [5, 4, 3, 2, 1]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <label for="bpd-star-<?php echo e($s); ?>"><?php echo e(str_repeat('★', $s)); ?>
-
-                                        <input type="radio" id="bpd-star-<?php echo e($s); ?>" name="ratting" value="<?php echo e($s); ?>" required />
-                                    </label>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <div class="bilai-star-picker" id="bilaiStarPicker">
+                                    <?php for($s = 1; $s <= 5; $s++): ?>
+                                    <button type="button" class="bilai-rating-star" data-val="<?php echo e($s); ?>" aria-label="<?php echo e($s); ?> star">★</button>
+                                    <?php endfor; ?>
                                 </div>
+                                <input type="hidden" name="ratting" id="bilaiRatingVal" value="" />
                             </div>
                             <div class="bpd-rform-field">
                                 <label class="bpd-rform-lbl" for="bpd-review-text">Your Review</label>
                                 <textarea name="review" id="bpd-review-text"
                                           class="bpd-rform-textarea" rows="4"
                                           placeholder="What did you like or dislike?" required></textarea>
+                            </div>
+                            <div class="bpd-rform-field">
+                                <label class="bpd-rform-lbl">Add Photos (Optional)</label>
+                                <div class="bilai-photo-upload-box" id="bilaiUploadBox">
+                                    <div class="bilai-photo-upload-icon"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+                                    <div class="bilai-photo-upload-text">Drag photo here or <span id="bilaiUploadBrowse">browse</span></div>
+                                    <input type="file" name="image" id="bilaiPhotoInput" class="bilai-photo-upload-input" accept="image/jpg,image/jpeg,image/png,image/webp" />
+                                </div>
+                                <div class="bilai-photo-preview" id="bilaiPhotoPreview"></div>
                             </div>
                             <div class="bpd-rform-actions">
                                 <button type="submit" class="bpd-rform-submit">Submit Your Review</button>
@@ -897,72 +940,91 @@ input.bpd-btn { cursor: pointer; }
 <section class="bpd-related-section">
     <div class="container">
         <div class="bpd-related-hdr">
-            <h2 class="bpd-related-title">Related Products</h2>
+            <h2 class="bpd-related-title">Related<br>Products</h2>
             <a href="<?php echo e(url('/category/' . $details->category->slug)); ?>" class="bpd-view-all">View All Deals</a>
         </div>
-        <div class="product-inner owl-carousel related_slider">
-            <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-            <div class="product_item wist_item wow zoomIn" data-wow-duration="1.5s" data-wow-delay="0.<?php echo e($key); ?>s">
-                <div class="product_item_inner">
-                    <?php if($value->old_price): ?>
-                    <?php $rd = number_format((($value->old_price - $value->new_price) / $value->old_price) * 100, 0); ?>
-                    <div class="sale-badge">
-                        <div class="sale-badge-inner"><div class="sale-badge-box">
-                            <span class="sale-badge-text"><p><?php echo e($rd); ?>%</p>OFF</span>
-                        </div></div>
-                    </div>
+        <div class="bilai-cat-grid-home">
+            <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <?php
+                $avgRating   = $value->reviews->avg('ratting');
+                $filledStars = floor($avgRating);
+                $hasHalf     = $avgRating - $filledStars >= 0.5;
+                $emptyStars  = 5 - $filledStars - ($hasHalf ? 1 : 0);
+                $discount    = ($value->old_price && $value->old_price > $value->new_price)
+                               ? round((($value->old_price - $value->new_price) * 100) / $value->old_price)
+                               : 0;
+            ?>
+            <div class="bilai-product-card">
+                <div class="bilai-product-top">
+                    <?php if(!empty($value->product_badge)): ?>
+                    <span class="bilai-card-badge"><?php echo e($value->product_badge); ?></span>
+                    <?php else: ?>
+                    <span></span>
                     <?php endif; ?>
-                    <div class="pro_img">
-                        <a href="<?php echo e(route('product', $value->slug)); ?>">
-                            <img src="<?php echo e(asset($value->image ? $value->image->image : '')); ?>" alt="<?php echo e($value->name); ?>" />
-                        </a>
-                    </div>
-                    <div class="pro_des">
-                        <div class="pro_name">
-                            <a href="<?php echo e(route('product', $value->slug)); ?>"><?php echo e(Str::limit($value->name, 40)); ?></a>
+                    <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                <div class="bilai-product-image">
+                    <a href="<?php echo e(route('product', $value->slug)); ?>">
+                        <img src="<?php echo e(asset($value->image ? $value->image->image : '')); ?>"
+                             alt="<?php echo e($value->name); ?>"
+                             loading="<?php echo e($loop->first ? 'eager' : 'lazy'); ?>" />
+                    </a>
+                    <?php if($value->sold && $value->sold > 0): ?>
+                    <span class="bilai-cat-sold-pill"><?php echo e($value->sold); ?> Sold</span>
+                    <?php endif; ?>
+                </div>
+                <div class="bilai-product-meta">
+                    <h3 class="bilai-product-title">
+                        <a href="<?php echo e(route('product', $value->slug)); ?>"><?php echo e(Str::limit($value->name, 55)); ?></a>
+                    </h3>
+                    <div class="bilai-product-cat-rating">
+                        <?php if($value->category): ?>
+                        <p class="bilai-product-category"><?php echo e($value->category->name); ?></p>
+                        <?php endif; ?>
+                        <div class="bilai-product-rating">
+                            <?php for($i = 0; $i < $filledStars; $i++): ?><i class="fas fa-star"></i><?php endfor; ?>
+                            <?php if($hasHalf): ?><i class="fas fa-star-half-alt"></i><?php endif; ?>
+                            <?php for($i = 0; $i < $emptyStars; $i++): ?><i class="far fa-star"></i><?php endfor; ?>
                         </div>
                     </div>
+                    <div class="bilai-product-price">
+                        <div class="bilai-price-row">
+                            <span class="bilai-price-new">&#2547; <?php echo e($value->new_price); ?></span>
+                            <?php if($value->old_price): ?>
+                            <del class="bilai-price-old">&#2547; <?php echo e($value->old_price); ?></del>
+                            <?php endif; ?>
+                        </div>
+                        <?php if($discount > 0): ?>
+                        <span class="bilai-discount-badge"><?php echo e($discount); ?>% OFF</span>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <?php
-                    $va = $value->reviews->avg('ratting');
-                    $vf = floor($va); $vh = $va - $vf >= 0.5; $ve = 5 - $vf - ($vh ? 1 : 0);
-                ?>
-                <div class="pro_rating" style="padding:4px 8px;">
-                    <?php for($i=0;$i<$vf;$i++): ?><i class="fas fa-star" style="color:#F8B400;font-size:13px;"></i><?php endfor; ?>
-                    <?php if($vh): ?><i class="fas fa-star-half-alt" style="color:#F8B400;font-size:13px;"></i><?php endif; ?>
-                    <?php for($i=0;$i<$ve;$i++): ?><i class="far fa-star" style="color:#ccc;font-size:13px;"></i><?php endfor; ?>
-                </div>
-                <div class="pro_price">
-                    <?php if($value->old_price): ?><del>৳<?php echo e(number_format($value->old_price, 0)); ?></del><?php endif; ?>
-                    ৳<?php echo e(number_format($value->new_price, 0)); ?>
-
-                </div>
-                <?php if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty()): ?>
-                <div class="pro_btn">
-                    <a href="<?php echo e(route('product', $value->slug)); ?>" class="order-btn-link order-btn">Order</a>
-                    <a href="<?php echo e(route('product', $value->slug)); ?>" class="cart-icon-link cart-icon-btn">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                    </a>
-                </div>
-                <?php else: ?>
-                <div class="pro_btn">
-                    <form action="<?php echo e(route('cart.store')); ?>" method="POST" style="display:inline;">
-                        <?php echo csrf_field(); ?>
-                        <input type="hidden" name="id" value="<?php echo e($value->id); ?>">
-                        <input type="hidden" name="qty" value="1">
-                        <input type="hidden" name="order_now" value="1">
-                        <button type="submit" class="order-btn">Order</button>
-                    </form>
-                    <form action="<?php echo e(route('cart.store')); ?>" method="POST" style="display:inline;">
-                        <?php echo csrf_field(); ?>
-                        <input type="hidden" name="id" value="<?php echo e($value->id); ?>">
-                        <input type="hidden" name="qty" value="1">
-                        <button type="submit" class="cart-icon-btn cart_store" data-id="<?php echo e($value->id); ?>">
+                <div class="bilai-product-actions">
+                    <?php if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty()): ?>
+                        <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-cart-btn">
                             <i class="fa-solid fa-cart-shopping"></i>
-                        </button>
-                    </form>
+                        </a>
+                        <a href="<?php echo e(route('product', $value->slug)); ?>" class="bilai-buy-btn">Buy Now</a>
+                    <?php else: ?>
+                        <form action="<?php echo e(route('cart.store')); ?>" method="POST">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="id" value="<?php echo e($value->id); ?>" />
+                            <input type="hidden" name="qty" value="1" />
+                            <button type="submit" class="bilai-cart-btn cart_store" data-id="<?php echo e($value->id); ?>">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                            </button>
+                        </form>
+                        <form action="<?php echo e(route('cart.store')); ?>" method="POST">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="id" value="<?php echo e($value->id); ?>" />
+                            <input type="hidden" name="qty" value="1" />
+                            <input type="hidden" name="order_now" value="1">
+                            <button type="submit" class="bilai-buy-btn">Buy Now</button>
+                        </form>
+                    <?php endif; ?>
                 </div>
-                <?php endif; ?>
             </div>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
@@ -1128,13 +1190,7 @@ input.bpd-btn { cursor: pointer; }
         });
         <?php endif; ?>
 
-        // Related products carousel
-        $('.related_slider').owlCarousel({
-            margin: 10, loop: true, dots: true, nav: true,
-            autoplay: true, autoplayTimeout: 6000, autoplayHoverPause: true,
-            responsiveClass: true,
-            responsive: { 0: { items: 2 }, 600: { items: 3 }, 1000: { items: 5 } },
-        });
+        // Related products now use CSS grid — no carousel init needed
     });
 
     // sendSuccess: validate required variant selections
@@ -1171,16 +1227,96 @@ input.bpd-btn { cursor: pointer; }
         document.getElementById(id).classList.add('active');
     }
 
-    // Review form toggle
+    // Review form toggle — scroll fix accounts for sticky header height
     function bpdShowReviewForm() {
-        document.getElementById('bpd-review-form').style.display = 'block';
-        document.getElementById('bpd-open-form').style.display  = 'none';
-        document.getElementById('bpd-review-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var target = document.getElementById('bpd-review-form');
+        target.style.display = 'block';
+        document.getElementById('bpd-open-form').style.display = 'none';
+        setTimeout(function () {
+            var headerEl = document.getElementById('navbar_top');
+            var headerOffset = (headerEl ? headerEl.offsetHeight : 70) + 20;
+            var top = target.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+            var firstInput = target.querySelector('textarea, input:not([type="hidden"]), a');
+            if (firstInput) firstInput.focus({ preventScroll: true });
+        }, 50);
     }
     function bpdHideReviewForm() {
         document.getElementById('bpd-review-form').style.display = 'none';
         document.getElementById('bpd-open-form').style.display   = 'block';
     }
+
+    // Star rating picker
+    (function () {
+        var picker   = document.getElementById('bilaiStarPicker');
+        var valInput = document.getElementById('bilaiRatingVal');
+        if (!picker) return;
+        var stars = picker.querySelectorAll('.bilai-rating-star');
+
+        function setActive(val) {
+            stars.forEach(function (s) {
+                s.classList.toggle('active', parseInt(s.dataset.val) <= val);
+            });
+            valInput.value = val;
+        }
+
+        stars.forEach(function (star) {
+            star.addEventListener('click', function () { setActive(parseInt(this.dataset.val)); });
+            star.addEventListener('mouseenter', function () {
+                var v = parseInt(this.dataset.val);
+                stars.forEach(function (s) { s.classList.toggle('hover', parseInt(s.dataset.val) <= v); });
+            });
+        });
+        picker.addEventListener('mouseleave', function () {
+            stars.forEach(function (s) { s.classList.remove('hover'); });
+        });
+    })();
+
+    // Photo upload preview
+    (function () {
+        var box     = document.getElementById('bilaiUploadBox');
+        var input   = document.getElementById('bilaiPhotoInput');
+        var preview = document.getElementById('bilaiPhotoPreview');
+        if (!box || !input) return;
+
+        box.addEventListener('click', function () { input.click(); });
+        document.getElementById('bilaiUploadBrowse').addEventListener('click', function (e) {
+            e.stopPropagation();
+            input.click();
+        });
+
+        box.addEventListener('dragover', function (e) { e.preventDefault(); box.classList.add('drag-over'); });
+        box.addEventListener('dragleave', function () { box.classList.remove('drag-over'); });
+        box.addEventListener('drop', function (e) {
+            e.preventDefault();
+            box.classList.remove('drag-over');
+            if (e.dataTransfer.files.length) {
+                // Assign first dropped file to input
+                var dt = new DataTransfer();
+                dt.items.add(e.dataTransfer.files[0]);
+                input.files = dt.files;
+                showPreview(e.dataTransfer.files[0]);
+            }
+        });
+
+        input.addEventListener('change', function () {
+            if (this.files.length) showPreview(this.files[0]);
+        });
+
+        function showPreview(file) {
+            preview.innerHTML = '';
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var item = document.createElement('div');
+                item.className = 'bilai-photo-preview-item';
+                var img = document.createElement('img');
+                img.src = e.target.result;
+                item.appendChild(img);
+                preview.appendChild(item);
+            };
+            reader.readAsDataURL(file);
+        }
+    })();
 </script>
 
 

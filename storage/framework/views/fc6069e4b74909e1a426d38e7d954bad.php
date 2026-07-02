@@ -1,31 +1,30 @@
-@extends('frontEnd.layouts.master')
-@section('title', $details->name)
-@push('seo')
-@php
+<?php $__env->startSection('title', $details->name); ?>
+<?php $__env->startPush('seo'); ?>
+<?php
     $metaTitle = $details->meta_title ?? $details->name;
     $metaDescription = $details->meta_description ?? Str::limit(strip_tags($details->description), 160);
     $metaKeywords = $details->meta_keywords ?? $details->name;
     $metaImage = $details->meta_image ? asset($details->meta_image) : asset(optional($details->image)->image);
-@endphp
-<meta name="app-url" content="{{ route('product', $details->slug) }}" />
+?>
+<meta name="app-url" content="<?php echo e(route('product', $details->slug)); ?>" />
 <meta name="robots" content="index, follow" />
-<meta name="title" content="{{ $metaTitle }}" />
-<meta name="description" content="{{ $metaDescription }}" />
-<meta name="keywords" content="{{ $metaKeywords }}" />
+<meta name="title" content="<?php echo e($metaTitle); ?>" />
+<meta name="description" content="<?php echo e($metaDescription); ?>" />
+<meta name="keywords" content="<?php echo e($metaKeywords); ?>" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="{{ $metaTitle }}" />
-<meta name="twitter:description" content="{{ $metaDescription }}" />
-<meta name="twitter:image" content="{{ $metaImage }}" />
-<meta property="og:title" content="{{ $metaTitle }}" />
+<meta name="twitter:title" content="<?php echo e($metaTitle); ?>" />
+<meta name="twitter:description" content="<?php echo e($metaDescription); ?>" />
+<meta name="twitter:image" content="<?php echo e($metaImage); ?>" />
+<meta property="og:title" content="<?php echo e($metaTitle); ?>" />
 <meta property="og:type" content="product" />
-<meta property="og:url" content="{{ route('product', $details->slug) }}" />
-<meta property="og:image" content="{{ $metaImage }}" />
-<meta property="og:description" content="{{ $metaDescription }}" />
+<meta property="og:url" content="<?php echo e(route('product', $details->slug)); ?>" />
+<meta property="og:image" content="<?php echo e($metaImage); ?>" />
+<meta property="og:description" content="<?php echo e($metaDescription); ?>" />
 <meta property="og:site_name" content="BilaiGhor" />
-@endpush
+<?php $__env->stopPush(); ?>
 
-@push('css')
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/zoomsl.css') }}">
+<?php $__env->startPush('css'); ?>
+<link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/zoomsl.css')); ?>">
 <style>
 /* BilaiGhor Product Details Start */
 :root {
@@ -413,10 +412,10 @@ input.bpd-btn { cursor: pointer; }
 /* BilaiGhor Product Top Fix End */
 /* BilaiGhor Product Details End */
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
-@php
+<?php $__env->startSection('content'); ?>
+<?php
     $reviewTotal  = $reviews->count();
     $reviewAvg    = $reviewTotal > 0 ? round($reviews->avg('ratting'), 1) : 0;
     $starCounts   = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
@@ -428,183 +427,184 @@ input.bpd-btn { cursor: pointer; }
     $hasVideo     = ($videoType === 'youtube' && $details->pro_video) ||
                     ($videoType === 'upload' && !empty($details->pro_video_path));
     $soldCount    = $details->best_seller_sold_count ?? 0;
-@endphp
+?>
 
-{{-- ─────────────────── BREADCRUMB ─────────────────── --}}
+
 <div class="bpd-breadcrumb-wrap">
     <div class="container">
         <nav class="bpd-breadcrumb">
-            <a href="{{ url('/') }}">Home</a>
-            @if($details->category)
+            <a href="<?php echo e(url('/')); ?>">Home</a>
+            <?php if($details->category): ?>
             <span class="bpd-bc-sep">›</span>
-            <a href="{{ url('/category/' . $details->category->slug) }}">{{ $details->category->name }}</a>
-            @endif
-            @if($details->subcategory)
+            <a href="<?php echo e(url('/category/' . $details->category->slug)); ?>"><?php echo e($details->category->name); ?></a>
+            <?php endif; ?>
+            <?php if($details->subcategory): ?>
             <span class="bpd-bc-sep">›</span>
-            <a href="{{ route('subcategory', $details->subcategory->slug) }}">{{ $details->subcategory->subcategoryName }}</a>
-            @endif
-            @if($details->childcategory)
+            <a href="<?php echo e(route('subcategory', $details->subcategory->slug)); ?>"><?php echo e($details->subcategory->subcategoryName); ?></a>
+            <?php endif; ?>
+            <?php if($details->childcategory): ?>
             <span class="bpd-bc-sep">›</span>
-            <span>{{ $details->childcategory->childcategoryName }}</span>
-            @endif
+            <span><?php echo e($details->childcategory->childcategoryName); ?></span>
+            <?php endif; ?>
             <span class="bpd-bc-sep">›</span>
-            <span class="bpd-bc-current">{{ Str::limit($details->name, 50) }}</span>
+            <span class="bpd-bc-current"><?php echo e(Str::limit($details->name, 50)); ?></span>
         </nav>
     </div>
 </div>
 
-{{-- ─────────────────── PRODUCT TOP SECTION ─────────────────── --}}
+
 <section class="bpd-product-section">
     <div class="container">
         <div class="bpd-product-layout">
 
-            {{-- Col 1: Vertical Thumbnails --}}
+            
             <div class="bpd-thumbs-col">
                 <div id="indicator_thumb_wrapper">
-                    @foreach ($details->images as $key => $image)
-                    <div class="indicator-item{{ $key === 0 ? ' bpd-thumb-active' : '' }}"
-                         data-id="{{ $key }}"
-                         data-color-id="{{ $image->color_id ?? '' }}">
-                        <img src="{{ asset($image->image) }}" alt="" />
+                    <?php $__currentLoopData = $details->images; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <div class="indicator-item<?php echo e($key === 0 ? ' bpd-thumb-active' : ''); ?>"
+                         data-id="<?php echo e($key); ?>"
+                         data-color-id="<?php echo e($image->color_id ?? ''); ?>">
+                        <img src="<?php echo e(asset($image->image)); ?>" alt="" />
                     </div>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
             </div>
 
-            {{-- Col 2: Main Image --}}
+            
             <div class="bpd-main-img-col">
-                @if($discountPct > 0)
-                <span class="bpd-main-discount-badge">{{ $discountPct }}% OFF</span>
-                @endif
+                <?php if($discountPct > 0): ?>
+                <span class="bpd-main-discount-badge"><?php echo e($discountPct); ?>% OFF</span>
+                <?php endif; ?>
                 <div class="details_slider owl-carousel" id="details_slider_main">
-                    @foreach ($details->images as $value)
-                    <div class="dimage_item" data-color-id="{{ $value->color_id ?? '' }}">
-                        <img src="{{ asset($value->image) }}" class="block__pic" />
+                    <?php $__currentLoopData = $details->images; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <div class="dimage_item" data-color-id="<?php echo e($value->color_id ?? ''); ?>">
+                        <img src="<?php echo e(asset($value->image)); ?>" class="block__pic" />
                     </div>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
             </div>
 
-            {{-- Col 3: Product Info --}}
+            
             <div class="bpd-info-col">
 
-                <h1 class="bpd-title">{{ $details->name }}</h1>
+                <h1 class="bpd-title"><?php echo e($details->name); ?></h1>
 
                 <div class="bpd-meta-line">
-                    @if($details->brand)
+                    <?php if($details->brand): ?>
                     <span class="bpd-meta-item">Brand:
-                        <a href="{{ url('/brand/' . $details->brand->slug) }}">{{ $details->brand->name }}</a>
+                        <a href="<?php echo e(url('/brand/' . $details->brand->slug)); ?>"><?php echo e($details->brand->name); ?></a>
                     </span>
-                    @endif
-                    @if($details->category)
+                    <?php endif; ?>
+                    <?php if($details->category): ?>
                     <span class="bpd-meta-sep">|</span>
                     <span class="bpd-meta-item">Category:
-                        <a href="{{ url('/category/' . $details->category->slug) }}">{{ $details->category->name }}</a>
+                        <a href="<?php echo e(url('/category/' . $details->category->slug)); ?>"><?php echo e($details->category->name); ?></a>
                     </span>
-                    @endif
-                    @if($reviewTotal > 0)
+                    <?php endif; ?>
+                    <?php if($reviewTotal > 0): ?>
                     <span class="bpd-meta-sep">|</span>
                     <span class="bpd-meta-item">Reviews:
                         <span class="bpd-stars-sm">
-                            @php $fs = floor($reviewAvg); $hs = ($reviewAvg - $fs) >= 0.5; @endphp
-                            @for($i = 1; $i <= 5; $i++)
-                                @if($i <= $fs)<i class="fas fa-star"></i>
-                                @elseif($hs && $i == $fs + 1)<i class="fas fa-star-half-alt"></i>@php $hs = false; @endphp
-                                @else<i class="far fa-star" style="color:#ccc;"></i>
-                                @endif
-                            @endfor
-                            ({{ $reviewAvg }})
+                            <?php $fs = floor($reviewAvg); $hs = ($reviewAvg - $fs) >= 0.5; ?>
+                            <?php for($i = 1; $i <= 5; $i++): ?>
+                                <?php if($i <= $fs): ?><i class="fas fa-star"></i>
+                                <?php elseif($hs && $i == $fs + 1): ?><i class="fas fa-star-half-alt"></i><?php $hs = false; ?>
+                                <?php else: ?><i class="far fa-star" style="color:#ccc;"></i>
+                                <?php endif; ?>
+                            <?php endfor; ?>
+                            (<?php echo e($reviewAvg); ?>)
                         </span>
                     </span>
-                    @endif
+                    <?php endif; ?>
                 </div>
 
-                {{-- Price --}}
+                
                 <div class="bpd-price-row">
-                    <span class="bpd-new-price" id="newPrice">৳{{ $details->new_price }}</span>
-                    @if($details->old_price && $details->old_price > $details->new_price)
-                    <span class="bpd-old-price">৳{{ number_format($details->old_price, 0) }}</span>
-                    <span class="bpd-disc-pill">{{ $discountPct }}% OFF</span>
-                    @endif
+                    <span class="bpd-new-price" id="newPrice">৳<?php echo e($details->new_price); ?></span>
+                    <?php if($details->old_price && $details->old_price > $details->new_price): ?>
+                    <span class="bpd-old-price">৳<?php echo e(number_format($details->old_price, 0)); ?></span>
+                    <span class="bpd-disc-pill"><?php echo e($discountPct); ?>% OFF</span>
+                    <?php endif; ?>
                     <a href="#" class="bpd-wishlist" onclick="return false;">
                         <i class="far fa-heart"></i> Add to Wishlist
                     </a>
                 </div>
 
-                {{-- Weight: from product_weights relation (weight_id) --}}
-                @php $weightName = optional($details->weight)->name; @endphp
-                @if($weightName)
+                
+                <?php $weightName = optional($details->weight)->name; ?>
+                <?php if($weightName): ?>
                 <div class="bpd-weight-row">
                     <span class="bpd-weight-label">Weight</span>
-                    <span class="bpd-weight-pill">{{ $weightName }}</span>
+                    <span class="bpd-weight-pill"><?php echo e($weightName); ?></span>
                 </div>
-                @endif
+                <?php endif; ?>
 
-                {{-- Main Form: variants + qty + buttons --}}
-                <form action="{{ route('cart.store') }}" method="POST" name="formName">
-                    @csrf
-                    <input type="hidden" name="id" value="{{ $details->id }}" />
+                
+                <form action="<?php echo e(route('cart.store')); ?>" method="POST" name="formName">
+                    <?php echo csrf_field(); ?>
+                    <input type="hidden" name="id" value="<?php echo e($details->id); ?>" />
 
-                    {{-- Variants: Color --}}
-                    @if ($details->variantPrices->count() > 0)
-                        @php
+                    
+                    <?php if($details->variantPrices->count() > 0): ?>
+                        <?php
                             $productcolors = $details->variantPrices->pluck('color')->unique('id')->filter();
                             $productsizes  = $details->variantPrices->pluck('size')->unique('id')->filter();
-                        @endphp
-                        @if ($productcolors->count() > 0)
+                        ?>
+                        <?php if($productcolors->count() > 0): ?>
                         <div class="pro-color" style="width:100%;">
                             <div class="color_inner">
                                 <p>Color -</p>
                                 <div class="size-container">
                                     <div class="selector">
-                                        @foreach ($productcolors as $procolor)
+                                        <?php $__currentLoopData = $productcolors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $procolor): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <div class="selector-item">
                                             <input type="radio"
-                                                id="fc-option{{ $procolor->id }}"
-                                                value="{{ $procolor->id }}"
+                                                id="fc-option<?php echo e($procolor->id); ?>"
+                                                value="<?php echo e($procolor->id); ?>"
                                                 name="product_color"
                                                 class="selector-item_radio emptyalert"
                                                 required />
-                                            <label for="fc-option{{ $procolor->id }}"
-                                                style="background-color:{{ $procolor->color ?? '#ccc' }}"
+                                            <label for="fc-option<?php echo e($procolor->id); ?>"
+                                                style="background-color:<?php echo e($procolor->color ?? '#ccc'); ?>"
                                                 class="selector-item_label">
-                                                <span><img src="{{ asset('public/frontEnd/images/check-icon.svg') }}" alt="" /></span>
+                                                <span><img src="<?php echo e(asset('public/frontEnd/images/check-icon.svg')); ?>" alt="" /></span>
                                             </label>
                                         </div>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @endif
-                        @if ($productsizes->count() > 0)
+                        <?php endif; ?>
+                        <?php if($productsizes->count() > 0): ?>
                         <div class="pro-size" style="width:100%;">
                             <div class="size_inner">
                                 <p>Size & Variant - <span class="attibute-name"></span></p>
                                 <div class="size-container">
                                     <div class="selector">
-                                        @foreach ($productsizes as $prosize)
+                                        <?php $__currentLoopData = $productsizes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $prosize): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <div class="selector-item">
                                             <input type="radio"
-                                                id="f-option{{ $prosize->id }}"
-                                                value="{{ $prosize->id }}"
+                                                id="f-option<?php echo e($prosize->id); ?>"
+                                                value="<?php echo e($prosize->id); ?>"
                                                 name="product_size"
                                                 class="selector-item_radio emptyalert"
                                                 required />
-                                            <label for="f-option{{ $prosize->id }}" class="selector-item_label">
-                                                {{ $prosize->sizeName ?? $prosize->name }}
+                                            <label for="f-option<?php echo e($prosize->id); ?>" class="selector-item_label">
+                                                <?php echo e($prosize->sizeName ?? $prosize->name); ?>
+
                                             </label>
                                         </div>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @endif
-                    @endif
+                        <?php endif; ?>
+                    <?php endif; ?>
 
-                    {{-- Wholesale Pricing --}}
-                    @if($details->is_wholesale && $details->wholesalePrices && $details->wholesalePrices->count() > 0)
+                    
+                    <?php if($details->is_wholesale && $details->wholesalePrices && $details->wholesalePrices->count() > 0): ?>
                     <div class="wholesale-pricing-section" style="margin:14px 0;">
                         <h5 style="margin-bottom:12px;font-size:15px;font-weight:600;color:#333;">
                             <i class="fa fa-tag me-2"></i> Wholesale Pricing
@@ -619,17 +619,17 @@ input.bpd-btn { cursor: pointer; }
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($details->wholesalePrices->sortBy('min_quantity') as $tier)
+                                    <?php $__currentLoopData = $details->wholesalePrices->sortBy('min_quantity'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tier): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <tr class="wholesale-tier-row"
-                                        data-min-qty="{{ $tier->min_quantity }}"
-                                        data-max-qty="{{ $tier->max_quantity ?? 999999 }}"
-                                        data-price="{{ $tier->wholesale_price }}"
+                                        data-min-qty="<?php echo e($tier->min_quantity); ?>"
+                                        data-max-qty="<?php echo e($tier->max_quantity ?? 999999); ?>"
+                                        data-price="<?php echo e($tier->wholesale_price); ?>"
                                         style="cursor:pointer;transition:background 0.2s;">
-                                        <td style="padding:10px;font-size:13px;">{{ $tier->min_quantity }}{{ $tier->max_quantity ? ' - '.$tier->max_quantity : '+' }} pcs</td>
-                                        <td style="padding:10px;font-size:13px;font-weight:600;color:#28a745;">৳{{ number_format($tier->wholesale_price, 2) }}</td>
-                                        <td style="padding:10px;font-size:13px;color:{{ ($tier->stock ?? 0) > 0 ? '#28a745' : '#dc3545' }};">{{ $tier->stock ?? 0 }} pcs</td>
+                                        <td style="padding:10px;font-size:13px;"><?php echo e($tier->min_quantity); ?><?php echo e($tier->max_quantity ? ' - '.$tier->max_quantity : '+'); ?> pcs</td>
+                                        <td style="padding:10px;font-size:13px;font-weight:600;color:#28a745;">৳<?php echo e(number_format($tier->wholesale_price, 2)); ?></td>
+                                        <td style="padding:10px;font-size:13px;color:<?php echo e(($tier->stock ?? 0) > 0 ? '#28a745' : '#dc3545'); ?>;"><?php echo e($tier->stock ?? 0); ?> pcs</td>
                                     </tr>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </tbody>
                             </table>
                         </div>
@@ -637,32 +637,32 @@ input.bpd-btn { cursor: pointer; }
                             <i class="fa fa-info-circle me-1"></i> Select quantity to apply wholesale price automatically.
                         </p>
                     </div>
-                    @endif
+                    <?php endif; ?>
 
-                    {{-- Unit hidden --}}
-                    @if($details->pro_unit)
-                    <input type="hidden" name="pro_unit" value="{{ $details->pro_unit }}" />
-                    @endif
+                    
+                    <?php if($details->pro_unit): ?>
+                    <input type="hidden" name="pro_unit" value="<?php echo e($details->pro_unit); ?>" />
+                    <?php endif; ?>
 
-                    {{-- Quantity --}}
+                    
                     <div class="bpd-qty-row">
                         <span class="bpd-qty-label">Quantity</span>
                         <div class="quantity bpd-qty-control">
                             <span class="minus">-</span>
-                            @php
+                            <?php
                                 $defaultQty = 1;
                                 if ($details->is_wholesale && $details->wholesalePrices && $details->wholesalePrices->count() > 0) {
                                     $defaultQty = max(1, (int) $details->wholesalePrices->sortBy('min_quantity')->first()->min_quantity);
                                 }
-                            @endphp
+                            ?>
                             <input type="number" name="qty"
                                    class="product-qty-input bpd-qty-input"
-                                   value="{{ $defaultQty }}" min="1" step="1" />
+                                   value="<?php echo e($defaultQty); ?>" min="1" step="1" />
                             <span class="plus">+</span>
                         </div>
                     </div>
 
-                    {{-- Action Buttons: Buy Now + Add to Cart + WhatsApp in one row --}}
+                    
                     <div class="bpd-btn-row">
                         <input type="submit"
                                class="bpd-btn bpd-btn-buy order_now_btn order_now_btn_m"
@@ -671,11 +671,11 @@ input.bpd-btn { cursor: pointer; }
                                value="Buy Now" />
                         <input type="submit"
                                class="bpd-btn bpd-btn-cart add_cart_btn cart_store"
-                               data-id="{{ $details->id }}"
+                               data-id="<?php echo e($details->id); ?>"
                                onclick="return sendSuccess();"
                                name="add_cart"
                                value="Add to Cart" />
-                        <a href="https://api.whatsapp.com/send?phone={{ optional($contact)->whatsapp }}&text={{ urlencode($details->name . ' - ' . Request::url()) }}"
+                        <a href="https://api.whatsapp.com/send?phone=<?php echo e(optional($contact)->whatsapp); ?>&text=<?php echo e(urlencode($details->name . ' - ' . Request::url())); ?>"
                            target="_blank"
                            class="bpd-btn bpd-btn-wa">
                             <i class="fab fa-whatsapp" style="font-size:16px;"></i> WhatsApp
@@ -683,7 +683,7 @@ input.bpd-btn { cursor: pointer; }
                     </div>
                 </form>
 
-                {{-- Reward + Sold Cards --}}
+                
                 <div class="bpd-info-cards">
                     <div class="bpd-info-card">
                         <i class="fas fa-gift bpd-card-icon"></i>
@@ -696,22 +696,22 @@ input.bpd-btn { cursor: pointer; }
                         <i class="fas fa-box bpd-card-icon"></i>
                         <div>
                             <div class="bpd-card-label">Sold</div>
-                            <div class="bpd-card-value">{{ $soldCount }}+ sold in last 7 days</div>
+                            <div class="bpd-card-value"><?php echo e($soldCount); ?>+ sold in last 7 days</div>
                         </div>
                     </div>
                 </div>
 
-            </div>{{-- /bpd-info-col --}}
-        </div>{{-- /bpd-product-layout --}}
+            </div>
+        </div>
     </div>
 </section>
 
-{{-- ─────────────────── DELIVERY ACCORDIONS ─────────────────── --}}
+
 <section class="bpd-delivery-section">
     <div class="container">
         <div class="bpd-delivery-grid">
 
-            {{-- Delivery Details --}}
+            
             <div class="bpd-accordion">
                 <button class="bpd-accordion-btn" onclick="bpdAccordion(this)" type="button">
                     <span class="bpd-accordion-ico">
@@ -733,7 +733,7 @@ input.bpd-btn { cursor: pointer; }
                 </div>
             </div>
 
-            {{-- Delivery Charges --}}
+            
             <div class="bpd-accordion">
                 <button class="bpd-accordion-btn" onclick="bpdAccordion(this)" type="button">
                     <span class="bpd-accordion-ico">
@@ -759,111 +759,113 @@ input.bpd-btn { cursor: pointer; }
     </div>
 </section>
 
-{{-- ─────────────────── DESCRIPTION / REVIEWS TABS ─────────────────── --}}
+
 <section class="bpd-tabs-section">
     <div class="container">
 
         <div class="bpd-tab-nav">
             <button class="bpd-tab-btn active" onclick="bpdTab(this,'tab-description')" type="button">Descriptions</button>
-            <button class="bpd-tab-btn" onclick="bpdTab(this,'tab-reviews')" type="button">Reviews ({{ $reviewTotal }})</button>
+            <button class="bpd-tab-btn" onclick="bpdTab(this,'tab-reviews')" type="button">Reviews (<?php echo e($reviewTotal); ?>)</button>
         </div>
 
-        {{-- Description Tab --}}
+        
         <div class="bpd-tab-pane active" id="tab-description">
             <div class="bpd-description-content">
-                {!! $details->description !!}
+                <?php echo $details->description; ?>
+
             </div>
-            @if($hasVideo)
+            <?php if($hasVideo): ?>
             <div class="bpd-video-wrap">
-                @if($videoType === 'youtube' && $details->pro_video)
+                <?php if($videoType === 'youtube' && $details->pro_video): ?>
                 <iframe width="100%" height="360"
-                    src="https://www.youtube.com/embed/{{ $details->pro_video }}"
+                    src="https://www.youtube.com/embed/<?php echo e($details->pro_video); ?>"
                     frameborder="0" allowfullscreen></iframe>
-                @elseif($videoType === 'upload' && !empty($details->pro_video_path))
+                <?php elseif($videoType === 'upload' && !empty($details->pro_video_path)): ?>
                 <video width="100%" height="360" controls>
-                    <source src="{{ asset($details->pro_video_path) }}" type="video/mp4">
+                    <source src="<?php echo e(asset($details->pro_video_path)); ?>" type="video/mp4">
                 </video>
-                @endif
+                <?php endif; ?>
             </div>
-            @endif
+            <?php endif; ?>
         </div>
 
-        {{-- Reviews Tab --}}
+        
         <div class="bpd-tab-pane" id="tab-reviews">
-            @php
+            <?php
                 $rf = floor($reviewAvg); $rh = ($reviewAvg - $rf) >= 0.5;
                 $re = 5 - $rf - ($rh ? 1 : 0);
-            @endphp
+            ?>
             <div class="bpd-reviews-layout">
 
-                {{-- Left: Summary --}}
+                
                 <div class="bpd-review-summary">
-                    <div class="bpd-review-avg">{{ number_format($reviewAvg, 1) }}</div>
+                    <div class="bpd-review-avg"><?php echo e(number_format($reviewAvg, 1)); ?></div>
                     <div class="bpd-review-stars-lg">
-                        @for($i = 0; $i < $rf; $i++)<i class="fas fa-star"></i>@endfor
-                        @if($rh)<i class="fas fa-star-half-alt"></i>@endif
-                        @for($i = 0; $i < $re; $i++)<i class="far fa-star" style="color:#ccc;"></i>@endfor
+                        <?php for($i = 0; $i < $rf; $i++): ?><i class="fas fa-star"></i><?php endfor; ?>
+                        <?php if($rh): ?><i class="fas fa-star-half-alt"></i><?php endif; ?>
+                        <?php for($i = 0; $i < $re; $i++): ?><i class="far fa-star" style="color:#ccc;"></i><?php endfor; ?>
                     </div>
-                    <div class="bpd-review-count">Based on {{ $reviewTotal }} reviews</div>
+                    <div class="bpd-review-count">Based on <?php echo e($reviewTotal); ?> reviews</div>
                     <div class="bpd-rating-bars">
-                        @foreach([5, 4, 3, 2, 1] as $star)
-                        @php $pct = $reviewTotal > 0 ? round($starCounts[$star] / $reviewTotal * 100) : 0; @endphp
+                        <?php $__currentLoopData = [5, 4, 3, 2, 1]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $star): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php $pct = $reviewTotal > 0 ? round($starCounts[$star] / $reviewTotal * 100) : 0; ?>
                         <div class="bpd-bar-row">
-                            <span class="bpd-bar-lbl">{{ $star }}★</span>
-                            <div class="bpd-bar-track"><div class="bpd-bar-fill" style="width:{{ $pct }}%"></div></div>
-                            <span class="bpd-bar-pct">{{ $pct }}%</span>
+                            <span class="bpd-bar-lbl"><?php echo e($star); ?>★</span>
+                            <div class="bpd-bar-track"><div class="bpd-bar-fill" style="width:<?php echo e($pct); ?>%"></div></div>
+                            <span class="bpd-bar-pct"><?php echo e($pct); ?>%</span>
                         </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                     <button class="bpd-write-btn" id="bpd-open-form" onclick="bpdShowReviewForm()" type="button">
                         Write Your Review
                     </button>
                 </div>
 
-                {{-- Right: Review list + Form --}}
+                
                 <div class="bpd-review-list">
-                    @if($reviews->count() > 0)
-                        @foreach($reviews as $review)
+                    <?php if($reviews->count() > 0): ?>
+                        <?php $__currentLoopData = $reviews; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $review): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <div class="bpd-rcard">
                             <div class="bpd-rcard-hdr">
-                                <div class="bpd-rcard-avatar">{{ strtoupper(substr($review->name, 0, 2)) }}</div>
+                                <div class="bpd-rcard-avatar"><?php echo e(strtoupper(substr($review->name, 0, 2))); ?></div>
                                 <div class="bpd-rcard-meta">
-                                    <div class="bpd-rcard-name">{{ $review->name }}</div>
-                                    <div class="bpd-rcard-date">{{ $review->created_at->format('d M Y') }}</div>
+                                    <div class="bpd-rcard-name"><?php echo e($review->name); ?></div>
+                                    <div class="bpd-rcard-date"><?php echo e($review->created_at->format('d M Y')); ?></div>
                                 </div>
                                 <div class="bpd-rcard-stars">
-                                    @for($i = 1; $i <= 5; $i++)
-                                        @if($i <= $review->ratting)<i class="fas fa-star"></i>
-                                        @else<i class="far fa-star" style="color:#ccc;"></i>
-                                        @endif
-                                    @endfor
+                                    <?php for($i = 1; $i <= 5; $i++): ?>
+                                        <?php if($i <= $review->ratting): ?><i class="fas fa-star"></i>
+                                        <?php else: ?><i class="far fa-star" style="color:#ccc;"></i>
+                                        <?php endif; ?>
+                                    <?php endfor; ?>
                                 </div>
                             </div>
-                            <div class="bpd-rcard-body">{{ $review->review }}</div>
+                            <div class="bpd-rcard-body"><?php echo e($review->review); ?></div>
                         </div>
-                        @endforeach
-                    @else
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    <?php else: ?>
                     <div class="bpd-review-empty">
                         <i class="far fa-comment-dots" style="font-size:32px;margin-bottom:12px;display:block;"></i>
                         <p>No reviews yet. Be the first to write one!</p>
                     </div>
-                    @endif
+                    <?php endif; ?>
 
-                    {{-- Inline Review Form --}}
+                    
                     <div id="bpd-review-form" style="display:none;">
-                        @if(Auth::guard('customer')->user())
-                        <form action="{{ route('customer.review') }}" method="POST" class="bpd-rform">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $details->id }}" />
+                        <?php if(Auth::guard('customer')->user()): ?>
+                        <form action="<?php echo e(route('customer.review')); ?>" method="POST" class="bpd-rform">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="product_id" value="<?php echo e($details->id); ?>" />
                             <h4 class="bpd-rform-title">Write Your Review</h4>
                             <div class="bpd-rform-field">
                                 <label class="bpd-rform-lbl">Give Rating</label>
                                 <div class="bpd-star-pick">
-                                    @foreach([5, 4, 3, 2, 1] as $s)
-                                    <label for="bpd-star-{{ $s }}">{{ str_repeat('★', $s) }}
-                                        <input type="radio" id="bpd-star-{{ $s }}" name="ratting" value="{{ $s }}" required />
+                                    <?php $__currentLoopData = [5, 4, 3, 2, 1]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <label for="bpd-star-<?php echo e($s); ?>"><?php echo e(str_repeat('★', $s)); ?>
+
+                                        <input type="radio" id="bpd-star-<?php echo e($s); ?>" name="ratting" value="<?php echo e($s); ?>" required />
                                     </label>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
                             </div>
                             <div class="bpd-rform-field">
@@ -877,112 +879,113 @@ input.bpd-btn { cursor: pointer; }
                                 <button type="button" class="bpd-rform-cancel" onclick="bpdHideReviewForm()">Cancel</button>
                             </div>
                         </form>
-                        @else
+                        <?php else: ?>
                         <div class="bpd-review-login bpd-rform">
-                            <a href="{{ route('customer.login') }}">Login to write a review</a>
+                            <a href="<?php echo e(route('customer.login')); ?>">Login to write a review</a>
                         </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
 
-                </div>{{-- /bpd-review-list --}}
-            </div>{{-- /bpd-reviews-layout --}}
-        </div>{{-- /tab-reviews --}}
+                </div>
+            </div>
+        </div>
 
     </div>
 </section>
 
-{{-- ─────────────────── RELATED PRODUCTS ─────────────────── --}}
+
 <section class="bpd-related-section">
     <div class="container">
         <div class="bpd-related-hdr">
             <h2 class="bpd-related-title">Related Products</h2>
-            <a href="{{ url('/category/' . $details->category->slug) }}" class="bpd-view-all">View All Deals</a>
+            <a href="<?php echo e(url('/category/' . $details->category->slug)); ?>" class="bpd-view-all">View All Deals</a>
         </div>
         <div class="product-inner owl-carousel related_slider">
-            @foreach ($products as $key => $value)
-            <div class="product_item wist_item wow zoomIn" data-wow-duration="1.5s" data-wow-delay="0.{{ $key }}s">
+            <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <div class="product_item wist_item wow zoomIn" data-wow-duration="1.5s" data-wow-delay="0.<?php echo e($key); ?>s">
                 <div class="product_item_inner">
-                    @if($value->old_price)
-                    @php $rd = number_format((($value->old_price - $value->new_price) / $value->old_price) * 100, 0); @endphp
+                    <?php if($value->old_price): ?>
+                    <?php $rd = number_format((($value->old_price - $value->new_price) / $value->old_price) * 100, 0); ?>
                     <div class="sale-badge">
                         <div class="sale-badge-inner"><div class="sale-badge-box">
-                            <span class="sale-badge-text"><p>{{ $rd }}%</p>OFF</span>
+                            <span class="sale-badge-text"><p><?php echo e($rd); ?>%</p>OFF</span>
                         </div></div>
                     </div>
-                    @endif
+                    <?php endif; ?>
                     <div class="pro_img">
-                        <a href="{{ route('product', $value->slug) }}">
-                            <img src="{{ asset($value->image ? $value->image->image : '') }}" alt="{{ $value->name }}" />
+                        <a href="<?php echo e(route('product', $value->slug)); ?>">
+                            <img src="<?php echo e(asset($value->image ? $value->image->image : '')); ?>" alt="<?php echo e($value->name); ?>" />
                         </a>
                     </div>
                     <div class="pro_des">
                         <div class="pro_name">
-                            <a href="{{ route('product', $value->slug) }}">{{ Str::limit($value->name, 40) }}</a>
+                            <a href="<?php echo e(route('product', $value->slug)); ?>"><?php echo e(Str::limit($value->name, 40)); ?></a>
                         </div>
                     </div>
                 </div>
-                @php
+                <?php
                     $va = $value->reviews->avg('ratting');
                     $vf = floor($va); $vh = $va - $vf >= 0.5; $ve = 5 - $vf - ($vh ? 1 : 0);
-                @endphp
+                ?>
                 <div class="pro_rating" style="padding:4px 8px;">
-                    @for($i=0;$i<$vf;$i++)<i class="fas fa-star" style="color:#F8B400;font-size:13px;"></i>@endfor
-                    @if($vh)<i class="fas fa-star-half-alt" style="color:#F8B400;font-size:13px;"></i>@endif
-                    @for($i=0;$i<$ve;$i++)<i class="far fa-star" style="color:#ccc;font-size:13px;"></i>@endfor
+                    <?php for($i=0;$i<$vf;$i++): ?><i class="fas fa-star" style="color:#F8B400;font-size:13px;"></i><?php endfor; ?>
+                    <?php if($vh): ?><i class="fas fa-star-half-alt" style="color:#F8B400;font-size:13px;"></i><?php endif; ?>
+                    <?php for($i=0;$i<$ve;$i++): ?><i class="far fa-star" style="color:#ccc;font-size:13px;"></i><?php endfor; ?>
                 </div>
                 <div class="pro_price">
-                    @if($value->old_price)<del>৳{{ number_format($value->old_price, 0) }}</del>@endif
-                    ৳{{ number_format($value->new_price, 0) }}
+                    <?php if($value->old_price): ?><del>৳<?php echo e(number_format($value->old_price, 0)); ?></del><?php endif; ?>
+                    ৳<?php echo e(number_format($value->new_price, 0)); ?>
+
                 </div>
-                @if (!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
+                <?php if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty()): ?>
                 <div class="pro_btn">
-                    <a href="{{ route('product', $value->slug) }}" class="order-btn-link order-btn">Order</a>
-                    <a href="{{ route('product', $value->slug) }}" class="cart-icon-link cart-icon-btn">
+                    <a href="<?php echo e(route('product', $value->slug)); ?>" class="order-btn-link order-btn">Order</a>
+                    <a href="<?php echo e(route('product', $value->slug)); ?>" class="cart-icon-link cart-icon-btn">
                         <i class="fa-solid fa-cart-shopping"></i>
                     </a>
                 </div>
-                @else
+                <?php else: ?>
                 <div class="pro_btn">
-                    <form action="{{ route('cart.store') }}" method="POST" style="display:inline;">
-                        @csrf
-                        <input type="hidden" name="id" value="{{ $value->id }}">
+                    <form action="<?php echo e(route('cart.store')); ?>" method="POST" style="display:inline;">
+                        <?php echo csrf_field(); ?>
+                        <input type="hidden" name="id" value="<?php echo e($value->id); ?>">
                         <input type="hidden" name="qty" value="1">
                         <input type="hidden" name="order_now" value="1">
                         <button type="submit" class="order-btn">Order</button>
                     </form>
-                    <form action="{{ route('cart.store') }}" method="POST" style="display:inline;">
-                        @csrf
-                        <input type="hidden" name="id" value="{{ $value->id }}">
+                    <form action="<?php echo e(route('cart.store')); ?>" method="POST" style="display:inline;">
+                        <?php echo csrf_field(); ?>
+                        <input type="hidden" name="id" value="<?php echo e($value->id); ?>">
                         <input type="hidden" name="qty" value="1">
-                        <button type="submit" class="cart-icon-btn cart_store" data-id="{{ $value->id }}">
+                        <button type="submit" class="cart-icon-btn cart_store" data-id="<?php echo e($value->id); ?>">
                             <i class="fa-solid fa-cart-shopping"></i>
                         </button>
                     </form>
                 </div>
-                @endif
+                <?php endif; ?>
             </div>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
     </div>
 </section>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('script')
-<script src="{{ asset('public/frontEnd/js/owl.carousel.min.js') }}"></script>
-<script src="{{ asset('public/frontEnd/js/zoomsl.min.js') }}"></script>
+<?php $__env->startPush('script'); ?>
+<script src="<?php echo e(asset('public/frontEnd/js/owl.carousel.min.js')); ?>"></script>
+<script src="<?php echo e(asset('public/frontEnd/js/zoomsl.min.js')); ?>"></script>
 
 <script>
-    {{-- Variant price data + wholesale tiers --}}
-    const variants = @json($details->variantPrices);
+    
+    const variants = <?php echo json_encode($details->variantPrices, 15, 512) ?>;
 
-    @if($details->is_wholesale && $details->wholesalePrices && $details->wholesalePrices->count() > 0)
+    <?php if($details->is_wholesale && $details->wholesalePrices && $details->wholesalePrices->count() > 0): ?>
     var wholesaleTiers = [
-        @foreach($details->wholesalePrices->sortBy('min_quantity') as $tier)
-        { min_quantity: {{ $tier->min_quantity }}, max_quantity: {{ $tier->max_quantity ?? 999999 }}, price: {{ $tier->wholesale_price }} }@if(!$loop->last),@endif
-        @endforeach
+        <?php $__currentLoopData = $details->wholesalePrices->sortBy('min_quantity'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tier): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        { min_quantity: <?php echo e($tier->min_quantity); ?>, max_quantity: <?php echo e($tier->max_quantity ?? 999999); ?>, price: <?php echo e($tier->wholesale_price); ?> }<?php if(!$loop->last): ?>,<?php endif; ?>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     ];
-    var regularPrice = {{ $details->new_price }};
+    var regularPrice = <?php echo e($details->new_price); ?>;
 
     function getWholesalePrice(qty) {
         var matched = null;
@@ -1000,7 +1003,7 @@ input.bpd-btn { cursor: pointer; }
             if (qty >= min && qty <= max) $(this).addClass('active-tier');
         });
     }
-    @endif
+    <?php endif; ?>
 
     function getProductQty() {
         var $qty = $('form[name="formName"] input[name="qty"]');
@@ -1021,23 +1024,23 @@ input.bpd-btn { cursor: pointer; }
         if (!match && size && !color) {
             match = variants.find(v => String(v.size_id ?? v.size) == String(size) && (v.color_id ?? v.color) == null);
         }
-        let basePrice = parseFloat({{ $details->new_price }});
+        let basePrice = parseFloat(<?php echo e($details->new_price); ?>);
         if (match && match.price != null) basePrice = parseFloat(match.price);
-        @if($details->is_wholesale && $details->wholesalePrices && $details->wholesalePrices->count() > 0)
+        <?php if($details->is_wholesale && $details->wholesalePrices && $details->wholesalePrices->count() > 0): ?>
         let qty = getProductQty();
         let wp = getWholesalePrice(qty);
         if (wp !== null) basePrice = parseFloat(wp);
         highlightWholesaleTier(qty);
-        @endif
+        <?php endif; ?>
         $('#newPrice').text('৳' + basePrice.toFixed(2));
     }
 
-    {{-- Product images for color filter --}}
-    var productImages = @json($details->images->map(function($img) {
+    
+    var productImages = <?php echo json_encode($details->images->map(function($img) {
         return ['src' => asset($img->image), 'color_id' => $img->color_id];
-    }));
+    }), 512) ?>;
 
-    {{-- Update gallery + thumbnails by selected color (vertical thumb version) --}}
+    
     function updateImagesByColor(colorId) {
         var colorIdStr = colorId ? String(colorId) : null;
         var filtered = [];
@@ -1118,12 +1121,12 @@ input.bpd-btn { cursor: pointer; }
             return false;
         });
 
-        @if($details->is_wholesale && $details->wholesalePrices && $details->wholesalePrices->count() > 0)
+        <?php if($details->is_wholesale && $details->wholesalePrices && $details->wholesalePrices->count() > 0): ?>
         $('.wholesale-tier-row').on('click', function () {
             var min = parseInt($(this).data('min-qty'), 10);
             $('form[name="formName"] input[name="qty"]').val(min).trigger('change');
         });
-        @endif
+        <?php endif; ?>
 
         // Related products carousel
         $('.related_slider').owlCarousel({
@@ -1180,7 +1183,7 @@ input.bpd-btn { cursor: pointer; }
     }
 </script>
 
-{{-- imagezoomsl init --}}
+
 <script>
     $(document).ready(function () {
         if ($('.block__pic').length && typeof $('.block__pic').imagezoomsl === 'function') {
@@ -1189,7 +1192,7 @@ input.bpd-btn { cursor: pointer; }
     });
 </script>
 
-{{-- ─── GA4 / Facebook Pixel tracking (unchanged) ─── --}}
+
 <script type="text/javascript">
     window.dataLayer = window.dataLayer || [];
     dataLayer.push({ ecommerce: null });
@@ -1197,28 +1200,30 @@ input.bpd-btn { cursor: pointer; }
         event: "view_item",
         ecommerce: {
             items: [{
-                item_name: "{{ $details->name }}",
-                item_id: "{{ $details->id }}",
-                price: "{{ $details->new_price }}",
-                item_brand: "{{ $details->brand ? $details->brand->name : '' }}",
-                item_category: "{{ $details->category->name }}",
-                item_variant: "{{ $details->pro_unit }}",
+                item_name: "<?php echo e($details->name); ?>",
+                item_id: "<?php echo e($details->id); ?>",
+                price: "<?php echo e($details->new_price); ?>",
+                item_brand: "<?php echo e($details->brand ? $details->brand->name : ''); ?>",
+                item_category: "<?php echo e($details->category->name); ?>",
+                item_variant: "<?php echo e($details->pro_unit); ?>",
                 currency: "BDT",
-                quantity: {{ $details->stock ?? 0 }}
+                quantity: <?php echo e($details->stock ?? 0); ?>
+
             }],
             impression: [
-                @foreach ($products as $value)
+                <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 {
-                    item_name: "{{ $value->name }}",
-                    item_id: "{{ $value->id }}",
-                    price: "{{ $value->new_price }}",
-                    item_brand: "{{ $details->brand ? $details->brand->name : '' }}",
-                    item_category: "{{ $value->category ? $value->category->name : '' }}",
-                    item_variant: "{{ $value->pro_unit }}",
+                    item_name: "<?php echo e($value->name); ?>",
+                    item_id: "<?php echo e($value->id); ?>",
+                    price: "<?php echo e($value->new_price); ?>",
+                    item_brand: "<?php echo e($details->brand ? $details->brand->name : ''); ?>",
+                    item_category: "<?php echo e($value->category ? $value->category->name : ''); ?>",
+                    item_variant: "<?php echo e($value->pro_unit); ?>",
                     currency: "BDT",
-                    quantity: {{ $value->stock ?? 0 }}
+                    quantity: <?php echo e($value->stock ?? 0); ?>
+
                 },
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             ]
         }
     });
@@ -1226,29 +1231,31 @@ input.bpd-btn { cursor: pointer; }
 <script type="text/javascript">
     (function () {
         var productItem = {
-            item_id: "{{ $details->id }}",
-            item_name: @json($details->name),
-            price: {{ (float) $details->new_price }},
-            item_brand: @json(optional($details->brand)->name),
-            item_category: @json(optional($details->category)->name),
-            item_variant: @json($details->pro_unit),
+            item_id: "<?php echo e($details->id); ?>",
+            item_name: <?php echo json_encode($details->name, 15, 512) ?>,
+            price: <?php echo e((float) $details->new_price); ?>,
+            item_brand: <?php echo json_encode(optional($details->brand)->name, 15, 512) ?>,
+            item_category: <?php echo json_encode(optional($details->category)->name, 15, 512) ?>,
+            item_variant: <?php echo json_encode($details->pro_unit, 15, 512) ?>,
             currency: "BDT",
-            quantity: {{ $details->stock ?? 0 }}
+            quantity: <?php echo e($details->stock ?? 0); ?>
+
         };
 
         var relatedItems = [
-            @foreach ($products as $value)
+            <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             {
-                item_id: "{{ $value->id }}",
-                item_name: @json($value->name),
-                price: {{ (float) $value->new_price }},
-                item_brand: @json(optional($value->brand)->name),
-                item_category: @json(optional($value->category)->name),
-                item_variant: @json($value->pro_unit),
+                item_id: "<?php echo e($value->id); ?>",
+                item_name: <?php echo json_encode($value->name, 15, 512) ?>,
+                price: <?php echo e((float) $value->new_price); ?>,
+                item_brand: <?php echo json_encode(optional($value->brand)->name, 15, 512) ?>,
+                item_category: <?php echo json_encode(optional($value->category)->name, 15, 512) ?>,
+                item_variant: <?php echo json_encode($value->pro_unit, 15, 512) ?>,
                 currency: "BDT",
-                quantity: {{ $value->stock ?? 0 }}
-            }@if(!$loop->last),@endif
-            @endforeach
+                quantity: <?php echo e($value->stock ?? 0); ?>
+
+            }<?php if(!$loop->last): ?>,<?php endif; ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         ];
 
         if (relatedItems.length) {
@@ -1299,4 +1306,6 @@ input.bpd-btn { cursor: pointer; }
         });
     })();
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/pages/details.blade.php ENDPATH**/ ?>

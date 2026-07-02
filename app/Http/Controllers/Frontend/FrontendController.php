@@ -1052,7 +1052,8 @@ $brands = Brand::where('status', 1)
                     'brand',
                     'variantPrices.color',
                     'variantPrices.size',
-                    'wholesalePrices'
+                    'wholesalePrices',
+                    'weight'
                 ])
                 ->firstOrFail();
         });

@@ -84,6 +84,12 @@ class Product extends Model
                     ->select('id', 'name', 'slug');
     }
 
+    public function weight()
+    {
+        return $this->belongsTo(ProductWeight::class, 'weight_id')
+                    ->select('id', 'name');
+    }
+
     /**
      * Vendor that owns the product.
      */

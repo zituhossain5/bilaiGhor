@@ -33,7 +33,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         
-        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=25">
+        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=26">
         <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/main.css')); ?>" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
@@ -674,19 +674,13 @@
                     
                     <ul class="bilai-nav__links">
                         <?php $__currentLoopData = $menucategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <li class="bilai-nav__item<?php echo e($cat->subcategories->count() > 0 ? ' bilai-nav__item--has-drop' : ''); ?>">
+                        <li class="bilai-nav__item<?php echo e($cat->subcategories->count() > 0 ? ' bilai-nav__item--has-mega' : ''); ?>"
+                            <?php if($cat->subcategories->count() > 0): ?>data-mega="bilai-mega-<?php echo e($cat->id); ?>"<?php endif; ?>>
                             <a href="<?php echo e(route('category', $cat->slug)); ?>" class="<?php echo e(Request::segment(1) === 'category' && Request::segment(2) === $cat->slug ? 'active' : ''); ?>">
                                 <?php echo e($cat->name); ?>
 
                                 <?php if($cat->subcategories->count() > 0): ?><i class="fa-solid fa-chevron-down bilai-nav-chevron"></i><?php endif; ?>
                             </a>
-                            <?php if($cat->subcategories->count() > 0): ?>
-                            <ul class="bilai-nav__subnav">
-                                <?php $__currentLoopData = $cat->subcategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sub): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <li><a href="<?php echo e(route('subcategory', $sub->slug)); ?>"><?php echo e($sub->subcategoryName); ?></a></li>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </ul>
-                            <?php endif; ?>
                         </li>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </ul>
@@ -708,6 +702,22 @@
                     </div>
 
                 </div>
+
+                
+                <?php $__currentLoopData = $menucategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php if($cat->subcategories->count() > 0): ?>
+                <div class="bilai-mega-panel" id="bilai-mega-<?php echo e($cat->id); ?>">
+                    <div class="container">
+                        <div class="bilai-mega-grid">
+                            <?php $__currentLoopData = $cat->subcategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sub): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <a href="<?php echo e(route('subcategory', $sub->slug)); ?>" class="bilai-mega-link"><?php echo e($sub->subcategoryName); ?></a>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
             </nav>
 
         </header>
@@ -1308,37 +1318,54 @@ window.addEventListener('pageshow', function (e) {
 </script>
 
 <script>
-/* BilaiGhor Mega Menu — vanilla JS, no jQuery needed */
+/* BilaiGhor Nav Mega Menu — timer-based so gap between item and panel doesn't close menu */
 (function () {
-    var catBtn     = document.getElementById('bilaiCatBtn');
-    var megaMenu   = document.getElementById('bilaiMegaMenu');
-    var catWrapper = document.getElementById('bilaiCatWrapper');
-    if (!catBtn || !megaMenu) return;
+    if (window.innerWidth < 992) return;
 
-    function openMega() {
-        megaMenu.classList.add('is-open');
-        catBtn.classList.add('active');
-        catBtn.setAttribute('aria-expanded', 'true');
-    }
-    function closeMega() {
-        megaMenu.classList.remove('is-open');
-        catBtn.classList.remove('active');
-        catBtn.setAttribute('aria-expanded', 'false');
+    var nav    = document.querySelector('.bilai-nav');
+    var items  = nav ? nav.querySelectorAll('.bilai-nav__item--has-mega') : [];
+    if (!nav || !items.length) return;
+
+    var closeTimer = null;
+
+    function clearTimer() {
+        if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
     }
 
-    catBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        megaMenu.classList.contains('is-open') ? closeMega() : openMega();
+    function closeAll() {
+        clearTimer();
+        nav.querySelectorAll('.bilai-nav__item--has-mega').forEach(function (i) { i.classList.remove('bilai-mega-active'); });
+        nav.querySelectorAll('.bilai-mega-panel').forEach(function (p) { p.classList.remove('bilai-mega-open'); });
+    }
+
+    function scheduleClose() {
+        clearTimer();
+        closeTimer = setTimeout(closeAll, 120);
+    }
+
+    items.forEach(function (item) {
+        var panelId = item.dataset.mega;
+        var panel   = panelId ? document.getElementById(panelId) : null;
+
+        item.addEventListener('mouseenter', function () {
+            clearTimer();
+            /* Switch to this item: deactivate others, activate current */
+            nav.querySelectorAll('.bilai-nav__item--has-mega').forEach(function (i) { i.classList.remove('bilai-mega-active'); });
+            nav.querySelectorAll('.bilai-mega-panel').forEach(function (p) { p.classList.remove('bilai-mega-open'); });
+            item.classList.add('bilai-mega-active');
+            if (panel) panel.classList.add('bilai-mega-open');
+        });
+
+        item.addEventListener('mouseleave', scheduleClose);
+
+        if (panel) {
+            panel.addEventListener('mouseenter', clearTimer);
+            panel.addEventListener('mouseleave', scheduleClose);
+        }
     });
 
-    /* Close when clicking outside the wrapper */
     document.addEventListener('click', function (e) {
-        if (catWrapper && !catWrapper.contains(e.target)) closeMega();
-    });
-
-    /* Close on Escape key */
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeMega();
+        if (!nav.contains(e.target)) closeAll();
     });
 })();
 </script>

@@ -223,18 +223,37 @@ input.bpd-btn { cursor: pointer; }
 .bpd-accordion-body strong { color: var(--bilai-brown); }
 /* BilaiGhor Product Accordions End */
 
-/* Tabs */
-.bpd-tabs-section { padding: 24px 0 36px; }
-.bpd-tab-nav { display: flex; justify-content: center; gap: 10px; margin-bottom: 28px; }
-.bpd-tab-btn {
-    padding: 10px 30px; border: 1.5px solid var(--bilai-border);
-    border-radius: var(--bilai-radius-md); background: var(--bilai-cream);
-    color: var(--bilai-text); font-size: 14px; font-weight: 600;
-    cursor: pointer; font-family: inherit; transition: all 0.15s;
+/* BilaiGhor Product Tabs Figma Start */
+.bpd-tabs-section { padding: 24px 0 36px; background: #fff; }
+.bpd-tab-nav {
+    display: flex;
+    border-bottom: 2px solid var(--bilai-border);
+    margin-bottom: 32px;
 }
-.bpd-tab-btn.active { background: var(--bilai-primary); color: #fff; border-color: var(--bilai-primary); }
+.bilai-product-tab {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    background: #fff;
+    color: var(--bilai-muted);
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    margin-bottom: -2px;
+}
+.bilai-product-tab:hover { color: var(--bilai-primary); }
+.bilai-product-tab.active {
+    color: var(--bilai-primary);
+    border-bottom-color: var(--bilai-primary);
+    background: var(--bilai-cream);
+}
 .bpd-tab-pane { display: none; }
 .bpd-tab-pane.active { display: block; }
+/* BilaiGhor Product Tabs Figma End */
 
 .bpd-description-content { font-size: 14px; color: var(--bilai-text); line-height: 1.8; max-width: 820px; }
 .bpd-description-content img { max-width: 100%; height: auto; border-radius: 8px; }
@@ -799,8 +818,8 @@ input.bpd-btn { cursor: pointer; }
     <div class="container">
 
         <div class="bpd-tab-nav">
-            <button class="bpd-tab-btn active" onclick="bpdTab(this,'tab-description')" type="button">Descriptions</button>
-            <button class="bpd-tab-btn" onclick="bpdTab(this,'tab-reviews')" type="button">Reviews ({{ $reviewTotal }})</button>
+            <button class="bilai-product-tab active" onclick="bpdTab(this,'tab-description')" type="button">Descriptions</button>
+            <button class="bilai-product-tab" onclick="bpdTab(this,'tab-reviews')" type="button">Reviews ({{ $reviewTotal }})</button>
         </div>
 
         {{-- Description Tab --}}
@@ -1220,7 +1239,7 @@ input.bpd-btn { cursor: pointer; }
 
     // Tab switching
     function bpdTab(btn, id) {
-        document.querySelectorAll('.bpd-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.bilai-product-tab').forEach(function(b) { b.classList.remove('active'); });
         document.querySelectorAll('.bpd-tab-pane').forEach(function(p) { p.classList.remove('active'); });
         btn.classList.add('active');
         document.getElementById(id).classList.add('active');

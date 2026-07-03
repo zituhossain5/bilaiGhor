@@ -576,6 +576,49 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     transform: rotate(180deg);
 }
 
+/* BilaiGhor Mega Menu Figma Start */
+/* Panels are direct children of .bilai-nav (position:relative), not inside <li> */
+.bilai-mega-panel {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: var(--bilai-cream);
+    border-top: 1px solid var(--bilai-border);
+    border-bottom: 1px solid var(--bilai-border);
+    box-shadow: 0 6px 18px rgba(58, 31, 15, 0.07);
+    padding: 28px 0 32px;
+    z-index: 200;
+}
+.bilai-mega-panel.bilai-mega-open {
+    display: block;
+}
+.bilai-nav__item--has-mega.bilai-mega-active > a .bilai-nav-chevron {
+    transform: rotate(180deg);
+}
+.bilai-mega-grid {
+    display: grid;
+    grid-template-columns: repeat(3, max-content);
+    gap: 14px 56px;
+}
+.bilai-mega-link {
+    font-size: 14px;
+    color: var(--bilai-text);
+    font-family: var(--bilai-font-main, inherit);
+    font-weight: 400;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.15s;
+}
+.bilai-mega-link:hover {
+    color: var(--bilai-primary);
+}
+@media (max-width: 991px) {
+    .bilai-mega-panel { display: none !important; }
+}
+/* BilaiGhor Mega Menu Figma End */
+
 /* ── RIGHT SIDE: static links + cart pill ───────────────────── */
 .bilai-nav__right {
     display: none;

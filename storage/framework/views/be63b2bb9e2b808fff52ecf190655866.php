@@ -1,418 +1,833 @@
 <?php
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\Order;
-use App\Models\OrderDetails;
 use App\Models\Product;
 
-$customer = Auth::guard('customer')->user();
-$customerId = $customer->id;
+$customer      = Auth::guard('customer')->user();
+$customerId    = $customer->id;
 
-// Statistics
-$totalOrders = Order::where('customer_id', $customerId)->count();
-$pendingOrders = Order::where('customer_id', $customerId)
-    ->whereNotIn('order_status', ['6', '11'])
-    ->count();
-$completedOrders = Order::where('customer_id', $customerId)
-    ->where('order_status', '6')
-    ->count();
+// Order statistics — mapped to Figma cards
+$pendingOrders    = Order::where('customer_id', $customerId)->whereIn('order_status', ['1', '2'])->count();
+$processingOrders = Order::where('customer_id', $customerId)->whereIn('order_status', ['3', '4', '5'])->count();
+$deliveredOrders  = Order::where('customer_id', $customerId)->where('order_status', '6')->count();
 
-// Recent Orders (last 5)
+// Badge count (all non-terminal orders)
+$pendingOrdersCount = Order::where('customer_id', $customerId)
+    ->whereNotIn('order_status', ['6', '11'])->count();
+
+// Total spent
+$totalOrderAmount = Order::where('customer_id', $customerId)->sum('amount');
+
+// Recent orders (last 5)
 $recentOrders = Order::where('customer_id', $customerId)
-    ->with(['status', 'payment', 'orderdetails.product'])
-    ->latest()
-    ->limit(5)
-    ->get();
+    ->with(['payment', 'orderdetails.product'])
+    ->latest()->limit(5)->get();
 
-// Recommended Products
+// Recommended products
 $recommendedProducts = Product::where('status', 1)
     ->where('approval_status', 'approved')
     ->where('stock', '>', 0)
     ->with('image')
-    ->inRandomOrder()
-    ->limit(4)
-    ->get();
+    ->inRandomOrder()->limit(4)->get();
 
-// Total Order Amount
-$totalOrderAmount = Order::where('customer_id', $customerId)->sum('amount');
-
-// Profile Image - Use direct image path
-$profileImage = $customer->image ? asset($customer->image) : asset('public/uploads/default/no-image.png');
-
-// Pending Orders Count for Badge
-$pendingOrdersCount = Order::where('customer_id', $customerId)
-    ->whereNotIn('order_status', ['6', '11'])
-    ->count();
-
-// Site Name & Logo
-$siteName = \App\Models\GeneralSetting::first();
-$siteInitial = strtoupper(substr($siteName->name ?? 'G', 0, 1));
-$siteDisplayName = Str::limit($siteName->name ?? 'GadgetShop', 8);
-$generalsetting = $siteName; // For sidebar compatibility
-$darkLogo = $siteName->dark_logo ?? null;
+// Profile image / initials fallback
+$profileImage    = $customer->image ? asset($customer->image) : null;
+$customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
 ?>
 
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
-    <title>Customer Panel | <?php echo e($siteName->name ?? 'Gadget Style'); ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Hind Siliguri', sans-serif; background-color: #F0F2F5; }
-        .sidebar-item:hover { background-color: #f3f4f6; color: #4f46e5; }
-        .active-menu { background-color: #EEF2FF; color: #4f46e5; border-right: 3px solid #4f46e5; }
-        
-        /* Table Style */
-        .custom-table th { background-color: #F9FAFB; color: #6B7280; font-weight: 600; font-size: 0.85rem; }
-        .custom-table td { border-bottom: 1px solid #F3F4F6; padding: 16px; font-size: 0.9rem; }
-        
-        /* Mobile Menu Transition */
-        #sidebar { transition: transform 0.3s ease-in-out; }
-        
-        /* Product Image Responsive */
-        .product-image-container {
-            position: relative;
-            width: 100%;
-            padding-bottom: 100%; /* 1:1 aspect ratio */
-            background-color: #f3f4f6;
-            overflow: hidden;
-        }
-        
-        @media (min-width: 640px) {
-            .product-image-container {
-                padding-bottom: 75%; /* 4:3 aspect ratio for tablet */
-            }
-        }
-        
-        @media (min-width: 1024px) {
-            .product-image-container {
-                padding-bottom: 100%; /* 1:1 aspect ratio for desktop */
-            }
-        }
-        
-        .product-image-container img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        /* Line Clamp Utility */
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        /* Product Card Hover Effect */
-        .product-card-hover {
-            transition: all 0.3s ease;
-        }
-        
-        .product-card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-    </style>
-</head>
-<body class="flex min-h-screen relative">
 
-    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
 
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 lg:static lg:inset-auto lg:flex flex-col shrink-0 h-screen transition-transform duration-300">
-        <div class="p-4 sm:p-6 flex items-center justify-between lg:justify-start gap-2 border-b border-gray-100">
-            <?php if($darkLogo): ?>
-                <a href="<?php echo e(route('home')); ?>" class="flex items-center gap-2 flex-1">
-                    <img src="<?php echo e(asset($darkLogo)); ?>" alt="<?php echo e($siteName->name ?? 'Logo'); ?>" class="h-8 sm:h-10 w-auto max-w-full object-contain">
-                </a>
-            <?php else: ?>
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold"><?php echo e($siteInitial); ?></div>
-                    <h1 class="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight"><?php echo e($siteDisplayName); ?></h1>
-                </div>
-            <?php endif; ?>
-            <button onclick="toggleSidebar()" class="lg:hidden text-gray-500 hover:text-red-500">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
+<?php $__env->startSection('title', 'Dashboard | ' . ($customer->name ?? 'Account')); ?>
 
-        <nav class="flex-1 px-0 text-gray-500 font-medium space-y-1 mt-2 overflow-y-auto">
-            <a href="<?php echo e(route('customer.account')); ?>" class="<?php echo e(request()->is('customer/account')?'active-menu':'sidebar-item'); ?> flex items-center px-6 py-3.5 transition-colors">
-                <i class="fas fa-home w-6"></i> ড্যাশবোর্ড
-            </a>
-            <a href="<?php echo e(route('customer.orders')); ?>" class="<?php echo e(request()->is('customer/orders')?'active-menu':'sidebar-item'); ?> flex items-center px-6 py-3.5 transition-colors">
-                <i class="fas fa-box-open w-6"></i> আমার অর্ডার 
-                <?php if($pendingOrdersCount > 0): ?>
-                    <span class="ml-auto bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full"><?php echo e($pendingOrdersCount); ?></span>
-                <?php endif; ?>
-            </a>
-            <a href="<?php echo e(route('customer.order_track')); ?>" class="<?php echo e(request()->is('customer/order-track*')?'active-menu':'sidebar-item'); ?> flex items-center px-6 py-3.5 transition-colors">
-                <i class="fas fa-truck w-6"></i> ট্র্যাক অর্ডার
-            </a>
-            <a href="<?php echo e(route('customer.refunds')); ?>" class="<?php echo e(request()->is('customer/refunds*')?'active-menu':'sidebar-item'); ?> flex items-center px-6 py-3.5 transition-colors">
-                <i class="fas fa-undo w-6"></i> রিফান্ড রিকোয়েস্ট
-            </a>
-            <a href="<?php echo e(route('complaint')); ?>" class="<?php echo e(request()->is('complaint') ? 'active-menu' : 'sidebar-item'); ?> flex items-center px-6 py-3.5 transition-colors">
-                <i class="fas fa-headset w-6"></i> সাপোর্ট টিকেট
-            </a>
-            <a href="<?php echo e(route('customer.profile_edit')); ?>" class="<?php echo e(request()->is('customer/profile-edit')?'active-menu':'sidebar-item'); ?> flex items-center px-6 py-3.5 transition-colors">
-                <i class="fas fa-user-cog w-6"></i> সেটিংস
-            </a>
+<?php $__env->startPush('css'); ?>
+<style>
+/* BilaiGhor Customer Dashboard Start */
+
+/* ── Variables (fallback if root vars missing) ───────────────────── */
+:root {
+    --bilai-dash-primary:  var(--bilai-primary,  #e8861a);
+    --bilai-dash-primary-dark: var(--bilai-primary-dark, #c96f00);
+    --bilai-dash-brown:    var(--bilai-brown,    #3a1f0f);
+    --bilai-dash-cream:    var(--bilai-cream,    #fdfcf8);
+    --bilai-dash-border:   var(--bilai-border,   #dccab2);
+    --bilai-dash-text:     var(--bilai-text,     #4f4f4f);
+    --bilai-dash-muted:    var(--bilai-muted,    #7a6a5e);
+    --bilai-dash-radius:   var(--bilai-radius-md, 14px);
+    --bilai-dash-radius-sm: var(--bilai-radius-sm, 8px);
+}
+
+/* ── Page shell ──────────────────────────────────────────────────── */
+.bilai-dash-breadcrumb-bar {
+    background: #fff;
+    border-bottom: 1px solid var(--bilai-dash-border);
+    padding: 11px 0;
+}
+.bilai-dash-bc {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.bilai-dash-bc a {
+    color: var(--bilai-dash-text);
+    text-decoration: none;
+}
+.bilai-dash-bc a:hover { color: var(--bilai-dash-primary); }
+.bilai-dash-bc-sep    { color: var(--bilai-dash-muted); }
+.bilai-dash-bc-active { color: var(--bilai-dash-primary); font-weight: 600; }
+
+.bilai-dash-page {
+    background: var(--bilai-dash-cream);
+    min-height: 70vh;
+    padding: 28px 0 56px;
+}
+
+/* ── Two-column layout ───────────────────────────────────────────── */
+.bilai-dash-layout {
+    display: grid;
+    grid-template-columns: 268px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* ── Sidebar card ────────────────────────────────────────────────── */
+.bilai-dash-sidebar-card {
+    background: #fff;
+    border: 1px solid var(--bilai-dash-border);
+    border-radius: var(--bilai-dash-radius);
+    overflow: hidden;
+    position: sticky;
+    top: 90px;
+}
+
+/* Profile box */
+.bilai-dash-profile-box {
+    padding: 28px 20px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--bilai-dash-border);
+}
+.bilai-dash-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bilai-dash-border);
+    margin: 0 auto 12px;
+    display: block;
+}
+.bilai-dash-avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--bilai-dash-primary);
+    color: #fff;
+    font-size: 30px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+}
+.bilai-dash-profile-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--bilai-dash-brown);
+    margin: 0 0 4px;
+    line-height: 1.3;
+}
+.bilai-dash-profile-sub {
+    font-size: 13px;
+    color: var(--bilai-dash-muted);
+    margin: 0 0 16px;
+}
+/* RP / TK summary row */
+.bilai-dash-rp-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+}
+.bilai-dash-rp-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bilai-dash-text);
+}
+.bilai-dash-rp-icon { color: var(--bilai-dash-primary); }
+.bilai-dash-rp-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--bilai-dash-border);
+}
+
+/* Sidebar nav */
+.bilai-dash-nav { padding: 8px 0; }
+.bilai-dash-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 20px;
+    color: var(--bilai-dash-text);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: background 0.15s, color 0.15s;
+}
+.bilai-dash-nav-item:hover {
+    background: var(--bilai-dash-cream);
+    color: var(--bilai-dash-primary);
+    text-decoration: none;
+}
+.bilai-dash-nav-item.active {
+    background: var(--bilai-dash-cream);
+    color: var(--bilai-dash-primary);
+    border-left-color: var(--bilai-dash-primary);
+    font-weight: 600;
+}
+.bilai-dash-nav-icon {
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+.bilai-dash-nav-badge {
+    margin-left: auto;
+    background: #e53935;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 100px;
+    line-height: 1.5;
+}
+.bilai-dash-nav-logout {
+    border-top: 1px solid var(--bilai-dash-border);
+    margin-top: 6px;
+    padding-top: 6px;
+}
+.bilai-dash-nav-item--logout { color: #dc3545; }
+.bilai-dash-nav-item--logout:hover {
+    background: #fff5f5;
+    color: #c62828;
+}
+
+/* ── Right content cards ─────────────────────────────────────────── */
+.bilai-dash-main-card {
+    background: #fff;
+    border: 1px solid var(--bilai-dash-border);
+    border-radius: var(--bilai-dash-radius);
+    padding: 24px 24px 28px;
+    margin-bottom: 20px;
+}
+.bilai-dash-welcome-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--bilai-dash-brown);
+    margin: 0 0 6px;
+}
+.bilai-dash-welcome-text {
+    font-size: 13.5px;
+    color: var(--bilai-dash-muted);
+    margin: 0 0 22px;
+    line-height: 1.6;
+}
+
+/* Stats grid — 3 columns wrapping */
+.bilai-dash-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+.bilai-dash-stat-card {
+    background: var(--bilai-dash-cream);
+    border: 1px solid var(--bilai-dash-border);
+    border-radius: var(--bilai-dash-radius-sm);
+    padding: 16px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.bilai-dash-stat-card--pending {
+    background: #fff8ee;
+    border-color: #f5c97a;
+}
+.bilai-dash-stat-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--bilai-dash-radius-sm);
+    background: #fff;
+    border: 1px solid var(--bilai-dash-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--bilai-dash-primary);
+    font-size: 15px;
+}
+.bilai-dash-stat-label {
+    font-size: 12px;
+    color: var(--bilai-dash-muted);
+    margin: 0 0 3px;
+    white-space: nowrap;
+}
+.bilai-dash-stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--bilai-dash-brown);
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Section header */
+.bilai-dash-section-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+.bilai-dash-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--bilai-dash-brown);
+    margin: 0;
+}
+.bilai-dash-view-all {
+    font-size: 13px;
+    color: var(--bilai-dash-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+.bilai-dash-view-all:hover {
+    color: var(--bilai-dash-primary-dark);
+    text-decoration: underline;
+}
+
+/* Orders table */
+.bilai-dash-table { width: 100%; border-collapse: collapse; }
+.bilai-dash-table th {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--bilai-dash-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--bilai-dash-border);
+    background: var(--bilai-dash-cream);
+    white-space: nowrap;
+}
+.bilai-dash-table td {
+    padding: 13px 12px;
+    font-size: 13.5px;
+    color: var(--bilai-dash-text);
+    border-bottom: 1px solid var(--bilai-dash-border);
+    vertical-align: middle;
+}
+.bilai-dash-table tbody tr:last-child td { border-bottom: none; }
+.bilai-dash-table tbody tr:hover { background: var(--bilai-dash-cream); }
+.bilai-dash-order-id { color: var(--bilai-dash-primary); font-weight: 700; }
+.bilai-dash-td-muted { color: var(--bilai-dash-muted); }
+.bilai-dash-empty { color: var(--bilai-dash-muted); padding: 32px !important; font-size: 14px; }
+.bilai-dash-icon-link { color: var(--bilai-dash-muted); font-size: 15px; text-decoration: none; }
+.bilai-dash-icon-link:hover { color: var(--bilai-dash-primary); }
+
+/* Badges */
+.bd-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+.bd-badge-green  { background: #e6f4ea; color: #2e7d32; }
+.bd-badge-red    { background: #fdecea; color: #c62828; }
+.bd-badge-orange { background: #fff3e0; color: #e65100; }
+.bd-badge-blue   { background: #e3f2fd; color: #1565c0; }
+
+/* Product cards */
+.bilai-dash-products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+.bilai-dash-product-card {
+    border: 1px solid var(--bilai-dash-border);
+    border-radius: var(--bilai-dash-radius-sm);
+    overflow: hidden;
+    background: #fff;
+    transition: box-shadow 0.2s;
+}
+.bilai-dash-product-card:hover { box-shadow: 0 4px 16px rgba(58,31,15,0.1); }
+.bilai-dash-product-img-wrap {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--bilai-dash-cream);
+}
+.bilai-dash-product-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+.bilai-dash-product-card:hover .bilai-dash-product-img-wrap img { transform: scale(1.05); }
+.bilai-dash-product-badge {
+    position: absolute;
+    top: 8px; left: 8px;
+    background: var(--bilai-dash-primary);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.bilai-dash-product-body { padding: 11px 12px 14px; }
+.bilai-dash-product-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--bilai-dash-text);
+    margin: 0 0 7px;
+    min-height: 2.5em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+.bilai-dash-product-name a { color: inherit; text-decoration: none; }
+.bilai-dash-product-name a:hover { color: var(--bilai-dash-primary); }
+.bilai-dash-product-price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+.bilai-dash-old-price { font-size: 11px; color: var(--bilai-dash-muted); text-decoration: line-through; }
+.bilai-dash-new-price { font-size: 15px; font-weight: 700; color: var(--bilai-dash-primary); }
+.bilai-dash-order-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 6px;
+    background: var(--bilai-dash-primary);
+    color: #fff;
+    text-align: center;
+    border-radius: var(--bilai-dash-radius-sm);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+.bilai-dash-order-btn:hover { background: var(--bilai-dash-primary-dark); color: #fff; text-decoration: none; }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 1199px) {
+    .bilai-dash-layout { grid-template-columns: 240px 1fr; gap: 18px; }
+}
+@media (max-width: 991px) {
+    .bilai-dash-layout { grid-template-columns: 1fr; }
+    .bilai-dash-sidebar-card { position: static; }
+    .bilai-dash-stats-grid  { grid-template-columns: repeat(2, 1fr); }
+    .bilai-dash-products-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575px) {
+    .bilai-dash-main-card   { padding: 16px 14px 20px; }
+    .bilai-dash-stats-grid  { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .bilai-dash-stat-value  { font-size: 18px; }
+    .bilai-dash-products-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .bilai-dash-table th, .bilai-dash-table td { padding: 10px 8px; font-size: 12px; }
+}
+
+/* BilaiGhor Customer Dashboard End */
+</style>
+<?php $__env->stopPush(); ?>
+
+<?php $__env->startSection('content'); ?>
+
+
+<div class="bilai-dash-breadcrumb-bar">
+    <div class="container">
+        <nav class="bilai-dash-bc" aria-label="breadcrumb">
+            <a href="<?php echo e(route('home')); ?>">Home</a>
+            <span class="bilai-dash-bc-sep">›</span>
+            <span>Profile</span>
+            <span class="bilai-dash-bc-sep">›</span>
+            <span class="bilai-dash-bc-active">Dashboard</span>
         </nav>
+    </div>
+</div>
 
-        <div class="p-6 border-t">
-            <a href="<?php echo e(route('customer.logout')); ?>" 
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-               class="w-full flex items-center justify-center px-4 py-2.5 text-red-500 bg-red-50 hover:bg-red-100 rounded-lg font-bold transition">
-                <i class="fas fa-sign-out-alt mr-2"></i> লগআউট
-            </a>
-            <form id="logout-form" action="<?php echo e(route('customer.logout')); ?>" method="POST" style="display: none;">
-                <?php echo csrf_field(); ?>
-            </form>
-        </div>
-    </aside>
 
-    <main class="flex-1 overflow-y-auto h-screen w-full">
-        
-        <header class="bg-white px-6 lg:px-8 py-4 flex justify-between items-center sticky top-0 z-20 shadow-sm border-b">
-            <div class="lg:hidden mr-4">
-                <button onclick="toggleSidebar()" class="text-gray-600 text-xl p-2"><i class="fas fa-bars"></i></button>
-            </div>
+<div class="bilai-dash-page">
+    <div class="container">
+        <div class="bilai-dash-layout">
 
-            <div class="flex-1">
-                <h2 class="text-xl font-bold text-gray-800">স্বাগতম, <?php echo e($customer->name); ?>! 👋</h2>
-                <p class="text-xs text-gray-400 mt-0.5 hidden sm:block">আপনার কেনাকাটার সংক্ষিপ্ত বিবরণ</p>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <div class="hidden sm:flex bg-green-50 text-green-700 px-4 py-2 rounded-full items-center font-bold text-sm border border-green-100">
-                    <i class="fas fa-wallet mr-2"></i> মোট: ৳<?php echo e(number_format($totalOrderAmount, 0)); ?>
-
-                </div>
-                
-                <div class="relative cursor-pointer w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition">
-                    <i class="far fa-bell text-gray-600"></i>
-                </div>
-
-                <img src="<?php echo e($profileImage); ?>" onerror="this.src='<?php echo e(asset('public/uploads/default/no-image.png')); ?>'" class="w-10 h-10 rounded-full border-2 border-white shadow-sm cursor-pointer" alt="Profile">
-            </div>
-        </header>
-
-        <div class="p-3 sm:p-4 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center group hover:shadow-md transition">
-                    <div>
-                        <p class="text-gray-400 text-xs font-medium uppercase tracking-wider">মোট অর্ডার</p>
-                        <p class="text-2xl font-bold text-gray-800 mt-1"><?php echo e($totalOrders); ?> টি</p>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition">
-                        <i class="fas fa-shopping-bag"></i>
-                    </div>
-                </div>
+            <aside class="bilai-dash-sidebar">
+                <div class="bilai-dash-sidebar-card">
 
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center group hover:shadow-md transition">
-                    <div>
-                        <p class="text-gray-400 text-xs font-medium uppercase tracking-wider">চলমান অর্ডার</p>
-                        <p class="text-2xl font-bold text-gray-800 mt-1"><?php echo e($pendingOrders); ?> টি</p>
-                    </div>
-                    <div class="w-12 h-12 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition">
-                        <i class="fas fa-truck-moving"></i>
-                    </div>
-                </div>
+                    
+                    <div class="bilai-dash-profile-box">
+                        <?php if($profileImage): ?>
+                            <img src="<?php echo e($profileImage); ?>"
+                                 onerror="this.style.display='none'; document.getElementById('bilai-avatar-fallback').style.display='flex';"
+                                 class="bilai-dash-avatar" alt="<?php echo e($customer->name); ?>">
+                            <div class="bilai-dash-avatar-placeholder" id="bilai-avatar-fallback" style="display:none;">
+                                <?php echo e($customerInitial); ?>
 
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center group hover:shadow-md transition">
-                    <div>
-                        <p class="text-gray-400 text-xs font-medium uppercase tracking-wider">কমপ্লিট অর্ডার</p>
-                        <p class="text-2xl font-bold text-gray-800 mt-1"><?php echo e($completedOrders); ?> টি</p>
-                    </div>
-                    <div class="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center group hover:shadow-md transition">
-                    <div>
-                        <p class="text-gray-400 text-xs font-medium uppercase tracking-wider">মোট টাকা</p>
-                        <p class="text-2xl font-bold text-gray-800 mt-1">৳<?php echo e(number_format($totalOrderAmount, 0)); ?></p>
-                    </div>
-                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="p-6 border-b border-gray-50 flex justify-between items-center">
-                    <h3 class="text-lg font-bold text-gray-800">📦 সাম্প্রতিক অর্ডারসমূহ</h3>
-                    <a href="<?php echo e(route('customer.orders')); ?>" class="text-sm text-indigo-600 font-semibold hover:underline">সবগুলো দেখুন</a>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left custom-table">
-                        <thead>
-                            <tr>
-                                <th class="pl-6 py-4">অর্ডার আইডি</th>
-                                <th class="py-4">তারিখ</th>
-                                <th class="py-4">পণ্যের নাম</th>
-                                <th class="py-4">মোট টাকা</th>
-                                <th class="py-4">পেমেন্ট</th>
-                                <th class="py-4">স্ট্যাটাস</th>
-                                <th class="pr-6 py-4 text-right">অ্যাকশন</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php $__empty_1 = true; $__currentLoopData = $recentOrders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                <?php
-                                    $firstProduct = $order->orderdetails->first();
-                                    $productName = $firstProduct && $firstProduct->product ? Str::limit($firstProduct->product->name, 30) : 'N/A';
-                                    
-                                    $payment = $order->payment;
-                                    $paymentStatus = $payment ? strtolower($payment->payment_status) : 'pending';
-                                    $isPaid = $paymentStatus === 'paid' || $paymentStatus === 'success';
-                                    
-                                    $statusClass = '';
-                                    $statusText = '';
-                                    
-                                    if($order->order_status == '6') {
-                                        $statusClass = 'bg-green-50 text-green-600';
-                                        $statusText = 'Delivered';
-                                    } elseif($order->order_status == '11') {
-                                        $statusClass = 'bg-red-50 text-red-600';
-                                        $statusText = 'Cancelled';
-                                    } elseif(in_array($order->order_status, ['3', '4', '5'])) {
-                                        $statusClass = 'bg-orange-50 text-orange-600';
-                                        $statusText = 'Shipped';
-                                    } else {
-                                        $statusClass = 'bg-blue-50 text-blue-600';
-                                        $statusText = 'Processing';
-                                    }
-                                ?>
-                                <tr class="hover:bg-gray-50 transition">
-                                    <td class="pl-6 font-bold text-indigo-600">#<?php echo e($order->invoice_id ?? $order->id); ?></td>
-                                    <td class="text-gray-500"><?php echo e($order->created_at->format('d M, Y')); ?></td>
-                                    <td class="font-medium text-gray-700"><?php echo e($productName); ?></td>
-                                    <td class="font-bold text-gray-800">৳<?php echo e(number_format($order->amount, 0)); ?></td>
-                                    <td>
-                                        <?php if($isPaid): ?>
-                                            <span class="bg-green-50 text-green-600 px-2.5 py-1 rounded text-xs font-bold">Paid</span>
-                                        <?php else: ?>
-                                            <span class="bg-red-50 text-red-600 px-2.5 py-1 rounded text-xs font-bold">Unpaid</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <span class="<?php echo e($statusClass); ?> px-2.5 py-1 rounded text-xs font-bold"><?php echo e($statusText); ?></span>
-                                    </td>
-                                    <td class="pr-6 text-right">
-                                        <a href="<?php echo e(route('customer.invoice', ['id' => $order->id])); ?>" class="text-gray-400 hover:text-indigo-600"><i class="fas fa-eye"></i></a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                                <tr>
-                                    <td colspan="7" class="text-center py-8 text-gray-500">কোনো অর্ডার পাওয়া যায়নি</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <?php if($recommendedProducts->count() > 0): ?>
-            <div>
-                <div class="flex justify-between items-center mb-5 px-2 sm:px-0">
-                    <h3 class="text-lg font-bold text-gray-800">🔥 আপনার জন্য সেরা (Recommended)</h3>
-                </div>
-                <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
-                    <?php $__currentLoopData = $recommendedProducts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <?php
-                            $discount = 0;
-                            if($product->old_price && $product->new_price && $product->old_price > $product->new_price) {
-                                $discount = round((($product->old_price - $product->new_price) / $product->old_price) * 100);
-                            }
-                        ?>
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-lg transition-all duration-300 product-card-hover">
-                            <div class="product-image-container relative">
-                                <a href="<?php echo e(route('product', $product->slug ?? $product->id)); ?>" class="block w-full h-full">
-                                    <img src="<?php echo e(asset($product->image->image ?? 'public/uploads/default/no-image.png')); ?>" onerror="this.src='<?php echo e(asset('public/uploads/default/no-image.png')); ?>'" class="group-hover:scale-105 transition duration-500" alt="<?php echo e($product->name); ?>">
-                                </a>
-                                <?php if($discount > 0): ?>
-                                    <span class="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-indigo-600 text-white text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full shadow-md font-bold z-10"><?php echo e($discount); ?>% OFF</span>
-                                <?php elseif($product->feature_product): ?>
-                                    <span class="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-green-500 text-white text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full shadow-md font-bold z-10">New</span>
-                                <?php endif; ?>
-                                <?php if($product->stock <= 0): ?>
-                                    <span class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-red-500 text-white text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full shadow-md font-bold z-10">স্টকে নেই</span>
-                                <?php endif; ?>
                             </div>
-                            <div class="p-3 sm:p-4">
-                                <h4 class="font-bold text-gray-800 text-xs sm:text-sm mb-2 line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
-                                    <a href="<?php echo e(route('product', $product->slug ?? $product->id)); ?>" class="hover:text-indigo-600 transition"><?php echo e($product->name); ?></a>
-                                </h4>
+                        <?php else: ?>
+                            <div class="bilai-dash-avatar-placeholder"><?php echo e($customerInitial); ?></div>
+                        <?php endif; ?>
+
+                        <p class="bilai-dash-profile-name"><?php echo e($customer->name ?? 'Customer'); ?></p>
+                        <p class="bilai-dash-profile-sub"><?php echo e($customer->phone ?? $customer->email ?? ''); ?></p>
+
+                        
+                        <div class="bilai-dash-rp-row">
+                            <span class="bilai-dash-rp-item">
                                 
-                                <div class="flex items-center gap-1 sm:gap-2 mb-2 sm:mb-3 flex-wrap">
-                                    <?php if($product->old_price && $product->old_price > $product->new_price): ?>
-                                        <span class="text-gray-400 line-through text-[10px] sm:text-xs">৳<?php echo e(number_format($product->old_price, 0)); ?></span>
-                                    <?php endif; ?>
-                                    <span class="text-indigo-600 font-bold text-base sm:text-lg">৳<?php echo e(number_format($product->new_price ?? 0, 0)); ?></span>
-                                </div>
+                                <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span>
+                                <span>0 RP</span>
+                            </span>
+                            <span class="bilai-dash-rp-divider"></span>
+                            <span class="bilai-dash-rp-item">
                                 
-                                <?php if($product->stock > 0): ?>
-                                <div class="flex flex-col sm:flex-row gap-2">
-                                    <a href="<?php echo e(route('product', $product->slug ?? $product->id)); ?>" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg text-center transition duration-200 flex items-center justify-center gap-1 sm:gap-2 shadow-sm hover:shadow-md">
-                                        <i class="fas fa-shopping-cart text-[10px] sm:text-xs"></i>
-                                        <span class="whitespace-nowrap">অর্ডার করুন</span>
-                                    </a>
-                                    <button onclick="addToCart(<?php echo e($product->id); ?>)" class="w-full sm:w-auto bg-gray-100 hover:bg-indigo-600 hover:text-white text-gray-600 sm:w-11 h-9 sm:h-11 rounded-lg flex items-center justify-center transition duration-200 border border-gray-200 hover:border-indigo-600" title="কার্টে যোগ করুন">
-                                        <i class="fas fa-cart-plus text-xs sm:text-sm"></i>
-                                    </button>
-                                </div>
-                                <?php else: ?>
-                                <div class="w-full bg-gray-100 text-gray-500 text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg text-center">
-                                    <i class="fas fa-ban mr-1 sm:mr-2"></i>স্টকে নেই
-                                </div>
-                                <?php endif; ?>
+                                <span class="bilai-dash-rp-icon"><i class="fa fa-money"></i></span>
+                                <span>৳<?php echo e(number_format($totalOrderAmount, 0)); ?></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    
+                    <nav class="bilai-dash-nav">
+                        <a href="<?php echo e(route('customer.account')); ?>"
+                           class="bilai-dash-nav-item <?php echo e(request()->is('customer/account') ? 'active' : ''); ?>">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-home"></i></span>
+                            Dashboard
+                        </a>
+
+                        <a href="<?php echo e(route('customer.orders')); ?>"
+                           class="bilai-dash-nav-item <?php echo e(request()->is('customer/orders') ? 'active' : ''); ?>">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-shopping-bag"></i></span>
+                            Orders
+                            <?php if($pendingOrdersCount > 0): ?>
+                                <span class="bilai-dash-nav-badge"><?php echo e($pendingOrdersCount); ?></span>
+                            <?php endif; ?>
+                        </a>
+
+                        <a href="<?php echo e(route('customer.profile_edit')); ?>"
+                           class="bilai-dash-nav-item <?php echo e(request()->is('customer/profile-edit') ? 'active' : ''); ?>">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-user"></i></span>
+                            Profile
+                        </a>
+
+                        
+                        <a href="#" class="bilai-dash-nav-item">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart"></i></span>
+                            Wishlist
+                            
+                        </a>
+
+                        
+                        <a href="#" class="bilai-dash-nav-item">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-map-marker"></i></span>
+                            Addresses
+                            
+                        </a>
+
+                        
+                        <a href="#" class="bilai-dash-nav-item">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-tag"></i></span>
+                            Coupon
+                            
+                        </a>
+
+                        
+                        <a href="#" class="bilai-dash-nav-item">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-gift"></i></span>
+                            Gift Cards
+                            
+                        </a>
+
+                        
+                        <a href="#" class="bilai-dash-nav-item">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span>
+                            Reward Points
+                            
+                        </a>
+
+                        <a href="<?php echo e(route('customer.order_track')); ?>"
+                           class="bilai-dash-nav-item <?php echo e(request()->is('customer/order-track*') ? 'active' : ''); ?>">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-truck"></i></span>
+                            Track Order
+                        </a>
+
+                        <a href="<?php echo e(route('customer.refunds')); ?>"
+                           class="bilai-dash-nav-item <?php echo e(request()->is('customer/refunds*') ? 'active' : ''); ?>">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-undo"></i></span>
+                            Return Request
+                        </a>
+
+                        <a href="<?php echo e(route('complaint')); ?>"
+                           class="bilai-dash-nav-item <?php echo e(request()->is('complaint') ? 'active' : ''); ?>">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-headphones"></i></span>
+                            Support Ticket
+                        </a>
+
+                        
+                        <div class="bilai-dash-nav-logout">
+                            <a href="<?php echo e(route('customer.logout')); ?>"
+                               onclick="event.preventDefault(); document.getElementById('bilai-logout-form').submit();"
+                               class="bilai-dash-nav-item bilai-dash-nav-item--logout">
+                                
+                                <span class="bilai-dash-nav-icon"><i class="fa fa-sign-out"></i></span>
+                                Logout
+                            </a>
+                            <form id="bilai-logout-form" action="<?php echo e(route('customer.logout')); ?>" method="POST" style="display:none;">
+                                <?php echo csrf_field(); ?>
+                            </form>
+                        </div>
+                    </nav>
+
+                </div>
+            </aside>
+
+            
+            <main class="bilai-dash-content">
+
+                
+                <div class="bilai-dash-main-card">
+                    <h2 class="bilai-dash-welcome-title">Welcome back, <?php echo e($customer->name ?? 'Customer'); ?>!</h2>
+                    <p class="bilai-dash-welcome-text">From your account dashboard, you can easily view your orders, track reward points, manage your wishlist, and check your coupons.</p>
+
+                    <div class="bilai-dash-stats-grid">
+
+                        
+                        <div class="bilai-dash-stat-card">
+                            <div class="bilai-dash-stat-icon-wrap">
+                                
+                                <i class="fa fa-cog"></i>
+                            </div>
+                            <div>
+                                <p class="bilai-dash-stat-label">Total RP</p>
+                                <p class="bilai-dash-stat-value">00</p>
+                                
                             </div>
                         </div>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+                        
+                        <div class="bilai-dash-stat-card">
+                            <div class="bilai-dash-stat-icon-wrap">
+                                
+                                <i class="fa fa-search"></i>
+                            </div>
+                            <div>
+                                <p class="bilai-dash-stat-label">Total Taka</p>
+                                <p class="bilai-dash-stat-value">৳<?php echo e(number_format($totalOrderAmount, 0)); ?></p>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bilai-dash-stat-card">
+                            <div class="bilai-dash-stat-icon-wrap">
+                                
+                                <i class="fa fa-heart"></i>
+                            </div>
+                            <div>
+                                <p class="bilai-dash-stat-label">Total Wishlist</p>
+                                <p class="bilai-dash-stat-value">00</p>
+                                
+                            </div>
+                        </div>
+
+                        
+                        <div class="bilai-dash-stat-card">
+                            <div class="bilai-dash-stat-icon-wrap">
+                                
+                                <i class="fa fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <p class="bilai-dash-stat-label">Delivered Order</p>
+                                <p class="bilai-dash-stat-value"><?php echo e($deliveredOrders); ?></p>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bilai-dash-stat-card bilai-dash-stat-card--pending">
+                            <div class="bilai-dash-stat-icon-wrap">
+                                
+                                <i class="fa fa-spinner"></i>
+                            </div>
+                            <div>
+                                <p class="bilai-dash-stat-label">Pending Order</p>
+                                <p class="bilai-dash-stat-value"><?php echo e($pendingOrders); ?></p>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bilai-dash-stat-card">
+                            <div class="bilai-dash-stat-icon-wrap">
+                                
+                                <i class="fa fa-exchange"></i>
+                            </div>
+                            <div>
+                                <p class="bilai-dash-stat-label">Processing Order</p>
+                                <p class="bilai-dash-stat-value"><?php echo e($processingOrders); ?></p>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bilai-dash-stat-card">
+                            <div class="bilai-dash-stat-icon-wrap">
+                                
+                                <i class="fa fa-ticket"></i>
+                            </div>
+                            <div>
+                                <p class="bilai-dash-stat-label">Active Coupon</p>
+                                <p class="bilai-dash-stat-value">00</p>
+                                
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-            </div>
-            <?php endif; ?>
 
+                
+                <div class="bilai-dash-main-card">
+                    <div class="bilai-dash-section-hdr">
+                        <h3 class="bilai-dash-section-title">Recent Orders</h3>
+                        <a href="<?php echo e(route('customer.orders')); ?>" class="bilai-dash-view-all">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="bilai-dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Product</th>
+                                    <th>Total</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php $__empty_1 = true; $__currentLoopData = $recentOrders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                    <?php
+                                        $firstProduct = $order->orderdetails->first();
+                                        $productName  = $firstProduct && $firstProduct->product
+                                            ? Str::limit($firstProduct->product->name, 30) : 'N/A';
+                                        $payment  = $order->payment;
+                                        $isPaid   = $payment && in_array(
+                                            strtolower($payment->payment_status ?? ''), ['paid', 'success']
+                                        );
+                                        if ($order->order_status == '6') {
+                                            $sLabel = 'Delivered'; $sCls = 'bd-badge-green';
+                                        } elseif ($order->order_status == '11') {
+                                            $sLabel = 'Cancelled'; $sCls = 'bd-badge-red';
+                                        } elseif (in_array($order->order_status, ['3','4','5'])) {
+                                            $sLabel = 'Shipped'; $sCls = 'bd-badge-orange';
+                                        } else {
+                                            $sLabel = 'Processing'; $sCls = 'bd-badge-blue';
+                                        }
+                                    ?>
+                                    <tr>
+                                        <td><span class="bilai-dash-order-id">#<?php echo e($order->invoice_id ?? $order->id); ?></span></td>
+                                        <td class="bilai-dash-td-muted"><?php echo e($order->created_at->format('d M, Y')); ?></td>
+                                        <td><?php echo e($productName); ?></td>
+                                        <td><strong>৳<?php echo e(number_format($order->amount, 0)); ?></strong></td>
+                                        <td>
+                                            <span class="bd-badge <?php echo e($isPaid ? 'bd-badge-green' : 'bd-badge-red'); ?>">
+                                                <?php echo e($isPaid ? 'Paid' : 'Unpaid'); ?>
+
+                                            </span>
+                                        </td>
+                                        <td><span class="bd-badge <?php echo e($sCls); ?>"><?php echo e($sLabel); ?></span></td>
+                                        <td>
+                                            <a href="<?php echo e(route('customer.invoice', ['id' => $order->id])); ?>"
+                                               class="bilai-dash-icon-link" title="View Invoice">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                    <tr>
+                                        <td colspan="7" class="text-center bilai-dash-empty">No orders found</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                
+                <?php if($recommendedProducts->count() > 0): ?>
+                <div class="bilai-dash-main-card">
+                    <div class="bilai-dash-section-hdr">
+                        <h3 class="bilai-dash-section-title">Recommended For You</h3>
+                    </div>
+                    <div class="bilai-dash-products-grid">
+                        <?php $__currentLoopData = $recommendedProducts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
+                                $discount = 0;
+                                if ($product->old_price && $product->new_price && $product->old_price > $product->new_price) {
+                                    $discount = round((($product->old_price - $product->new_price) / $product->old_price) * 100);
+                                }
+                            ?>
+                            <div class="bilai-dash-product-card">
+                                <div class="bilai-dash-product-img-wrap">
+                                    <a href="<?php echo e(route('product', $product->slug ?? $product->id)); ?>">
+                                        <img src="<?php echo e(asset($product->image->image ?? 'public/uploads/default/no-image.png')); ?>"
+                                             onerror="this.src='<?php echo e(asset('public/uploads/default/no-image.png')); ?>'"
+                                             alt="<?php echo e($product->name); ?>">
+                                    </a>
+                                    <?php if($discount > 0): ?>
+                                        <span class="bilai-dash-product-badge"><?php echo e($discount); ?>% OFF</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="bilai-dash-product-body">
+                                    <h4 class="bilai-dash-product-name">
+                                        <a href="<?php echo e(route('product', $product->slug ?? $product->id)); ?>"><?php echo e($product->name); ?></a>
+                                    </h4>
+                                    <div class="bilai-dash-product-price">
+                                        <?php if($product->old_price && $product->old_price > $product->new_price): ?>
+                                            <span class="bilai-dash-old-price">৳<?php echo e(number_format($product->old_price, 0)); ?></span>
+                                        <?php endif; ?>
+                                        <span class="bilai-dash-new-price">৳<?php echo e(number_format($product->new_price ?? 0, 0)); ?></span>
+                                    </div>
+                                    <a href="<?php echo e(route('product', $product->slug ?? $product->id)); ?>"
+                                       class="bilai-dash-order-btn">Order Now</a>
+                                </div>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+            </main>
         </div>
-    </main>
+    </div>
+</div>
 
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            }
-        }
+<?php $__env->stopSection(); ?>
 
-        function addToCart(productId) {
-            // Add to cart functionality
-            window.location.href = '<?php echo e(url("add-to-cart")); ?>/' + productId + '/1';
-        }
-        
-        function orderNow(productId) {
-            // Direct order functionality - redirect to product details page
-            window.location.href = '<?php echo e(url("product")); ?>/' + productId;
-        }
-    </script>
-</body>
-</html>
-<?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/customer/account.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/customer/account.blade.php ENDPATH**/ ?>

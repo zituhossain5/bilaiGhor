@@ -1184,14 +1184,30 @@ public function order_save(Request $request)
     }
 
 
-    public function orders()
+    public function orders(Request $request)
     {
-        $orders = Order::where('customer_id',Auth::guard('customer')->user()->id)
-            ->with(['status', 'orderdetails.product.image', 'orderdetails.image'])
-            ->latest()
-            ->paginate(10);
+        // Tab -> real order_status id mapping (see order_statuses table)
+        // Confirmed  = Completed(6)
+        // Processing = Pending(1), Processing(2), On The Way(3), In Courier(5), Unpaid(8)
+        // Cancelled  = Cancelled(11)
+        $statusMap = [
+            'confirmed'  => ['6'],
+            'processing' => ['1', '2', '3', '5', '8'],
+            'cancelled'  => ['11'],
+        ];
 
-        return view('frontEnd.layouts.customer.orders',compact('orders'));
+        $activeTab = $request->query('status', 'all');
+
+        $query = Order::where('customer_id', Auth::guard('customer')->user()->id)
+            ->with(['status', 'orderdetails.product.image', 'orderdetails.image']);
+
+        if ($activeTab !== 'all' && isset($statusMap[$activeTab])) {
+            $query->whereIn('order_status', $statusMap[$activeTab]);
+        }
+
+        $orders = $query->latest()->paginate(10)->withQueryString();
+
+        return view('frontEnd.layouts.customer.orders', compact('orders', 'activeTab'));
     }
 
     public function order_success($id)

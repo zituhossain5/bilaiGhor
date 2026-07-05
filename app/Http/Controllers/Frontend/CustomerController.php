@@ -1210,6 +1210,37 @@ public function order_save(Request $request)
         return view('frontEnd.layouts.customer.orders', compact('orders', 'activeTab'));
     }
 
+    public function order_details($id)
+    {
+        $customerId = Auth::guard('customer')->user()->id;
+
+        // Authorization: customer can only view their OWN order.
+        $order = Order::where('id', $id)
+            ->where('customer_id', $customerId)
+            ->with([
+                'status',
+                'shipping',
+                'payment',
+                'orderdetails.product.image',
+                'orderdetails.product.category',
+                'orderdetails.product.subcategory',
+                'orderdetails.image',
+            ])
+            ->first();
+
+        if (!$order) {
+            abort(403, 'You are not authorized to view this order.');
+        }
+
+        // Recent orders for the top order-selector dropdown.
+        $recentOrders = Order::where('customer_id', $customerId)
+            ->latest()
+            ->take(15)
+            ->get(['id', 'invoice_id', 'created_at']);
+
+        return view('frontEnd.layouts.customer.order_details', compact('order', 'recentOrders'));
+    }
+
     public function order_success($id)
     {
         $order = Order::with(['orderdetails.size', 'orderdetails.color', 'shipping'])

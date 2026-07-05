@@ -648,6 +648,7 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend','middleware' => ['cus
     Route::get('/account', [CustomerController::class, 'account'])->name('customer.account');
     
     Route::get('/orders', [CustomerController::class, 'orders'])->name('customer.orders');
+    Route::get('/order-details/{id}', [CustomerController::class, 'order_details'])->name('customer.order_details');
     Route::get('/invoice', [CustomerController::class, 'invoice'])->name('customer.invoice');
     Route::get('/invoice/order-note', [CustomerController::class, 'order_note'])->name('customer.order_note');
     Route::get('/profile-edit', [CustomerController::class, 'profile_edit'])->name('customer.profile_edit');

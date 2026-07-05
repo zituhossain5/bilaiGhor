@@ -483,7 +483,7 @@ $activeTab = $activeTab ?? 'all';
                                         </td>
                                         <td>
                                             <div class="bilai-ord-actions">
-                                                <a href="{{ route('customer.invoice', ['id' => $value->id]) }}"
+                                                <a href="{{ route('customer.order_details', $value->id) }}"
                                                    class="bilai-ord-btn-view">View Details</a>
 
                                                 @if($value->admin_note)

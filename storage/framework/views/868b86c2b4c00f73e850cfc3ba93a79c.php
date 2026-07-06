@@ -5,361 +5,272 @@
 <?php $__env->startPush('css'); ?>
 <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/select2.min.css')); ?>" />
 <style>
-    /* ================================================================
-       MODERN CHECKOUT STYLES - PROFESSIONAL E-COMMERCE LOOK
-    ================================================================ */
-    :root {
-        --primary-color: #0f3460;
-        --secondary-color: #e94560;
-        --success-color: #28a745;
-        --border-color: #e5e7eb;
-        --bg-color: #f8f9fa;
-        --text-dark: #1f2937;
-        --text-light: #6b7280;
-    }
+/* BilaiGhor Checkout Figma Start */
+:root {
+    --co-primary: var(--bilai-primary, #F28C00);
+    --co-primary-dark: var(--bilai-primary-dark, #c96f00);
+    --co-brown:   var(--bilai-brown,  #3A1F0F);
+    --co-cream:   var(--bilai-cream,  #FFF8EC);
+    --co-card:    #FFFDF8;
+    --co-border:  var(--bilai-border, #E8CDA5);
+    --co-text:    var(--bilai-text,   #2B1A10);
+    --co-muted:   var(--bilai-muted,  #77706A);
+    --co-radius:  var(--bilai-radius-lg, 16px);
+    --co-radius-sm: var(--bilai-radius-md, 10px);
+}
 
-    .checkout-section {
-        background-color: var(--bg-color);
-        padding: 60px 0;
-        font-family: 'Poppins', sans-serif;
-    }
+.checkout-section {
+    background: #f5f5f0;
+    padding: 22px 0 56px;
+    font-family: inherit;
+    color: var(--co-text);
+}
 
-    /* --- Card Design --- */
-    .checkout-card {
-        background: #ffffff;
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        margin-bottom: 24px;
-        overflow: hidden;
-    }
+/* ── Breadcrumb ── */
+.bilai-co-bc { display: flex; align-items: center; gap: 6px; font-size: 12.5px; margin-bottom: 20px; flex-wrap: wrap; }
+.bilai-co-bc a { color: var(--co-muted); text-decoration: none; }
+.bilai-co-bc a:hover { color: var(--co-primary); }
+.bilai-co-bc-sep { color: #c0b0a0; font-size: 11px; }
+.bilai-co-bc-active { color: var(--co-primary); font-weight: 600; }
 
-    .checkout-header {
-        background: #fff;
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .checkout-header i {
-        color: var(--secondary-color);
-        font-size: 22px;
-    }
-    .checkout-header h6 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--primary-color);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+/* ── Cards ── */
+.checkout-card {
+    background: var(--co-cream);
+    border: 1px solid var(--co-border);
+    border-radius: var(--co-radius);
+    margin-bottom: 22px;
+    overflow: hidden;
+}
+.checkout-header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--co-border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.checkout-header i { color: var(--co-primary); font-size: 18px; }
+.checkout-header h6 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--co-text);
+    letter-spacing: 0;
+    text-transform: none;
+}
+.card-body-custom { padding: 20px 22px 22px; }
 
-    .card-body-custom {
-        padding: 30px;
-    }
+/* ── Form ── */
+.form-group { margin-bottom: 16px; }
+.form-label-custom {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--co-text);
+    margin-bottom: 7px;
+    display: block;
+}
+.form-label-custom .req { color: #e04b4b; }
+.form-control-custom {
+    width: 100%;
+    height: 46px;
+    border: 1px solid var(--co-border);
+    border-radius: var(--co-radius-sm);
+    padding: 0 14px;
+    font-size: 14px;
+    color: var(--co-text);
+    transition: all 0.18s;
+    background-color: #fff;
+}
+.form-control-custom::placeholder { color: #b6ab9c; }
+.form-control-custom:focus {
+    border-color: var(--co-primary);
+    box-shadow: 0 0 0 3px rgba(242,140,0,0.10);
+    outline: none;
+}
+select.form-control-custom { cursor: pointer; appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2377706A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; padding-right: 34px; }
+textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.5; }
 
-    /* --- Form Inputs --- */
-    .form-group { margin-bottom: 20px; }
-    .form-label-custom {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin-bottom: 8px;
-        display: block;
-    }
-    .form-control-custom {
-        width: 100%;
-        height: 50px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        padding: 0 16px;
-        font-size: 15px;
-        color: #333;
-        transition: all 0.2s;
-        background-color: #fff;
-    }
-    .form-control-custom:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px rgba(15, 52, 96, 0.08);
-        outline: none;
-    }
-    textarea.form-control-custom {
-        height: auto;
-        padding: 15px;
-        line-height: 1.5;
-    }
+/* ── Payment options ── */
+.payment-option-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--co-border);
+    border-radius: var(--co-radius-sm);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    margin-bottom: 12px;
+    background: #fff;
+    position: relative;
+}
+.payment-option-label:hover { border-color: var(--co-primary); }
+.payment-option-label input { position: absolute; opacity: 0; cursor: pointer; }
+.payment-option-label:has(input:checked) {
+    border-color: var(--co-primary);
+    background-color: #fdefd6;
+    box-shadow: 0 0 0 1px var(--co-primary);
+}
+.payment-content { display: flex; align-items: center; gap: 13px; width: 100%; }
+.pay-logo { width: 36px; height: 36px; object-fit: contain; flex-shrink: 0; }
+.pay-info strong { display: block; font-size: 14.5px; font-weight: 700; color: var(--co-text); }
+.pay-info small { font-size: 12px; color: var(--co-muted); }
+.check-circle {
+    width: 20px; height: 20px;
+    border: 2px solid #cbb99c;
+    border-radius: 50%;
+    position: relative; flex-shrink: 0;
+}
+.payment-option-label input:checked ~ .check-circle { border-color: var(--co-primary); }
+.payment-option-label input:checked ~ .check-circle::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px; height: 10px; background: var(--co-primary); border-radius: 50%;
+}
 
-    /* --- Payment Methods (Interactive Box) --- */
-    .payment-option-label {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border: 2px solid var(--border-color);
-        border-radius: 10px;
-        padding: 16px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        margin-bottom: 15px;
-        background: #fff;
-        position: relative;
-    }
-    .payment-option-label:hover {
-        border-color: #9ca3af;
-        background: #f9fafb;
-    }
-    .payment-option-label input {
-        position: absolute;
-        opacity: 0;
-        cursor: pointer;
-    }
-    /* Selected State */
-    .payment-option-label:has(input:checked) {
-        border-color: var(--primary-color);
-        background-color: #f0f5ff;
-        box-shadow: 0 0 0 1px var(--primary-color);
-    }
-    .payment-content {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        width: 100%;
-    }
-    .pay-logo {
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
-        flex-shrink: 0;
-    }
-    .pay-info strong {
-        display: block;
-        font-size: 16px;
-        color: var(--text-dark);
-    }
-    .pay-info small {
-        font-size: 13px;
-        color: var(--text-light);
-    }
-    .check-circle {
-        width: 22px;
-        height: 22px;
-        border: 2px solid #ccc;
-        border-radius: 50%;
-        position: relative;
-        flex-shrink: 0;
-    }
-    .payment-option-label input:checked ~ .check-circle {
-        border-color: var(--primary-color);
-        background: var(--primary-color);
-    }
-    .payment-option-label input:checked ~ .check-circle::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 8px;
-        height: 8px;
-        background: #fff;
-        border-radius: 50%;
-    }
+/* ── Sticky sidebar ── */
+.sticky-sidebar { position: sticky; top: 90px; }
 
-    /* --- Cart Items (Scrollable) --- */
-    .sticky-sidebar {
-        position: sticky;
-        top: 100px;
-    }
-    .cart-items-scroll {
-        max-height: 400px;
-        overflow-y: auto;
-        padding-right: 5px;
-    }
-    .cart-items-scroll::-webkit-scrollbar { width: 5px; }
-    .cart-items-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
-    .cart-items-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
+/* ── Order items ── */
+.cart-items-scroll { max-height: 340px; overflow-y: auto; }
+.cart-items-scroll::-webkit-scrollbar { width: 5px; }
+.cart-items-scroll::-webkit-scrollbar-thumb { background: var(--co-border); border-radius: 5px; }
+.checkout-item {
+    display: flex; gap: 13px; padding: 14px 0;
+    border-bottom: 1px solid #f0e8d8; position: relative; align-items: flex-start;
+}
+.checkout-item:last-child { border-bottom: none; }
+.checkout-pro-img {
+    width: 58px; height: 58px; border-radius: 8px;
+    border: 1px solid var(--co-border); object-fit: cover; background: #fff;
+}
+.checkout-pro-info h6 { font-size: 13.5px; font-weight: 600; color: var(--co-text); margin: 0 0 4px; line-height: 1.4; }
+.checkout-pro-info .meta { font-size: 11.5px; color: var(--co-muted); }
+.co-price-line { font-size: 12px; color: var(--co-muted); }
+.co-price-old { text-decoration: line-through; color: #b6ab9c; margin-left: 6px; }
+.co-line-total { font-size: 14px; font-weight: 700; color: var(--co-primary); white-space: nowrap; }
+.remove-item-btn { color: #d9534f; cursor: pointer; font-size: 14px; flex-shrink: 0; transition: 0.2s; }
+.remove-item-btn:hover { color: #b52b27; }
 
-    .checkout-item {
-        display: flex;
-        gap: 15px;
-        padding: 15px 0;
-        border-bottom: 1px dashed var(--border-color);
-        position: relative;
-        align-items: center;
-    }
-    .checkout-item:last-child { border-bottom: none; }
-    
-    .checkout-pro-img {
-        width: 70px;
-        height: 70px;
-        border-radius: 8px;
-        border: 1px solid #eee;
-        object-fit: cover;
-    }
-    .checkout-pro-info h6 {
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin: 0 0 5px;
-        line-height: 1.4;
-    }
-    .checkout-pro-info .meta {
-        font-size: 12px;
-        color: var(--text-light);
-    }
-    .remove-item-btn {
-        color: #ef4444;
-        cursor: pointer;
-        font-size: 16px;
-        position: absolute;
-        top: 15px;
-        right: 0;
-        transition: 0.2s;
-    }
-    .remove-item-btn:hover { color: #dc2626; transform: scale(1.1); }
+/* Qty box */
+.qty-box { display: flex; align-items: center; background: #fff; border: 1px solid var(--co-border); border-radius: 6px; padding: 2px; margin-top: 8px; width: fit-content; }
+.qty-btn { width: 26px; height: 26px; border: none; background: transparent; border-radius: 4px; color: var(--co-primary); font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.qty-btn:hover { background: var(--co-cream); }
+.qty-val { width: 30px; text-align: center; font-size: 13px; font-weight: 600; }
 
-    /* Quantity Control */
-    .qty-box {
-        display: flex;
-        align-items: center;
-        background: #f3f4f6;
-        border-radius: 6px;
-        padding: 3px;
-        margin-top: 8px;
-        width: fit-content;
-    }
-    .qty-btn {
-        width: 28px;
-        height: 28px;
-        border: none;
-        background: #fff;
-        border-radius: 4px;
-        color: var(--primary-color);
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .qty-btn:hover { background: var(--primary-color); color: #fff; }
-    .qty-val {
-        width: 30px;
-        text-align: center;
-        font-size: 14px;
-        font-weight: 600;
-    }
+/* ── Edit cart link ── */
+.bilai-co-edit { margin-left: auto; font-size: 12.5px; font-weight: 600; color: var(--co-primary); text-decoration: none; }
+.bilai-co-edit:hover { color: var(--co-primary-dark); text-decoration: underline; }
 
-    /* --- COUPON BOX (LARGER & MODERN) --- */
-    .coupon-wrapper {
-        background: #f8fafc;
-        padding: 20px;
-        border-top: 1px solid var(--border-color);
-        border-bottom: 1px solid var(--border-color);
-    }
-    .coupon-group-modern {
-        display: flex;
-        width: 100%;
-        height: 55px; /* Bigger Height */
-        border: 2px solid #d1d5db;
-        border-radius: 8px;
-        overflow: hidden;
-        transition: 0.3s;
-        background: #fff;
-    }
-    .coupon-group-modern:focus-within {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px rgba(15, 52, 96, 0.05);
-    }
-    .coupon-input-modern {
-        flex-grow: 1;
-        border: none;
-        padding: 0 20px;
-        font-size: 15px;
-        color: #333;
-        outline: none;
-    }
-    .coupon-btn-modern {
-        background: var(--text-dark);
-        color: #fff;
-        border: none;
-        padding: 0 30px;
-        font-weight: 700;
-        font-size: 14px;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-    .coupon-btn-modern:hover {
-        background: var(--secondary-color);
-    }
+/* ── Coupon ── */
+.coupon-wrapper { padding: 16px 22px; border-top: 1px solid var(--co-border); }
+.coupon-label { font-size: 13px; font-weight: 600; color: var(--co-text); margin-bottom: 8px; display: block; }
+.coupon-group-modern {
+    display: flex; width: 100%; height: 46px;
+    border: 1px solid var(--co-border); border-radius: var(--co-radius-sm);
+    overflow: hidden; background: #fff;
+}
+.coupon-group-modern:focus-within { border-color: var(--co-primary); box-shadow: 0 0 0 3px rgba(242,140,0,0.08); }
+.coupon-input-modern { flex-grow: 1; border: none; padding: 0 14px; font-size: 14px; color: var(--co-text); outline: none; background: transparent; }
+.coupon-input-modern::placeholder { color: #b6ab9c; }
+.coupon-btn-modern {
+    background: var(--co-brown); color: #fff; border: none;
+    padding: 0 24px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s;
+}
+.coupon-btn-modern:hover { background: #24140a; }
 
-    /* --- Totals Area --- */
-    .summary-totals {
-        padding: 24px;
-        background: #fff;
-    }
-    .total-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 12px;
-        font-size: 15px;
-        color: var(--text-dark);
-    }
-    .total-row.final {
-        border-top: 2px dashed #e5e7eb;
-        margin-top: 15px;
-        padding-top: 15px;
-        font-size: 20px;
-        font-weight: 800;
-        color: var(--primary-color);
-    }
-    
-    /* Advance/Due Alert */
-    .advance-alert {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        border-radius: 8px;
-        padding: 15px;
-        margin-top: 15px;
-        text-align: center;
-    }
+/* ── Reward earn info box ── */
+.bilai-co-earn {
+    display: flex; align-items: flex-start; gap: 12px;
+    margin: 16px 22px 20px;
+    background: #fff; border: 1px solid var(--co-border);
+    border-radius: var(--co-radius-sm); padding: 14px;
+}
+.bilai-co-earn-ic {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--co-cream); color: var(--co-primary);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 15px;
+}
+.bilai-co-earn p { margin: 0; font-size: 12.5px; color: var(--co-text); line-height: 1.55; }
+.bilai-co-earn a { color: var(--co-primary); font-weight: 600; text-decoration: none; font-size: 12px; }
+.bilai-co-earn a:hover { text-decoration: underline; }
 
-    /* --- Submit Button --- */
-    .btn-place-order {
-        background: var(--secondary-color);
-        color: #fff;
-        width: 100%;
-        border: none;
-        padding: 18px;
-        border-radius: 10px;
-        font-size: 17px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        transition: 0.3s;
-        box-shadow: 0 10px 25px rgba(233, 69, 96, 0.3);
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-    }
-    .btn-place-order:hover {
-        background: var(--primary-color);
-        transform: translateY(-2px);
-    }
+/* ── Reward point card ── */
+.bilai-co-reward-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.bilai-co-reward-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--co-brown); color: #fff;
+    padding: 8px 16px; border-radius: 100px; font-size: 13px; font-weight: 600;
+}
+.bilai-co-reward-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--co-primary); }
+.bilai-co-policy { display: inline-block; margin-top: 12px; font-size: 12px; font-weight: 600; color: var(--co-primary); text-decoration: none; }
+.bilai-co-policy:hover { text-decoration: underline; }
+/* toggle (visual placeholder, disabled) */
+.bilai-co-toggle { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+.bilai-co-toggle input { opacity: 0; width: 0; height: 0; }
+.bilai-co-toggle .track { position: absolute; inset: 0; background: #e3d8c4; border-radius: 100px; transition: 0.2s; cursor: not-allowed; }
+.bilai-co-toggle .track::before { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.bilai-co-toggle input:checked + .track { background: var(--co-primary); }
+.bilai-co-toggle input:checked + .track::before { transform: translateX(20px); }
 
-    /* --- Responsive Fixes --- */
-    @media (max-width: 991px) {
-        .cus-order-2 { order: 2; }
-        .cust-order-1 { order: 1; margin-bottom: 30px; }
-        .mobile-submit-btn { display: block !important; margin-top: 25px; }
-        .desktop-submit-btn { display: none !important; }
-    }
-    @media (min-width: 992px) {
-        .mobile-submit-btn { display: none !important; }
-        .desktop-submit-btn { display: block !important; }
-    }
+/* ── Totals ── */
+.summary-totals { padding: 6px 22px 4px; }
+.total-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13.5px; color: var(--co-text); }
+.total-row span:first-child { color: var(--co-muted); }
+.total-row.final {
+    border-top: 1px solid var(--co-border);
+    margin-top: 6px; padding-top: 14px;
+    font-size: 17px; font-weight: 800; color: var(--co-primary);
+}
+.total-row.final span:first-child { color: var(--co-text); }
+.advance-alert { background: #fff7e9; border: 1px solid #f2d59a; border-radius: 8px; padding: 12px; margin-top: 12px; }
+
+/* ── Place order button ── */
+.btn-place-order {
+    background: var(--co-primary); color: #fff; width: 100%;
+    border: none; padding: 15px; border-radius: 100px;
+    font-size: 15px; font-weight: 700; letter-spacing: 0.3px;
+    transition: 0.2s; cursor: pointer;
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+}
+.btn-place-order:hover { background: var(--co-primary-dark); }
+
+/* ── Manual payment fields ── */
+#manual-payment-fields { background: #fff; border: 1px solid var(--co-border) !important; border-radius: var(--co-radius-sm); }
+
+/* ── Responsive ── */
+@media (max-width: 991px) {
+    .cus-order-2 { order: 2; }
+    .cust-order-1 { order: 1; margin-bottom: 26px; }
+    .sticky-sidebar { position: static; }
+    .mobile-submit-btn { display: block !important; margin-top: 22px; }
+    .desktop-submit-btn { display: none !important; }
+}
+@media (min-width: 992px) {
+    .mobile-submit-btn { display: none !important; }
+    .desktop-submit-btn { display: block !important; }
+}
+/* BilaiGhor Checkout Figma End */
+
+/* BilaiGhor Checkout Payment Fix Start */
+/* Only Figma methods (COD + manual gateways) are rendered; online gateways hidden via Blade flag. */
+.payment-options-list .payment-option-label { margin-bottom: 12px; }
+.payment-options-list .payment-option-label:last-child { margin-bottom: 0; }
+/* BilaiGhor Checkout Payment Fix End */
+
+/* BilaiGhor Checkout Order Items Fix Start */
+/* Qty +/- and trash removed on checkout — line total sits centered on the right. */
+.checkout-item { align-items: center; }
+.checkout-item .co-line-total { margin-top: 0; }
+.checkout-item .text-end { display: flex; align-items: center; }
+/* BilaiGhor Checkout Order Items Fix End */
+
+/* BilaiGhor Checkout Summary Fix Start */
+/* Advance (paid) / Due rows are not rendered on this flow; standard totals only. */
+.summary-totals .advance-alert { display: none; }
+/* BilaiGhor Checkout Summary Fix End */
 </style>
 <?php $__env->stopPush(); ?>
 
@@ -387,7 +298,7 @@
         // ✅ শিপিং চার্জ সেট
         // ⭐ Free Delivery Check - যদি সব প্রোডাক্ট free delivery eligible হয়, shipping charge 0
         $hasAllFreeDelivery = \App\Http\Controllers\Frontend\ShoppingController::hasAllFreeDeliveryProducts();
-        
+
         if ($requires_shipping && !$hasAllFreeDelivery) {
             $shipping = Session::get('shipping') ? Session::get('shipping') : 0;
         } else {
@@ -426,12 +337,48 @@
         $payable_now    = $hasAdvance ? $advance_amount : $grand_total;
         $due_amount     = $hasAdvance ? ($grand_total - $advance_amount) : 0;
 
+        // ── Checkout frontend overrides (display only — backend order_save() is unchanged) ──
+        // Advance payment is NOT shown/enforced on this checkout flow: hide advance UI and always allow COD.
+        $hasAdvance = false;
+        // Online payment gateways hidden from the frontend for now (kept in backend/admin for later use).
+        $__showOnlineGateways = false;
+
+        // ── Prefill resolution: old() input (after validation error) wins, else controller prefill ──
+        $checkoutPrefill = $checkoutPrefill ?? [];
+        $selDivision = old('division_id', $checkoutPrefill['division_id'] ?? '');
+        $selDistrict = old('district_id', $checkoutPrefill['district_id'] ?? '');
+        $selUpazila  = old('upazila_id',  $checkoutPrefill['upazila_id']  ?? '');
+
         $__gsCheckoutOtp = \App\Models\GeneralSetting::where('status', 1)->first();
         $__custCheckoutOtpPending = session('chkotp_customer_pending');
         $__showCheckoutOtpModal = $__gsCheckoutOtp && ($__gsCheckoutOtp->checkout_otp_enabled ?? 0) == 1 && $__custCheckoutOtpPending;
+
+        // --- Breadcrumb context (display only; no logic change) ---
+        $__firstItem   = Cart::instance('shopping')->content()->first();
+        $__bcProduct   = $__firstItem ? \App\Models\Product::find($__firstItem->id) : null;
+        $__bcCategory  = $__bcProduct ? optional($__bcProduct->category)->name : null;
+        $__bcSub       = $__bcProduct ? optional($__bcProduct->subcategory)->subcategoryName : null;
+        $__bcName      = $__bcProduct ? $__bcProduct->name : null;
     ?>
 
     <div class="container">
+
+        
+        <nav class="bilai-co-bc" aria-label="breadcrumb">
+            <a href="<?php echo e(route('home')); ?>">Home</a>
+            <?php if($__bcName): ?>
+                <?php if($__bcCategory): ?>
+                    <span class="bilai-co-bc-sep">›</span><span><?php echo e($__bcCategory); ?></span>
+                <?php endif; ?>
+                <?php if($__bcSub): ?>
+                    <span class="bilai-co-bc-sep">›</span><span><?php echo e($__bcSub); ?></span>
+                <?php endif; ?>
+                <span class="bilai-co-bc-sep">›</span><span class="bilai-co-bc-active"><?php echo e(Str::limit($__bcName, 40)); ?></span>
+            <?php else: ?>
+                <span class="bilai-co-bc-sep">›</span><span class="bilai-co-bc-active">Checkout</span>
+            <?php endif; ?>
+        </nav>
+
         
         <form id="checkout-form" action="<?php echo e(route('customer.ordersave')); ?>" method="POST" data-parsley-validate="">
             <?php echo csrf_field(); ?>
@@ -457,39 +404,40 @@
                 }
             } catch (e) {}
             </script>
-            
+
             <div class="row">
-                
+
                 
                 <div class="col-lg-7 col-md-12 cus-order-2">
-                    
+
                     
                     <div class="checkout-card">
                         <div class="checkout-header">
-                            <i class="fas fa-truck-moving"></i>
-                            <h6>শিপিং এবং বিলিং তথ্য</h6>
+                            
+                            <i class="fa fa-truck"></i>
+                            <h6>Shipping &amp; Billing Information</h6>
                         </div>
                         <div class="card-body-custom">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label-custom">আপনার নাম *</label>
-                                        <input type="text" name="name" class="form-control-custom" 
-                                            value="<?php echo e(Auth::guard('customer')->user()->name ?? old('name')); ?>" placeholder="সম্পূর্ণ নাম লিখুন" required>
+                                        <label class="form-label-custom">Your Name <span class="req">*</span></label>
+                                        <input type="text" name="name" class="form-control-custom"
+                                            value="<?php echo e(old('name', $checkoutPrefill['name'] ?? '')); ?>" placeholder="Write your full name" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label-custom">মোবাইল নাম্বার *</label>
-                                        <input type="text" name="phone" class="form-control-custom" minlength="11" maxlength="11" pattern="0[0-9]+" 
-                                            value="<?php echo e(Auth::guard('customer')->user()->phone ?? old('phone')); ?>" placeholder="017xxxxxxxx" required>
+                                        <label class="form-label-custom">Mobile <span class="req">*</span></label>
+                                        <input type="text" name="phone" class="form-control-custom" minlength="11" maxlength="11" pattern="0[0-9]+"
+                                            value="<?php echo e(old('phone', $checkoutPrefill['mobile'] ?? '')); ?>" placeholder="01xxxxxxxxx" required>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label class="form-label-custom">সম্পূর্ণ ঠিকানা *</label>
-                                        <input type="text" name="address" class="form-control-custom" 
-                                            value="<?php echo e(Auth::guard('customer')->user()->address ?? old('address')); ?>" placeholder="বাসা নং, রোড নং, এলাকা, জেলা" required>
+                                        <label class="form-label-custom">Full Address <span class="req">*</span></label>
+                                        <input type="text" name="address" class="form-control-custom"
+                                            value="<?php echo e(old('address', $checkoutPrefill['address'] ?? '')); ?>" placeholder="House no, Road no. Area, District" required>
                                     </div>
                                 </div>
                                 <?php if($requires_shipping): ?>
@@ -497,28 +445,28 @@
                                     <div class="row g-2 g-md-3 align-items-end checkout-location-fields">
                                         <div class="col-12 col-md-4">
                                             <div class="form-group mb-0 mb-md-2">
-                                                <label class="form-label-custom">বিভাগ *</label>
+                                                <label class="form-label-custom">Division <span class="req">*</span></label>
                                                 <select name="division_id" id="checkout_division" class="form-control-custom" required>
-                                                    <option value="">বিভাগ নির্বাচন করুন</option>
+                                                    <option value="">Select Division</option>
                                                     <?php $__currentLoopData = ($divisions ?? collect()); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                        <option value="<?php echo e($d->id); ?>"><?php echo e($d->name); ?></option>
+                                                        <option value="<?php echo e($d->id); ?>" <?php if((string) $selDivision === (string) $d->id): echo 'selected'; endif; ?>><?php echo e($d->name); ?></option>
                                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-12 col-md-4">
                                             <div class="form-group mb-0 mb-md-2">
-                                                <label class="form-label-custom">জেলা *</label>
+                                                <label class="form-label-custom">District <span class="req">*</span></label>
                                                 <select name="district_id" id="checkout_district" class="form-control-custom" required disabled>
-                                                    <option value="">আগে বিভাগ সিলেক্ট করুন</option>
+                                                    <option value="">Select District</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-12 col-md-4">
                                             <div class="form-group mb-0 mb-md-2">
-                                                <label class="form-label-custom">উপজেলা / থানা *</label>
+                                                <label class="form-label-custom">Thana/Upozila <span class="req">*</span></label>
                                                 <select name="upazila_id" id="checkout_upazila" class="form-control-custom" required disabled>
-                                                    <option value="">আগে জেলা সিলেক্ট করুন</option>
+                                                    <option value="">Select Upozila</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -527,8 +475,8 @@
                                 <?php else: ?>
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label class="form-label-custom">বিভাগ *</label>
-                                        <input type="text" class="form-control-custom" value="ডিজিটাল / ফ্রি শিপিং — লোকেশন লাগবে না" readonly disabled style="background:#f3f4f6;">
+                                        <label class="form-label-custom">Division <span class="req">*</span></label>
+                                        <input type="text" class="form-control-custom" value="Digital / Free shipping — no location required" readonly disabled style="background:#f3f4f6;">
                                         <input type="hidden" name="division_id" value="">
                                         <input type="hidden" name="district_id" value="">
                                         <input type="hidden" name="upazila_id" value="">
@@ -536,10 +484,10 @@
                                 </div>
                                 <?php endif; ?>
                                 <div class="col-12">
-                                    <div class="form-group">
-                                        <label class="form-label-custom">অর্ডার নোট (ঐচ্ছিক)</label>
-                                        <textarea name="order_note" id="order_note" class="form-control-custom" rows="2" style="height:auto; resize:none;" 
-                                            placeholder="ডেলিভারি সম্পর্কে বিশেষ কিছু বলার থাকলে লিখুন..."><?php echo e($order_note ?? ''); ?></textarea>
+                                    <div class="form-group" style="margin-bottom:0;">
+                                        <label class="form-label-custom">Order Note (Optional)</label>
+                                        <textarea name="order_note" id="order_note" class="form-control-custom" rows="3" style="height:auto; resize:none;"
+                                            placeholder="Write your note about the product"><?php echo e($order_note ?? ''); ?></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -547,163 +495,160 @@
                     </div>
 
                     
-                    
+                    <div class="checkout-card">
+                        <div class="checkout-header">
+                            
+                            <i class="fa fa-credit-card fa-wallet"></i>
+                            <h6>Select Payment Method</h6>
+                        </div>
+                        <div class="card-body-custom">
 
+                            <?php if($hasAdvance): ?>
+                                <div class="alert border-0 mb-4" style="border-left: 4px solid var(--co-primary) !important; background-color: #fff7e9; border-radius:10px;">
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <i class="fa fa-exclamation-triangle" style="color:var(--co-primary); font-size:20px;"></i>
+                                        <div>
+                                            <strong>Advance payment required!</strong>
+                                            <p class="mb-0 small">This order requires <b>৳ <?php echo e(number_format($advance_amount,2)); ?></b> advance payment.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
 
-<div class="checkout-card">
-    <div class="checkout-header">
-        <i class="fas fa-wallet"></i>
-        <h6>পেমেন্ট মেথড নির্বাচন করুন</h6>
-    </div>
-    <div class="card-body-custom">
-        
-        <?php if($hasAdvance): ?>
-            <div class="alert alert-warning border-0 shadow-sm mb-4" style="border-left: 5px solid #ffc107 !important; background-color: #fff8e1;">
-                <div class="d-flex gap-3 align-items-center">
-                    <i class="fas fa-exclamation-triangle text-warning fs-4"></i>
-                    <div>
-                        <strong>অগ্রিম পেমেন্ট প্রয়োজন!</strong>
-                        <p class="mb-0 small">এই অর্ডারে <b>৳ <?php echo e(number_format($advance_amount,2)); ?></b> অগ্রিম পেমেন্ট করতে হবে।</p>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
+                            
+                            <div class="payment-options-list">
 
-        
-        <div class="payment-options-list">
-            
-            
-            <?php if(!$hasDigital && !$hasAdvance): ?>
-                <label class="payment-option-label">
-                    <input type="radio" name="payment_method" value="cod" checked required>
-                    <div class="payment-content">
-                        <div class="text-center" style="width: 40px;"><i class="fas fa-truck text-success fs-2"></i></div>
-                        <div class="pay-info">
-                            <strong>Cash On Delivery</strong>
-                            <small>পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন</small>
+                                
+                                <?php if(!$hasDigital && !$hasAdvance): ?>
+                                    <label class="payment-option-label">
+                                        <input type="radio" name="payment_method" value="cod" checked required>
+                                        <div class="payment-content">
+                                            
+                                            <div class="text-center" style="width: 36px;"><i class="fa fa-truck" style="color:#2e9e4f; font-size:24px;"></i></div>
+                                            <div class="pay-info">
+                                                <strong>Cash on Delivery</strong>
+                                                <small>Pay when you receive the product</small>
+                                            </div>
+                                        </div>
+                                        <div class="check-circle"></div>
+                                    </label>
+                                <?php endif; ?>
+
+                                
+                                <?php if($__showOnlineGateways && $bkash_gateway): ?>
+                                    <label class="payment-option-label">
+                                        <input type="radio" name="payment_method" value="bkash" required>
+                                        <div class="payment-content">
+                                            <img src="<?php echo e(asset('public/frontEnd/images/bkash.svg')); ?>" class="pay-logo" alt="bKash">
+                                            <div class="pay-info">
+                                                <strong>bKash Payment</strong>
+                                                <small>Pay via bKash app or gateway</small>
+                                            </div>
+                                        </div>
+                                        <div class="check-circle"></div>
+                                    </label>
+                                <?php endif; ?>
+
+                                
+                                <?php if($__showOnlineGateways && $shurjopay_gateway): ?>
+                                    <label class="payment-option-label">
+                                        <input type="radio" name="payment_method" value="shurjopay" required>
+                                        <div class="payment-content">
+                                            <img src="<?php echo e(asset('public/frontEnd/images/shurjoPay.png')); ?>" class="pay-logo" alt="ShurjoPay">
+                                            <div class="pay-info">
+                                                <strong>Online Payment</strong>
+                                                <small>ShurjoPay (Card/Mobile Banking)</small>
+                                            </div>
+                                        </div>
+                                        <div class="check-circle"></div>
+                                    </label>
+                                <?php endif; ?>
+
+                                
+                                <?php if($__showOnlineGateways && $uddoktapay_gateway): ?>
+                                    <label class="payment-option-label">
+                                        <input type="radio" name="payment_method" value="uddoktapay" required>
+                                        <div class="payment-content">
+                                            <img src="<?php echo e(asset('public/frontEnd/images/uddokta.png')); ?>" class="pay-logo" alt="UddoktaPay">
+                                            <div class="pay-info">
+                                                <strong>UddoktaPay</strong>
+                                                <small>Mobile banking payment gateway</small>
+                                            </div>
+                                        </div>
+                                        <div class="check-circle"></div>
+                                    </label>
+                                <?php endif; ?>
+
+                                
+                                <?php if($__showOnlineGateways && $aamarpay_gateway): ?>
+                                    <label class="payment-option-label">
+                                        <input type="radio" name="payment_method" value="aamarpay" required>
+                                        <div class="payment-content">
+                                            <img src="<?php echo e(asset('public/frontEnd/images/aamarpay.png')); ?>" class="pay-logo" alt="aamarPay" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="pay-info" style="display: none;">
+                                                <i class="fa fa-credit-card" style="color:var(--co-primary); font-size:20px;"></i>
+                                            </div>
+                                            <div class="pay-info">
+                                                <strong>aamarPay</strong>
+                                                <small>Card &amp; mobile banking payment</small>
+                                            </div>
+                                        </div>
+                                        <div class="check-circle"></div>
+                                    </label>
+                                <?php endif; ?>
+
+                                <?php $__currentLoopData = $manual_gateways ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $mg): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <label class="payment-option-label">
+                                        <input type="radio" name="payment_method" value="manual_<?php echo e($mg->id); ?>" required>
+                                        <div class="payment-content">
+                                            <?php if($mg->logo_asset_url): ?>
+                                                <img src="<?php echo e($mg->logo_asset_url); ?>" class="pay-logo" alt="<?php echo e($mg->title); ?>">
+                                            <?php else: ?>
+                                                
+                                                <div class="text-center" style="width: 36px;"><i class="fa fa-money" style="color:var(--co-primary); font-size:20px;"></i></div>
+                                            <?php endif; ?>
+                                            <div class="pay-info">
+                                                <strong><?php echo e($mg->title); ?></strong>
+                                                <small>Manual payment — send money and enter the transaction ID</small>
+                                            </div>
+                                        </div>
+                                        <div class="check-circle"></div>
+                                    </label>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+                            </div>
+                            <div id="manual-payment-fields" class="mt-3 p-3" style="display:none;">
+                                <h6 class="fw-bold mb-2" style="color:var(--co-text);"><i class="fa fa-info-circle" style="color:var(--co-primary);"></i> Manual Payment Instructions</h6>
+                                <div id="manual-instructions-body" class="small mb-3" style="white-space:pre-wrap; color:var(--co-muted);"></div>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Transaction ID / Reference <span class="req">*</span></label>
+                                        <input type="text" name="manual_trx_id" id="manual_trx_id" class="form-control form-control-custom" value="<?php echo e(old('manual_trx_id')); ?>" maxlength="55" placeholder="TrxID">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Sender number (optional)</label>
+                                        <input type="text" name="manual_sender_number" class="form-control form-control-custom" value="<?php echo e(old('manual_sender_number')); ?>" maxlength="55" placeholder="01xxx">
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                                window.MANUAL_GATEWAYS = <?php echo json_encode(($manual_gateways ?? collect())->map(fn ($g) => [
+                                    'code' => 'manual_'.$g->id, 'instructions' => (string) ($g->instructions ?? ''), ])->values()->all()) ?>;
+                            </script>
+                            
+                            <div id="payment-error" class="text-danger fw-bold mt-2 text-center" style="display:none;">
+                                <i class="fa fa-exclamation-circle"></i> Please select a payment method.
+                            </div>
                         </div>
                     </div>
-                    <div class="check-circle"></div>
-                </label>
-            <?php endif; ?>
-
-            
-            <?php if($bkash_gateway): ?>
-                <label class="payment-option-label">
-                    
-                    <input type="radio" name="payment_method" value="bkash" required> 
-                    <div class="payment-content">
-                        <img src="<?php echo e(asset('public/frontEnd/images/bkash.svg')); ?>" class="pay-logo" alt="bKash">
-                        <div class="pay-info">
-                            <strong>bKash Payment</strong>
-                            <small>বিকাশ অ্যাপ বা গেটওয়ে দ্বারা পেমেন্ট</small>
-                        </div>
-                    </div>
-                    <div class="check-circle"></div>
-                </label>
-            <?php endif; ?>
-
-            
-            <?php if($shurjopay_gateway): ?>
-                <label class="payment-option-label">
-                    
-                    <input type="radio" name="payment_method" value="shurjopay" required>
-                    <div class="payment-content">
-                        <img src="<?php echo e(asset('public/frontEnd/images/shurjoPay.png')); ?>" class="pay-logo" alt="ShurjoPay">
-                        <div class="pay-info">
-                            <strong>Online Payment</strong>
-                            <small>ShurjoPay (Card/Mobile Banking)</small>
-                        </div>
-                    </div>
-                    <div class="check-circle"></div>
-                </label>
-            <?php endif; ?>
-
-            
-            <?php if($uddoktapay_gateway): ?>
-                <label class="payment-option-label">
-                    
-                    <input type="radio" name="payment_method" value="uddoktapay" required>
-                    <div class="payment-content">
-                        <img src="<?php echo e(asset('public/frontEnd/images/uddokta.png')); ?>" class="pay-logo" alt="UddoktaPay">
-                        <div class="pay-info">
-                            <strong>UddoktaPay</strong>
-                            <small>মোবাইল ব্যাংকিং পেমেন্ট গেটওয়ে</small>
-                        </div>
-                    </div>
-                    <div class="check-circle"></div>
-                </label>
-            <?php endif; ?>
-
-            
-            <?php if($aamarpay_gateway): ?>
-                <label class="payment-option-label">
-                    <input type="radio" name="payment_method" value="aamarpay" required>
-                    <div class="payment-content">
-                        <img src="<?php echo e(asset('public/frontEnd/images/aamarpay.png')); ?>" class="pay-logo" alt="aamarPay" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="pay-info" style="display: none;">
-                            <i class="fas fa-credit-card text-primary fs-4"></i>
-                        </div>
-                        <div class="pay-info">
-                            <strong>aamarPay</strong>
-                            <small>কার্ড ও মোবাইল ব্যাংকিং পেমেন্ট</small>
-                        </div>
-                    </div>
-                    <div class="check-circle"></div>
-                </label>
-            <?php endif; ?>
-
-            <?php $__currentLoopData = $manual_gateways ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $mg): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <label class="payment-option-label">
-                    <input type="radio" name="payment_method" value="manual_<?php echo e($mg->id); ?>" required>
-                    <div class="payment-content">
-                        <?php if($mg->logo_asset_url): ?>
-                            <img src="<?php echo e($mg->logo_asset_url); ?>" class="pay-logo" alt="<?php echo e($mg->title); ?>">
-                        <?php else: ?>
-                            <div class="text-center" style="width: 40px;"><i class="fas fa-money-check-alt text-primary fs-2"></i></div>
-                        <?php endif; ?>
-                        <div class="pay-info">
-                            <strong><?php echo e($mg->title); ?></strong>
-                            <small>ম্যানুয়াল পেমেন্ট — নির্দেশনা অনুযায়ী টাকা পাঠিয়ে ট্রানজেকশন আইডি দিন</small>
-                        </div>
-                    </div>
-                    <div class="check-circle"></div>
-                </label>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-
-        </div>
-        <div id="manual-payment-fields" class="mt-3 p-3 rounded-3 border border-warning bg-light" style="display:none;">
-            <h6 class="fw-bold text-dark mb-2"><i class="fas fa-info-circle text-warning me-1"></i> ম্যানুয়াল পেমেন্ট নির্দেশনা</h6>
-            <div id="manual-instructions-body" class="small text-secondary mb-3" style="white-space:pre-wrap;"></div>
-            <div class="row g-2">
-                <div class="col-md-6">
-                    <label class="form-label small fw-semibold">ট্রানজেকশন আইডি / রেফারেন্স <span class="text-danger">*</span></label>
-                    <input type="text" name="manual_trx_id" id="manual_trx_id" class="form-control form-control-custom" value="<?php echo e(old('manual_trx_id')); ?>" maxlength="55" placeholder="TrxID">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label small fw-semibold">যে নম্বর থেকে পাঠিয়েছেন (ঐচ্ছিক)</label>
-                    <input type="text" name="manual_sender_number" class="form-control form-control-custom" value="<?php echo e(old('manual_sender_number')); ?>" maxlength="55" placeholder="01xxx">
-                </div>
-            </div>
-        </div>
-        <script>
-            window.MANUAL_GATEWAYS = <?php echo json_encode(($manual_gateways ?? collect())->map(fn ($g) => [
-                'code' => 'manual_'.$g->id, 'instructions' => (string) ($g->instructions ?? ''), ])->values()->all()) ?>;
-        </script>
-        
-        <div id="payment-error" class="text-danger fw-bold mt-2 text-center" style="display:none;">
-            <i class="fas fa-exclamation-circle"></i> অনুগ্রহ করে একটি পেমেন্ট মেথড সিলেক্ট করুন।
-        </div>
-    </div>
-</div>
 
                     
                     <div class="mobile-submit-btn">
                         <button type="submit" class="btn-place-order">
-                            অর্ডার নিশ্চিত করুন <i class="fas fa-arrow-right"></i>
+                            Place Order <i class="fa fa-arrow-right"></i>
                         </button>
-                        <div class="text-center text-muted small mt-3">
-                            <i class="fas fa-shield-alt"></i> ১০০% নিরাপদ এবং সিকিউর চেকআউট
+                        <div class="text-center small mt-3" style="color:var(--co-muted);">
+                            <i class="fa fa-shield"></i> 100% safe &amp; secure checkout
                         </div>
                     </div>
 
@@ -712,96 +657,144 @@
                 
                 <div class="col-lg-5 col-md-12 cust-order-1">
                     <div class="sticky-sidebar">
+
+                        
                         <div class="checkout-card">
                             <div class="checkout-header">
-                                <i class="fas fa-shopping-bag"></i>
-                                <h6>অর্ডার সামারি (<?php echo e(Cart::instance('shopping')->count()); ?>)</h6>
-                            </div>
-                            
-                            <div class="card-body-custom p-0">
                                 
-                                <div class="cart-items-scroll px-4 pt-3 cartlist" style="max-height: 400px; overflow-y: auto;">
+                                <i class="fa fa-shopping-bag"></i>
+                                <h6>Order Items (<?php echo e(Cart::instance('shopping')->count()); ?>)</h6>
+                                <a href="<?php echo e(route('cart.show')); ?>" class="bilai-co-edit">Edit Cart</a>
+                            </div>
+
+                            
+                            <div class="card-body-custom" style="padding-top:6px; padding-bottom:6px;">
+                                <div class="cart-items-scroll cartlist">
                                     <?php $__currentLoopData = Cart::instance('shopping')->content(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <?php
+                                            $__cp = \App\Models\Product::find($value->id);
+                                            $__old = ($__cp && $__cp->old_price && $__cp->old_price > $value->price) ? $__cp->old_price : null;
+                                        ?>
                                         <div class="checkout-item">
                                             
-                                            <a class="remove-item-btn cart_remove" data-id="<?php echo e($value->rowId); ?>" title="Remove Item">
-                                                <i class="far fa-trash-alt"></i>
-                                            </a>
-
-                                            
                                             <a href="<?php echo e(route('product', $value->options->slug)); ?>">
-                                                <img src="<?php echo e(asset($value->options->image)); ?>" class="checkout-pro-img">
+                                                <img src="<?php echo e(asset($value->options->image)); ?>" class="checkout-pro-img" alt="<?php echo e($value->name); ?>">
                                             </a>
 
                                             
                                             <div class="checkout-pro-info flex-grow-1">
-                                                <a href="<?php echo e(route('product', $value->options->slug)); ?>" class="text-dark text-decoration-none">
-                                                    <h6><?php echo e(Str::limit($value->name, 35)); ?></h6>
+                                                <a href="<?php echo e(route('product', $value->options->slug)); ?>" style="text-decoration:none;">
+                                                    <h6><?php echo e(Str::limit($value->name, 40)); ?></h6>
                                                 </a>
-                                                <div class="meta text-muted small mb-1">
-                                                    <?php if($value->options->product_size): ?> Size: <?php echo e($value->options->product_size); ?> <?php endif; ?>
-                                                    <?php if($value->options->product_color): ?> | Color: <?php echo e($value->options->product_color); ?> <?php endif; ?>
-                                                </div>
-                                                
-                                                
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div class="qty-box checkout-qty" data-rowid="<?php echo e($value->rowId); ?>">
-                                                        <button type="button" class="qty-btn minus"><i class="fas fa-minus" style="font-size:10px;"></i></button>
-                                                        <span class="qty-val qty-value"><?php echo e($value->qty); ?></span>
-                                                        <button type="button" class="qty-btn plus"><i class="fas fa-plus" style="font-size:10px;"></i></button>
+                                                <?php if($value->options->product_size || $value->options->product_color): ?>
+                                                    <div class="meta mb-1">
+                                                        <?php if($value->options->product_size): ?> Size: <?php echo e($value->options->product_size); ?> <?php endif; ?>
+                                                        <?php if($value->options->product_color): ?> | Color: <?php echo e($value->options->product_color); ?> <?php endif; ?>
                                                     </div>
-                                                    <div class="fw-bold text-dark">৳ <?php echo e(number_format($value->price * $value->qty, 0)); ?></div>
+                                                <?php endif; ?>
+                                                <div class="co-price-line">
+                                                    <?php echo e($value->qty); ?> x ৳<?php echo e(number_format($value->price, 0)); ?>
+
+                                                    <?php if($__old): ?><span class="co-price-old">৳<?php echo e(number_format($__old, 0)); ?></span><?php endif; ?>
                                                 </div>
+                                                
+                                            </div>
+
+                                            
+                                            <div class="text-end">
+                                                <div class="co-line-total">৳<?php echo e(number_format($value->price * $value->qty, 0)); ?></div>
                                             </div>
                                         </div>
                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
+                            </div>
 
-                                
-<div class="coupon-wrapper">
-    <?php if(!Session::has('coupon_code')): ?>
-        <div class="coupon-group-modern">
-            
-            <input type="text" id="coupon_input" class="coupon-input-modern" placeholder="কুপন কোড আছে? এখানে লিখুন...">
-            <button type="button" class="coupon-btn-modern" onclick="submitCoupon()">APPLY</button>
-        </div>
-    <?php else: ?>
-        <div class="alert alert-success d-flex justify-content-between align-items-center m-0 py-3 px-3 border-0 rounded shadow-sm">
-            <span><i class="fas fa-check-circle"></i> Coupon <b><?php echo e(Session::get('coupon_code')); ?></b> Applied!</span>
-            <a href="<?php echo e(route('coupon.remove')); ?>" class="text-danger fw-bold text-decoration-none px-2">REMOVE</a>
-        </div>
-    <?php endif; ?>
-</div>
-
-                                
-                                <div class="summary-totals">
-                                    <div class="total-row"><span>সাবটোটাল</span> <span id="subtotalAmount">৳ <?php echo e(number_format($subtotal, 2)); ?></span></div>
-                                    <div class="total-row"><span>ডেলিভারি চার্জ</span> <span id="shippingAmount">৳ <?php echo e(number_format($shipping, 2)); ?></span></div>
-                                    <?php if($discount > 0): ?>
-                                        <div class="total-row text-success"><span>কুপন ছাড়</span> <span id="discountAmount">- ৳ <?php echo e(number_format($discount, 2)); ?></span></div>
-                                    <?php endif; ?>
-                                    <div class="total-row final"><span>সর্বমোট</span> <span id="grandTotalAmount">৳ <?php echo e(number_format($grand_total, 2)); ?></span></div>
-
-                                    <?php if($hasAdvance): ?>
-                                        <div class="advance-alert">
-                                            <div class="total-row text-success fw-bold"><span>অগ্রিম (পেইড):</span> <span id="advanceAmountCell">৳ <?php echo e(number_format($advance_amount,2)); ?></span></div>
-                                            <div class="total-row text-danger fw-bold mb-0"><span>বাকি (ডিউ):</span> <span id="dueAmountCell">৳ <?php echo e(number_format($due_amount,2)); ?></span></div>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-
-                                
-                                <div class="desktop-submit-btn p-4">
-                                    <button type="submit" class="btn-place-order">
-                                        অর্ডার নিশ্চিত করুন <i class="fas fa-check-circle"></i>
-                                    </button>
-                                    <div class="text-center text-muted small mt-3">
-                                        <i class="fas fa-lock"></i> ১০০% নিরাপদ চেকআউট প্রসেস
+                            
+                            <div class="coupon-wrapper">
+                                <span class="coupon-label">Coupon Code</span>
+                                <?php if(!Session::has('coupon_code')): ?>
+                                    <div class="coupon-group-modern">
+                                        
+                                        <input type="text" id="coupon_input" class="coupon-input-modern" placeholder="Put your coupon code">
+                                        <button type="button" class="coupon-btn-modern" onclick="submitCoupon()">Apply</button>
                                     </div>
-                                </div>
+                                <?php else: ?>
+                                    <div class="d-flex justify-content-between align-items-center" style="background:#eef7e9; border:1px solid #cfe6c0; border-radius:10px; padding:10px 14px;">
+                                        <span style="color:#2e7d32; font-size:13px;"><i class="fa fa-check-circle"></i> Coupon <b><?php echo e(Session::get('coupon_code')); ?></b> applied!</span>
+                                        <a href="<?php echo e(route('coupon.remove')); ?>" class="fw-bold text-decoration-none" style="color:#c0392b; font-size:12px;">REMOVE</a>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
 
+                            
+                            <div class="bilai-co-earn">
+                                <div class="bilai-co-earn-ic">
+                                    
+                                    <i class="fa fa-star"></i>
+                                </div>
+                                <div>
+                                    <p>You'll earn reward points on this order — points are credited once your order has been delivered.</p>
+                                    <a href="#">Reward Points Policy</a>
+                                </div>
                             </div>
                         </div>
+
+                        
+                        <div class="checkout-card">
+                            <div class="checkout-header">
+                                
+                                <i class="fa fa-star"></i>
+                                <h6>Use Your Reward Point</h6>
+                            </div>
+                            <div class="card-body-custom">
+                                <div class="bilai-co-reward-row">
+                                    <span class="bilai-co-reward-pill">
+                                        <span class="dot"></span> 0 Points available
+                                    </span>
+                                    
+                                    <label class="bilai-co-toggle" title="Coming soon">
+                                        <input type="checkbox" disabled>
+                                        <span class="track"></span>
+                                    </label>
+                                </div>
+                                <a href="#" class="bilai-co-policy">Reward Points Policy</a>
+                            </div>
+                        </div>
+
+                        
+                        <div class="checkout-card">
+                            <div class="checkout-header">
+                                
+                                <i class="fa fa-list-alt"></i>
+                                <h6>Order Summary</h6>
+                            </div>
+                            <div class="summary-totals" style="padding-top:16px;">
+                                <div class="total-row"><span>Subtotal</span> <span id="subtotalAmount">৳ <?php echo e(number_format($subtotal, 2)); ?></span></div>
+                                <div class="total-row"><span>Delivery Charge</span> <span id="shippingAmount">৳ <?php echo e(number_format($shipping, 2)); ?></span></div>
+                                <div class="total-row"><span>Discount</span> <span id="discountAmount">- ৳ <?php echo e(number_format($discount, 2)); ?></span></div>
+                                
+                                <div class="total-row"><span>Cash from Reward Points</span> <span>৳ 0.00</span></div>
+                                <div class="total-row final"><span>Total</span> <span id="grandTotalAmount">৳ <?php echo e(number_format($grand_total, 2)); ?></span></div>
+
+                                <?php if($hasAdvance): ?>
+                                    <div class="advance-alert">
+                                        <div class="total-row fw-bold" style="margin-bottom:6px;"><span>Advance (paid):</span> <span id="advanceAmountCell">৳ <?php echo e(number_format($advance_amount,2)); ?></span></div>
+                                        <div class="total-row fw-bold mb-0" style="color:#c0392b;"><span>Due:</span> <span id="dueAmountCell">৳ <?php echo e(number_format($due_amount,2)); ?></span></div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            
+                            <div class="desktop-submit-btn" style="padding:8px 22px 22px;">
+                                <button type="submit" class="btn-place-order">
+                                    Place Order <i class="fa fa-check-circle"></i>
+                                </button>
+                                <div class="text-center small mt-3" style="color:var(--co-muted);">
+                                    <i class="fa fa-lock"></i> 100% safe checkout process
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -812,13 +805,13 @@
         <div class="modal fade" id="checkoutOtpModal" tabindex="-1" aria-labelledby="checkoutOtpModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg overflow-hidden">
-                    <div class="modal-header text-white" style="background: linear-gradient(135deg,#0f3460,#e94560);">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg,#F28C00,#c96f00);">
                         <h5 class="modal-title d-flex align-items-center gap-2 mb-0" id="checkoutOtpModalLabel">
-                            <i class="fas fa-mobile-alt"></i> OTP ভেরিফিকেশন
+                            <i class="fa fa-mobile"></i> OTP Verification
                         </h5>
                     </div>
                     <div class="modal-body p-4">
-                        <p class="text-muted small mb-3">আপনার মোবাইল নম্বরে একটি <strong>৬ ডিজিটের OTP</strong> এসএমএসে পাঠানো হয়েছে। কোডটি লিখে নিচের বাটনে চাপ দিন।</p>
+                        <p class="text-muted small mb-3">A <strong>6 digit OTP</strong> has been sent to your mobile number via SMS. Enter the code and confirm below.</p>
                         <?php $__errorArgs = ['checkout_otp'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -829,13 +822,13 @@ $message = $__bag->first($__errorArgs[0]); ?>
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
-                        <label class="form-label fw-semibold">OTP কোড</label>
+                        <label class="form-label fw-semibold">OTP Code</label>
                         <input type="text" id="checkout_otp_modal_field" class="form-control form-control-lg text-center letter-spacing-wide" maxlength="6"
                             inputmode="numeric" autocomplete="one-time-code" placeholder="● ● ● ● ● ●" style="letter-spacing: 0.35em;"
                             value="<?php echo e(old('checkout_otp')); ?>">
                         <div class="d-flex flex-wrap gap-2 mt-4 justify-content-between align-items-center">
-                            <button type="button" class="btn btn-outline-secondary btn-sm" id="checkout_otp_resend_btn">OTP আবার পাঠান</button>
-                            <button type="button" class="btn btn-success px-4 fw-bold" id="checkout_otp_confirm_btn">অর্ডার সম্পূর্ণ করুন</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="checkout_otp_resend_btn">Resend OTP</button>
+                            <button type="button" class="btn btn-success px-4 fw-bold" id="checkout_otp_confirm_btn">Complete Order</button>
                         </div>
                     </div>
                 </div>
@@ -890,7 +883,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         
         
-        
+
         
         <form id="coupon-form" action="<?php echo e(route('coupon.apply')); ?>" method="POST" style="display:none;">
             <?php echo csrf_field(); ?>
@@ -926,7 +919,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // ==========================================
         // 1. CART LOGIC (REMOVE, INCREASE, DECREASE)
         // ==========================================
-        
+
         // Remove Item
         $(document).on('click', '.cart_remove', function(e) {
             e.preventDefault(); e.stopImmediatePropagation();
@@ -960,7 +953,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // ==========================================
         // 2. SHIPPING & TOTAL CALCULATION
         // ==========================================
-        
+
         const baseSubtotal = parseFloat("<?php echo e($subtotal ?? 0); ?>");
         const baseDiscount = parseFloat("<?php echo e($discount ?? 0); ?>");
         const advanceAmount = parseFloat("<?php echo e($advance_amount ?? 0); ?>");
@@ -1204,7 +1197,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#checkout-form').on('submit', function(e) {
             // পেমেন্ট মেথড চেক
             var paymentMethod = $('input[name="payment_method"]:checked').val();
-            
+
             if (!paymentMethod) {
                 e.preventDefault();
                 toastr.error('অর্ডার সম্পন্ন করতে পেমেন্ট মেথড নির্বাচন করুন।', 'Error');
@@ -1220,7 +1213,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     var trx = $('input[name="manual_trx_id"]').val();
                     if (!trx || !String(trx).trim()) {
                         e.preventDefault();
-                        toastr.error('ম্যানুয়াল পেমেন্টের জন্য ট্রানজেকশন আইডি লিখুন।', 'Error');
+                        toastr.error('ম্যানুয়াল পেমেন্টের জন্য ট্রানজেকশন আইডি লিখুন।', 'Error');
                         $('#manual-payment-fields').show();
                         $('html, body').animate({ scrollTop: $('#manual-payment-fields').offset().top - 120 }, 400);
                         $('.btn-place-order').prop('disabled', false);
@@ -1228,12 +1221,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
-                // ৩. অর্ডার সাবমিট হচ্ছে, তাই ইনকমপ্লিট টাইমার বন্ধ করে দেওয়া হলো
-                isSubmitting = true; 
+                // ৩. অর্ডার সাবমিট হচ্ছে, তাই ইনকমপ্লিট টাইমার বন্ধ করে দেওয়া হলো
+                isSubmitting = true;
                 if(incompleteOrderTimer) {
                     clearTimeout(incompleteOrderTimer);
                 }
-                
+
                 // ফর্ম সাবমিট হতে দিন...
             }
         });
@@ -1329,5 +1322,64 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 })();
 </script>
+
+<?php if($requires_shipping): ?>
+
+<?php
+    $__prefillJs = [
+        'division_id' => (string) $selDivision,
+        'district_id' => (string) $selDistrict,
+        'upazila_id'  => (string) $selUpazila,
+        'subtotal'    => (float) ($subtotal ?? 0),
+        'discount'    => (float) ($discount ?? 0),
+        'free'        => (bool) ($hasAllFreeDelivery ?? false),
+    ];
+?>
+<script>
+$(function () {
+    var PF = <?php echo json_encode($__prefillJs, 15, 512) ?>;
+
+    if (!PF.division_id) return; // nothing saved to prefill
+
+    var $div = $('#checkout_division'), $dist = $('#checkout_district'), $upa = $('#checkout_upazila');
+    if (!$div.length || !$dist.length) return;
+
+    // Division already selected server-side; load its districts, then select the saved one.
+    $dist.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
+    $.get('<?php echo e(url('/ajax/delivery/districts')); ?>/' + PF.division_id, function (res) {
+        var opts = '<option value="">জেলা নির্বাচন করুন</option>';
+        (res.data || []).forEach(function (r) {
+            opts += '<option value="' + r.id + '" data-charge="' + r.delivery_charge + '">' + r.name + ' (৳' + r.delivery_charge + ')</option>';
+        });
+        $dist.html(opts).prop('disabled', false);
+
+        if (!PF.district_id) return;
+        $dist.val(PF.district_id);
+
+        // Recompute shipping + total in the DOM (mirrors applyShippingToDomAndSession) and sync session.
+        var charge = PF.free ? 0 : (parseFloat($dist.find('option:selected').attr('data-charge')) || 0);
+        $('#shippingAmount').text('৳ ' + charge.toFixed(2));
+        $('#grandTotalAmount').text('৳ ' + (PF.subtotal + charge - PF.discount).toFixed(2));
+        if (PF.free) {
+            $.get('<?php echo e(route("shipping.charge")); ?>', { id: 'free_delivery' });
+        } else if ($dist.val()) {
+            $.get('<?php echo e(route("shipping.charge")); ?>', { id: $dist.val() });
+        }
+
+        // Load upazilas for the saved district, then select the saved upazila.
+        $upa.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
+        $.get('<?php echo e(url('/ajax/delivery/upazilas')); ?>/' + PF.district_id, function (res2) {
+            var o2 = '<option value="">উপজেলা নির্বাচন করুন</option>';
+            (res2.data || []).forEach(function (r) {
+                o2 += '<option value="' + r.id + '">' + r.name + '</option>';
+            });
+            $upa.html(o2).prop('disabled', false);
+            if (PF.upazila_id) { $upa.val(PF.upazila_id); }
+        });
+    });
+});
+</script>
+<?php endif; ?>
 <?php $__env->stopPush(); ?>
+
 <?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/customer/checkout.blade.php ENDPATH**/ ?>

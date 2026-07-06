@@ -788,6 +788,37 @@ class CustomerController extends Controller
 
         \App\Http\Controllers\Frontend\ShoppingController::refreshCartWholesalePrices();
 
+        // ── Checkout prefill for logged-in customers (own data only) ──
+        // Location IDs (division/district/upazila) only exist on a previous order's shipping record;
+        // name/phone/address come from the customer profile (fallback to last shipping).
+        $checkoutPrefill = [
+            'name'        => '',
+            'mobile'      => '',
+            'address'     => '',
+            'division_id' => '',
+            'district_id' => '',
+            'upazila_id'  => '',
+        ];
+
+        $authCustomer = Auth::guard('customer')->user();
+        if ($authCustomer) {
+            $lastOrder = Order::where('customer_id', $authCustomer->id)
+                ->with('shipping')
+                ->latest('id')
+                ->first();
+            $lastShipping = $lastOrder ? $lastOrder->shipping : null;
+
+            $checkoutPrefill['name']    = $authCustomer->name    ?: ($lastShipping->name    ?? '');
+            $checkoutPrefill['mobile']  = $authCustomer->phone   ?: ($lastShipping->phone   ?? '');
+            $checkoutPrefill['address'] = $authCustomer->address ?: ($lastShipping->address ?? '');
+
+            if ($lastShipping) {
+                $checkoutPrefill['division_id'] = $lastShipping->division_id ?? '';
+                $checkoutPrefill['district_id'] = $lastShipping->district_id ?? '';
+                $checkoutPrefill['upazila_id']  = $lastShipping->upazila_id  ?? '';
+            }
+        }
+
         return view('frontEnd.layouts.customer.checkout',compact(
             'divisions',
             'bkash_gateway',
@@ -798,7 +829,8 @@ class CustomerController extends Controller
             'advanceTotal',
             'hasAdvance',
             'hasDigital',
-            'hasAllFreeDelivery'
+            'hasAllFreeDelivery',
+            'checkoutPrefill'
         ));
     }
 

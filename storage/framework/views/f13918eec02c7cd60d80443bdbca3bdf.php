@@ -602,7 +602,7 @@
                 <a href="<?php echo e(route('home')); ?>" class="bilai-mobile-header__logo">
                     <img src="<?php echo e(asset($generalsetting->dark_logo)); ?>" alt="<?php echo e($generalsetting->name); ?>" />
                 </a>
-                <a href="<?php echo e(route('customer.checkout')); ?>" class="bilai-mobile-header__icon-btn" style="position:relative;">
+                <a href="<?php echo e(route('cart.index')); ?>" class="bilai-mobile-header__icon-btn" style="position:relative;">
                     <i class="fa-solid fa-cart-shopping"></i>
                     <span class="bilai-badge mobilecart-qty" style="position:absolute;top:-4px;right:-4px;font-size:10px;min-width:16px;height:16px;"><?php echo e(Cart::instance('shopping')->count()); ?></span>
                 </a>
@@ -695,7 +695,7 @@
                             <li><a href="<?php echo e(route('contact')); ?>" class="<?php echo e(Route::is('contact') ? 'active' : ''); ?>">Contact</a></li>
                             <li><a href="<?php echo e(route('customer.order_track')); ?>" class="<?php echo e(Route::is('customer.order_track') ? 'active' : ''); ?>">Track Order</a></li>
                         </ul>
-                        <a href="<?php echo e(route('customer.checkout')); ?>" class="bilai-nav__cart-pill">
+                        <a href="<?php echo e(route('cart.index')); ?>" class="bilai-nav__cart-pill">
                             <i class="fas fa-shopping-bag"></i>
                             <span class="bilai-nav__cart-count mobilecart-qty"><?php echo e(Cart::instance('shopping')->count()); ?></span>
                         </a>
@@ -873,7 +873,7 @@
             </a>
         </div>
 
-        <a href="<?php echo e(route('customer.checkout')); ?>" class="nav_item <?php echo e(Route::is('customer.checkout') ? 'active' : ''); ?>">
+        <a href="<?php echo e(route('cart.index')); ?>" class="nav_item <?php echo e(Route::is('cart.index') ? 'active' : ''); ?>">
             <div class="icon_box">
                 <i class="fa-solid fa-cart-shopping"></i>
                 <span class="cart_badge mobilecart-qty"><?php echo e(Cart::instance('shopping')->count()); ?></span>

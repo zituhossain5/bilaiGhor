@@ -599,7 +599,7 @@
                 <a href="{{route('home')}}" class="bilai-mobile-header__logo">
                     <img src="{{asset($generalsetting->dark_logo)}}" alt="{{$generalsetting->name}}" />
                 </a>
-                <a href="{{route('customer.checkout')}}" class="bilai-mobile-header__icon-btn" style="position:relative;">
+                <a href="{{route('cart.index')}}" class="bilai-mobile-header__icon-btn" style="position:relative;">
                     <i class="fa-solid fa-cart-shopping"></i>
                     <span class="bilai-badge mobilecart-qty" style="position:absolute;top:-4px;right:-4px;font-size:10px;min-width:16px;height:16px;">{{ Cart::instance('shopping')->count() }}</span>
                 </a>
@@ -691,7 +691,7 @@
                             <li><a href="{{ route('contact') }}" class="{{ Route::is('contact') ? 'active' : '' }}">Contact</a></li>
                             <li><a href="{{ route('customer.order_track') }}" class="{{ Route::is('customer.order_track') ? 'active' : '' }}">Track Order</a></li>
                         </ul>
-                        <a href="{{ route('customer.checkout') }}" class="bilai-nav__cart-pill">
+                        <a href="{{ route('cart.index') }}" class="bilai-nav__cart-pill">
                             <i class="fas fa-shopping-bag"></i>
                             <span class="bilai-nav__cart-count mobilecart-qty">{{ Cart::instance('shopping')->count() }}</span>
                         </a>
@@ -868,7 +868,7 @@
             </a>
         </div>
 
-        <a href="{{route('customer.checkout')}}" class="nav_item {{ Route::is('customer.checkout') ? 'active' : '' }}">
+        <a href="{{route('cart.index')}}" class="nav_item {{ Route::is('cart.index') ? 'active' : '' }}">
             <div class="icon_box">
                 <i class="fa-solid fa-cart-shopping"></i>
                 <span class="cart_badge mobilecart-qty">{{Cart::instance('shopping')->count()}}</span>

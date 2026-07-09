@@ -594,7 +594,8 @@ Route::post('/cart/store', [FrontendController::class, 'cartStore'])->name('cart
 
     Route::get('/add-to-cart/{id}/{qty}', [ShoppingController::class, 'addTocartGet']);
 
-    Route::get('shop/cart', [ShoppingController::class, 'cart_show'])->name('cart.show');
+    // old 'cart.show' pointed to ShoppingController::cart_show which does not exist (encoded controller)
+    Route::get('cart', [FrontendController::class, 'cart'])->name('cart.index');
     Route::get('cart/remove', [ShoppingController::class, 'cart_remove'])->name('cart.remove');
     Route::get('cart/count', [ShoppingController::class, 'cart_count'])->name('cart.count');
     Route::get('mobilecart/count', [ShoppingController::class, 'mobilecart_qty'])->name('mobile.cart.count');

@@ -274,6 +274,20 @@ $brands = Brand::where('status', 1)
     }
 
     // ===========================
+    // Cart page
+    // ===========================
+    public function cart()
+    {
+        $recommendedProducts = Product::where(['status' => 1, 'approval_status' => 'approved'])
+            ->with(['image', 'category', 'reviews', 'prosizes', 'procolors'])
+            ->latest('id')
+            ->take(4)
+            ->get();
+
+        return view('frontEnd.layouts.pages.cart', compact('recommendedProducts'));
+    }
+
+    // ===========================
     // Add to cart with variant + stock check
     // ===========================
     public function cartStore(Request $request)

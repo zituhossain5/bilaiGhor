@@ -819,6 +819,53 @@ class CustomerController extends Controller
             }
         }
 
+        // ── Saved addresses for the "Select Address" modal (own data only; no address table exists) ──
+        // Card 1: customer profile; then unique previous-order shipping addresses (max 4 cards total).
+        $savedAddresses = [];
+        if ($authCustomer) {
+            $seen = [];
+            if (!empty($authCustomer->address)) {
+                $savedAddresses[] = [
+                    'name'        => $authCustomer->name ?? '',
+                    'mobile'      => $authCustomer->phone ?? '',
+                    'email'       => $authCustomer->email ?? '',
+                    'address'     => $authCustomer->address,
+                    'division_id' => '',
+                    'district_id' => '',
+                    'upazila_id'  => '',
+                ];
+                $seen[] = strtolower(trim(($authCustomer->phone ?? '').'|'.$authCustomer->address));
+            }
+
+            $shippings = Shipping::where('customer_id', $authCustomer->id)
+                ->latest('id')
+                ->take(10)
+                ->get();
+
+            foreach ($shippings as $s) {
+                if (empty($s->address)) {
+                    continue;
+                }
+                $key = strtolower(trim(($s->phone ?? '').'|'.$s->address));
+                if (in_array($key, $seen)) {
+                    continue;
+                }
+                $seen[] = $key;
+                $savedAddresses[] = [
+                    'name'        => $s->name ?? '',
+                    'mobile'      => $s->phone ?? '',
+                    'email'       => '',
+                    'address'     => trim($s->address.($s->area ? ', '.$s->area : '')),
+                    'division_id' => $s->division_id ?? '',
+                    'district_id' => $s->district_id ?? '',
+                    'upazila_id'  => $s->upazila_id ?? '',
+                ];
+                if (count($savedAddresses) >= 4) {
+                    break;
+                }
+            }
+        }
+
         return view('frontEnd.layouts.customer.checkout',compact(
             'divisions',
             'bkash_gateway',
@@ -830,7 +877,8 @@ class CustomerController extends Controller
             'hasAdvance',
             'hasDigital',
             'hasAllFreeDelivery',
-            'checkoutPrefill'
+            'checkoutPrefill',
+            'savedAddresses'
         ));
     }
 

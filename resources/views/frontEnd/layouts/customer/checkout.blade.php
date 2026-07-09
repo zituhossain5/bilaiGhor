@@ -272,6 +272,103 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 /* Advance (paid) / Due rows are not rendered on this flow; standard totals only. */
 .summary-totals .advance-alert { display: none; }
 /* BilaiGhor Checkout Summary Fix End */
+
+/* BilaiGhor Checkout Address Modal Start */
+.bilai-addr-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    margin-top: 10px; padding: 9px 18px;
+    background: var(--co-brown); color: #fff;
+    border: none; border-radius: 100px;
+    font-size: 12.5px; font-weight: 600; cursor: pointer; transition: 0.15s;
+}
+.bilai-addr-btn:hover { background: #24140a; }
+
+/* Overlay */
+.bilai-addr-overlay {
+    display: none; position: fixed; inset: 0; z-index: 1600;
+    background: rgba(30, 18, 8, 0.5);
+    align-items: flex-start; justify-content: center;
+    padding: 40px 16px; overflow-y: auto;
+}
+.bilai-addr-overlay.open { display: flex; }
+
+/* Logged-in dialog */
+.bilai-addr-dialog {
+    background: var(--co-cream); width: 100%; max-width: 960px;
+    border-radius: 14px; overflow: hidden;
+}
+.bilai-addr-head {
+    background: var(--co-primary); color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+}
+.bilai-addr-head h5 { margin: 0; font-size: 16px; font-weight: 700; color: #fff; }
+.bilai-addr-close {
+    background: transparent; border: none; color: #fff;
+    font-size: 20px; cursor: pointer; line-height: 1; padding: 4px;
+}
+.bilai-addr-body { padding: 28px; }
+.bilai-addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+/* Address card */
+.bilai-addr-card { background: #FFFDF8; border: 1px solid var(--co-border); border-radius: 10px; overflow: hidden; }
+.bilai-addr-card-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 14px 18px; border-bottom: 1px solid var(--co-border);
+}
+.bilai-addr-card-title { font-size: 14px; font-weight: 700; color: var(--co-text); margin: 0; }
+.bilai-addr-card-actions { display: flex; gap: 8px; }
+.bilai-addr-select {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border: none; border-radius: 8px;
+    background: var(--co-primary); color: #fff;
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s;
+}
+.bilai-addr-select:hover { background: var(--co-primary-dark); }
+.bilai-addr-select.is-selected { background: #2e9e4f; }
+.bilai-addr-edit {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border: none; border-radius: 8px;
+    background: var(--co-brown); color: #fff !important;
+    font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; transition: 0.15s;
+}
+.bilai-addr-edit:hover { background: #24140a; text-decoration: none; }
+.bilai-addr-card-body { padding: 16px 18px; }
+.bilai-addr-row { display: flex; gap: 8px; font-size: 13px; margin-bottom: 9px; line-height: 1.5; }
+.bilai-addr-row:last-child { margin-bottom: 0; }
+.bilai-addr-row .lbl { width: 70px; flex-shrink: 0; color: var(--co-muted); }
+.bilai-addr-row .sep { color: var(--co-muted); flex-shrink: 0; }
+.bilai-addr-row .val { color: var(--co-text); word-break: break-word; }
+
+/* Add more card */
+.bilai-addr-add {
+    margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 44px 16px;
+    background: #FFFDF8; border: 1px solid var(--co-border); border-radius: 10px;
+    color: var(--co-text); font-size: 14.5px; font-weight: 600;
+    text-decoration: none; cursor: pointer; transition: 0.15s;
+}
+.bilai-addr-add:hover { border-color: var(--co-primary); color: var(--co-primary); text-decoration: none; }
+.bilai-addr-empty { text-align: center; font-size: 13.5px; color: var(--co-muted); padding: 8px 0 0; }
+
+/* Guest dialog */
+.bilai-addr-guest {
+    position: relative; background: #FFFDF8;
+    width: 100%; max-width: 420px; margin-top: 60px;
+    border-radius: 12px; padding: 38px 28px 34px; text-align: center;
+}
+.bilai-addr-guest .bilai-addr-close { position: absolute; top: 12px; right: 14px; color: var(--co-muted); }
+.bilai-addr-guest-icon { font-size: 22px; color: var(--co-muted); margin-bottom: 12px; }
+.bilai-addr-guest p { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--co-text); line-height: 1.6; }
+.bilai-addr-guest a { color: var(--co-primary); text-decoration: none; }
+.bilai-addr-guest a:hover { text-decoration: underline; }
+
+@media (max-width: 767px) {
+    .bilai-addr-grid { grid-template-columns: 1fr; gap: 14px; }
+    .bilai-addr-body { padding: 16px; }
+    .bilai-addr-add { margin-top: 14px; padding: 28px 16px; }
+}
+/* BilaiGhor Checkout Address Modal End */
 </style>
 @endpush
 
@@ -439,6 +536,10 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                         <label class="form-label-custom">Full Address <span class="req">*</span></label>
                                         <input type="text" name="address" class="form-control-custom"
                                             value="{{ old('address', $checkoutPrefill['address'] ?? '') }}" placeholder="House no, Road no. Area, District" required>
+                                        <button type="button" id="bilai-addr-open" class="bilai-addr-btn">
+                                            {{-- Replace address icon SVG later --}}
+                                            <i class="fa fa-map-marker"></i> Select Address
+                                        </button>
                                     </div>
                                 </div>
                                 @if($requires_shipping)
@@ -667,7 +768,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                 {{-- Replace SVG icon later --}}
                                 <i class="fa fa-shopping-bag"></i>
                                 <h6>Order Items ({{ Cart::instance('shopping')->count() }})</h6>
-                                <a href="{{ route('cart.show') }}" class="bilai-co-edit">Edit Cart</a>
+                                <a href="{{ route('cart.index') }}" class="bilai-co-edit">Edit Cart</a>
                             </div>
 
                             {{-- Products List --}}
@@ -802,6 +903,72 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 
             </div>
         </form>
+
+        {{-- ═══════ Select Address modal (logged-in: saved addresses / guest: login prompt) ═══════ --}}
+        <div id="bilai-addr-modal" class="bilai-addr-overlay" aria-hidden="true">
+            @auth('customer')
+                <div class="bilai-addr-dialog" role="dialog" aria-label="Your Addresses">
+                    <div class="bilai-addr-head">
+                        <h5>Your Addresses</h5>
+                        <button type="button" class="bilai-addr-close" aria-label="Close">&times;</button>
+                    </div>
+                    <div class="bilai-addr-body">
+                        @if(count($savedAddresses ?? []) > 0)
+                            <div class="bilai-addr-grid">
+                                @foreach($savedAddresses as $i => $addr)
+                                    <div class="bilai-addr-card">
+                                        <div class="bilai-addr-card-head">
+                                            <p class="bilai-addr-card-title">Address {{ $i + 1 }}</p>
+                                            <div class="bilai-addr-card-actions">
+                                                <button type="button" class="bilai-addr-select"
+                                                        data-name="{{ $addr['name'] }}"
+                                                        data-mobile="{{ $addr['mobile'] }}"
+                                                        data-address="{{ $addr['address'] }}"
+                                                        data-div="{{ $addr['division_id'] }}"
+                                                        data-dist="{{ $addr['district_id'] }}"
+                                                        data-upa="{{ $addr['upazila_id'] }}">
+                                                    {{-- Replace check SVG icon later --}}
+                                                    <i class="fa fa-check"></i> <span>Select</span>
+                                                </button>
+                                                <a href="{{ route('customer.profile_edit') }}" class="bilai-addr-edit">
+                                                    {{-- Replace edit SVG icon later --}}
+                                                    <i class="fa fa-pencil-square-o"></i> Edit
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="bilai-addr-card-body">
+                                            <div class="bilai-addr-row"><span class="lbl">Name</span><span class="sep">:</span><span class="val">{{ $addr['name'] ?: 'N/A' }}</span></div>
+                                            <div class="bilai-addr-row"><span class="lbl">Mobile</span><span class="sep">:</span><span class="val">{{ $addr['mobile'] ?: 'N/A' }}</span></div>
+                                            @if(!empty($addr['email']))
+                                                <div class="bilai-addr-row"><span class="lbl">Email</span><span class="sep">:</span><span class="val">{{ $addr['email'] }}</span></div>
+                                            @endif
+                                            <div class="bilai-addr-row"><span class="lbl">Address</span><span class="sep">:</span><span class="val">{{ $addr['address'] }}</span></div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="bilai-addr-empty">No saved address yet — add one from your profile, or place an order and it will appear here.</p>
+                        @endif
+
+                        <a href="{{ route('customer.profile_edit') }}" class="bilai-addr-add">
+                            {{-- Replace plus SVG icon later --}}
+                            <i class="fa fa-plus"></i> Add More Address
+                        </a>
+                    </div>
+                </div>
+            @else
+                <div class="bilai-addr-guest" role="dialog" aria-label="Login required">
+                    <button type="button" class="bilai-addr-close" aria-label="Close">&times;</button>
+                    {{-- Replace guest address SVG icon later --}}
+                    <div class="bilai-addr-guest-icon"><i class="fa fa-user-o"></i></div>
+                    <p>
+                        <a href="{{ route('customer.login') }}">Login</a> or
+                        <a href="{{ route('customer.register') }}">Register</a> to Select/Add<br>Your Address
+                    </p>
+                </div>
+            @endauth
+        </div>
 
         @if(!empty($__showCheckoutOtpModal))
         <div class="modal fade" id="checkoutOtpModal" tabindex="-1" aria-labelledby="checkoutOtpModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -1375,4 +1542,82 @@ $(function () {
 });
 </script>
 @endif
+
+{{-- ═══════ Select Address modal behavior ═══════ --}}
+@php
+    $__addrLocJs = [
+        'subtotal' => (float) ($subtotal ?? 0),
+        'discount' => (float) ($discount ?? 0),
+        'free'     => (bool) ($hasAllFreeDelivery ?? false),
+    ];
+@endphp
+<script>
+(function () {
+    var modal   = document.getElementById('bilai-addr-modal');
+    var openBtn = document.getElementById('bilai-addr-open');
+    if (!modal || !openBtn) return;
+
+    var LOC = @json($__addrLocJs);
+
+    function openModal()  { modal.classList.add('open');  document.body.style.overflow = 'hidden'; }
+    function closeModal() { modal.classList.remove('open'); document.body.style.overflow = ''; }
+
+    openBtn.addEventListener('click', openModal);
+    modal.querySelectorAll('.bilai-addr-close').forEach(function (b) { b.addEventListener('click', closeModal); });
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    // Load districts/upazilas for a saved location and preselect them (same endpoints as existing checkout JS).
+    function applyLocation(divId, distId, upaId) {
+        var $div = $('#checkout_division'), $dist = $('#checkout_district'), $upa = $('#checkout_upazila');
+        if (!$div.length || !divId) return;
+        $div.val(divId);
+        $dist.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
+        $upa.prop('disabled', true).html('<option value="">আগে জেলা সিলেক্ট করুন</option>');
+        $.get('{{ url('/ajax/delivery/districts') }}/' + divId, function (res) {
+            var opts = '<option value="">জেলা নির্বাচন করুন</option>';
+            (res.data || []).forEach(function (r) {
+                opts += '<option value="' + r.id + '" data-charge="' + r.delivery_charge + '">' + r.name + ' (৳' + r.delivery_charge + ')</option>';
+            });
+            $dist.html(opts).prop('disabled', false);
+            if (!distId) return;
+            $dist.val(distId);
+
+            var charge = LOC.free ? 0 : (parseFloat($dist.find('option:selected').attr('data-charge')) || 0);
+            $('#shippingAmount').text('৳ ' + charge.toFixed(2));
+            $('#grandTotalAmount').text('৳ ' + (LOC.subtotal + charge - LOC.discount).toFixed(2));
+            $.get('{{ route("shipping.charge") }}', { id: LOC.free ? 'free_delivery' : distId });
+
+            $upa.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
+            $.get('{{ url('/ajax/delivery/upazilas') }}/' + distId, function (res2) {
+                var o2 = '<option value="">উপজেলা নির্বাচন করুন</option>';
+                (res2.data || []).forEach(function (r) {
+                    o2 += '<option value="' + r.id + '">' + r.name + '</option>';
+                });
+                $upa.html(o2).prop('disabled', false);
+                if (upaId) { $upa.val(upaId); }
+            });
+        });
+    }
+
+    // Select an address: fill checkout fields, mark card selected, close.
+    modal.querySelectorAll('.bilai-addr-select').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var d = this.dataset;
+            $('input[name="name"]').val(d.name || '').trigger('change');
+            $('input[name="phone"]').val(d.mobile || '').trigger('change');
+            $('input[name="address"]').val(d.address || '').trigger('change');
+            if (d.div) { applyLocation(d.div, d.dist, d.upa); }
+
+            modal.querySelectorAll('.bilai-addr-select').forEach(function (b) {
+                b.classList.remove('is-selected');
+                b.querySelector('span').textContent = 'Select';
+            });
+            this.classList.add('is-selected');
+            this.querySelector('span').textContent = 'Selected';
+            closeModal();
+        });
+    });
+}());
+</script>
 @endpush

@@ -2384,6 +2384,17 @@ window.addEventListener('pageshow', function (e) {
     }
 </style>
 @endif
+        @if(request()->is('customer/account', 'customer/orders', 'customer/order-details/*', 'customer/invoice*', 'customer/profile-edit', 'customer/change-password', 'customer/refunds*'))
+        {{-- Authenticated account pages: if restored from back/forward cache (Safari ignores
+             no-store for bfcache), force a fresh request so logged-out users are redirected. --}}
+        <script>
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
+        </script>
+        @endif
     </body>
 </html>
 

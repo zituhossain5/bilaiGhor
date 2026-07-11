@@ -738,6 +738,12 @@ class CustomerController extends Controller
     public function logout(Request $request)
     {
         Auth::guard('customer')->logout();
+
+        // Rotate the session ID (fixation protection) and CSRF token, but keep
+        // session data so the shopping cart survives logout.
+        $request->session()->regenerate();
+        $request->session()->regenerateToken();
+
         Toastr::success('You are logout successfully', 'success!');
         return redirect()->route('customer.login');
     }
@@ -819,49 +825,41 @@ class CustomerController extends Controller
             }
         }
 
-        // ── Saved addresses for the "Select Address" modal (own data only; no address table exists) ──
-        // Card 1: customer profile; then unique previous-order shipping addresses (max 4 cards total).
+        // ── Saved addresses for the "Select Address" modal ──
+        // Single source of truth: customer_addresses ONLY (same as the Addresses page).
+        // No profile/previous-order fallbacks — a deleted address must vanish here too.
         $savedAddresses = [];
         if ($authCustomer) {
-            $seen = [];
-            if (!empty($authCustomer->address)) {
-                $savedAddresses[] = [
-                    'name'        => $authCustomer->name ?? '',
-                    'mobile'      => $authCustomer->phone ?? '',
-                    'email'       => $authCustomer->email ?? '',
-                    'address'     => $authCustomer->address,
-                    'division_id' => '',
-                    'district_id' => '',
-                    'upazila_id'  => '',
-                ];
-                $seen[] = strtolower(trim(($authCustomer->phone ?? '').'|'.$authCustomer->address));
-            }
-
-            $shippings = Shipping::where('customer_id', $authCustomer->id)
-                ->latest('id')
-                ->take(10)
+            $storedAddresses = \App\Models\CustomerAddress::where('customer_id', $authCustomer->id)
+                ->orderByDesc('is_default')
+                ->orderBy('id')
                 ->get();
 
-            foreach ($shippings as $s) {
-                if (empty($s->address)) {
-                    continue;
-                }
-                $key = strtolower(trim(($s->phone ?? '').'|'.$s->address));
-                if (in_array($key, $seen)) {
-                    continue;
-                }
-                $seen[] = $key;
+            foreach ($storedAddresses as $sa) {
                 $savedAddresses[] = [
-                    'name'        => $s->name ?? '',
-                    'mobile'      => $s->phone ?? '',
-                    'email'       => '',
-                    'address'     => trim($s->address.($s->area ? ', '.$s->area : '')),
-                    'division_id' => $s->division_id ?? '',
-                    'district_id' => $s->district_id ?? '',
-                    'upazila_id'  => $s->upazila_id ?? '',
+                    'id'          => $sa->id, // enables Edit in the checkout modal
+                    'name'        => $sa->name ?? '',
+                    'mobile'      => $sa->phone ?? '',
+                    'email'       => $sa->email ?? '',
+                    'post_code'   => $sa->post_code ?? '',
+                    'zone_id'     => $sa->zone_id ?? '',
+                    'address'     => $sa->address,
+                    'division_id' => $sa->division_id ?? '',
+                    'district_id' => $sa->district_id ?? '',
+                    'upazila_id'  => $sa->upazila_id ?? '',
                 ];
-                if (count($savedAddresses) >= 4) {
-                    break;
+            }
+
+            // Default saved address wins the form prefill (name/mobile/address + location if set).
+            $defaultStored = $storedAddresses->firstWhere('is_default', true);
+            if ($defaultStored) {
+                $checkoutPrefill['name']    = $defaultStored->name ?: $checkoutPrefill['name'];
+                $checkoutPrefill['mobile']  = $defaultStored->phone ?: $checkoutPrefill['mobile'];
+                $checkoutPrefill['address'] = $defaultStored->address ?: $checkoutPrefill['address'];
+                if ($defaultStored->division_id) {
+                    $checkoutPrefill['division_id'] = $defaultStored->division_id;
+                    $checkoutPrefill['district_id'] = $defaultStored->district_id ?? '';
+                    $checkoutPrefill['upazila_id']  = $defaultStored->upazila_id ?? '';
                 }
             }
         }
@@ -1290,6 +1288,151 @@ public function order_save(Request $request)
         return view('frontEnd.layouts.customer.orders', compact('orders', 'activeTab'));
     }
 
+    public function rewards()
+    {
+        // Reward-points backend is not implemented yet; the view renders
+        // safe zero-value placeholders and only real customer identity data.
+        return view('frontEnd.layouts.customer.rewards');
+    }
+
+    // ============================
+    // Saved addresses (Addresses page)
+    // ============================
+
+    public function addresses()
+    {
+        $addresses = \App\Models\CustomerAddress::where('customer_id', Auth::guard('customer')->user()->id)
+            ->orderByDesc('is_default')
+            ->orderBy('id')
+            ->get();
+
+        return view('frontEnd.layouts.customer.addresses', compact('addresses'));
+    }
+
+    /**
+     * Validate the reusable address-form-modal input (adr_* field names avoid
+     * colliding with the checkout form's old() values) and map to model columns.
+     * Returns mapped data or a redirect-back response on zone/district mismatch.
+     */
+    private function validateAddressForm(Request $request): array
+    {
+        $request->validate([
+            'adr_name'        => 'required|string|max:155',
+            'adr_phone'       => 'required|string|max:55',
+            'adr_email'       => 'nullable|email|max:155',
+            'adr_post_code'   => 'nullable|string|max:20',
+            'adr_district_id' => 'required|integer|exists:districts,id',
+            'adr_zone_id'     => 'required|integer',
+            'adr_address'     => 'required|string|max:1000',
+        ]);
+
+        return [
+            'name'        => $request->adr_name,
+            'phone'       => $request->adr_phone,
+            'email'       => $request->adr_email,
+            'post_code'   => $request->adr_post_code,
+            'district_id' => (int) $request->adr_district_id,
+            'zone_id'     => (int) $request->adr_zone_id,
+            'address'     => $request->adr_address,
+        ];
+    }
+
+    public function address_store(Request $request)
+    {
+        $data = $this->validateAddressForm($request);
+
+        // Zone must belong to the selected district (never trust arbitrary zone_id).
+        if (! $this->zoneBelongsToDistrict($data['zone_id'], $data['district_id'])) {
+            return back()->withInput()->withErrors(['adr_zone_id' => 'Selected zone does not belong to the selected district.']);
+        }
+
+        $data['division_id'] = \App\Models\DeliveryDistrict::where('id', $data['district_id'])->value('division_id');
+
+        $customerId = Auth::guard('customer')->user()->id;
+        $data['customer_id'] = $customerId;
+
+        // First saved address automatically becomes the default.
+        $data['is_default'] = !\App\Models\CustomerAddress::where('customer_id', $customerId)->exists();
+
+        \App\Models\CustomerAddress::create($data);
+
+        Toastr::success('Address saved successfully', 'Success!');
+        return redirect()->back();
+    }
+
+    public function address_update(Request $request, $id)
+    {
+        $address = \App\Models\CustomerAddress::where('id', $id)
+            ->where('customer_id', Auth::guard('customer')->user()->id)
+            ->firstOrFail();
+
+        $data = $this->validateAddressForm($request);
+
+        if (! $this->zoneBelongsToDistrict($data['zone_id'], $data['district_id'])) {
+            return back()->withInput()->withErrors(['adr_zone_id' => 'Selected zone does not belong to the selected district.']);
+        }
+
+        $data['division_id'] = \App\Models\DeliveryDistrict::where('id', $data['district_id'])->value('division_id');
+
+        // is_default is intentionally untouched here — changed only via address_default().
+        $address->update($data);
+
+        Toastr::success('Address updated successfully', 'Success!');
+        return redirect()->back();
+    }
+
+    private function zoneBelongsToDistrict(int $zoneId, int $districtId): bool
+    {
+        return \App\Models\DeliveryZone::where('id', $zoneId)
+            ->where('district_id', $districtId)
+            ->where('status', 1)
+            ->exists();
+    }
+
+    // Active zones of a district for the address-form-modal (AJAX).
+    public function delivery_zones(Request $request)
+    {
+        $request->validate(['district_id' => 'required|integer']);
+
+        $zones = \App\Models\DeliveryZone::where('district_id', $request->district_id)
+            ->where('status', 1)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'name_bn']);
+
+        return response()->json(['data' => $zones]);
+    }
+
+    public function address_delete($id)
+    {
+        $address = \App\Models\CustomerAddress::where('id', $id)
+            ->where('customer_id', Auth::guard('customer')->user()->id)
+            ->firstOrFail();
+
+        $address->delete();
+
+        Toastr::success('Address deleted', 'Success!');
+        return redirect()->route('customer.addresses');
+    }
+
+    public function address_default(Request $request)
+    {
+        $request->validate(['address_id' => 'required|integer']);
+
+        $customerId = Auth::guard('customer')->user()->id;
+
+        $address = \App\Models\CustomerAddress::where('id', $request->address_id)
+            ->where('customer_id', $customerId)
+            ->firstOrFail();
+
+        // Only one default per customer.
+        \App\Models\CustomerAddress::where('customer_id', $customerId)->update(['is_default' => false]);
+        $address->update(['is_default' => true]);
+
+        Toastr::success('Default address updated', 'Success!');
+        return redirect()->route('customer.addresses');
+    }
+
     public function order_details($id)
     {
         $customerId = Auth::guard('customer')->user()->id;
@@ -1354,49 +1497,61 @@ public function order_save(Request $request)
     public function profile_edit(Request $request)
     {
         $profile_edit = Customer::where(['id'=>Auth::guard('customer')->user()->id])->firstOrFail();
-        $districts = District::distinct()->select('district')->get();
-        $areas = District::where(['district'=>$profile_edit->district])->select('area_name','id')->get();
-        
+
+        // District → Zone (same source as the Add/Edit Address flow).
+        // The legacy district-name + area (legacy_district_areas) pair is no longer
+        // rendered here; those columns stay untouched in the database.
+        $districts = \App\Models\DeliveryDistrict::active()->ordered()->get(['id', 'name']);
+
         // Refresh the model to get latest data
         $profile_edit->refresh();
-        
-        return view('frontEnd.layouts.customer.profile_edit',compact('profile_edit','districts','areas'));
+
+        return view('frontEnd.layouts.customer.profile_edit',compact('profile_edit','districts'));
     }
 
     public function profile_update(Request $request)
     {
         $update_data = Customer::where(['id'=>Auth::guard('customer')->user()->id])->firstOrFail();
 
-        // Validation
+        // Validation — District → Zone replaces the legacy district-name + area pair.
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
-            'email' => 'required|email|max:255|unique:customers,email,'.$update_data->id,
+            'email' => 'nullable|email|max:255|unique:customers,email,'.$update_data->id,
             'address' => 'required|string|max:500',
-            'district' => 'required|string|max:100',
-            'area' => 'required|integer',
+            'district_id' => 'required|integer|exists:districts,id',
+            'zone_id' => 'required|integer|exists:delivery_zones,id',
             'image' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ]);
+
+        // The selected zone must actually belong to the selected district (and be active).
+        if (!$this->zoneBelongsToDistrict((int) $request->zone_id, (int) $request->district_id)) {
+            Toastr::error('Selected zone does not belong to the selected district.', 'Error!');
+            return redirect()->back()->withInput();
+        }
 
         $image = $request->file('image');
         if($image){
             try {
-                // Delete old image if exists
+                // Delete old image if exists. Stored paths are web paths ("public/uploads/...")
+                // while public_path() already points at the public/ directory — strip the prefix.
                 if ($update_data->image) {
-                    $oldImagePath = public_path($update_data->image);
+                    $oldImagePath = public_path(preg_replace('#^public/#', '', $update_data->image));
                     if (file_exists($oldImagePath)) {
                         @unlink($oldImagePath);
                     }
                 }
 
-                $name =  time().'-'.$image->getClientOriginalName();
-                $name = preg_replace('"\.(jpg|jpeg|png|webp)$"', '.webp',$name);
-                $name = strtolower(Str::slug($name));
-                
-                // Directory path with public/ prefix
+                // Slug the base name only: Str::slug() strips the dot, so slugging the whole
+                // filename produced extension-less files ("photojpg") that browsers won't render.
+                $name = time().'-'.Str::slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME)).'.webp';
+                $name = strtolower($name);
+
+                // Web path stored in DB; asset() prefixes the app URL. On disk it lives under
+                // public/, so public_path() must NOT repeat the "public/" segment.
                 $uploadpath = 'public/uploads/customer/';
-                $uploadFullPath = public_path($uploadpath);
-                
+                $uploadFullPath = public_path('uploads/customer/');
+
                 // Create directory if not exists
                 if (!file_exists($uploadFullPath)) {
                     \Illuminate\Support\Facades\File::makeDirectory($uploadFullPath, 0755, true);
@@ -1429,13 +1584,16 @@ public function order_save(Request $request)
             $imageUrl = $update_data->image;
         }
 
-        $update_data->name = $request->name;
-        $update_data->phone = $request->phone;
-        $update_data->email = $request->email;
-        $update_data->address = $request->address;
-        $update_data->district = $request->district;
-        $update_data->area = $request->area;
-        $update_data->image = $imageUrl;
+        // Only the authenticated customer's row is touched ($update_data was resolved
+        // from the guard, never from request input). Legacy district/area columns are
+        // left as-is so old data survives.
+        $update_data->name        = $request->name;
+        $update_data->phone       = $request->phone;
+        $update_data->email       = $request->email;
+        $update_data->address     = $request->address;
+        $update_data->district_id = (int) $request->district_id;
+        $update_data->zone_id     = (int) $request->zone_id;
+        $update_data->image       = $imageUrl;
         $update_data->save();
 
         // Refresh the model to get updated attributes

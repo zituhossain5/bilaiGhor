@@ -23,7 +23,9 @@
                             <td>{{ number_format($value->delivery_charge) }}</td>
                             <td>{{ $value->status ? 'চালু' : 'বন্ধ' }}</td>
                             <td class="text-end">
-                                <a href="{{ route('admin.delivery.upazilas.index', $value->id) }}" class="btn btn-sm btn-soft-info">উপজেলা</a>
+                                {{-- Upazila button hidden for now (routes/data preserved) — restore by re-adding:
+                                     <a href="{{ route('admin.delivery.upazilas.index', $value->id) }}" class="btn btn-sm btn-soft-info">উপজেলা</a> --}}
+                                <a href="{{ route('admin.delivery.zones.index', $value->id) }}" class="btn btn-sm btn-soft-info">জোন</a>
                                 <a href="{{ route('admin.delivery.districts.edit', $value->id) }}" class="btn btn-sm btn-primary">এডিট</a>
                                 <form action="{{ route('admin.delivery.districts.destroy') }}" method="POST" class="d-inline delete-form-delivery">
                                     @csrf

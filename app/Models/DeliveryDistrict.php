@@ -32,6 +32,11 @@ class DeliveryDistrict extends Model
         return $this->hasMany(DeliveryUpazila::class, 'district_id')->orderBy('sort_order')->orderBy('name');
     }
 
+    public function zones(): HasMany
+    {
+        return $this->hasMany(DeliveryZone::class, 'district_id')->orderBy('sort_order')->orderBy('name');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 1);

@@ -2390,6 +2390,16 @@ window.addEventListener('pageshow', function (e) {
     }
 </style>
 <?php endif; ?>
+        <?php if(request()->is('customer/account', 'customer/orders', 'customer/order-details/*', 'customer/invoice*', 'customer/profile-edit', 'customer/change-password', 'customer/refunds*')): ?>
+        
+        <script>
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
+        </script>
+        <?php endif; ?>
     </body>
 </html>
 

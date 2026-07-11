@@ -47,6 +47,7 @@ use App\Http\Controllers\Admin\ShippingChargeController;
 use App\Http\Controllers\Admin\DeliveryDivisionController;
 use App\Http\Controllers\Admin\DeliveryDistrictController;
 use App\Http\Controllers\Admin\DeliveryUpazilaController;
+use App\Http\Controllers\Admin\DeliveryZoneController;
 use App\Http\Controllers\Frontend\DeliveryAjaxController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\SizeController;
@@ -650,6 +651,15 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend','middleware' => ['cus
     
     Route::get('/orders', [CustomerController::class, 'orders'])->name('customer.orders');
     Route::get('/order-details/{id}', [CustomerController::class, 'order_details'])->name('customer.order_details');
+    Route::get('/rewards', [CustomerController::class, 'rewards'])->name('customer.rewards');
+
+    // Saved addresses (account "Addresses" page)
+    Route::get('/addresses', [CustomerController::class, 'addresses'])->name('customer.addresses');
+    Route::post('/addresses/store', [CustomerController::class, 'address_store'])->name('customer.addresses.store');
+    Route::post('/addresses/{id}/update', [CustomerController::class, 'address_update'])->name('customer.addresses.update');
+    Route::post('/addresses/{id}/delete', [CustomerController::class, 'address_delete'])->name('customer.addresses.delete');
+    Route::post('/addresses/default', [CustomerController::class, 'address_default'])->name('customer.addresses.default');
+    Route::get('/delivery-zones', [CustomerController::class, 'delivery_zones'])->name('customer.delivery_zones');
     Route::get('/invoice', [CustomerController::class, 'invoice'])->name('customer.invoice');
     Route::get('/invoice/order-note', [CustomerController::class, 'order_note'])->name('customer.order_note');
     Route::get('/profile-edit', [CustomerController::class, 'profile_edit'])->name('customer.profile_edit');
@@ -1261,12 +1271,21 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::post('delivery/district/update', [DeliveryDistrictController::class, 'update'])->name('admin.delivery.districts.update');
     Route::post('delivery/district/destroy', [DeliveryDistrictController::class, 'destroy'])->name('admin.delivery.districts.destroy');
 
+    // Upazila routes preserved (hidden from admin UI for now — Zone replaces it visually)
     Route::get('delivery/district/{district}/upazilas', [DeliveryUpazilaController::class, 'index'])->name('admin.delivery.upazilas.index');
     Route::get('delivery/district/{district}/upazilas/create', [DeliveryUpazilaController::class, 'create'])->name('admin.delivery.upazilas.create');
     Route::post('delivery/upazila/save', [DeliveryUpazilaController::class, 'store'])->name('admin.delivery.upazilas.store');
     Route::get('delivery/upazila/{id}/edit', [DeliveryUpazilaController::class, 'edit'])->name('admin.delivery.upazilas.edit');
     Route::post('delivery/upazila/update', [DeliveryUpazilaController::class, 'update'])->name('admin.delivery.upazilas.update');
     Route::post('delivery/upazila/destroy', [DeliveryUpazilaController::class, 'destroy'])->name('admin.delivery.upazilas.destroy');
+
+    // Delivery Zones (Division → District → Zone)
+    Route::get('delivery/district/{district}/zones', [DeliveryZoneController::class, 'index'])->name('admin.delivery.zones.index');
+    Route::get('delivery/district/{district}/zones/create', [DeliveryZoneController::class, 'create'])->name('admin.delivery.zones.create');
+    Route::post('delivery/zone/save', [DeliveryZoneController::class, 'store'])->name('admin.delivery.zones.store');
+    Route::get('delivery/zone/{id}/edit', [DeliveryZoneController::class, 'edit'])->name('admin.delivery.zones.edit');
+    Route::post('delivery/zone/update', [DeliveryZoneController::class, 'update'])->name('admin.delivery.zones.update');
+    Route::post('delivery/zone/destroy', [DeliveryZoneController::class, 'destroy'])->name('admin.delivery.zones.destroy');
     
     // backend customer route 
     Route::get('customer', [CustomerManageController::class,'index'])->name('customers.index');

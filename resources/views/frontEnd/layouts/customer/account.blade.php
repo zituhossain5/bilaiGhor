@@ -411,6 +411,13 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                             Wishlist
                         </a>
 
+                        <a href="{{ route('customer.addresses') }}"
+                           class="bilai-dash-nav-item {{ request()->is('customer/addresses') ? 'active' : '' }}">
+                            {{-- Replace sidebar SVG icon later --}}
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-map-marker"></i></span>
+                            Addresses
+                        </a>
+
                         {{-- Coupon — replace href when implemented --}}
                         <a href="#" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
@@ -418,15 +425,10 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                             Coupon
                         </a>
 
-                        {{-- Gift Cards — replace href when implemented --}}
-                        <a href="#" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-gift"></i></span>
-                            Gift Cards
-                        </a>
+                        {{-- Gift Cards removed from sidebar UI per design (backend untouched) --}}
 
-                        {{-- Reward Points — replace href when implemented --}}
-                        <a href="#" class="bilai-dash-nav-item">
+                        <a href="{{ route('customer.rewards') }}"
+                           class="bilai-dash-nav-item {{ request()->is('customer/rewards') ? 'active' : '' }}">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span>
                             Reward Points

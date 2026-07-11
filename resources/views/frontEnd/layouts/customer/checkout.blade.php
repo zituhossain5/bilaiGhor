@@ -4,7 +4,7 @@
     $generalsetting = \App\Models\GeneralSetting::first();
 @endphp
 @push('css')
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/select2.min.css') }}" />
+{{-- select2 assets are loaded once by the shared address-form-modal partial (double-loading breaks Select2) --}}
 <style>
 /* BilaiGhor Checkout Figma Start */
 :root {
@@ -275,13 +275,15 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 
 /* BilaiGhor Checkout Address Modal Start */
 .bilai-addr-btn {
-    display: inline-flex; align-items: center; gap: 7px;
-    margin-top: 10px; padding: 9px 18px;
-    background: var(--co-brown); color: #fff;
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 12px; padding: 10px 20px 10px 16px;
+    background: #241307; color: #fff;
     border: none; border-radius: 100px;
-    font-size: 12.5px; font-weight: 600; cursor: pointer; transition: 0.15s;
+    font-size: 13px; font-weight: 600;
+    line-height: 1; cursor: pointer; transition: 0.15s;
 }
-.bilai-addr-btn:hover { background: #24140a; }
+.bilai-addr-btn:hover { background: var(--co-brown); }
+.bilai-addr-btn-ic { width: 16px; height: 16px; flex-shrink: 0; display: block; }
 
 /* Overlay */
 .bilai-addr-overlay {
@@ -538,7 +540,11 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                             value="{{ old('address', $checkoutPrefill['address'] ?? '') }}" placeholder="House no, Road no. Area, District" required>
                                         <button type="button" id="bilai-addr-open" class="bilai-addr-btn">
                                             {{-- Replace address icon SVG later --}}
-                                            <i class="fa fa-map-marker"></i> Select Address
+                                            <svg class="bilai-addr-btn-ic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                                                <circle cx="12" cy="10" r="3"/>
+                                            </svg>
+                                            <span>Select Address</span>
                                         </button>
                                     </div>
                                 </div>
@@ -930,10 +936,20 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                                     {{-- Replace check SVG icon later --}}
                                                     <i class="fa fa-check"></i> <span>Select</span>
                                                 </button>
-                                                <a href="{{ route('customer.profile_edit') }}" class="bilai-addr-edit">
-                                                    {{-- Replace edit SVG icon later --}}
-                                                    <i class="fa fa-pencil-square-o"></i> Edit
-                                                </a>
+                                                @if(!empty($addr['id']))
+                                                    <button type="button" class="bilai-addr-edit bilai-afm-edit-open"
+                                                            data-id="{{ $addr['id'] }}"
+                                                            data-name="{{ $addr['name'] }}"
+                                                            data-mobile="{{ $addr['mobile'] }}"
+                                                            data-email="{{ $addr['email'] }}"
+                                                            data-postcode="{{ $addr['post_code'] ?? '' }}"
+                                                            data-district="{{ $addr['district_id'] }}"
+                                                            data-zone="{{ $addr['zone_id'] ?? '' }}"
+                                                            data-address="{{ $addr['address'] }}">
+                                                        {{-- Replace edit SVG icon later --}}
+                                                        <i class="fa fa-pencil-square-o"></i> Edit
+                                                    </button>
+                                                @endif
                                             </div>
                                         </div>
                                         <div class="bilai-addr-card-body">
@@ -948,13 +964,13 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                 @endforeach
                             </div>
                         @else
-                            <p class="bilai-addr-empty">No saved address yet — add one from your profile, or place an order and it will appear here.</p>
+                            <p class="bilai-addr-empty">No saved addresses yet.</p>
                         @endif
 
-                        <a href="{{ route('customer.profile_edit') }}" class="bilai-addr-add">
+                        <button type="button" class="bilai-addr-add bilai-afm-add-open" style="cursor:pointer;">
                             {{-- Replace plus SVG icon later --}}
                             <i class="fa fa-plus"></i> Add More Address
-                        </a>
+                        </button>
                     </div>
                 </div>
             @else
@@ -969,6 +985,11 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                 </div>
             @endauth
         </div>
+
+        {{-- Reusable Add/Edit Address popup (shared with the Addresses page) --}}
+        @auth('customer')
+            @include('frontEnd.layouts.customer.partials.address-form-modal')
+        @endauth
 
         @if(!empty($__showCheckoutOtpModal))
         <div class="modal fade" id="checkoutOtpModal" tabindex="-1" aria-labelledby="checkoutOtpModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -1007,7 +1028,8 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 @endsection
 
 @push('script')
-<script src="{{ asset('public/frontEnd/js/select2.min.js') }}"></script>
+{{-- select2.min.js is loaded once by the shared address-form-modal partial; a second load here
+     re-registers the plugin over live instances and breaks the modal's District/Zone dropdowns --}}
 
 @if(!empty($__showCheckoutOtpModal))
 <script>
@@ -1075,8 +1097,10 @@ document.addEventListener('DOMContentLoaded', function () {
     let isSubmitting = false; // অর্ডার সাবমিট হচ্ছে কিনা তা চেক করার জন্য
 
     $(document).ready(function() {
-        // Select2 Initialize
-        $(".select2").select2({ width: '100%' });
+        // Select2 Initialize (guarded: select2 only ships via the address modal partial for logged-in users).
+        // Scoped to real <select> elements only: select2 v4's generated container spans also
+        // carry the class "select2", and initializing on those spans renders empty duplicate boxes.
+        if ($.fn && $.fn.select2) { $("select.select2").not(".select2-hidden-accessible").select2({ width: '100%' }); }
 
         // ==========================================
         // 1. CART LOGIC (REMOVE, INCREASE, DECREASE)

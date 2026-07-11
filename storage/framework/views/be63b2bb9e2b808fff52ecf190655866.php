@@ -411,6 +411,13 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                             Wishlist
                         </a>
 
+                        <a href="<?php echo e(route('customer.addresses')); ?>"
+                           class="bilai-dash-nav-item <?php echo e(request()->is('customer/addresses') ? 'active' : ''); ?>">
+                            
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-map-marker"></i></span>
+                            Addresses
+                        </a>
+
                         
                         <a href="#" class="bilai-dash-nav-item">
                             
@@ -419,14 +426,9 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                         </a>
 
                         
-                        <a href="#" class="bilai-dash-nav-item">
-                            
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-gift"></i></span>
-                            Gift Cards
-                        </a>
 
-                        
-                        <a href="#" class="bilai-dash-nav-item">
+                        <a href="<?php echo e(route('customer.rewards')); ?>"
+                           class="bilai-dash-nav-item <?php echo e(request()->is('customer/rewards') ? 'active' : ''); ?>">
                             
                             <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span>
                             Reward Points

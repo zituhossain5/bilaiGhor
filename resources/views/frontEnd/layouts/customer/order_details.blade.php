@@ -332,15 +332,16 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-od-nav-icon"><i class="fa fa-heart-o"></i></span> Wishlist
                         </a>
+                        <a href="{{ route('customer.addresses') }}" class="bilai-od-nav-item">
+                            {{-- Replace sidebar SVG icon later --}}
+                            <span class="bilai-od-nav-icon"><i class="fa fa-map-marker"></i></span> Addresses
+                        </a>
                         <a href="#" class="bilai-od-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-od-nav-icon"><i class="fa fa-ticket"></i></span> Coupon
                         </a>
-                        <a href="#" class="bilai-od-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-od-nav-icon"><i class="fa fa-gift"></i></span> Gift Cards
-                        </a>
-                        <a href="#" class="bilai-od-nav-item">
+                        {{-- Gift Cards removed from sidebar UI per design (backend untouched) --}}
+                        <a href="{{ route('customer.rewards') }}" class="bilai-od-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-od-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
                         </a>

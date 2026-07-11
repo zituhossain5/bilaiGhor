@@ -315,19 +315,23 @@ $activeTab = $activeTab ?? 'all';
                             Wishlist
                         </a>
 
+                        <a href="{{ route('customer.addresses') }}"
+                           class="bilai-dash-nav-item {{ request()->is('customer/addresses') ? 'active' : '' }}">
+                            {{-- Replace sidebar SVG icon later --}}
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-map-marker"></i></span>
+                            Addresses
+                        </a>
+
                         <a href="#" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-ticket"></i></span>
                             Coupon
                         </a>
 
-                        <a href="#" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-gift"></i></span>
-                            Gift Cards
-                        </a>
+                        {{-- Gift Cards removed from sidebar UI per design (backend untouched) --}}
 
-                        <a href="#" class="bilai-dash-nav-item">
+                        <a href="{{ route('customer.rewards') }}"
+                           class="bilai-dash-nav-item {{ request()->is('customer/rewards') ? 'active' : '' }}">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span>
                             Reward Points

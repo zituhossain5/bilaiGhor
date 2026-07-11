@@ -27,8 +27,10 @@ class Customer extends Authenticatable
         'status',
         'forgot',
         'address',
-        'district',
-        'area',
+        'district',      // legacy district name (kept for old data)
+        'area',          // legacy legacy_district_areas id (kept for old data)
+        'district_id',   // districts.id — used by Profile Edit / addresses
+        'zone_id',       // delivery_zones.id — used by Profile Edit / addresses
         'image',
     ];
 

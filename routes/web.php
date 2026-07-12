@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\Frontend\ShoppingController;
 use App\Http\Controllers\Frontend\CustomerController;
+use App\Http\Controllers\Frontend\CustomerPasswordResetController;
 use App\Http\Controllers\Frontend\SocialAuthController;
 use App\Http\Controllers\Frontend\BkashController;
 use App\Http\Controllers\Frontend\ShurjopayControllers;
@@ -622,11 +623,15 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ip
     Route::post('/resend-otp', [CustomerController::class, 'resendotp'])->name('customer.resendotp');
     Route::post('/logout', [CustomerController::class, 'logout'])->name('customer.logout');
     Route::post('/post/review', [CustomerController::class, 'review'])->name('customer.review');
-    Route::get('/forgot-password', [CustomerController::class, 'forgot_password'])->name('customer.forgot.password');
-    Route::post('/forgot-verify', [CustomerController::class, 'forgot_verify'])->name('customer.forgot.verify');
-    Route::get('/forgot-password/reset', [CustomerController::class, 'forgot_reset'])->name('customer.forgot.reset');
-    Route::post('/forgot-password/store', [CustomerController::class, 'forgot_store'])->name('customer.forgot.store');
-    Route::post('/forgot-password/resendotp', [CustomerController::class, 'forgot_resend'])->name('customer.forgot.resendotp');
+    // ── Forgot password: email reset link OR mobile OTP (BulkSMSBD) ──
+    // Replaces the old single-step forgot flow (plain 4-digit OTP in customers.forgot).
+    Route::get('/forgot-password', [CustomerPasswordResetController::class, 'showForgotForm'])->name('customer.forgot.password');
+    Route::post('/forgot-password', [CustomerPasswordResetController::class, 'submit'])->middleware('throttle:10,10')->name('customer.forgot.submit');
+    Route::get('/verify-reset-otp', [CustomerPasswordResetController::class, 'showOtpForm'])->name('customer.forgot.otp');
+    Route::post('/verify-reset-otp', [CustomerPasswordResetController::class, 'verifyOtp'])->middleware('throttle:10,10')->name('customer.forgot.otp.verify');
+    Route::post('/resend-reset-otp', [CustomerPasswordResetController::class, 'resendOtp'])->middleware('throttle:5,10')->name('customer.forgot.otp.resend');
+    Route::get('/reset-password/{token?}', [CustomerPasswordResetController::class, 'showResetForm'])->name('customer.password.reset');
+    Route::post('/reset-password', [CustomerPasswordResetController::class, 'resetPassword'])->middleware('throttle:10,10')->name('customer.password.update');
     Route::get('/checkout', [CustomerController::class, 'checkout'])->name('customer.checkout');
     Route::post('/order-save', [CustomerController::class, 'order_save'])->name('customer.ordersave');
     Route::post('/checkout-resend-otp', [CustomerController::class, 'checkout_resend_otp'])->name('customer.checkout.resend_otp');

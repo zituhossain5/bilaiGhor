@@ -1,202 +1,109 @@
-
 <?php $__env->startSection('title','Forgot Password'); ?>
 
-<?php $__env->startSection('content'); ?>
-
+<?php $__env->startPush('css'); ?>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* BilaiGhor Forgot Password Start */
+:root {
+    --bilai-auth-primary:      var(--bilai-primary, #F28C00);
+    --bilai-auth-primary-dark: var(--bilai-primary-dark, #c96f00);
+    --bilai-auth-card-bg:      #FFFDF8;
+    --bilai-auth-border:       var(--bilai-border, #E8CDA5);
+    --bilai-auth-text:         var(--bilai-text, #2B1A10);
+    --bilai-auth-muted:        var(--bilai-muted, #77706A);
+}
 
-    .modern-auth-section {
-        background-color: #f0f2f5;
-        min-height: 80vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 50px 15px;
-        font-family: 'Poppins', sans-serif;
-    }
+.bilai-auth-page {
+    background: #fdfaf3;
+    min-height: 62vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 60px 16px 80px;
+}
+.bilai-auth-card {
+    background: var(--bilai-auth-card-bg);
+    border: 1px solid var(--bilai-auth-border);
+    border-radius: 14px;
+    width: 100%; max-width: 440px;
+    padding: 40px 38px 36px;
+}
+.bilai-auth-icon { text-align: center; margin-bottom: 14px; }
+.bilai-auth-icon i { font-size: 30px; color: var(--bilai-auth-text); }
+.bilai-auth-title {
+    text-align: center; font-size: 21px; font-weight: 700;
+    color: var(--bilai-auth-text); margin: 0 0 26px;
+}
+.bilai-auth-field { margin-bottom: 20px; }
+.bilai-auth-field label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: var(--bilai-auth-text); margin-bottom: 7px;
+}
+.bilai-auth-field label .req { color: #e04b4b; }
+.bilai-auth-field input {
+    width: 100%; height: 46px;
+    border: 1px solid var(--bilai-auth-border); border-radius: 8px;
+    padding: 10px 15px; font-size: 14px; background: #fff;
+    color: var(--bilai-auth-text);
+}
+.bilai-auth-field input::placeholder { color: #b6ab9c; }
+.bilai-auth-field input:focus {
+    outline: none; border-color: var(--bilai-auth-primary);
+    box-shadow: 0 0 0 3px rgba(242,140,0,0.10);
+}
+.bilai-auth-err { font-size: 12px; color: #e04b4b; margin: 6px 0 0; }
+.bilai-auth-btn {
+    width: 100%; height: 48px;
+    background: var(--bilai-auth-primary); color: #fff;
+    border: none; border-radius: 8px;
+    font-size: 14.5px; font-weight: 700; cursor: pointer; transition: 0.2s;
+}
+.bilai-auth-btn:hover { background: var(--bilai-auth-primary-dark); }
+.bilai-auth-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.bilai-auth-back {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    margin-top: 20px; font-size: 13.5px; color: #2f6fdb; text-decoration: none;
+}
+.bilai-auth-back:hover { color: #1c53ad; text-decoration: none; }
+.bilai-auth-hint { font-size: 12px; color: var(--bilai-auth-muted); margin: 10px 0 0; text-align: center; line-height: 1.6; }
 
-    .auth-container {
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-        overflow: hidden;
-        width: 100%;
-        max-width: 950px;
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    /* ---- বাম পাশের ডিজাইন (ইমেজ এরিয়া - ব্যাকগ্রাউন্ড হিসেবে) ---- */
-    .auth-image-area {
-        width: 50%;
-        /* আপনার লগইন পেজের স্টাইলের সাথে মিল রেখে একটি সুন্দর ব্যাকগ্রাউন্ড ইমেজ */
-        background-image: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop');
-        background-size: cover;        /* পুরো বক্স কাভার করবে */
-        background-position: center;   /* ছবির মাঝখান দেখাবে */
-        position: relative;            /* ওভারলে-এর জন্য জরুরি */
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;     /* লেখাগুলো নিচে থাকবে */
-        padding: 40px;
-        color: #fff;
-        text-align: center;
-    }
-
-    /* ছবির ওপর একটি স্বচ্ছ রঙিন আস্তরণ (Overlay) */
-    .auth-image-area::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        /* আপনার লগইন পেজের সেইম গ্র্যাডিয়েন্ট ওভারলে */
-        background: linear-gradient(to top, rgba(118, 75, 162, 0.85), rgba(102, 126, 234, 0.3));
-        z-index: 1;
-    }
-
-    /* টেক্সট ডিজাইন */
-    .auth-image-area h2,
-    .auth-image-area p {
-        position: relative;
-        z-index: 2;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        color: #fff;
-    }
-    .auth-image-area h2 { font-weight: 700; margin-bottom: 10px; font-size: 32px; }
-    .auth-image-area p { font-size: 16px; opacity: 1; }
-
-    /* ---- ডান পাশের ডিজাইন (ফর্ম) ---- */
-    .auth-form-area {
-        width: 50%;
-        padding: 60px 50px;
-        background: #fff;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    .auth-header { margin-bottom: 30px; }
-    .auth-header h3 { font-weight: 700; color: #333; margin-bottom: 5px; }
-    .auth-header p { color: #888; font-size: 14px; }
-
-    /* ইনপুট ডিজাইন */
-    .custom-input-group { position: relative; margin-bottom: 25px; }
-    .custom-input-group label {
-        display: block; margin-bottom: 8px; font-weight: 600; color: #555; font-size: 14px;
-    }
-    .custom-input {
-        width: 100%; height: 50px; padding: 10px 20px 10px 45px; /* আইকনের জন্য বামে প্যাডিং */
-        border: 2px solid #eee; border-radius: 10px;
-        font-size: 15px; transition: 0.3s; background: #fdfdfd;
-    }
-    .custom-input:focus {
-        border-color: #764ba2; background: #fff; outline: none;
-        box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
-    }
-    .input-icon {
-        position: absolute; left: 15px; top: 43px; color: #aaa; font-size: 16px;
-    }
-
-    /* সাবমিট বাটন */
-    .btn-auth-submit {
-        width: 100%; height: 50px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none; border-radius: 10px;
-        color: #fff; font-weight: 600; font-size: 16px;
-        cursor: pointer; transition: 0.3s;
-        text-transform: uppercase; letter-spacing: 1px;
-    }
-    .btn-auth-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(118, 75, 162, 0.3);
-    }
-
-    /* ব্যাক লিংক */
-    .back-login {
-        text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;
-    }
-    .back-login a {
-        text-decoration: none; color: #764ba2; font-weight: 600; font-size: 14px;
-    }
-    .back-login a:hover { text-decoration: underline; }
-
-    /* মোবাইল রেসপন্সিভ */
-    @media (max-width: 768px) {
-        .auth-image-area { display: none; }
-        .auth-form-area { width: 100%; padding: 40px 20px; }
-    }
+@media (max-width: 480px) { .bilai-auth-card { padding: 30px 20px 26px; } }
+/* BilaiGhor Forgot Password End */
 </style>
+<?php $__env->stopPush(); ?>
 
-<section class="modern-auth-section">
-    <div class="container d-flex justify-content-center">
-        <div class="auth-container">
-            
-            
-            <div class="auth-image-area">
-                
-                <h2>Forgot Password?</h2>
-                <p>চিন্তার কিছু নেই! আপনার ফোন নাম্বার দিয়ে খুব সহজেই পাসওয়ার্ড রিসেট করুন।</p>
-            </div>
+<?php $__env->startSection('content'); ?>
+<div class="bilai-auth-page">
+    <div class="bilai-auth-card">
 
-            
-            <div class="auth-form-area">
-                <div class="auth-header">
-                    <h3>পাসওয়ার্ড রিসেট 🔒</h3>
-                    <p>আপনার রেজিস্টার্ড ফোন নাম্বারটি লিখুন</p>
-                </div>
+        
+        <div class="bilai-auth-icon"><i class="fa fa-lock"></i></div>
+        <h1 class="bilai-auth-title">Reset Your Password</h1>
 
-                <form action="<?php echo e(route('customer.forgot.verify')); ?>" method="POST" data-parsley-validate="">
-                    <?php echo csrf_field(); ?>
-                    
-                    
-                    <div class="custom-input-group">
-                        <label for="phone">মোবাইল নাম্বার</label>
-                        <i class="fas fa-phone-alt input-icon"></i>
-                        <input type="number" id="phone" 
-                               class="custom-input <?php $__errorArgs = ['phone'];
+        <form action="<?php echo e(route('customer.forgot.submit')); ?>" method="POST">
+            <?php echo csrf_field(); ?>
+            <div class="bilai-auth-field">
+                <label for="bilai-auth-identifier">Mobile / Email <span class="req">*</span></label>
+                <input type="text" name="identifier" id="bilai-auth-identifier"
+                       value="<?php echo e(old('identifier')); ?>" maxlength="100" autofocus
+                       placeholder="01XXXXXXXXX or you@example.com">
+                <?php $__errorArgs = ['identifier'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" 
-                               name="phone" value="<?php echo e(old('phone')); ?>" 
-                               placeholder="017xxxxxxxx" required>
-                        
-                        <?php $__errorArgs = ['phone'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                            <span class="text-danger small mt-1 d-block"><?php echo e($message); ?></span>
-                        <?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?><p class="bilai-auth-err"><?php echo e($message); ?></p><?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
-                    </div>
-
-                    
-                    <div class="form-group mb-3">
-                        <button class="btn-auth-submit"> সাবমিট করুন </button>
-                    </div>
-
-                </form>
-
-                
-                <div class="back-login">
-                    <a href="<?php echo e(route('customer.login')); ?>">
-                        <i class="fas fa-arrow-left me-1"></i> লগইন পেজে ফিরে যান
-                    </a>
-                </div>
             </div>
 
-        </div>
+            <button type="submit" class="bilai-auth-btn">Next</button>
+        </form>
+
+        <a href="<?php echo e(route('customer.login')); ?>" class="bilai-auth-back">
+            
+            <i class="fa fa-long-arrow-left"></i> Back to Login Page
+        </a>
+        <p class="bilai-auth-hint">Enter your email to get a reset link, or your mobile number to get an OTP.</p>
     </div>
-</section>
+</div>
 <?php $__env->stopSection(); ?>
 
-<?php $__env->startPush('script'); ?>
-<script src="<?php echo e(asset('public/frontEnd/')); ?>/js/parsley.min.js"></script>
-<script src="<?php echo e(asset('public/frontEnd/')); ?>/js/form-validation.init.js"></script>
-<?php $__env->stopPush(); ?>
 <?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/customer/forgot_password.blade.php ENDPATH**/ ?>

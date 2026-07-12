@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Notifications\CustomerResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 
 class Customer extends Authenticatable
 {
-    use HasFactory, HasRoles, HasApiTokens;
+    use HasFactory, HasRoles, HasApiTokens, Notifiable;
 
     protected $guard = 'customer';
     
@@ -38,6 +40,12 @@ class Customer extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    /** Password-reset mail must point at the customer reset route, not the admin one. */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new CustomerResetPasswordNotification($token));
+    }
 
     public function cust_area()
     {

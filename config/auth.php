@@ -81,11 +81,13 @@ return [
     ],
 
     // ✅ Customer password reset
+    // নিজস্ব টেবিল — 'password_resets' admins broker-ও ব্যবহার করে, একই ইমেইল থাকলে
+    // টোকেন একে অপরকে ওভাররাইট করত।
     'customers' => [
         'provider' => 'customers',
-        'table' => 'password_resets',
-        'expire' => 60,
-        'throttle' => 60,
+        'table' => 'customer_password_resets',
+        'expire' => 60,   // link valid 60 minutes
+        'throttle' => 60, // 60s between reset-link requests
     ],
 
     'delivery_boys' => [

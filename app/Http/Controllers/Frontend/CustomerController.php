@@ -51,11 +51,14 @@ class CustomerController extends Controller
     function __construct(FacebookCapiService $facebookCapiService)
     {
         $this->facebookCapiService = $facebookCapiService;
+        // 'delivery_zones' is guest-accessible: checkout (open to guests) loads zones
+        // from it. It only returns active zones of a district — no customer data.
         $this->middleware('customer', ['except' => [
             'register','store','verify','resendotp','account_verify',
             'login','signin','logout','checkout','forgot_password',
             'forgot_verify','forgot_reset','forgot_store','forgot_resend',
-            'order_save','order_success','order_track','order_track_result'
+            'order_save','order_success','order_track','order_track_result',
+            'delivery_zones'
         ]]);
     }
 
@@ -580,35 +583,28 @@ class CustomerController extends Controller
 
         \App\Http\Controllers\Frontend\ShoppingController::refreshCartWholesalePrices();
 
+        // ── Districts for the checkout selects (same source as the Add/Edit Address popup) ──
+        $checkoutDistricts = \App\Models\DeliveryDistrict::active()->ordered()->get(['id', 'name', 'delivery_charge']);
+
         // ── Checkout prefill for logged-in customers (own data only) ──
-        // Location IDs (division/district/upazila) only exist on a previous order's shipping record;
-        // name/phone/address come from the customer profile (fallback to last shipping).
+        // Priority: old() (handled in the view) → default saved address → profile → empty.
+        // Previous orders are NOT used as a location source any more.
         $checkoutPrefill = [
             'name'        => '',
             'mobile'      => '',
             'address'     => '',
-            'division_id' => '',
+            'post_code'   => '',
             'district_id' => '',
-            'upazila_id'  => '',
+            'zone_id'     => '',
         ];
 
         $authCustomer = Auth::guard('customer')->user();
         if ($authCustomer) {
-            $lastOrder = Order::where('customer_id', $authCustomer->id)
-                ->with('shipping')
-                ->latest('id')
-                ->first();
-            $lastShipping = $lastOrder ? $lastOrder->shipping : null;
-
-            $checkoutPrefill['name']    = $authCustomer->name    ?: ($lastShipping->name    ?? '');
-            $checkoutPrefill['mobile']  = $authCustomer->phone   ?: ($lastShipping->phone   ?? '');
-            $checkoutPrefill['address'] = $authCustomer->address ?: ($lastShipping->address ?? '');
-
-            if ($lastShipping) {
-                $checkoutPrefill['division_id'] = $lastShipping->division_id ?? '';
-                $checkoutPrefill['district_id'] = $lastShipping->district_id ?? '';
-                $checkoutPrefill['upazila_id']  = $lastShipping->upazila_id  ?? '';
-            }
+            $checkoutPrefill['name']        = $authCustomer->name    ?: '';
+            $checkoutPrefill['mobile']      = $authCustomer->phone   ?: '';
+            $checkoutPrefill['address']     = $authCustomer->address ?: '';
+            $checkoutPrefill['district_id'] = $authCustomer->district_id ?: '';
+            $checkoutPrefill['zone_id']     = $authCustomer->zone_id ?: '';
         }
 
         // ── Saved addresses for the "Select Address" modal ──
@@ -636,22 +632,23 @@ class CustomerController extends Controller
                 ];
             }
 
-            // Default saved address wins the form prefill (name/mobile/address + location if set).
+            // Default saved address wins the form prefill (name/mobile/post code/address + district/zone).
             $defaultStored = $storedAddresses->firstWhere('is_default', true);
             if ($defaultStored) {
-                $checkoutPrefill['name']    = $defaultStored->name ?: $checkoutPrefill['name'];
-                $checkoutPrefill['mobile']  = $defaultStored->phone ?: $checkoutPrefill['mobile'];
-                $checkoutPrefill['address'] = $defaultStored->address ?: $checkoutPrefill['address'];
-                if ($defaultStored->division_id) {
-                    $checkoutPrefill['division_id'] = $defaultStored->division_id;
-                    $checkoutPrefill['district_id'] = $defaultStored->district_id ?? '';
-                    $checkoutPrefill['upazila_id']  = $defaultStored->upazila_id ?? '';
+                $checkoutPrefill['name']      = $defaultStored->name ?: $checkoutPrefill['name'];
+                $checkoutPrefill['mobile']    = $defaultStored->phone ?: $checkoutPrefill['mobile'];
+                $checkoutPrefill['address']   = $defaultStored->address ?: $checkoutPrefill['address'];
+                $checkoutPrefill['post_code'] = $defaultStored->post_code ?: $checkoutPrefill['post_code'];
+                if ($defaultStored->district_id) {
+                    $checkoutPrefill['district_id'] = $defaultStored->district_id;
+                    $checkoutPrefill['zone_id']     = $defaultStored->zone_id ?? '';
                 }
             }
         }
 
         return view('frontEnd.layouts.customer.checkout',compact(
             'divisions',
+            'checkoutDistricts',
             'bkash_gateway',
             'shurjopay_gateway',
             'uddoktapay_gateway',
@@ -712,23 +709,30 @@ public function order_save(Request $request)
         }
         $hasAllFreeDelivery = \App\Http\Controllers\Frontend\ShoppingController::hasAllFreeDeliveryProducts();
 
+        // Checkout collects District → Zone (+ optional Post Code). Division is derived
+        // from the district; upazila is no longer part of this flow (columns kept).
         $divisionId = null;
         $districtId = null;
-        $upazilaId = null;
+        $upazilaId  = null;
+        $zoneId     = null;
+        $postCode   = null;
 
         if ($requiresPhysicalShipping && ! $hasAllFreeDelivery) {
             $this->validate($request, [
-                'division_id' => 'required|exists:divisions,id',
-                'district_id' => 'required|exists:districts,id',
-                'upazila_id'  => 'required|exists:upazilas,id',
+                'district_id' => 'required|integer|exists:districts,id',
+                'zone_id'     => 'required|integer|exists:delivery_zones,id',
+                'post_code'   => 'nullable|string|max:20',
             ]);
-            $divisionId = (int) $request->division_id;
             $districtId = (int) $request->district_id;
-            $upazilaId = (int) $request->upazila_id;
-            if (! DeliveryLocation::validateChain($divisionId, $districtId, $upazilaId)) {
-                Toastr::error('বিভাগ, জেলা ও উপজেলা সঠিকভাবে নির্বাচন করুন।', 'Failed!');
+            $zoneId     = (int) $request->zone_id;
+            $postCode   = $request->post_code;
+
+            if (! DeliveryLocation::validateDistrictZone($districtId, $zoneId)) {
+                Toastr::error('জেলা ও জোন সঠিকভাবে নির্বাচন করুন।', 'Failed!');
                 return redirect()->back()->withInput();
             }
+
+            $divisionId = DeliveryLocation::divisionIdForDistrict($districtId);
         }
 
         $otpRedirect = $this->checkoutOtpGate($request, 'customer');
@@ -750,8 +754,8 @@ public function order_save(Request $request)
             Session::put('shipping_district_id', null);
         }
 
-        $locationLabelForGateway = ($divisionId && $districtId && $upazilaId)
-            ? DeliveryLocation::shippingLabel($divisionId, $districtId, $upazilaId)
+        $locationLabelForGateway = ($districtId && $zoneId)
+            ? DeliveryLocation::shippingLabelForZone($districtId, $zoneId)
             : 'BD';
 
         // কার্টের advance item গুলোর মোট
@@ -766,6 +770,21 @@ public function order_save(Request $request)
         // যদি এডভান্স থাকে, তাহলে শুধু এডভান্স এমাউন্ট পে করতে হবে।
         // যদি না থাকে, তাহলে পুরো গ্র্যান্ড টোটাল পে করতে হবে।
         $payable_amount = ($advanceTotal > 0) ? $advanceTotal : $grandTotal;
+
+        // ── Reward points (logged-in customers only; amounts NEVER trusted from the form) ──
+        // The form only sends use_reward_points=1/0. Points and discount are recomputed
+        // here, then re-derived under a row lock inside the order transaction below.
+        $useRewardPoints  = Auth::guard('customer')->check() && $request->boolean('use_reward_points');
+        $rewardPointsUsed = 0;
+        $rewardDiscount   = 0.0;
+        $rewardPointValue = max(1, (int) config('rewards.point_value', 1));
+        if ($useRewardPoints) {
+            $eligibleSubtotal = max(0, $subtotal - $discount);
+            $rewardPointsUsed = \App\Services\RewardPointService::maxRedeemable(Auth::guard('customer')->id(), $eligibleSubtotal);
+            $rewardDiscount   = $rewardPointsUsed * $rewardPointValue;
+            $grandTotal       = max(0, $grandTotal - $rewardDiscount);
+            $payable_amount   = ($advanceTotal > 0) ? $advanceTotal : $grandTotal;
+        }
 
         // Customer ঠিক করা
         if(Auth::guard('customer')->user()){
@@ -788,26 +807,46 @@ public function order_save(Request $request)
             }
         }
 
-        // Main Order save
+        // Main Order save — order creation and reward spending live in ONE transaction:
+        // if either fails, neither persists (no points lost, no orphan discount).
         $order = new Order();
-        $order->invoice_id      = rand(11111,99999);
-        $order->amount          = $grandTotal; // অর্ডারে সবসময় টোটাল এমাউন্ট থাকবে
-        $order->shipping_charge = $shippingfee;
-        $order->customer_id     = $customer_id;
-        $order->order_status    = 1;
-        $order->note            = $request->note;
-        $order->order_note      = $request->order_note;
-        $order->payment_status  = 'pending';
-        $order->coupon_code     = Session::get('coupon_code') ?? null;
-        $order->discount        = $discount ?? 0;
-        $order->ip_address      = $request->ip();
-        // Traffic source — ফর্ম + সেশন (শেয়ার লিঙ্ক / referrer / fbclid)
-        $rawSource = $request->input('traffic_source', session('order_traffic_source', 'direct'));
-        $rawReferrer = $request->input('traffic_referrer', session('order_traffic_referrer', ''));
-        $order->traffic_source = \App\Support\TrafficSourceDetector::normalize($rawSource);
-        $order->traffic_referrer = \App\Support\TrafficSourceDetector::clip((string) $rawReferrer);
-        
-        $order->save();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $request, $customer_id, $useRewardPoints, $rewardPointValue, $subtotal, $discount, $shippingfee, $advanceTotal, &$rewardPointsUsed, &$rewardDiscount, &$grandTotal, &$payable_amount) {
+            if ($useRewardPoints) {
+                // Re-derive under a customer row lock: two simultaneous checkouts
+                // serialize here, so the same points can never be spent twice.
+                \App\Services\RewardPointService::lockCustomer($customer_id);
+                $eligibleSubtotal = max(0, $subtotal - $discount);
+                $rewardPointsUsed = \App\Services\RewardPointService::maxRedeemable($customer_id, $eligibleSubtotal);
+                $rewardDiscount   = $rewardPointsUsed * $rewardPointValue;
+                $grandTotal       = max(0, ($subtotal + $shippingfee) - $discount - $rewardDiscount);
+                $payable_amount   = ($advanceTotal > 0) ? $advanceTotal : $grandTotal;
+            }
+
+            $order->invoice_id      = rand(11111,99999);
+            $order->amount          = $grandTotal; // অর্ডারে সবসময় টোটাল এমাউন্ট থাকবে
+            $order->shipping_charge = $shippingfee;
+            $order->customer_id     = $customer_id;
+            $order->order_status    = 1;
+            $order->note            = $request->note;
+            $order->order_note      = $request->order_note;
+            $order->payment_status  = 'pending';
+            $order->coupon_code     = Session::get('coupon_code') ?? null;
+            $order->discount        = $discount ?? 0;
+            $order->reward_points_used      = $rewardPointsUsed;
+            $order->reward_discount_amount  = $rewardDiscount;
+            $order->ip_address      = $request->ip();
+            // Traffic source — ফর্ম + সেশন (শেয়ার লিঙ্ক / referrer / fbclid)
+            $rawSource = $request->input('traffic_source', session('order_traffic_source', 'direct'));
+            $rawReferrer = $request->input('traffic_referrer', session('order_traffic_referrer', ''));
+            $order->traffic_source = \App\Support\TrafficSourceDetector::normalize($rawSource);
+            $order->traffic_referrer = \App\Support\TrafficSourceDetector::clip((string) $rawReferrer);
+
+            $order->save();
+
+            if ($rewardPointsUsed > 0) {
+                \App\Services\RewardPointService::redeem($customer_id, $order, $rewardPointsUsed);
+            }
+        });
 
         // Shipping info
         $shipping = new Shipping();
@@ -816,11 +855,13 @@ public function order_save(Request $request)
         $shipping->name        = $request->name;
         $shipping->phone       = $request->phone;
         $shipping->address     = $request->address;
-        $shipping->division_id = $divisionId;
+        $shipping->post_code   = $postCode;
+        $shipping->division_id = $divisionId;   // derived from the district (legacy column kept in sync)
         $shipping->district_id = $districtId;
-        $shipping->upazila_id  = $upazilaId;
-        $shipping->area        = ($divisionId && $districtId && $upazilaId)
-            ? DeliveryLocation::shippingLabel($divisionId, $districtId, $upazilaId)
+        $shipping->zone_id     = $zoneId;
+        $shipping->upazila_id  = $upazilaId;    // null now — column preserved for existing orders
+        $shipping->area        = ($districtId && $zoneId)
+            ? DeliveryLocation::shippingLabelForZone($districtId, $zoneId)
             : 'Digital / Free Shipping';
         $shipping->save();
 
@@ -1074,11 +1115,61 @@ public function order_save(Request $request)
         return view('frontEnd.layouts.customer.orders', compact('orders', 'activeTab'));
     }
 
-    public function rewards()
+    public function rewards(Request $request)
     {
-        // Reward-points backend is not implemented yet; the view renders
-        // safe zero-value placeholders and only real customer identity data.
-        return view('frontEnd.layouts.customer.rewards');
+        $customerId = Auth::guard('customer')->id();
+        $filter     = $request->query('filter', 'all');
+
+        $query = \App\Models\RewardPointTransaction::where('customer_id', $customerId)->latest('id');
+        if ($filter === 'earned') {
+            $query->whereIn('type', ['earned', 'refunded']);   // credits
+        } elseif ($filter === 'spent') {
+            $query->whereIn('type', ['spent', 'reversed']);    // debits
+        } else {
+            $filter = 'all';
+        }
+
+        $rewardPoints  = \App\Services\RewardPointService::balance($customerId);
+        $transactions  = $query->paginate(15)->withQueryString();
+
+        return view('frontEnd.layouts.customer.rewards', compact('rewardPoints', 'transactions', 'filter'));
+    }
+
+    /**
+     * Checkout "Use Your Reward Point" toggle — returns backend-calculated
+     * numbers only; the browser never decides the discount. Auth enforced by
+     * the constructor's customer middleware (method not in the except list).
+     */
+    public function checkout_reward_preview(Request $request)
+    {
+        $customerId = Auth::guard('customer')->id();
+
+        $subtotal = (float) str_replace([',', '.00'], '', Cart::instance('shopping')->subtotal());
+        $discount = (float) Session::get('discount', 0);
+        $shipping = (float) Session::get('shipping', 0);
+        if (\App\Http\Controllers\Frontend\ShoppingController::hasAllFreeDeliveryProducts()) {
+            $shipping = 0;
+        }
+
+        $available  = \App\Services\RewardPointService::balance($customerId);
+        $pointsUsed = 0;
+        if ($request->boolean('use_reward_points')) {
+            $pointsUsed = \App\Services\RewardPointService::maxRedeemable($customerId, max(0, $subtotal - $discount));
+        }
+        $rewardDiscount = $pointsUsed * max(1, (int) config('rewards.point_value', 1));
+        $total          = max(0, $subtotal + $shipping - $discount - $rewardDiscount);
+
+        return response()->json([
+            'available_points' => $available,
+            'points_used'      => $pointsUsed,
+            'reward_discount'  => $rewardDiscount,
+            'subtotal'         => $subtotal,
+            'delivery_charge'  => $shipping,
+            'discount'         => $discount,
+            'total'            => $total,
+            // What this order would earn once delivered (points don't earn on points).
+            'earn_points'      => \App\Services\RewardPointService::earnedPointsFor(max(0, $subtotal - $discount - $rewardDiscount)),
+        ]);
     }
 
     // ============================

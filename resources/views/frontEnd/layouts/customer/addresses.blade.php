@@ -212,7 +212,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                         <div class="bilai-dash-rp-row">
                             <span class="bilai-dash-rp-item">
                                 {{-- Replace SVG icon later --}}
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span><span>0 RP</span>
+                                <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span><span>{{ $customer->rewardBalance() }} RP</span>
                             </span>
                             {{-- Replace exchange SVG icon later --}}
                             <span class="bilai-dash-rp-sep-icon"><i class="fa fa-exchange"></i></span>

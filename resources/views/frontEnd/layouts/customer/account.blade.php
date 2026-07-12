@@ -365,7 +365,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                             <span class="bilai-dash-rp-item">
                                 {{-- Replace SVG icon later --}}
                                 <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span>
-                                <span>0 RP</span>
+                                <span>{{ $customer->rewardBalance() }} RP</span>
                             </span>
                             {{-- Replace equal/exchange SVG icon later --}}
                             <span class="bilai-dash-rp-sep-icon"><i class="fa fa-exchange"></i></span>

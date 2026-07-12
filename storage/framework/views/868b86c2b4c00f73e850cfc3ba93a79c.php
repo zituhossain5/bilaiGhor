@@ -1,3 +1,4 @@
+
 <?php $__env->startSection('title', 'Customer Checkout'); ?>
 <?php
     $generalsetting = \App\Models\GeneralSetting::first();
@@ -444,9 +445,9 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 
         // ── Prefill resolution: old() input (after validation error) wins, else controller prefill ──
         $checkoutPrefill = $checkoutPrefill ?? [];
-        $selDivision = old('division_id', $checkoutPrefill['division_id'] ?? '');
         $selDistrict = old('district_id', $checkoutPrefill['district_id'] ?? '');
-        $selUpazila  = old('upazila_id',  $checkoutPrefill['upazila_id']  ?? '');
+        $selZone     = old('zone_id',     $checkoutPrefill['zone_id']     ?? '');
+        $selPostCode = old('post_code',   $checkoutPrefill['post_code']   ?? '');
 
         $__gsCheckoutOtp = \App\Models\GeneralSetting::where('status', 1)->first();
         $__custCheckoutOtpPending = session('chkotp_customer_pending');
@@ -514,7 +515,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                         <div class="checkout-header">
                             
                             <i class="fa fa-truck"></i>
-                            <h6>Shipping &amp; Billing Information</h6>
+                            <h6>Shipping Information</h6>
                         </div>
                         <div class="card-body-custom">
                             <div class="row">
@@ -532,11 +533,57 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                             value="<?php echo e(old('phone', $checkoutPrefill['mobile'] ?? '')); ?>" placeholder="01xxxxxxxxx" required>
                                     </div>
                                 </div>
+
+                                <?php if($requires_shipping): ?>
+                                
+                                <div class="col-12">
+                                    <div class="row g-2 g-md-3 align-items-end checkout-location-fields">
+                                        <div class="col-12 col-md-4">
+                                            <div class="form-group mb-0 mb-md-2">
+                                                <label class="form-label-custom">Post Code</label>
+                                                <input type="text" name="post_code" id="checkout_post_code" class="form-control-custom"
+                                                    maxlength="20" value="<?php echo e($selPostCode); ?>" placeholder="1xxxx">
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <div class="form-group mb-0 mb-md-2">
+                                                <label class="form-label-custom">District <span class="req">*</span></label>
+                                                <select name="district_id" id="checkout_district" class="form-control-custom" required>
+                                                    <option value="">Select District</option>
+                                                    <?php $__currentLoopData = ($checkoutDistricts ?? collect()); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                        <option value="<?php echo e($d->id); ?>" data-charge="<?php echo e($d->delivery_charge); ?>"
+                                                            <?php if((string) $selDistrict === (string) $d->id): echo 'selected'; endif; ?>><?php echo e($d->name); ?> (৳<?php echo e($d->delivery_charge); ?>)</option>
+                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <div class="form-group mb-0 mb-md-2">
+                                                <label class="form-label-custom">Zone <span class="req">*</span></label>
+                                                <select name="zone_id" id="checkout_zone" class="form-control-custom" required disabled>
+                                                    <option value="">Select Zone</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php else: ?>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label-custom">Delivery Location</label>
+                                        <input type="text" class="form-control-custom" value="Free shipping — no location required" readonly disabled style="background:#f3f4f6;">
+                                        <input type="hidden" name="district_id" value="">
+                                        <input type="hidden" name="zone_id" value="">
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+
+                                
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label class="form-label-custom">Full Address <span class="req">*</span></label>
                                         <input type="text" name="address" class="form-control-custom"
-                                            value="<?php echo e(old('address', $checkoutPrefill['address'] ?? '')); ?>" placeholder="House no, Road no. Area, District" required>
+                                            value="<?php echo e(old('address', $checkoutPrefill['address'] ?? '')); ?>" placeholder="100 Rasulpur Rd" required>
                                         <button type="button" id="bilai-addr-open" class="bilai-addr-btn">
                                             
                                             <svg class="bilai-addr-btn-ic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -547,49 +594,6 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                         </button>
                                     </div>
                                 </div>
-                                <?php if($requires_shipping): ?>
-                                <div class="col-12">
-                                    <div class="row g-2 g-md-3 align-items-end checkout-location-fields">
-                                        <div class="col-12 col-md-4">
-                                            <div class="form-group mb-0 mb-md-2">
-                                                <label class="form-label-custom">Division <span class="req">*</span></label>
-                                                <select name="division_id" id="checkout_division" class="form-control-custom" required>
-                                                    <option value="">Select Division</option>
-                                                    <?php $__currentLoopData = ($divisions ?? collect()); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                        <option value="<?php echo e($d->id); ?>" <?php if((string) $selDivision === (string) $d->id): echo 'selected'; endif; ?>><?php echo e($d->name); ?></option>
-                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 col-md-4">
-                                            <div class="form-group mb-0 mb-md-2">
-                                                <label class="form-label-custom">District <span class="req">*</span></label>
-                                                <select name="district_id" id="checkout_district" class="form-control-custom" required disabled>
-                                                    <option value="">Select District</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 col-md-4">
-                                            <div class="form-group mb-0 mb-md-2">
-                                                <label class="form-label-custom">Thana/Upozila <span class="req">*</span></label>
-                                                <select name="upazila_id" id="checkout_upazila" class="form-control-custom" required disabled>
-                                                    <option value="">Select Upozila</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <?php else: ?>
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label class="form-label-custom">Division <span class="req">*</span></label>
-                                        <input type="text" class="form-control-custom" value="Digital / Free shipping — no location required" readonly disabled style="background:#f3f4f6;">
-                                        <input type="hidden" name="division_id" value="">
-                                        <input type="hidden" name="district_id" value="">
-                                        <input type="hidden" name="upazila_id" value="">
-                                    </div>
-                                </div>
-                                <?php endif; ?>
                                 <div class="col-12">
                                     <div class="form-group" style="margin-bottom:0;">
                                         <label class="form-label-custom">Order Note (Optional)</label>
@@ -834,19 +838,22 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                             </div>
 
                             
+                            <?php $__rwEarnPreview = \App\Services\RewardPointService::earnedPointsFor(max(0, $subtotal - $discount)); ?>
                             <div class="bilai-co-earn">
                                 <div class="bilai-co-earn-ic">
                                     
                                     <i class="fa fa-star"></i>
                                 </div>
                                 <div>
-                                    <p>You'll earn reward points on this order — points are credited once your order has been delivered.</p>
-                                    <a href="#">Reward Points Policy</a>
+                                    <p>You will earn <strong id="bilai-rw-earn"><?php echo e($__rwEarnPreview); ?></strong> reward points for this order — points are credited once your order has been delivered.</p>
+                                    <a href="<?php echo e(route('customer.rewards')); ?>">Reward Points Policy</a>
                                 </div>
                             </div>
                         </div>
 
                         
+                        <?php if(auth()->guard('customer')->check()): ?>
+                        <?php $__rwBalance = Auth::guard('customer')->user()->rewardBalance(); ?>
                         <div class="checkout-card">
                             <div class="checkout-header">
                                 
@@ -856,17 +863,19 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                             <div class="card-body-custom">
                                 <div class="bilai-co-reward-row">
                                     <span class="bilai-co-reward-pill">
-                                        <span class="dot"></span> 0 Points available
+                                        <span class="dot"></span> <span id="bilai-rw-avail"><?php echo e($__rwBalance); ?></span> Points available
                                     </span>
                                     
-                                    <label class="bilai-co-toggle" title="Coming soon">
-                                        <input type="checkbox" disabled>
+                                    <input type="hidden" name="use_reward_points" id="bilai-rw-input" value="<?php echo e(old('use_reward_points') ? 1 : 0); ?>">
+                                    <label class="bilai-co-toggle" <?php if($__rwBalance < 1): ?> title="No points available" <?php endif; ?>>
+                                        <input type="checkbox" id="bilai-rw-toggle" <?php if(old('use_reward_points')): echo 'checked'; endif; ?> <?php if($__rwBalance < 1): echo 'disabled'; endif; ?>>
                                         <span class="track"></span>
                                     </label>
                                 </div>
-                                <a href="#" class="bilai-co-policy">Reward Points Policy</a>
+                                <a href="<?php echo e(route('customer.rewards')); ?>" class="bilai-co-policy">Reward Points Policy</a>
                             </div>
                         </div>
+                        <?php endif; ?>
 
                         
                         <div class="checkout-card">
@@ -879,8 +888,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                 <div class="total-row"><span>Subtotal</span> <span id="subtotalAmount">৳ <?php echo e(number_format($subtotal, 2)); ?></span></div>
                                 <div class="total-row"><span>Delivery Charge</span> <span id="shippingAmount">৳ <?php echo e(number_format($shipping, 2)); ?></span></div>
                                 <div class="total-row"><span>Discount</span> <span id="discountAmount">- ৳ <?php echo e(number_format($discount, 2)); ?></span></div>
-                                
-                                <div class="total-row"><span>Cash from Reward Points</span> <span>৳ 0.00</span></div>
+                                <div class="total-row"><span>Cash from Reward Points</span> <span id="rewardDiscountAmount">- ৳ 0.00</span></div>
                                 <div class="total-row final"><span>Total</span> <span id="grandTotalAmount">৳ <?php echo e(number_format($grand_total, 2)); ?></span></div>
 
                                 <?php if($hasAdvance): ?>
@@ -928,9 +936,9 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                                         data-name="<?php echo e($addr['name']); ?>"
                                                         data-mobile="<?php echo e($addr['mobile']); ?>"
                                                         data-address="<?php echo e($addr['address']); ?>"
-                                                        data-div="<?php echo e($addr['division_id']); ?>"
+                                                        data-postcode="<?php echo e($addr['post_code'] ?? ''); ?>"
                                                         data-dist="<?php echo e($addr['district_id']); ?>"
-                                                        data-upa="<?php echo e($addr['upazila_id']); ?>">
+                                                        data-zone="<?php echo e($addr['zone_id'] ?? ''); ?>">
                                                     
                                                     <i class="fa fa-check"></i> <span>Select</span>
                                                 </button>
@@ -1178,11 +1186,14 @@ document.addEventListener('DOMContentLoaded', function () {
             return parseFloat($('#checkout_district option:selected').attr('data-charge')) || 0;
         }
 
+        // Reward discount currently applied (display only — server recomputes on submit).
+        window.bilaiRewardDiscount = 0;
+
         function applyShippingToDomAndSession() {
             var isFreeDelivery = checkFreeDelivery();
             var shippingCharge = isFreeDelivery ? 0 : districtChargeFromSelect();
 
-            var grandTotal = baseSubtotal + shippingCharge - baseDiscount;
+            var grandTotal = Math.max(0, baseSubtotal + shippingCharge - baseDiscount - (window.bilaiRewardDiscount || 0));
             var dueAmount = hasAdvance ? (grandTotal - advanceAmount) : 0;
 
             $('#shippingAmount').text('৳ ' + shippingCharge.toFixed(2));
@@ -1207,50 +1218,38 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        $('#checkout_division').on('change', function () {
-            var divId = $(this).val();
-            $('#checkout_district').prop('disabled', !divId).html(divId ? '<option value="">লোড হচ্ছে...</option>' : '<option value="">আগে বিভাগ সিলেক্ট করুন</option>');
-            $('#checkout_upazila').prop('disabled', true).html('<option value="">আগে জেলা সিলেক্ট করুন</option>');
-            if (!divId) {
-                applyShippingToDomAndSession();
-                saveIncompleteOrder();
-                return;
-            }
-            $.get('<?php echo e(url('/ajax/delivery/districts')); ?>/' + divId, function (res) {
-                var opts = '<option value="">জেলা নির্বাচন করুন</option>';
-                (res.data || []).forEach(function (r) {
-                    opts += '<option value="' + r.id + '" data-charge="' + r.delivery_charge + '">' + r.name + ' (৳' + r.delivery_charge + ')</option>';
-                });
-                $('#checkout_district').html(opts).prop('disabled', false);
-            }).fail(function () {
-                $('#checkout_district').html('<option value="">লোড ব্যর্থ</option>');
-            });
-            applyShippingToDomAndSession();
-            saveIncompleteOrder();
-        });
-
+        // District → Zone. Zone options are loaded by the shared BilaiDistrictZone helper
+        // (same endpoint as the Add/Edit Address popup); this handler only refreshes the
+        // shipping charge, which is still district-based — charge logic is unchanged.
         $('#checkout_district').on('change', function () {
-            var distId = $(this).val();
-            $('#checkout_upazila').prop('disabled', !distId).html(distId ? '<option value="">লোড হচ্ছে...</option>' : '<option value="">আগে জেলা সিলেক্ট করুন</option>');
-            if (!distId) {
-                applyShippingToDomAndSession();
-                saveIncompleteOrder();
-                return;
-            }
             applyShippingToDomAndSession();
-            $.get('<?php echo e(url('/ajax/delivery/upazilas')); ?>/' + distId, function (res) {
-                var opts = '<option value="">উপজেলা নির্বাচন করুন</option>';
-                (res.data || []).forEach(function (r) {
-                    opts += '<option value="' + r.id + '">' + r.name + '</option>';
-                });
-                $('#checkout_upazila').html(opts).prop('disabled', false);
-            }).fail(function () {
-                $('#checkout_upazila').html('<option value="">লোড ব্যর্থ</option>');
-            });
             saveIncompleteOrder();
         });
 
-        $('#checkout_upazila').on('change', function () {
+        // ── Use Your Reward Point toggle (logged-in only; card absent for guests) ──
+        // Numbers always come from the backend preview endpoint, never from JS math.
+        $('#bilai-rw-toggle').on('change', function () {
+            var on = this.checked;
+            var $toggle = $(this).prop('disabled', true);
+            $.post('<?php echo e(route("customer.checkout.reward_preview")); ?>', {
+                _token: '<?php echo e(csrf_token()); ?>',
+                use_reward_points: on ? 1 : 0
+            }, function (res) {
+                $('#bilai-rw-input').val(on ? 1 : 0);
+                $('#bilai-rw-avail').text(res.available_points);
+                $('#rewardDiscountAmount').text('- ৳ ' + Number(res.reward_discount).toFixed(2));
+                $('#bilai-rw-earn').text(res.earn_points);
+                window.bilaiRewardDiscount = Number(res.reward_discount) || 0;
+                applyShippingToDomAndSession(); // recompute total with the new discount
+            }).fail(function () {
+                $('#bilai-rw-toggle').prop('checked', false);
+                $('#bilai-rw-input').val(0);
+            }).always(function () {
+                $toggle.prop('disabled', false);
+            });
+        });
+
+        $('#checkout_zone').on('change', function () {
             saveIncompleteOrder();
         });
 
@@ -1266,7 +1265,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 applyShippingToDomAndSession();
             } else {
                 var currentShipping = parseFloat($('#shippingAmount').text().replace(/[৳,\s]/g, '').trim()) || 0;
-                var grandTotal = baseSubtotal + currentShipping - baseDiscount;
+                var grandTotal = Math.max(0, baseSubtotal + currentShipping - baseDiscount - (window.bilaiRewardDiscount || 0));
                 var dueAmount = hasAdvance ? (grandTotal - advanceAmount) : 0;
 
                 $('#grandTotalAmount').text('৳ ' + grandTotal.toFixed(2));
@@ -1296,12 +1295,10 @@ document.addEventListener('DOMContentLoaded', function () {
             var street = ($('input[name="address"]').val() || '').trim();
             var parts = [];
             if (requiresShipping) {
-                var div = selectedLocationText($('#checkout_division'));
+                var zone = selectedLocationText($('#checkout_zone'));
                 var dist = selectedLocationText($('#checkout_district'));
-                var upa = selectedLocationText($('#checkout_upazila'));
-                if (div) parts.push(div);
+                if (zone) parts.push(zone);
                 if (dist) parts.push(dist);
-                if (upa) parts.push(upa);
             }
             if (street) parts.unshift(street);
             return parts.join(', ');
@@ -1315,16 +1312,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 order_note: ($('#order_note').val() || '').trim()
             };
             if (requiresShipping) {
-                meta.division_id = $('#checkout_division').val() || null;
+                // Incomplete-order meta: district_id is still sent; location_label carries
+                // "Zone, District" (IncompleteOrderController already falls back to it).
                 meta.district_id = $('#checkout_district').val() || null;
-                meta.upazila_id = $('#checkout_upazila').val() || null;
+                meta.zone_id     = $('#checkout_zone').val() || null;
+                meta.post_code   = ($('#checkout_post_code').val() || '').trim();
                 var loc = [];
-                var div = selectedLocationText($('#checkout_division'));
+                var zone = selectedLocationText($('#checkout_zone'));
                 var dist = selectedLocationText($('#checkout_district'));
-                var upa = selectedLocationText($('#checkout_upazila'));
-                if (upa) loc.push(upa);
+                if (zone) loc.push(zone);
                 if (dist) loc.push(dist);
-                if (div) loc.push(div);
                 meta.location_label = loc.join(', ');
             }
             return meta;
@@ -1515,11 +1512,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <?php if($requires_shipping): ?>
 
+<?php echo $__env->make('frontEnd.layouts.customer.partials.district-zone-js', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 <?php
     $__prefillJs = [
-        'division_id' => (string) $selDivision,
         'district_id' => (string) $selDistrict,
-        'upazila_id'  => (string) $selUpazila,
+        'zone_id'     => (string) $selZone,
         'subtotal'    => (float) ($subtotal ?? 0),
         'discount'    => (float) ($discount ?? 0),
         'free'        => (bool) ($hasAllFreeDelivery ?? false),
@@ -1529,44 +1526,24 @@ document.addEventListener('DOMContentLoaded', function () {
 $(function () {
     var PF = <?php echo json_encode($__prefillJs, 15, 512) ?>;
 
-    if (!PF.division_id) return; // nothing saved to prefill
+    // District is rendered pre-selected server-side. initFields() makes both selects
+    // searchable, loads the district's zones, and selects the saved zone once the AJAX
+    // resolves (no setTimeout). Changing district clears the zone automatically.
+    window.BilaiDistrictZone.initFields({
+        district:     '#checkout_district',
+        zone:         '#checkout_zone',
+        selectedZone: PF.zone_id || null,
+        fresh:        true
+    });
 
-    var $div = $('#checkout_division'), $dist = $('#checkout_district'), $upa = $('#checkout_upazila');
-    if (!$div.length || !$dist.length) return;
-
-    // Division already selected server-side; load its districts, then select the saved one.
-    $dist.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
-    $.get('<?php echo e(url('/ajax/delivery/districts')); ?>/' + PF.division_id, function (res) {
-        var opts = '<option value="">জেলা নির্বাচন করুন</option>';
-        (res.data || []).forEach(function (r) {
-            opts += '<option value="' + r.id + '" data-charge="' + r.delivery_charge + '">' + r.name + ' (৳' + r.delivery_charge + ')</option>';
-        });
-        $dist.html(opts).prop('disabled', false);
-
-        if (!PF.district_id) return;
-        $dist.val(PF.district_id);
-
-        // Recompute shipping + total in the DOM (mirrors applyShippingToDomAndSession) and sync session.
+    // Shipping charge for the prefilled district (charge stays district-based).
+    if (PF.district_id) {
+        var $dist  = $('#checkout_district');
         var charge = PF.free ? 0 : (parseFloat($dist.find('option:selected').attr('data-charge')) || 0);
         $('#shippingAmount').text('৳ ' + charge.toFixed(2));
-        $('#grandTotalAmount').text('৳ ' + (PF.subtotal + charge - PF.discount).toFixed(2));
-        if (PF.free) {
-            $.get('<?php echo e(route("shipping.charge")); ?>', { id: 'free_delivery' });
-        } else if ($dist.val()) {
-            $.get('<?php echo e(route("shipping.charge")); ?>', { id: $dist.val() });
-        }
-
-        // Load upazilas for the saved district, then select the saved upazila.
-        $upa.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
-        $.get('<?php echo e(url('/ajax/delivery/upazilas')); ?>/' + PF.district_id, function (res2) {
-            var o2 = '<option value="">উপজেলা নির্বাচন করুন</option>';
-            (res2.data || []).forEach(function (r) {
-                o2 += '<option value="' + r.id + '">' + r.name + '</option>';
-            });
-            $upa.html(o2).prop('disabled', false);
-            if (PF.upazila_id) { $upa.val(PF.upazila_id); }
-        });
-    });
+        $('#grandTotalAmount').text('৳ ' + Math.max(0, PF.subtotal + charge - PF.discount - (window.bilaiRewardDiscount || 0)).toFixed(2));
+        $.get('<?php echo e(route("shipping.charge")); ?>', { id: PF.free ? 'free_delivery' : PF.district_id });
+    }
 });
 </script>
 <?php endif; ?>
@@ -1595,37 +1572,21 @@ $(function () {
     modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
-    // Load districts/upazilas for a saved location and preselect them (same endpoints as existing checkout JS).
-    function applyLocation(divId, distId, upaId) {
-        var $div = $('#checkout_division'), $dist = $('#checkout_district'), $upa = $('#checkout_upazila');
-        if (!$div.length || !divId) return;
-        $div.val(divId);
-        $dist.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
-        $upa.prop('disabled', true).html('<option value="">আগে জেলা সিলেক্ট করুন</option>');
-        $.get('<?php echo e(url('/ajax/delivery/districts')); ?>/' + divId, function (res) {
-            var opts = '<option value="">জেলা নির্বাচন করুন</option>';
-            (res.data || []).forEach(function (r) {
-                opts += '<option value="' + r.id + '" data-charge="' + r.delivery_charge + '">' + r.name + ' (৳' + r.delivery_charge + ')</option>';
-            });
-            $dist.html(opts).prop('disabled', false);
-            if (!distId) return;
-            $dist.val(distId);
+    // Apply a saved address' District → Zone. District options are already on the page,
+    // so we just select it, refresh the (district-based) charge, then let the shared
+    // helper load that district's zones and preselect the saved zone when the AJAX lands.
+    function applyLocation(distId, zoneId) {
+        var $dist = $('#checkout_district'), $zone = $('#checkout_zone');
+        if (!$dist.length || !distId) return;
 
-            var charge = LOC.free ? 0 : (parseFloat($dist.find('option:selected').attr('data-charge')) || 0);
-            $('#shippingAmount').text('৳ ' + charge.toFixed(2));
-            $('#grandTotalAmount').text('৳ ' + (LOC.subtotal + charge - LOC.discount).toFixed(2));
-            $.get('<?php echo e(route("shipping.charge")); ?>', { id: LOC.free ? 'free_delivery' : distId });
+        window.BilaiDistrictZone.setVal($dist, distId);
 
-            $upa.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
-            $.get('<?php echo e(url('/ajax/delivery/upazilas')); ?>/' + distId, function (res2) {
-                var o2 = '<option value="">উপজেলা নির্বাচন করুন</option>';
-                (res2.data || []).forEach(function (r) {
-                    o2 += '<option value="' + r.id + '">' + r.name + '</option>';
-                });
-                $upa.html(o2).prop('disabled', false);
-                if (upaId) { $upa.val(upaId); }
-            });
-        });
+        var charge = LOC.free ? 0 : (parseFloat($dist.find('option:selected').attr('data-charge')) || 0);
+        $('#shippingAmount').text('৳ ' + charge.toFixed(2));
+        $('#grandTotalAmount').text('৳ ' + Math.max(0, LOC.subtotal + charge - LOC.discount - (window.bilaiRewardDiscount || 0)).toFixed(2));
+        $.get('<?php echo e(route("shipping.charge")); ?>', { id: LOC.free ? 'free_delivery' : distId });
+
+        window.BilaiDistrictZone.loadZones($zone, distId, zoneId || null);
     }
 
     // Select an address: fill checkout fields, mark card selected, close.
@@ -1635,7 +1596,8 @@ $(function () {
             $('input[name="name"]').val(d.name || '').trigger('change');
             $('input[name="phone"]').val(d.mobile || '').trigger('change');
             $('input[name="address"]').val(d.address || '').trigger('change');
-            if (d.div) { applyLocation(d.div, d.dist, d.upa); }
+            $('#checkout_post_code').val(d.postcode || '').trigger('change');
+            if (d.dist) { applyLocation(d.dist, d.zone); }
 
             modal.querySelectorAll('.bilai-addr-select').forEach(function (b) {
                 b.classList.remove('is-selected');

@@ -632,6 +632,10 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ip
     Route::post('/resend-reset-otp', [CustomerPasswordResetController::class, 'resendOtp'])->middleware('throttle:5,10')->name('customer.forgot.otp.resend');
     Route::get('/reset-password/{token?}', [CustomerPasswordResetController::class, 'showResetForm'])->name('customer.password.reset');
     Route::post('/reset-password', [CustomerPasswordResetController::class, 'resetPassword'])->middleware('throttle:10,10')->name('customer.password.update');
+    // Zones of a district (active only). Public: guests use it on checkout too.
+    // Moved out of the auth-protected group — same name, so the address modal and
+    // Profile Edit keep working unchanged.
+    Route::get('/delivery-zones', [CustomerController::class, 'delivery_zones'])->name('customer.delivery_zones');
     Route::get('/checkout', [CustomerController::class, 'checkout'])->name('customer.checkout');
     Route::post('/order-save', [CustomerController::class, 'order_save'])->name('customer.ordersave');
     Route::post('/checkout-resend-otp', [CustomerController::class, 'checkout_resend_otp'])->name('customer.checkout.resend_otp');
@@ -657,6 +661,7 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend','middleware' => ['cus
     Route::get('/orders', [CustomerController::class, 'orders'])->name('customer.orders');
     Route::get('/order-details/{id}', [CustomerController::class, 'order_details'])->name('customer.order_details');
     Route::get('/rewards', [CustomerController::class, 'rewards'])->name('customer.rewards');
+    Route::post('/checkout/reward-preview', [CustomerController::class, 'checkout_reward_preview'])->name('customer.checkout.reward_preview');
 
     // Saved addresses (account "Addresses" page)
     Route::get('/addresses', [CustomerController::class, 'addresses'])->name('customer.addresses');
@@ -664,7 +669,6 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend','middleware' => ['cus
     Route::post('/addresses/{id}/update', [CustomerController::class, 'address_update'])->name('customer.addresses.update');
     Route::post('/addresses/{id}/delete', [CustomerController::class, 'address_delete'])->name('customer.addresses.delete');
     Route::post('/addresses/default', [CustomerController::class, 'address_default'])->name('customer.addresses.default');
-    Route::get('/delivery-zones', [CustomerController::class, 'delivery_zones'])->name('customer.delivery_zones');
     Route::get('/invoice', [CustomerController::class, 'invoice'])->name('customer.invoice');
     Route::get('/invoice/order-note', [CustomerController::class, 'order_note'])->name('customer.order_note');
     Route::get('/profile-edit', [CustomerController::class, 'profile_edit'])->name('customer.profile_edit');
@@ -1291,6 +1295,9 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::get('delivery/zone/{id}/edit', [DeliveryZoneController::class, 'edit'])->name('admin.delivery.zones.edit');
     Route::post('delivery/zone/update', [DeliveryZoneController::class, 'update'])->name('admin.delivery.zones.update');
     Route::post('delivery/zone/destroy', [DeliveryZoneController::class, 'destroy'])->name('admin.delivery.zones.destroy');
+    // Order Edit page: persist Zone + Post Code (OrderController::order_update is IonCube-encoded and
+    // has no knowledge of these columns — see updateOrderShipping() docblock).
+    Route::post('order/update-shipping-location', [DeliveryZoneController::class, 'updateOrderShipping'])->name('admin.order.update_shipping_location');
     
     // backend customer route 
     Route::get('customer', [CustomerManageController::class,'index'])->name('customers.index');

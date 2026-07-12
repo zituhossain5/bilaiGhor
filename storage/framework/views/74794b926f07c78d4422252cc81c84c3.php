@@ -1,4 +1,4 @@
-@php
+<?php
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\Order;
@@ -53,12 +53,12 @@ $steps = [
 $courierName    = $order->courier_type ? ucfirst($order->courier_type) : null;
 $trackingId     = $order->courier_tracking_id ?? $order->consignment_id ?? null;
 $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
-@endphp
+?>
 
-@extends('frontEnd.layouts.master')
-@section('title', 'Order #' . ($order->invoice_id ?? $order->id) . ' | ' . ($customer->name ?? 'Account'))
 
-@push('css')
+<?php $__env->startSection('title', 'Order #' . ($order->invoice_id ?? $order->id) . ' | ' . ($customer->name ?? 'Account')); ?>
+
+<?php $__env->startPush('css'); ?>
 <style>
 /* BilaiGhor Customer Order Details Start */
 
@@ -259,189 +259,191 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
 
 /* BilaiGhor Order Details Polish End */
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="bilai-od-page">
     <div class="container">
 
-        {{-- Breadcrumb --}}
+        
         <nav class="bilai-od-bc" aria-label="breadcrumb">
-            <a href="{{ route('home') }}">Home</a>
+            <a href="<?php echo e(route('home')); ?>">Home</a>
             <span class="bilai-od-bc-sep">›</span>
             <span>Profile</span>
             <span class="bilai-od-bc-sep">›</span>
-            <a href="{{ route('customer.orders') }}">Orders</a>
+            <a href="<?php echo e(route('customer.orders')); ?>">Orders</a>
             <span class="bilai-od-bc-sep">›</span>
-            <span class="bilai-od-bc-active">View Order #{{ $order->invoice_id ?? $order->id }}</span>
+            <span class="bilai-od-bc-active">View Order #<?php echo e($order->invoice_id ?? $order->id); ?></span>
         </nav>
 
         <div class="bilai-od-layout">
 
-            {{-- ═══════════ LEFT SIDEBAR ═══════════ --}}
+            
             <aside class="bilai-od-sidebar">
-                {{-- Profile card --}}
+                
                 <div class="bilai-card">
                     <div class="bilai-od-profile-box">
                         <div class="bilai-od-profile-row">
-                            @if($profileImage)
-                                <img src="{{ $profileImage }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" class="bilai-od-avatar" alt="{{ $customer->name }}">
-                                <div class="bilai-od-avatar-ph" style="display:none;">{{ $customerInitial }}</div>
-                            @else
-                                <div class="bilai-od-avatar-ph">{{ $customerInitial }}</div>
-                            @endif
+                            <?php if($profileImage): ?>
+                                <img src="<?php echo e($profileImage); ?>" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" class="bilai-od-avatar" alt="<?php echo e($customer->name); ?>">
+                                <div class="bilai-od-avatar-ph" style="display:none;"><?php echo e($customerInitial); ?></div>
+                            <?php else: ?>
+                                <div class="bilai-od-avatar-ph"><?php echo e($customerInitial); ?></div>
+                            <?php endif; ?>
                             <div class="bilai-od-profile-info">
-                                <p class="bilai-od-profile-name">{{ $customer->name ?? 'Customer' }}</p>
-                                <p class="bilai-od-profile-sub">{{ $customer->phone ?? $customer->email ?? '' }}</p>
+                                <p class="bilai-od-profile-name"><?php echo e($customer->name ?? 'Customer'); ?></p>
+                                <p class="bilai-od-profile-sub"><?php echo e($customer->phone ?? $customer->email ?? ''); ?></p>
                             </div>
                         </div>
                         <hr class="bilai-od-divider">
                         <div class="bilai-od-rp-row">
                             <span class="bilai-od-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-od-rp-icon"><i class="fa fa-star"></i></span><span>{{ $customer->rewardBalance() }} RP</span>
+                                
+                                <span class="bilai-od-rp-icon"><i class="fa fa-star"></i></span><span><?php echo e($customer->rewardBalance()); ?> RP</span>
                             </span>
-                            {{-- Replace exchange SVG icon later --}}
+                            
                             <span class="bilai-od-rp-sep"><i class="fa fa-exchange"></i></span>
                             <span class="bilai-od-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-od-rp-icon"><i class="fa fa-money"></i></span><span>৳{{ number_format($totalOrderAmount, 0) }} TK</span>
+                                
+                                <span class="bilai-od-rp-icon"><i class="fa fa-money"></i></span><span>৳<?php echo e(number_format($totalOrderAmount, 0)); ?> TK</span>
                             </span>
                         </div>
                     </div>
                 </div>
 
-                {{-- Menu card --}}
+                
                 <div class="bilai-card">
                     <nav class="bilai-od-nav">
                         <p class="bilai-od-nav-title">My Account</p>
-                        <a href="{{ route('customer.account') }}" class="bilai-od-nav-item {{ request()->is('customer/account') ? 'active' : '' }}">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.account')); ?>" class="bilai-od-nav-item <?php echo e(request()->is('customer/account') ? 'active' : ''); ?>">
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-home"></i></span> Dashboard
                         </a>
-                        <a href="{{ route('customer.orders') }}" class="bilai-od-nav-item active">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.orders')); ?>" class="bilai-od-nav-item active">
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-shopping-bag"></i></span> Orders
-                            @if($pendingOrdersCount > 0)<span class="bilai-od-nav-badge">{{ $pendingOrdersCount }}</span>@endif
+                            <?php if($pendingOrdersCount > 0): ?><span class="bilai-od-nav-badge"><?php echo e($pendingOrdersCount); ?></span><?php endif; ?>
                         </a>
-                        <a href="{{ route('customer.profile_edit') }}" class="bilai-od-nav-item {{ request()->is('customer/profile-edit') ? 'active' : '' }}">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.profile_edit')); ?>" class="bilai-od-nav-item <?php echo e(request()->is('customer/profile-edit') ? 'active' : ''); ?>">
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-user"></i></span> Profile
                         </a>
                         <a href="#" class="bilai-od-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-heart-o"></i></span> Wishlist
                         </a>
-                        <a href="{{ route('customer.addresses') }}" class="bilai-od-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.addresses')); ?>" class="bilai-od-nav-item">
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-map-marker"></i></span> Addresses
                         </a>
                         <a href="#" class="bilai-od-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-ticket"></i></span> Coupon
                         </a>
-                        {{-- Gift Cards removed from sidebar UI per design (backend untouched) --}}
-                        <a href="{{ route('customer.rewards') }}" class="bilai-od-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                        
+                        <a href="<?php echo e(route('customer.rewards')); ?>" class="bilai-od-nav-item">
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
                         </a>
-                        <a href="{{ route('customer.order_track') }}" class="bilai-od-nav-item {{ request()->is('customer/order-track*') ? 'active' : '' }}">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.order_track')); ?>" class="bilai-od-nav-item <?php echo e(request()->is('customer/order-track*') ? 'active' : ''); ?>">
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-truck"></i></span> Track Order
                         </a>
-                        <a href="{{ route('customer.refunds') }}" class="bilai-od-nav-item {{ request()->is('customer/refunds*') ? 'active' : '' }}">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.refunds')); ?>" class="bilai-od-nav-item <?php echo e(request()->is('customer/refunds*') ? 'active' : ''); ?>">
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-undo"></i></span> Return Request
                         </a>
-                        <a href="{{ route('complaint') }}" class="bilai-od-nav-item {{ request()->is('complaint') ? 'active' : '' }}">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('complaint')); ?>" class="bilai-od-nav-item <?php echo e(request()->is('complaint') ? 'active' : ''); ?>">
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-headphones"></i></span> Support Ticket
                         </a>
                         <hr class="bilai-od-nav-sep">
-                        <a href="{{ route('customer.logout') }}" onclick="event.preventDefault(); document.getElementById('bilai-od-logout-form').submit();" class="bilai-od-nav-item bilai-od-nav-item--logout">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.logout')); ?>" onclick="event.preventDefault(); document.getElementById('bilai-od-logout-form').submit();" class="bilai-od-nav-item bilai-od-nav-item--logout">
+                            
                             <span class="bilai-od-nav-icon"><i class="fa fa-sign-out"></i></span> Logout
                         </a>
-                        <form id="bilai-od-logout-form" action="{{ route('customer.logout') }}" method="POST" style="display:none;">@csrf</form>
+                        <form id="bilai-od-logout-form" action="<?php echo e(route('customer.logout')); ?>" method="POST" style="display:none;"><?php echo csrf_field(); ?></form>
                     </nav>
                 </div>
             </aside>
 
-            {{-- ═══════════ RIGHT CONTENT ═══════════ --}}
+            
             <main class="bilai-od-content">
 
-                {{-- Order selector dropdown --}}
+                
                 <div class="bilai-od-selector-wrap">
                     <select class="bilai-od-selector" onchange="if(this.value) window.location.href=this.value;">
-                        @foreach($recentOrders as $ro)
-                            <option value="{{ route('customer.order_details', $ro->id) }}" {{ $ro->id == $order->id ? 'selected' : '' }}>
-                                Order ID: #{{ $ro->invoice_id ?? $ro->id }}
+                        <?php $__currentLoopData = $recentOrders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ro): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e(route('customer.order_details', $ro->id)); ?>" <?php echo e($ro->id == $order->id ? 'selected' : ''); ?>>
+                                Order ID: #<?php echo e($ro->invoice_id ?? $ro->id); ?>
+
                             </option>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
-                    {{-- Replace caret SVG icon later --}}
+                    
                     <span class="bilai-od-selector-caret"><i class="fa fa-chevron-down"></i></span>
                 </div>
 
-                {{-- ── Order Status ── --}}
+                
                 <div class="bilai-card">
                     <div class="bilai-od-cardbody">
                         <div class="bilai-od-card-head">
                             <h3 class="bilai-od-card-title">Order Status</h3>
-                            @if($trackingId && $courierName)
-                                <a href="{{ $order->courier_type === 'steadfast' && $steadfastTrack ? 'https://steadfast.com.bd/t/' . $steadfastTrack : '#' }}"
+                            <?php if($trackingId && $courierName): ?>
+                                <a href="<?php echo e($order->courier_type === 'steadfast' && $steadfastTrack ? 'https://steadfast.com.bd/t/' . $steadfastTrack : '#'); ?>"
                                    target="_blank" class="bilai-od-btn bilai-od-btn--soft">
-                                    {{-- Replace SVG icon later --}}
-                                    <i class="fa fa-truck"></i> Track with {{ $courierName }}
+                                    
+                                    <i class="fa fa-truck"></i> Track with <?php echo e($courierName); ?>
+
                                 </a>
-                            @else
+                            <?php else: ?>
                                 <span class="bilai-od-btn bilai-od-btn--disabled">
-                                    {{-- Replace SVG icon later --}}
+                                    
                                     <i class="fa fa-truck"></i> Tracking N/A
                                 </span>
-                            @endif
+                            <?php endif; ?>
                         </div>
 
                         <div class="bilai-od-stepper">
-                            @foreach($steps as $step)
-                                @php
+                            <?php $__currentLoopData = $steps; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $step): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php
                                     $done = !$isCancelled && $currentStep >= $step['lvl'];
                                     $stepClass = $done ? 'bilai-od-step--done' : 'bilai-od-step--todo';
                                     $dotClass  = $done ? 'bilai-od-step-dot--done' : 'bilai-od-step-dot--todo';
-                                @endphp
-                                <div class="bilai-od-step {{ $stepClass }}">
-                                    <span class="bilai-od-step-dot {{ $dotClass }}">
-                                        {{-- Replace SVG icon later --}}
-                                        <i class="fa {{ $done ? 'fa-check' : 'fa-circle-o' }}"></i>
+                                ?>
+                                <div class="bilai-od-step <?php echo e($stepClass); ?>">
+                                    <span class="bilai-od-step-dot <?php echo e($dotClass); ?>">
+                                        
+                                        <i class="fa <?php echo e($done ? 'fa-check' : 'fa-circle-o'); ?>"></i>
                                     </span>
-                                    <span class="bilai-od-step-label">{{ $step['label'] }}</span>
-                                    <span class="bilai-od-step-time">{{ $done ? $step['time']->format('M d, h:i A') : '--' }}</span>
+                                    <span class="bilai-od-step-label"><?php echo e($step['label']); ?></span>
+                                    <span class="bilai-od-step-time"><?php echo e($done ? $step['time']->format('M d, h:i A') : '--'); ?></span>
                                 </div>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
-                            {{-- Cancelled node --}}
-                            <div class="bilai-od-step {{ $isCancelled ? '' : 'bilai-od-step--todo' }}">
-                                <span class="bilai-od-step-dot {{ $isCancelled ? 'bilai-od-step-dot--cancel-active' : 'bilai-od-step-dot--cancel' }}">
-                                    {{-- Replace SVG icon later --}}
-                                    <i class="fa {{ $isCancelled ? 'fa-times' : 'fa-ban' }}"></i>
+                            
+                            <div class="bilai-od-step <?php echo e($isCancelled ? '' : 'bilai-od-step--todo'); ?>">
+                                <span class="bilai-od-step-dot <?php echo e($isCancelled ? 'bilai-od-step-dot--cancel-active' : 'bilai-od-step-dot--cancel'); ?>">
+                                    
+                                    <i class="fa <?php echo e($isCancelled ? 'fa-times' : 'fa-ban'); ?>"></i>
                                 </span>
                                 <span class="bilai-od-step-label">Cancelled</span>
-                                <span class="bilai-od-step-time">{{ $isCancelled ? $order->updated_at->format('M d, h:i A') : '--' }}</span>
+                                <span class="bilai-od-step-time"><?php echo e($isCancelled ? $order->updated_at->format('M d, h:i A') : '--'); ?></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- ── Ordered Products ── --}}
+                
                 <div class="bilai-card">
                     <div class="bilai-od-cardbody">
                         <div class="bilai-od-card-head">
                             <h3 class="bilai-od-card-title">Ordered Products</h3>
-                            <span class="bilai-od-card-sub">{{ $order->orderdetails->count() }} {{ Str::plural('Item', $order->orderdetails->count()) }}</span>
+                            <span class="bilai-od-card-sub"><?php echo e($order->orderdetails->count()); ?> <?php echo e(Str::plural('Item', $order->orderdetails->count())); ?></span>
                         </div>
 
-                        @foreach($order->orderdetails as $detail)
-                            @php
+                        <?php $__currentLoopData = $order->orderdetails; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $detail): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
                                 $prod = $detail->product;
                                 $prodImg = null;
                                 if ($detail->image && $detail->image->image) { $prodImg = $detail->image->image; }
@@ -452,111 +454,111 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
                                 $subLine  = $subName ?: $catName;
                                 $oldPrice = $prod && $prod->old_price && $prod->old_price > $detail->sale_price ? $prod->old_price : null;
                                 $inStock  = $prod ? ($prod->stock > 0) : null;
-                            @endphp
+                            ?>
                             <div class="bilai-od-product">
                                 <div class="bilai-od-product-imgbox">
-                                    <img src="{{ $prodImg ? asset($prodImg) : asset('public/uploads/default/no-image.png') }}"
-                                         onerror="this.src='{{ asset('public/uploads/default/no-image.png') }}'"
-                                         class="bilai-od-product-img" alt="{{ $detail->product_name }}">
+                                    <img src="<?php echo e($prodImg ? asset($prodImg) : asset('public/uploads/default/no-image.png')); ?>"
+                                         onerror="this.src='<?php echo e(asset('public/uploads/default/no-image.png')); ?>'"
+                                         class="bilai-od-product-img" alt="<?php echo e($detail->product_name); ?>">
                                 </div>
                                 <div class="bilai-od-product-info">
-                                    <p class="bilai-od-product-name">{{ $detail->product_name }}</p>
-                                    @if($subLine)<p class="bilai-od-product-cat">{{ $subLine }}</p>@endif
+                                    <p class="bilai-od-product-name"><?php echo e($detail->product_name); ?></p>
+                                    <?php if($subLine): ?><p class="bilai-od-product-cat"><?php echo e($subLine); ?></p><?php endif; ?>
                                     <div class="bilai-od-tags">
-                                        @if(!is_null($inStock))
-                                            <span class="bilai-od-tag {{ $inStock ? 'bilai-od-tag--stock-in' : 'bilai-od-tag--stock-out' }}">{{ $inStock ? 'In Stock' : 'Stock Out' }}</span>
-                                        @endif
-                                        @if($catName)<span class="bilai-od-tag bilai-od-tag--cat">{{ $catName }}</span>@endif
+                                        <?php if(!is_null($inStock)): ?>
+                                            <span class="bilai-od-tag <?php echo e($inStock ? 'bilai-od-tag--stock-in' : 'bilai-od-tag--stock-out'); ?>"><?php echo e($inStock ? 'In Stock' : 'Stock Out'); ?></span>
+                                        <?php endif; ?>
+                                        <?php if($catName): ?><span class="bilai-od-tag bilai-od-tag--cat"><?php echo e($catName); ?></span><?php endif; ?>
                                     </div>
                                 </div>
                                 <div class="bilai-od-product-price">
-                                    @if($oldPrice)<span class="bilai-od-price-old">৳{{ number_format($oldPrice, 0) }}</span>@endif
-                                    <span class="bilai-od-price-new">৳{{ number_format($detail->sale_price, 0) }}</span>
-                                    <span class="bilai-od-qty">Qty: {{ $detail->qty }}</span>
+                                    <?php if($oldPrice): ?><span class="bilai-od-price-old">৳<?php echo e(number_format($oldPrice, 0)); ?></span><?php endif; ?>
+                                    <span class="bilai-od-price-new">৳<?php echo e(number_format($detail->sale_price, 0)); ?></span>
+                                    <span class="bilai-od-qty">Qty: <?php echo e($detail->qty); ?></span>
                                 </div>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
-                        @php $firstProduct = optional($order->orderdetails->first())->product; @endphp
-                        @if($firstProduct && $firstProduct->slug)
+                        <?php $firstProduct = optional($order->orderdetails->first())->product; ?>
+                        <?php if($firstProduct && $firstProduct->slug): ?>
                             <div style="margin-top:16px;">
-                                {{-- Reorder → product details page (route resolves by slug; no cart mutation) --}}
-                                <a href="{{ route('product', $firstProduct->slug) }}" class="bilai-od-btn bilai-od-btn--primary">
-                                    {{-- Replace SVG icon later --}}
+                                
+                                <a href="<?php echo e(route('product', $firstProduct->slug)); ?>" class="bilai-od-btn bilai-od-btn--primary">
+                                    
                                     <i class="fa fa-shopping-cart"></i> Reorder this product
                                 </a>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
 
-                {{-- ── Shipping + Delivery Partner ── --}}
+                
                 <div class="bilai-od-2col">
-                    {{-- Shipping Address --}}
+                    
                     <div class="bilai-card">
                         <div class="bilai-od-cardbody">
                             <div class="bilai-od-card-head bilai-od-card-head--plain"><h3 class="bilai-od-card-title">Shipping Address</h3></div>
                             <div class="bilai-od-info-row">
                                 <div class="bilai-od-info-icon">
-                                    {{-- Replace SVG icon later --}}
+                                    
                                     <i class="fa fa-map-marker"></i>
                                 </div>
                                 <div>
-                                    <p class="bilai-od-info-name">{{ $order->shipping->name ?? ($customer->name ?? 'N/A') }}</p>
-                                    <p class="bilai-od-info-line">{{ $order->shipping->phone ?? ($customer->phone ?? 'N/A') }}</p>
+                                    <p class="bilai-od-info-name"><?php echo e($order->shipping->name ?? ($customer->name ?? 'N/A')); ?></p>
+                                    <p class="bilai-od-info-line"><?php echo e($order->shipping->phone ?? ($customer->phone ?? 'N/A')); ?></p>
                                     <p class="bilai-od-info-line">
-                                        {{ $order->shipping->address ?? 'N/A' }}@if(!empty($order->shipping?->area)), {{ $order->shipping->area }}@endif
+                                        <?php echo e($order->shipping->address ?? 'N/A'); ?><?php if(!empty($order->shipping?->area)): ?>, <?php echo e($order->shipping->area); ?><?php endif; ?>
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Delivery Partner --}}
+                    
                     <div class="bilai-card">
                         <div class="bilai-od-cardbody">
                             <div class="bilai-od-card-head bilai-od-card-head--plain"><h3 class="bilai-od-card-title">Delivery Partner Info</h3></div>
                             <div class="bilai-od-info-row">
                                 <div class="bilai-od-info-icon">
-                                    {{-- Replace SVG icon later --}}
+                                    
                                     <i class="fa fa-bicycle"></i>
                                 </div>
                                 <div>
-                                    <p class="bilai-od-info-name">{{ $courierName ?? 'N/A' }}</p>
-                                    <p class="bilai-od-info-line">Tracking: {{ $trackingId ?? 'N/A' }}</p>
-                                    <p class="bilai-od-info-line">{{ $order->courier_sent_at ? 'Sent: ' . $order->courier_sent_at->format('M d, Y') : 'N/A' }}</p>
+                                    <p class="bilai-od-info-name"><?php echo e($courierName ?? 'N/A'); ?></p>
+                                    <p class="bilai-od-info-line">Tracking: <?php echo e($trackingId ?? 'N/A'); ?></p>
+                                    <p class="bilai-od-info-line"><?php echo e($order->courier_sent_at ? 'Sent: ' . $order->courier_sent_at->format('M d, Y') : 'N/A'); ?></p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- ── Order Summary ── --}}
+                
                 <div class="bilai-card">
                     <div class="bilai-od-cardbody">
                         <div class="bilai-od-card-head bilai-od-card-head--plain"><h3 class="bilai-od-card-title">Order Summary</h3></div>
                         <div class="bilai-od-sum-grid">
-                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Order ID</span><span class="bilai-od-sum-value">#{{ $order->invoice_id ?? $order->id }}</span></div>
-                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Shipping Charge</span><span class="bilai-od-sum-value">৳{{ number_format($order->shipping_charge, 0) }}</span></div>
+                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Order ID</span><span class="bilai-od-sum-value">#<?php echo e($order->invoice_id ?? $order->id); ?></span></div>
+                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Shipping Charge</span><span class="bilai-od-sum-value">৳<?php echo e(number_format($order->shipping_charge, 0)); ?></span></div>
 
-                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Order Date</span><span class="bilai-od-sum-value">{{ $order->created_at->format('M j, Y; h:i A') }}</span></div>
-                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Discount</span><span class="bilai-od-sum-value">৳{{ number_format($order->discount, 0) }}</span></div>
+                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Order Date</span><span class="bilai-od-sum-value"><?php echo e($order->created_at->format('M j, Y; h:i A')); ?></span></div>
+                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Discount</span><span class="bilai-od-sum-value">৳<?php echo e(number_format($order->discount, 0)); ?></span></div>
 
-                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Subtotal</span><span class="bilai-od-sum-value">৳{{ number_format($subtotal, 0) }}</span></div>
-                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Coupon</span><span class="bilai-od-sum-value">{{ $order->coupon_code ?: '৳0' }}</span></div>
+                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Subtotal</span><span class="bilai-od-sum-value">৳<?php echo e(number_format($subtotal, 0)); ?></span></div>
+                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Coupon</span><span class="bilai-od-sum-value"><?php echo e($order->coupon_code ?: '৳0'); ?></span></div>
 
-                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Total Payable</span><span class="bilai-od-sum-value">৳{{ number_format($order->customer_payable_amount ?? $order->amount, 0) }}</span></div>
-                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Amount Paid</span><span class="bilai-od-sum-value">৳{{ number_format($paid_amount, 0) }}</span></div>
+                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Total Payable</span><span class="bilai-od-sum-value">৳<?php echo e(number_format($order->customer_payable_amount ?? $order->amount, 0)); ?></span></div>
+                            <div class="bilai-od-sum-item"><span class="bilai-od-sum-label">Amount Paid</span><span class="bilai-od-sum-value">৳<?php echo e(number_format($paid_amount, 0)); ?></span></div>
 
                             <div class="bilai-od-sum-total">
                                 <span class="bilai-od-sum-label">Grand Total</span>
-                                <span class="bilai-od-sum-value">৳{{ number_format($grand_total, 0) }}</span>
+                                <span class="bilai-od-sum-value">৳<?php echo e(number_format($grand_total, 0)); ?></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- ── Payment Method ── --}}
+                
                 <div class="bilai-card">
                     <div class="bilai-od-cardbody">
                         <div class="bilai-od-card-head bilai-od-card-head--plain"><h3 class="bilai-od-card-title">Payment Method</h3></div>
@@ -564,12 +566,12 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
                             <div class="bilai-od-pay-box">
                                 <div>
                                     <p class="bilai-od-pay-label">Paid Via</p>
-                                    <p class="bilai-od-pay-method">{{ $paymentReadable }}</p>
+                                    <p class="bilai-od-pay-method"><?php echo e($paymentReadable); ?></p>
                                 </div>
-                                <span class="bilai-od-pay-badge">{{ $paymentBadge }}</span>
+                                <span class="bilai-od-pay-badge"><?php echo e($paymentBadge); ?></span>
                             </div>
-                            <a href="{{ route('customer.invoice', ['id' => $order->id]) }}" class="bilai-od-btn bilai-od-btn--primary">
-                                {{-- Replace SVG icon later --}}
+                            <a href="<?php echo e(route('customer.invoice', ['id' => $order->id])); ?>" class="bilai-od-btn bilai-od-btn--primary">
+                                
                                 <i class="fa fa-file-text-o"></i> View Invoice
                             </a>
                         </div>
@@ -580,4 +582,6 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/customer/order_details.blade.php ENDPATH**/ ?>

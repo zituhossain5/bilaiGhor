@@ -47,6 +47,12 @@ class Customer extends Authenticatable
         $this->notify(new CustomerResetPasswordNotification($token));
     }
 
+    /** Available reward points — single source used by every view (sidebar, rewards, checkout). */
+    public function rewardBalance(): int
+    {
+        return \App\Services\RewardPointService::balance($this->id);
+    }
+
     public function cust_area()
     {
         return $this->belongsTo(District::class, 'area');

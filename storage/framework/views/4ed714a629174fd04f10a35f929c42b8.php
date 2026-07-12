@@ -1,5 +1,4 @@
-@extends('backEnd.layouts.master')
-@php
+<?php
     $editDistricts = collect($districts ?? []);
     $editUpazilas = collect($upazilas ?? []);
     $shipLoc = $shippinginfo;
@@ -29,10 +28,10 @@
     $posPay = $order->payment;
     $posPayStatus = optional($posPay)->payment_status ?? ($order->payment_status ?? 'pending');
     $statusName = optional($order->status)->name ?? 'N/A';
-@endphp
-@section('title', 'Edit Order #' . $order->invoice_id)
+?>
+<?php $__env->startSection('title', 'Edit Order #' . $order->invoice_id); ?>
 
-@section('css')
+<?php $__env->startSection('css'); ?>
 <style>
     body { background: #eef1f8; }
     .order-edit-shell { padding: 8px 0 28px; }
@@ -275,30 +274,30 @@
         }
     }
 </style>
-<link href="{{ asset('public/backEnd') }}/assets/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="<?php echo e(asset('public/backEnd')); ?>/assets/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="container-fluid order-edit-shell">
 
     <div class="oe-page-header">
         <div>
             <h4>অর্ডার এডিট</h4>
             <div class="oe-sub">
-                ইনভয়েস <strong>#{{ $order->invoice_id }}</strong>
-                · স্ট্যাটাস: <span class="oe-badge-status">{{ $statusName }}</span>
+                ইনভয়েস <strong>#<?php echo e($order->invoice_id); ?></strong>
+                · স্ট্যাটাস: <span class="oe-badge-status"><?php echo e($statusName); ?></span>
             </div>
         </div>
         <div class="oe-header-actions">
-            <a href="{{ route('admin.order.process', $order->invoice_id) }}" class="btn btn-sm btn-light btn-oe-outline">
+            <a href="<?php echo e(route('admin.order.process', $order->invoice_id)); ?>" class="btn btn-sm btn-light btn-oe-outline">
                 <i class="fas fa-arrow-left me-1"></i> প্রসেস পেজ
             </a>
-            <a href="{{ route('admin.order.invoice', $order->invoice_id) }}" class="btn btn-sm btn-outline-primary btn-oe-outline" target="_blank">
+            <a href="<?php echo e(route('admin.order.invoice', $order->invoice_id)); ?>" class="btn btn-sm btn-outline-primary btn-oe-outline" target="_blank">
                 <i class="fas fa-file-invoice me-1"></i> ইনভয়েস
             </a>
-            <form method="get" action="{{ route('admin.order.cart_clear') }}" class="d-inline">
-                @csrf
+            <form method="get" action="<?php echo e(route('admin.order.cart_clear')); ?>" class="d-inline">
+                <?php echo csrf_field(); ?>
                 <button type="submit" class="btn btn-sm btn-outline-danger btn-oe-outline delete-confirm">
                     <i class="fas fa-trash-alt me-1"></i> কার্ট ক্লিয়ার
                 </button>
@@ -306,26 +305,26 @@
         </div>
     </div>
 
-    <form action="{{ route('admin.order.update') }}" method="POST" class="pos_form" id="order_edit_form" enctype="multipart/form-data">
-        @csrf
-        <input type="hidden" name="order_id" value="{{ $order->id }}">
+    <form action="<?php echo e(route('admin.order.update')); ?>" method="POST" class="pos_form" id="order_edit_form" enctype="multipart/form-data">
+        <?php echo csrf_field(); ?>
+        <input type="hidden" name="order_id" value="<?php echo e($order->id); ?>">
 
         <div class="row g-3">
-            {{-- বাম: পণ্য ও কার্ট --}}
+            
             <div class="col-lg-8">
                 <div class="oe-card">
                     <div class="oe-card-head">
                         <h6><i class="fas fa-shopping-cart"></i> অর্ডার আইটেম</h6>
-                        <span class="oe-badge-invoice">#{{ $order->invoice_id }}</span>
+                        <span class="oe-badge-invoice">#<?php echo e($order->invoice_id); ?></span>
                     </div>
                     <div class="oe-card-body">
                         <div class="oe-product-add mb-3">
                             <label class="oe-form-label"><i class="fas fa-plus-circle"></i> পণ্য যোগ করুন</label>
                             <select id="cart_add" class="form-control select2">
                                 <option value="">পণ্য খুঁজুন ও সিলেক্ট করুন...</option>
-                                @foreach($products as $value)
-                                    <option value="{{ $value->id }}">{{ $value->name }}</option>
-                                @endforeach
+                                <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($value->id); ?>"><?php echo e($value->name); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                         </div>
 
@@ -345,14 +344,14 @@
                                     </tr>
                                 </thead>
                                 <tbody id="cartTable">
-                                    @include('backEnd.order.cart_table_rows_edit', ['cartinfo' => $cartinfo])
+                                    <?php echo $__env->make('backEnd.order.cart_table_rows_edit', ['cartinfo' => $cartinfo], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                {{-- পেমেন্ট --}}
+                
                 <div class="oe-card">
                     <div class="oe-card-head">
                         <h6><i class="fas fa-credit-card"></i> পেমেন্ট তথ্য</h6>
@@ -361,29 +360,29 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="oe-form-label">পেমেন্ট গেটওয়ে</label>
-                                <input type="text" class="form-control" value="{{ ucfirst(optional($posPay)->payment_method ?? $order->payment_gateway ?? 'N/A') }}" readonly>
+                                <input type="text" class="form-control" value="<?php echo e(ucfirst(optional($posPay)->payment_method ?? $order->payment_gateway ?? 'N/A')); ?>" readonly>
                             </div>
                             <div class="col-md-6">
                                 <label class="oe-form-label">পেমেন্ট স্ট্যাটাস</label>
                                 <div class="input-group">
-                                    <select id="payment_status_{{ $order->id }}" class="form-select">
-                                        <option value="pending" {{ $posPayStatus == 'pending' ? 'selected' : '' }}>Pending</option>
-                                        <option value="paid" {{ $posPayStatus == 'paid' ? 'selected' : '' }}>Paid</option>
-                                        <option value="unpaid" {{ $posPayStatus == 'unpaid' ? 'selected' : '' }}>Unpaid</option>
-                                        <option value="failed" {{ $posPayStatus == 'failed' ? 'selected' : '' }}>Failed</option>
+                                    <select id="payment_status_<?php echo e($order->id); ?>" class="form-select">
+                                        <option value="pending" <?php echo e($posPayStatus == 'pending' ? 'selected' : ''); ?>>Pending</option>
+                                        <option value="paid" <?php echo e($posPayStatus == 'paid' ? 'selected' : ''); ?>>Paid</option>
+                                        <option value="unpaid" <?php echo e($posPayStatus == 'unpaid' ? 'selected' : ''); ?>>Unpaid</option>
+                                        <option value="failed" <?php echo e($posPayStatus == 'failed' ? 'selected' : ''); ?>>Failed</option>
                                     </select>
-                                    <button type="button" class="btn btn-success" onclick="updatePaymentStatus({{ $order->id }})">
+                                    <button type="button" class="btn btn-success" onclick="updatePaymentStatus(<?php echo e($order->id); ?>)">
                                         <i class="fa fa-check"></i> আপডেট
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        @include('backEnd.order.partials.manual_payment_verify_box', ['payment' => $posPay])
+                        <?php echo $__env->make('backEnd.order.partials.manual_payment_verify_box', ['payment' => $posPay], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                     </div>
                 </div>
             </div>
 
-            {{-- ডান: গ্রাহক + সারাংশ --}}
+            
             <div class="col-lg-4">
                 <div class="oe-sidebar-sticky">
                     <div class="oe-card">
@@ -393,47 +392,44 @@
                         <div class="oe-card-body">
                             <div class="oe-input-group mb-3">
                                 <label class="oe-form-label" for="name"><i class="fas fa-user"></i> নাম</label>
-                                <input type="text" id="name" class="form-control" placeholder="গ্রাহকের নাম" name="name" value="{{ $shippinginfo->name }}" required>
+                                <input type="text" id="name" class="form-control" placeholder="গ্রাহকের নাম" name="name" value="<?php echo e($shippinginfo->name); ?>" required>
                             </div>
                             <div class="oe-input-group mb-3">
                                 <label class="oe-form-label" for="phone"><i class="fas fa-phone"></i> মোবাইল</label>
-                                <input type="number" id="phone" class="form-control" placeholder="01XXXXXXXXX" name="phone" value="{{ $shippinginfo->phone }}" required>
+                                <input type="number" id="phone" class="form-control" placeholder="01XXXXXXXXX" name="phone" value="<?php echo e($shippinginfo->phone); ?>" required>
                             </div>
-                            {{-- Legacy Division/Upazila fields are retired from this UI (District → Zone
-                                 replaces them). Their tables/data are untouched — see hidden inputs below,
-                                 which keep OrderController::order_update()'s legacy validation satisfied
-                                 without exposing either field to the admin. --}}
-                            <input type="hidden" id="adm_edit_division_hidden" name="division_id" value="{{ $admEdDiv }}">
-                            <input type="hidden" id="adm_edit_upazila_hidden" name="upazila_id" value="{{ $admEdUp }}">
+                            
+                            <input type="hidden" id="adm_edit_division_hidden" name="division_id" value="<?php echo e($admEdDiv); ?>">
+                            <input type="hidden" id="adm_edit_upazila_hidden" name="upazila_id" value="<?php echo e($admEdUp); ?>">
 
                             <div class="oe-section-label mt-2">ডেলিভারি লোকেশন</div>
                             <div class="row g-2">
                                 <div class="col-12 col-md-5 oe-input-group mb-3 mb-md-0">
                                     <label class="oe-form-label" for="adm_edit_postcode">পোস্ট কোড</label>
-                                    <input type="text" id="adm_edit_postcode" class="form-control" name="post_code" maxlength="20" placeholder="১xxxx" value="{{ $admEdPostCode }}">
+                                    <input type="text" id="adm_edit_postcode" class="form-control" name="post_code" maxlength="20" placeholder="১xxxx" value="<?php echo e($admEdPostCode); ?>">
                                 </div>
                                 <div class="col-12 col-md-7 oe-input-group">
                                     <label class="oe-form-label" for="adm_edit_district">জেলা <span class="text-danger">*</span></label>
                                     <select id="adm_edit_district" class="form-select" name="district_id" required>
                                         <option value="">জেলা নির্বাচন করুন</option>
-                                        @foreach($editDistricts as $district)
-                                            <option value="{{ $district->id }}" data-division="{{ $district->division_id }}" {{ $admEdDist === (int) $district->id ? 'selected' : '' }}>
-                                                {{ $district->name }} (৳{{ $district->delivery_charge }})
+                                        <?php $__currentLoopData = $editDistricts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $district): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($district->id); ?>" data-division="<?php echo e($district->division_id); ?>" <?php echo e($admEdDist === (int) $district->id ? 'selected' : ''); ?>>
+                                                <?php echo e($district->name); ?> (৳<?php echo e($district->delivery_charge); ?>)
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
                             <div class="oe-input-group mb-3 mt-2">
                                 <label class="oe-form-label" for="adm_edit_zone">জোন <span class="text-danger">*</span></label>
-                                <select id="adm_edit_zone" class="form-select" name="zone_id" required {{ $admEdDist ? '' : 'disabled' }}>
-                                    <option value="">{{ $admEdDist ? 'জোন লোড হচ্ছে...' : 'আগে জেলা সিলেক্ট করুন' }}</option>
+                                <select id="adm_edit_zone" class="form-select" name="zone_id" required <?php echo e($admEdDist ? '' : 'disabled'); ?>>
+                                    <option value=""><?php echo e($admEdDist ? 'জোন লোড হচ্ছে...' : 'আগে জেলা সিলেক্ট করুন'); ?></option>
                                 </select>
                             </div>
 
                             <div class="oe-input-group mb-3">
                                 <label class="oe-form-label" for="address"><i class="fas fa-map-marker-alt"></i> সম্পূর্ণ ঠিকানা <span class="text-danger">*</span></label>
-                                <textarea id="address" class="form-control" rows="2" placeholder="বিস্তারিত ঠিকানা" name="address" required>{{ $shippinginfo->address }}</textarea>
+                                <textarea id="address" class="form-control" rows="2" placeholder="বিস্তারিত ঠিকানা" name="address" required><?php echo e($shippinginfo->address); ?></textarea>
                             </div>
                         </div>
                     </div>
@@ -447,30 +443,30 @@
                                 <tbody id="cart_details">
                                     <tr>
                                         <td>সাবটোটাল</td>
-                                        <td class="text-end">৳{{ number_format((float) $subtotal, 2) }}</td>
+                                        <td class="text-end">৳<?php echo e(number_format((float) $subtotal, 2)); ?></td>
                                     </tr>
                                     <tr>
                                         <td>ডেলিভারি চার্জ</td>
-                                        <td class="text-end">৳{{ number_format((float) $shipping, 2) }}</td>
+                                        <td class="text-end">৳<?php echo e(number_format((float) $shipping, 2)); ?></td>
                                     </tr>
                                     <tr>
                                         <td>মোট ছাড়</td>
-                                        <td class="text-end text-danger">−৳{{ number_format((float) $total_discount, 2) }}</td>
+                                        <td class="text-end text-danger">−৳<?php echo e(number_format((float) $total_discount, 2)); ?></td>
                                     </tr>
                                     <tr class="oe-summary-total">
                                         <td>মোট পরিশোধ</td>
-                                        <td class="text-end">৳{{ number_format((float) $total, 2) }}</td>
+                                        <td class="text-end">৳<?php echo e(number_format((float) $total, 2)); ?></td>
                                     </tr>
-                                    @if($advancePaid > 0)
+                                    <?php if($advancePaid > 0): ?>
                                     <tr>
                                         <td>অগ্রিম পরিশোধ</td>
-                                        <td class="text-end text-success">৳{{ number_format($advancePaid, 2) }}</td>
+                                        <td class="text-end text-success">৳<?php echo e(number_format($advancePaid, 2)); ?></td>
                                     </tr>
                                     <tr class="oe-summary-due">
                                         <td>বাকি</td>
-                                        <td class="text-end">৳{{ number_format($dueAmount, 2) }}</td>
+                                        <td class="text-end">৳<?php echo e(number_format($dueAmount, 2)); ?></td>
                                     </tr>
-                                    @endif
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
 
@@ -486,22 +482,22 @@
         </div>
     </form>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('script')
+<?php $__env->startSection('script'); ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<script src="{{ asset('public/backEnd/') }}/assets/libs/parsleyjs/parsley.min.js"></script>
-<script src="{{ asset('public/backEnd/') }}/assets/js/pages/form-validation.init.js"></script>
-<script src="{{ asset('public/backEnd/') }}/assets/libs/select2/js/select2.min.js"></script>
-<script src="{{ asset('public/backEnd/') }}/assets/js/pages/form-advanced.init.js"></script>
+<script src="<?php echo e(asset('public/backEnd/')); ?>/assets/libs/parsleyjs/parsley.min.js"></script>
+<script src="<?php echo e(asset('public/backEnd/')); ?>/assets/js/pages/form-validation.init.js"></script>
+<script src="<?php echo e(asset('public/backEnd/')); ?>/assets/libs/select2/js/select2.min.js"></script>
+<script src="<?php echo e(asset('public/backEnd/')); ?>/assets/js/pages/form-advanced.init.js"></script>
 
 <script>
 function updatePaymentStatus(orderId) {
     var status = document.getElementById('payment_status_' + orderId).value;
-    fetch('{{ route("admin.order.updatePaymentStatus") }}', {
+    fetch('<?php echo e(route("admin.order.updatePaymentStatus")); ?>', {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ order_id: orderId, payment_status: status })
@@ -523,12 +519,12 @@ $(document).ready(function () {
     $('.select2').select2({ placeholder: 'পণ্য খুঁজুন...', allowClear: true });
 });
 
-var oeEditQuery = 'layout=edit&order_id={{ $order->id }}';
+var oeEditQuery = 'layout=edit&order_id=<?php echo e($order->id); ?>';
 
 function cart_details() {
     $.ajax({
         type: 'GET',
-        url: '{{ route("admin.order.cart_details") }}?' + oeEditQuery,
+        url: '<?php echo e(route("admin.order.cart_details")); ?>?' + oeEditQuery,
         dataType: 'html',
         success: function (cartinfo) { $('#cart_details').html(cartinfo); }
     });
@@ -536,7 +532,7 @@ function cart_details() {
 function cart_content() {
     $.ajax({
         type: 'GET',
-        url: '{{ route("admin.order.cart_content") }}?' + oeEditQuery,
+        url: '<?php echo e(route("admin.order.cart_content")); ?>?' + oeEditQuery,
         dataType: 'html',
         success: function (cartinfo) {
             $('#cartTable').html(cartinfo);
@@ -555,7 +551,7 @@ $('#cart_add').on('change', function () {
             cache: 'false',
             type: 'GET',
             data: { id: id },
-            url: '{{ route("admin.order.cart_add") }}',
+            url: '<?php echo e(route("admin.order.cart_add")); ?>',
             dataType: 'json',
             success: function () {
                 refreshCart();
@@ -573,7 +569,7 @@ $(document).on('click', '.cart_remove', function (e) {
             cache: false,
             type: 'GET',
             data: { id: id },
-            url: '{{ route("admin.order.cart_remove") }}',
+            url: '<?php echo e(route("admin.order.cart_remove")); ?>',
             dataType: 'json',
             success: function () { refreshCart(); }
         });
@@ -589,7 +585,7 @@ $(document).on('click', '.cart_increment', function (e) {
         cache: false,
         type: 'GET',
         data: { id: id, qty: qty },
-        url: '{{ route("admin.order.cart_increment") }}',
+        url: '<?php echo e(route("admin.order.cart_increment")); ?>',
         dataType: 'json',
         success: function () { refreshCart(); }
     });
@@ -604,7 +600,7 @@ $(document).on('click', '.cart_decrement', function (e) {
         cache: false,
         type: 'GET',
         data: { id: id, qty: qty },
-        url: '{{ route("admin.order.cart_decrement") }}',
+        url: '<?php echo e(route("admin.order.cart_decrement")); ?>',
         dataType: 'json',
         success: function () { refreshCart(); }
     });
@@ -625,7 +621,7 @@ function applyProductDiscount($input) {
         cache: false,
         type: 'GET',
         data: { id: id, discount: discount },
-        url: '{{ route("admin.order.product_discount") }}',
+        url: '<?php echo e(route("admin.order.product_discount")); ?>',
         dataType: 'json',
         success: function () { refreshCart(); }
     });
@@ -659,10 +655,10 @@ $('#order_edit_form').on('submit', function () {
 // OrderController::order_update() (IonCube-encoded) hard-requires division_id/
 // upazila_id and internally validates the district belongs to that division —
 // both are recomputed here so that legacy validation always passes.
-var admEditAllDistricts = @json($editDistricts->values());
-var admEditAllUpazilas = @json($editUpazilas->values());
-var admEditZonesUrl = '{{ route("customer.delivery_zones") }}';
-var admEditSelectedZone = {{ $admEdZone }};
+var admEditAllDistricts = <?php echo json_encode($editDistricts->values(), 15, 512) ?>;
+var admEditAllUpazilas = <?php echo json_encode($editUpazilas->values(), 15, 512) ?>;
+var admEditZonesUrl = '<?php echo e(route("customer.delivery_zones")); ?>';
+var admEditSelectedZone = <?php echo e($admEdZone); ?>;
 
 function admEditSyncLegacyHiddenFields(districtId) {
     var districtRow = admEditAllDistricts.find(function (r) { return parseInt(r.id, 10) === parseInt(districtId, 10); });
@@ -702,7 +698,7 @@ $('#adm_edit_district').on('change', function () {
         $.ajax({
             type: 'GET',
             data: { id: id },
-            url: '{{ route("admin.order.cart_shipping") }}',
+            url: '<?php echo e(route("admin.order.cart_shipping")); ?>',
             dataType: 'json',
             complete: function () { refreshCart(); }
         });
@@ -725,9 +721,9 @@ $('#order_edit_form').on('submit', function (e) {
     if ($form.data('shippingLocationSaved')) { return; } // already saved, let it submit for real
 
     e.preventDefault();
-    $.post('{{ route("admin.order.update_shipping_location") }}', {
-        _token: '{{ csrf_token() }}',
-        order_id: {{ $order->id }},
+    $.post('<?php echo e(route("admin.order.update_shipping_location")); ?>', {
+        _token: '<?php echo e(csrf_token()); ?>',
+        order_id: <?php echo e($order->id); ?>,
         district_id: $('#adm_edit_district').val(),
         zone_id: $('#adm_edit_zone').val(),
         post_code: $('#adm_edit_postcode').val()
@@ -752,7 +748,7 @@ function admEditUpdateVariant(rowId, productId, sizeId, colorId) {
             size_id: sizeId !== undefined ? sizeId : '',
             color_id: colorId !== undefined ? colorId : ''
         },
-        url: '{{ route("admin.order.cart.update") }}',
+        url: '<?php echo e(route("admin.order.cart.update")); ?>',
         dataType: 'json',
         success: function () { refreshCart(); }
     });
@@ -766,4 +762,6 @@ $(document).on('change', '.cart-color-selector', function () {
     admEditUpdateVariant($(this).data('id'), $(this).data('product-id'), undefined, $(this).val());
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('backEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/backEnd/order/edit.blade.php ENDPATH**/ ?>

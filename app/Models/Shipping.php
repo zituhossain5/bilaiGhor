@@ -19,7 +19,14 @@ class Shipping extends Model
         'division_id',
         'district_id',
         'upazila_id',
+        'zone_id',
+        'post_code',
     ];
+
+    public function zone()
+    {
+        return $this->belongsTo(DeliveryZone::class, 'zone_id');
+    }
     
     public function division()
     {

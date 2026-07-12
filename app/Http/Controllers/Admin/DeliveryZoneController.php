@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\DeliveryDistrict;
 use App\Models\DeliveryDivision;
 use App\Models\DeliveryZone;
+use App\Models\Order;
+use App\Models\Shipping;
+use App\Support\DeliveryLocation;
 use Illuminate\Http\Request;
 use Toastr;
 
@@ -110,5 +113,41 @@ class DeliveryZoneController extends Controller
         Toastr::success('মুছে ফেলা হয়েছে', 'সফল');
 
         return redirect()->route('admin.delivery.zones.index', $districtId);
+    }
+
+    /**
+     * Persist Zone + Post Code from the admin Order Edit page.
+     *
+     * Split from OrderController::order_update() because that controller is
+     * IonCube-encoded (source unreadable/unmodifiable) and its legacy validation
+     * hard-requires a division_id/district_id/upazila_id triplet with no knowledge
+     * of zone_id or post_code. district_id itself is still submitted to — and
+     * saved by — the legacy form as before; this endpoint only adds the two new
+     * columns, so the two writes never touch the same field.
+     */
+    public function updateOrderShipping(Request $request)
+    {
+        $request->validate([
+            'order_id'    => 'required|integer|exists:orders,id',
+            'district_id' => 'required|integer|exists:districts,id',
+            'zone_id'     => 'required|integer|exists:delivery_zones,id',
+            'post_code'   => 'nullable|string|max:20',
+        ]);
+
+        if (! DeliveryLocation::validateDistrictZone((int) $request->district_id, (int) $request->zone_id)) {
+            return response()->json(['status' => 'error', 'message' => 'নির্বাচিত জোনটি এই জেলার অন্তর্ভুক্ত নয়।'], 422);
+        }
+
+        $order    = Order::findOrFail($request->order_id);
+        $shipping = Shipping::where('order_id', $order->id)->first();
+        if (! $shipping) {
+            return response()->json(['status' => 'error', 'message' => 'শিপিং তথ্য পাওয়া যায়নি।'], 404);
+        }
+
+        $shipping->zone_id   = (int) $request->zone_id;
+        $shipping->post_code = $request->post_code;
+        $shipping->save();
+
+        return response()->json(['status' => 'success', 'message' => 'জোন ও পোস্ট কোড আপডেট হয়েছে']);
     }
 }

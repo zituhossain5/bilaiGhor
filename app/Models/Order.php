@@ -12,6 +12,30 @@ class Order extends Model
     // সব ফিল্ড mass assign করতে পারবে
     protected $guarded = [];
 
+    protected static function booted(): void
+    {
+        // Reward points react to order-status transitions. Hooking the model event
+        // covers every Eloquent write site (admin panel, courier webhooks, delivery
+        // boy app, refunds) without touching each controller. The service methods
+        // are idempotent, so repeated flips can never double-award or double-restore.
+        static::updated(function (self $order) {
+            if (!$order->wasChanged('order_status')) {
+                return;
+            }
+            try {
+                $status = (int) $order->order_status;
+                if ($status === (int) config('rewards.award_status', 6)) {
+                    \App\Services\RewardPointService::awardOrderPoints($order);
+                } elseif ($status === (int) config('rewards.cancel_status', 11)) {
+                    \App\Services\RewardPointService::handleCancellation($order);
+                }
+            } catch (\Throwable $e) {
+                // Reward bookkeeping must never break a status update (webhooks etc.).
+                \Log::error('Reward point hook failed for order '.$order->id.': '.$e->getMessage());
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [

@@ -1,4 +1,4 @@
-@php
+<?php
 use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 
@@ -14,12 +14,12 @@ $firstName           = ucfirst(explode(' ', trim($customer->name ?? 'there'))[0]
 $rewardPoints = $rewardPoints ?? $customer->rewardBalance();
 $cashValue    = $rewardPoints * (int) config('rewards.point_value', 1);
 $filter       = $filter ?? 'all';
-@endphp
+?>
 
-@extends('frontEnd.layouts.master')
-@section('title', 'Reward Points | ' . ($customer->name ?? 'Account'))
 
-@push('css')
+<?php $__env->startSection('title', 'Reward Points | ' . ($customer->name ?? 'Account')); ?>
+
+<?php $__env->startPush('css'); ?>
 <style>
 /* BilaiGhor Reward Points Page Start */
 :root {
@@ -223,15 +223,15 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
 .bilai-rw-acc-body li { font-size: 12.5px; color: var(--bilai-rw-muted); line-height: 1.7; margin-bottom: 4px; }
 /* BilaiGhor Reward Terms Accordion End */
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="bilai-rw-page">
     <div class="container">
 
-        {{-- Breadcrumb --}}
+        
         <nav class="bilai-rw-bc" aria-label="breadcrumb">
-            <a href="{{ route('home') }}">Home</a>
+            <a href="<?php echo e(route('home')); ?>">Home</a>
             <span class="bilai-rw-bc-sep">›</span>
             <span>Profile</span>
             <span class="bilai-rw-bc-sep">›</span>
@@ -240,33 +240,33 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
 
         <div class="bilai-rw-layout">
 
-            {{-- ═══════════ LEFT SIDEBAR (shared style) ═══════════ --}}
+            
             <aside class="bilai-rw-sidebar">
                 <div class="bilai-card">
                     <div class="bilai-dash-profile-box">
                         <div class="bilai-dash-profile-row">
-                            @if($profileImage)
-                                <img src="{{ $profileImage }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" class="bilai-dash-avatar" alt="{{ $customer->name }}">
-                                <div class="bilai-dash-avatar-placeholder" style="display:none;">{{ $customerInitial }}</div>
-                            @else
-                                <div class="bilai-dash-avatar-placeholder">{{ $customerInitial }}</div>
-                            @endif
+                            <?php if($profileImage): ?>
+                                <img src="<?php echo e($profileImage); ?>" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" class="bilai-dash-avatar" alt="<?php echo e($customer->name); ?>">
+                                <div class="bilai-dash-avatar-placeholder" style="display:none;"><?php echo e($customerInitial); ?></div>
+                            <?php else: ?>
+                                <div class="bilai-dash-avatar-placeholder"><?php echo e($customerInitial); ?></div>
+                            <?php endif; ?>
                             <div class="bilai-dash-profile-info">
-                                <p class="bilai-dash-profile-name">{{ $customer->name ?? 'Customer' }}</p>
-                                <p class="bilai-dash-profile-sub">{{ $customer->phone ?? $customer->email ?? '' }}</p>
+                                <p class="bilai-dash-profile-name"><?php echo e($customer->name ?? 'Customer'); ?></p>
+                                <p class="bilai-dash-profile-sub"><?php echo e($customer->phone ?? $customer->email ?? ''); ?></p>
                             </div>
                         </div>
                         <hr class="bilai-dash-profile-divider">
                         <div class="bilai-dash-rp-row">
                             <span class="bilai-dash-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span><span>{{ $rewardPoints }} RP</span>
+                                
+                                <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span><span><?php echo e($rewardPoints); ?> RP</span>
                             </span>
-                            {{-- Replace exchange SVG icon later --}}
+                            
                             <span class="bilai-dash-rp-sep-icon"><i class="fa fa-exchange"></i></span>
                             <span class="bilai-dash-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-money"></i></span><span>৳{{ number_format($totalOrderAmount, 0) }} TK</span>
+                                
+                                <span class="bilai-dash-rp-icon"><i class="fa fa-money"></i></span><span>৳<?php echo e(number_format($totalOrderAmount, 0)); ?> TK</span>
                             </span>
                         </div>
                     </div>
@@ -275,88 +275,88 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                 <div class="bilai-card">
                     <nav class="bilai-dash-nav">
                         <p class="bilai-dash-nav-title">My Account</p>
-                        <a href="{{ route('customer.account') }}" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.account')); ?>" class="bilai-dash-nav-item">
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-home"></i></span> Dashboard
                         </a>
-                        <a href="{{ route('customer.orders') }}" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.orders')); ?>" class="bilai-dash-nav-item">
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-shopping-bag"></i></span> Orders
-                            @if($pendingOrdersCount > 0)<span class="bilai-dash-nav-badge">{{ $pendingOrdersCount }}</span>@endif
+                            <?php if($pendingOrdersCount > 0): ?><span class="bilai-dash-nav-badge"><?php echo e($pendingOrdersCount); ?></span><?php endif; ?>
                         </a>
-                        <a href="{{ route('customer.profile_edit') }}" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.profile_edit')); ?>" class="bilai-dash-nav-item">
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-user"></i></span> Profile
                         </a>
                         <a href="#" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-heart-o"></i></span> Wishlist
                         </a>
-                        <a href="{{ route('customer.addresses') }}" class="bilai-dash-nav-item {{ request()->is('customer/addresses') ? 'active' : '' }}">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.addresses')); ?>" class="bilai-dash-nav-item <?php echo e(request()->is('customer/addresses') ? 'active' : ''); ?>">
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-map-marker"></i></span> Addresses
                         </a>
                         <a href="#" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-ticket"></i></span> Coupon
                         </a>
-                        {{-- Gift Cards removed from sidebar UI per design (backend untouched) --}}
-                        <a href="{{ route('customer.rewards') }}" class="bilai-dash-nav-item active">
-                            {{-- Replace sidebar SVG icon later --}}
+                        
+                        <a href="<?php echo e(route('customer.rewards')); ?>" class="bilai-dash-nav-item active">
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
                         </a>
-                        <a href="{{ route('customer.order_track') }}" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.order_track')); ?>" class="bilai-dash-nav-item">
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-truck"></i></span> Track Order
                         </a>
-                        <a href="{{ route('customer.refunds') }}" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('customer.refunds')); ?>" class="bilai-dash-nav-item">
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-undo"></i></span> Return Request
                         </a>
-                        <a href="{{ route('complaint') }}" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
+                        <a href="<?php echo e(route('complaint')); ?>" class="bilai-dash-nav-item">
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-headphones"></i></span> Support Ticket
                         </a>
                         <hr class="bilai-dash-nav-sep">
-                        <a href="{{ route('customer.logout') }}"
+                        <a href="<?php echo e(route('customer.logout')); ?>"
                            onclick="event.preventDefault(); document.getElementById('bilai-rw-logout-form').submit();"
                            class="bilai-dash-nav-item bilai-dash-nav-item--logout">
-                            {{-- Replace sidebar SVG icon later --}}
+                            
                             <span class="bilai-dash-nav-icon"><i class="fa fa-sign-out"></i></span> Logout
                         </a>
-                        <form id="bilai-rw-logout-form" action="{{ route('customer.logout') }}" method="POST" style="display:none;">@csrf</form>
+                        <form id="bilai-rw-logout-form" action="<?php echo e(route('customer.logout')); ?>" method="POST" style="display:none;"><?php echo csrf_field(); ?></form>
                     </nav>
                 </div>
             </aside>
 
-            {{-- ═══════════ RIGHT CONTENT ═══════════ --}}
+            
             <main class="bilai-rw-content">
 
-                {{-- Hero --}}
+                
                 <div class="bilai-rw-hero">
                     <div class="bilai-rw-hero-top">
                         <div>
-                            <p class="bilai-rw-hero-hello">Hello, {{ $firstName }}!</p>
+                            <p class="bilai-rw-hero-hello">Hello, <?php echo e($firstName); ?>!</p>
                             <h2 class="bilai-rw-hero-title">Your Reward Points</h2>
                             <p class="bilai-rw-hero-sub">Earn points on every purchase and redeem them for discounts</p>
                         </div>
                         <div class="bilai-rw-hero-points">
                             <p class="lbl">Available Points</p>
-                            <p class="val">{{ $rewardPoints }}</p>
+                            <p class="val"><?php echo e($rewardPoints); ?></p>
                             <p class="sub">Reward Points</p>
                         </div>
                     </div>
-                    {{-- Hidden for now — change @if(false) to @if(true) to show the summary strip again --}}
-                    @if(false)
+                    
+                    <?php if(false): ?>
                     <div class="bilai-rw-hero-strip">
                         <div class="bilai-rw-strip-col">
                             <p class="bilai-rw-strip-label"><span class="bilai-rw-strip-dot"></span> Total Points</p>
-                            <p class="bilai-rw-strip-value">{{ $rewardPoints }} RP</p>
+                            <p class="bilai-rw-strip-value"><?php echo e($rewardPoints); ?> RP</p>
                             <p class="bilai-rw-strip-sub">Available to use</p>
                         </div>
                         <div class="bilai-rw-strip-col">
                             <p class="bilai-rw-strip-label"><span class="bilai-rw-strip-dot"></span> Cash Value</p>
-                            <p class="bilai-rw-strip-value orange">৳{{ number_format($cashValue, 2) }}</p>
+                            <p class="bilai-rw-strip-value orange">৳<?php echo e(number_format($cashValue, 2)); ?></p>
                             <p class="bilai-rw-strip-sub">1 point = ৳1.00</p>
                         </div>
                         <div class="bilai-rw-strip-col">
@@ -365,15 +365,15 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                             <p class="bilai-rw-strip-sub">500 pts needed for silver</p>
                         </div>
                     </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
 
-                {{-- Membership Progress — hidden for now; change @if(false) to @if(true) to show it again --}}
-                @if(false)
+                
+                <?php if(false): ?>
                 <div class="bilai-rw-card">
                     <div class="bilai-rw-card-head">
                         <h3 class="bilai-rw-card-title">
-                            {{-- Replace crown SVG icon later --}}
+                            
                             <span class="ic"><i class="fa fa-trophy"></i></span> Membership Progress
                         </h3>
                         <span class="bilai-rw-badge-pill">500 pts – Silver</span>
@@ -381,25 +381,25 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
 
                     <div class="bilai-rw-stages">
                         <div class="bilai-rw-stage active">
-                            {{-- Replace membership SVG icon later --}}
+                            
                             <div class="bilai-rw-stage-ic"><i class="fa fa-circle-o"></i></div>
                             <p class="bilai-rw-stage-name">New Member</p>
                             <p class="bilai-rw-stage-here">You are here</p>
                         </div>
                         <div class="bilai-rw-stage">
-                            {{-- Replace membership SVG icon later --}}
+                            
                             <div class="bilai-rw-stage-ic"><i class="fa fa-shield"></i></div>
                             <p class="bilai-rw-stage-name">Silver</p>
                             <p class="bilai-rw-stage-here">500 pts</p>
                         </div>
                         <div class="bilai-rw-stage">
-                            {{-- Replace membership SVG icon later --}}
+                            
                             <div class="bilai-rw-stage-ic"><i class="fa fa-trophy"></i></div>
                             <p class="bilai-rw-stage-name">Gold</p>
                             <p class="bilai-rw-stage-here">1500 pts</p>
                         </div>
                         <div class="bilai-rw-stage">
-                            {{-- Replace membership SVG icon later --}}
+                            
                             <div class="bilai-rw-stage-ic"><i class="fa fa-diamond"></i></div>
                             <p class="bilai-rw-stage-name">Platinum</p>
                             <p class="bilai-rw-stage-here">3000 pts</p>
@@ -408,13 +408,13 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
 
                     <div class="bilai-rw-progress"><div class="bilai-rw-progress-fill"></div></div>
                     <div class="bilai-rw-progress-foot">
-                        <span class="pts">{{ $rewardPoints }} pts</span>
+                        <span class="pts"><?php echo e($rewardPoints); ?> pts</span>
                         <span class="hint">Earn faster with special promotions!</span>
                     </div>
                 </div>
-                @endif
+                <?php endif; ?>
 
-                {{-- How Reward Points Work --}}
+                
                 <div class="bilai-rw-card">
                     <div class="bilai-rw-card-head" style="margin-bottom:16px;">
                         <h3 class="bilai-rw-card-title">How Reward Points Work</h3>
@@ -441,70 +441,70 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                     </div>
                 </div>
 
-                {{-- Point History --}}
+                
                 <div class="bilai-rw-card">
                     <div class="bilai-rw-card-head" style="margin-bottom:16px;">
                         <h3 class="bilai-rw-card-title">Point History</h3>
                     </div>
                     <div class="bilai-rw-hist-sub">
                         <p class="bilai-rw-hist-sub-title">
-                            {{-- Replace clock SVG icon later --}}
+                            
                             <i class="fa fa-clock-o" style="color:var(--bilai-rw-muted);"></i> Transaction History
                         </p>
-                        {{-- Server-side filter tabs --}}
+                        
                         <div class="bilai-rw-hist-tabs">
-                            <a href="{{ route('customer.rewards') }}" class="bilai-rw-hist-tab {{ $filter === 'all' ? 'active' : '' }}">All</a>
-                            <a href="{{ route('customer.rewards', ['filter' => 'earned']) }}" class="bilai-rw-hist-tab {{ $filter === 'earned' ? 'active' : '' }}">Earned</a>
-                            <a href="{{ route('customer.rewards', ['filter' => 'spent']) }}" class="bilai-rw-hist-tab {{ $filter === 'spent' ? 'active' : '' }}">Spent</a>
+                            <a href="<?php echo e(route('customer.rewards')); ?>" class="bilai-rw-hist-tab <?php echo e($filter === 'all' ? 'active' : ''); ?>">All</a>
+                            <a href="<?php echo e(route('customer.rewards', ['filter' => 'earned'])); ?>" class="bilai-rw-hist-tab <?php echo e($filter === 'earned' ? 'active' : ''); ?>">Earned</a>
+                            <a href="<?php echo e(route('customer.rewards', ['filter' => 'spent'])); ?>" class="bilai-rw-hist-tab <?php echo e($filter === 'spent' ? 'active' : ''); ?>">Spent</a>
                         </div>
                     </div>
 
-                    @if(isset($transactions) && $transactions->count() > 0)
+                    <?php if(isset($transactions) && $transactions->count() > 0): ?>
                         <div class="bilai-rw-hist-list">
-                            @foreach($transactions as $tx)
-                                @php $credit = $tx->points >= 0; @endphp
+                            <?php $__currentLoopData = $transactions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tx): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php $credit = $tx->points >= 0; ?>
                                 <div class="bilai-rw-hist-item">
-                                    <div class="bilai-rw-hist-item-ic {{ $credit ? 'credit' : 'debit' }}">
-                                        {{-- Replace transaction SVG icon later --}}
-                                        <i class="fa {{ $credit ? 'fa-plus' : 'fa-minus' }}"></i>
+                                    <div class="bilai-rw-hist-item-ic <?php echo e($credit ? 'credit' : 'debit'); ?>">
+                                        
+                                        <i class="fa <?php echo e($credit ? 'fa-plus' : 'fa-minus'); ?>"></i>
                                     </div>
                                     <div class="bilai-rw-hist-item-info">
-                                        <p class="bilai-rw-hist-item-desc">{{ $tx->description }}</p>
-                                        <p class="bilai-rw-hist-item-date">{{ $tx->created_at->format('d M Y, h:i A') }}</p>
+                                        <p class="bilai-rw-hist-item-desc"><?php echo e($tx->description); ?></p>
+                                        <p class="bilai-rw-hist-item-date"><?php echo e($tx->created_at->format('d M Y, h:i A')); ?></p>
                                     </div>
                                     <div class="bilai-rw-hist-item-amt">
-                                        <p class="bilai-rw-hist-item-pts {{ $credit ? 'credit' : 'debit' }}">{{ $credit ? '+' : '' }}{{ $tx->points }} RP</p>
-                                        @if(!is_null($tx->balance_after))
-                                            <p class="bilai-rw-hist-item-bal">Balance: {{ $tx->balance_after }}</p>
-                                        @endif
+                                        <p class="bilai-rw-hist-item-pts <?php echo e($credit ? 'credit' : 'debit'); ?>"><?php echo e($credit ? '+' : ''); ?><?php echo e($tx->points); ?> RP</p>
+                                        <?php if(!is_null($tx->balance_after)): ?>
+                                            <p class="bilai-rw-hist-item-bal">Balance: <?php echo e($tx->balance_after); ?></p>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
-                        <div class="bilai-rw-hist-pagination">{{ $transactions->links() }}</div>
-                    @else
-                        {{-- Empty state --}}
+                        <div class="bilai-rw-hist-pagination"><?php echo e($transactions->links()); ?></div>
+                    <?php else: ?>
+                        
                         <div class="bilai-rw-hist-empty">
-                            {{-- Replace empty-state SVG icon later --}}
+                            
                             <div class="bilai-rw-hist-empty-ic"><i class="fa fa-clipboard"></i></div>
                             <p class="bilai-rw-hist-empty-title">No transactions yet</p>
                             <p class="bilai-rw-hist-empty-text">Your full point history — every time you earn or spend points — will appear here after your first order.</p>
-                            <a href="{{ route('shop') }}" class="bilai-rw-browse-btn">Browse Products <i class="fa fa-arrow-right"></i></a>
+                            <a href="<?php echo e(route('shop')); ?>" class="bilai-rw-browse-btn">Browse Products <i class="fa fa-arrow-right"></i></a>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
 
-                {{-- Terms & Conditions --}}
+                
                 <div class="bilai-rw-card">
                     <div class="bilai-rw-card-head" style="margin-bottom:16px;">
                         <h3 class="bilai-rw-card-title">Terms &amp; Conditions</h3>
                     </div>
 
-                    {{-- Static placeholder copy for now — replace with CMS/admin content later --}}
+                    
                     <div class="bilai-rw-acc">
                         <div class="bilai-rw-acc-item open">
                             <button type="button" class="bilai-rw-acc-head">
-                                {{-- Replace star SVG icon later --}}
+                                
                                 <span class="star"><i class="fa fa-star"></i></span>
                                 Earning Points
                                 <span class="chev"><i class="fa fa-chevron-down"></i></span>
@@ -520,7 +520,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
 
                         <div class="bilai-rw-acc-item">
                             <button type="button" class="bilai-rw-acc-head">
-                                {{-- Replace star SVG icon later --}}
+                                
                                 <span class="star"><i class="fa fa-star"></i></span>
                                 Adjustments to Points
                                 <span class="chev"><i class="fa fa-chevron-down"></i></span>
@@ -535,7 +535,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
 
                         <div class="bilai-rw-acc-item">
                             <button type="button" class="bilai-rw-acc-head">
-                                {{-- Replace star SVG icon later --}}
+                                
                                 <span class="star"><i class="fa fa-star"></i></span>
                                 Redeeming Points
                                 <span class="chev"><i class="fa fa-chevron-down"></i></span>
@@ -551,7 +551,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
 
                         <div class="bilai-rw-acc-item">
                             <button type="button" class="bilai-rw-acc-head">
-                                {{-- Replace star SVG icon later --}}
+                                
                                 <span class="star"><i class="fa fa-star"></i></span>
                                 Points Expiry
                                 <span class="chev"><i class="fa fa-chevron-down"></i></span>
@@ -566,7 +566,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
 
                         <div class="bilai-rw-acc-item">
                             <button type="button" class="bilai-rw-acc-head">
-                                {{-- Replace star SVG icon later --}}
+                                
                                 <span class="star"><i class="fa fa-star"></i></span>
                                 Coupon &amp; Cashback Policy
                                 <span class="chev"><i class="fa fa-chevron-down"></i></span>
@@ -581,7 +581,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
 
                         <div class="bilai-rw-acc-item">
                             <button type="button" class="bilai-rw-acc-head">
-                                {{-- Replace star SVG icon later --}}
+                                
                                 <span class="star"><i class="fa fa-star"></i></span>
                                 General Conditions
                                 <span class="chev"><i class="fa fa-chevron-down"></i></span>
@@ -601,7 +601,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
     </div>
 </div>
 
-@push('script')
+<?php $__env->startPush('script'); ?>
 <script>
 /* Reward T&C accordion + visual history tabs (no backend yet) */
 (function () {
@@ -619,6 +619,8 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
     });
 }());
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/customer/rewards.blade.php ENDPATH**/ ?>

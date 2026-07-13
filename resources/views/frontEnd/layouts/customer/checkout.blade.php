@@ -226,7 +226,6 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
     font-size: 17px; font-weight: 800; color: var(--co-primary);
 }
 .total-row.final span:first-child { color: var(--co-text); }
-.advance-alert { background: #fff7e9; border: 1px solid #f2d59a; border-radius: 8px; padding: 12px; margin-top: 12px; }
 
 /* ── Place order button ── */
 .btn-place-order {
@@ -269,8 +268,6 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 /* BilaiGhor Checkout Order Items Fix End */
 
 /* BilaiGhor Checkout Summary Fix Start */
-/* Advance (paid) / Due rows are not rendered on this flow; standard totals only. */
-.summary-totals .advance-alert { display: none; }
 /* BilaiGhor Checkout Summary Fix End */
 
 /* BilaiGhor Checkout Address Modal Start */
@@ -378,7 +375,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 <section class="checkout-section">
     @php
         // ==============================================================
-        //  PHP LOGIC: CART, SHIPPING, DISCOUNT, ADVANCE (UNCHANGED)
+        //  PHP LOGIC: CART, SHIPPING, DISCOUNT (UNCHANGED)
         // ==============================================================
         $subtotal = Cart::instance('shopping')->subtotal();
         $subtotal = str_replace(',', '', $subtotal);
@@ -431,15 +428,14 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
             ];
         }
 
-        // ✅ Advance Logic
-        $advance_amount = \App\Http\Controllers\Frontend\ShoppingController::getCartAdvanceAmount();
-        $hasAdvance     = $advance_amount > 0 ? true : false;
-        $payable_now    = $hasAdvance ? $advance_amount : $grand_total;
-        $due_amount     = $hasAdvance ? ($grand_total - $advance_amount) : 0;
+        // Advance Payment has been fully retired from this checkout flow (order_save() always
+        // charges the real grand total now). Variables kept at zero/false so nothing downstream
+        // that still references these names breaks.
+        $advance_amount = 0.0;
+        $hasAdvance     = false;
+        $payable_now    = $grand_total;
+        $due_amount     = 0;
 
-        // ── Checkout frontend overrides (display only — backend order_save() is unchanged) ──
-        // Advance payment is NOT shown/enforced on this checkout flow: hide advance UI and always allow COD.
-        $hasAdvance = false;
         // Online payment gateways hidden from the frontend for now (kept in backend/admin for later use).
         $__showOnlineGateways = false;
 
@@ -614,23 +610,11 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                         </div>
                         <div class="card-body-custom">
 
-                            @if($hasAdvance)
-                                <div class="alert border-0 mb-4" style="border-left: 4px solid var(--co-primary) !important; background-color: #fff7e9; border-radius:10px;">
-                                    <div class="d-flex gap-3 align-items-center">
-                                        <i class="fa fa-exclamation-triangle" style="color:var(--co-primary); font-size:20px;"></i>
-                                        <div>
-                                            <strong>Advance payment required!</strong>
-                                            <p class="mb-0 small">This order requires <b>৳ {{ number_format($advance_amount,2) }}</b> advance payment.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
                             {{-- Payment Options List --}}
                             <div class="payment-options-list">
 
                                 {{-- COD Option --}}
-                                @if(!$hasDigital && !$hasAdvance)
+                                @if(!$hasDigital)
                                     <label class="payment-option-label">
                                         <input type="radio" name="payment_method" value="cod" checked required>
                                         <div class="payment-content">
@@ -891,13 +875,6 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                 <div class="total-row"><span>Discount</span> <span id="discountAmount">- ৳ {{ number_format($discount, 2) }}</span></div>
                                 <div class="total-row"><span>Cash from Reward Points</span> <span id="rewardDiscountAmount">- ৳ 0.00</span></div>
                                 <div class="total-row final"><span>Total</span> <span id="grandTotalAmount">৳ {{ number_format($grand_total, 2) }}</span></div>
-
-                                @if($hasAdvance)
-                                    <div class="advance-alert">
-                                        <div class="total-row fw-bold" style="margin-bottom:6px;"><span>Advance (paid):</span> <span id="advanceAmountCell">৳ {{ number_format($advance_amount,2) }}</span></div>
-                                        <div class="total-row fw-bold mb-0" style="color:#c0392b;"><span>Due:</span> <span id="dueAmountCell">৳ {{ number_format($due_amount,2) }}</span></div>
-                                    </div>
-                                @endif
                             </div>
 
                             {{-- DESKTOP SUBMIT BUTTON (Only Visible on Desktop) --}}
@@ -1149,8 +1126,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const baseSubtotal = parseFloat("{{ $subtotal ?? 0 }}");
         const baseDiscount = parseFloat("{{ $discount ?? 0 }}");
-        const advanceAmount = parseFloat("{{ $advance_amount ?? 0 }}");
-        const hasAdvance = @json($hasAdvance ?? false);
         const requiresShipping = @json($requires_shipping ?? false);
         const cartItems = @json($cartItemsForJs ?? []);
         const hasAllFreeDelivery = @json($hasAllFreeDelivery ?? false);
@@ -1189,15 +1164,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var shippingCharge = isFreeDelivery ? 0 : districtChargeFromSelect();
 
             var grandTotal = Math.max(0, baseSubtotal + shippingCharge - baseDiscount - (window.bilaiRewardDiscount || 0));
-            var dueAmount = hasAdvance ? (grandTotal - advanceAmount) : 0;
 
             $('#shippingAmount').text('৳ ' + shippingCharge.toFixed(2));
             $('#grandTotalAmount').text('৳ ' + grandTotal.toFixed(2));
-
-            if (hasAdvance) {
-                $('#dueAmountCell').text('৳ ' + dueAmount.toFixed(2));
-                $('#dueAmountText').text(dueAmount.toFixed(2));
-            }
 
             if (!requiresShipping) {
                 return;
@@ -1261,14 +1230,8 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 var currentShipping = parseFloat($('#shippingAmount').text().replace(/[৳,\s]/g, '').trim()) || 0;
                 var grandTotal = Math.max(0, baseSubtotal + currentShipping - baseDiscount - (window.bilaiRewardDiscount || 0));
-                var dueAmount = hasAdvance ? (grandTotal - advanceAmount) : 0;
 
                 $('#grandTotalAmount').text('৳ ' + grandTotal.toFixed(2));
-
-                if (hasAdvance) {
-                    $('#dueAmountCell').text('৳ ' + dueAmount.toFixed(2));
-                    $('#dueAmountText').text(dueAmount.toFixed(2));
-                }
 
                 var did = $('#checkout_district').val();
                 if (did) {
@@ -1451,10 +1414,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof window.EcomTracking === 'undefined') return;
 
     var items = @json($cartItemsForJs);
-    var hasAdvance = @json($hasAdvance);
-    var advanceAmount = parseFloat("{{ $advance_amount }}") || 0;
     var grandTotal = parseFloat("{{ $grand_total }}") || 0;
-    var payableNow = hasAdvance ? advanceAmount : grandTotal;
+    var payableNow = grandTotal;
     var coupon = @json(Session::get('coupon_code', null));
 
     function checkoutUserFromForm() {

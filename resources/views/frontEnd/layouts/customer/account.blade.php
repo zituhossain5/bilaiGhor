@@ -87,7 +87,6 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 14px;
 }
 .bilai-dash-avatar {
     width: 56px;
@@ -358,23 +357,6 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                             </div>
                         </div>
 
-                        <hr class="bilai-dash-profile-divider">
-
-                        {{-- RP / TK summary row --}}
-                        <div class="bilai-dash-rp-row">
-                            <span class="bilai-dash-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span>
-                                <span>{{ $customer->rewardBalance() }} RP</span>
-                            </span>
-                            {{-- Replace equal/exchange SVG icon later --}}
-                            <span class="bilai-dash-rp-sep-icon"><i class="fa fa-exchange"></i></span>
-                            <span class="bilai-dash-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-money"></i></span>
-                                <span>৳{{ number_format($totalOrderAmount, 0) }} TK</span>
-                            </span>
-                        </div>
                     </div>
 
                     {{-- Nav menu --}}

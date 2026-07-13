@@ -44,6 +44,11 @@ class Order extends Model
             'delivery_otp_sent_at' => 'datetime',
             'delivery_otp_expires_at' => 'datetime',
             'delivery_otp_verified_at' => 'datetime',
+            // Missing here was the root cause of the "In Courier" order-details 500:
+            // uncast, courier_sent_at came back as a raw string, and code that called
+            // ->format() on it (assuming a Carbon instance, like its sibling columns)
+            // crashed only for orders that actually had this column populated.
+            'courier_sent_at' => 'datetime',
         ];
     }
 

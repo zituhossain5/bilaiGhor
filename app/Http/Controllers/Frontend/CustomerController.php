@@ -565,9 +565,6 @@ class CustomerController extends Controller
             Session::put('shipping_district_id', null);
         }
 
-        $advanceTotal = \App\Http\Controllers\Frontend\ShoppingController::getCartAdvanceAmount();
-        $hasAdvance   = $advanceTotal > 0;
-
         $hasDigital = \App\Http\Controllers\Frontend\ShoppingController::hasDigitalProductInCart();
 
         if (Auth::guard('admin')->check()) {
@@ -654,8 +651,6 @@ class CustomerController extends Controller
             'uddoktapay_gateway',
             'aamarpay_gateway',
             'manual_gateways',
-            'advanceTotal',
-            'hasAdvance',
             'hasDigital',
             'hasAllFreeDelivery',
             'checkoutPrefill',
@@ -758,18 +753,13 @@ public function order_save(Request $request)
             ? DeliveryLocation::shippingLabelForZone($districtId, $zoneId)
             : 'BD';
 
-        // কার্টের advance item গুলোর মোট
-        $advanceTotal = \App\Http\Controllers\Frontend\ShoppingController::getCartAdvanceAmount();
-
         // ইনভয়েসে দেখানোর মোট (Grand Total)
         $grandTotal = ($subtotal + $shippingfee) - $discount;
 
-        // =========================================================
-        // ⭐ ফিক্সড লজিক: গেটওয়েতে কত টাকা পাঠাবো?
-        // =========================================================
-        // যদি এডভান্স থাকে, তাহলে শুধু এডভান্স এমাউন্ট পে করতে হবে।
-        // যদি না থাকে, তাহলে পুরো গ্র্যান্ড টোটাল পে করতে হবে।
-        $payable_amount = ($advanceTotal > 0) ? $advanceTotal : $grandTotal;
+        // Amount actually charged/recorded always equals the real grand total — Advance
+        // Payment has been fully retired from this flow (was: partial "advance" amount
+        // charged instead of the full total when a product had an advance_amount configured).
+        $payable_amount = $grandTotal;
 
         // ── Reward points (logged-in customers only; amounts NEVER trusted from the form) ──
         // The form only sends use_reward_points=1/0. Points and discount are recomputed
@@ -783,7 +773,7 @@ public function order_save(Request $request)
             $rewardPointsUsed = \App\Services\RewardPointService::maxRedeemable(Auth::guard('customer')->id(), $eligibleSubtotal);
             $rewardDiscount   = $rewardPointsUsed * $rewardPointValue;
             $grandTotal       = max(0, $grandTotal - $rewardDiscount);
-            $payable_amount   = ($advanceTotal > 0) ? $advanceTotal : $grandTotal;
+            $payable_amount   = $grandTotal;
         }
 
         // Customer ঠিক করা
@@ -810,7 +800,7 @@ public function order_save(Request $request)
         // Main Order save — order creation and reward spending live in ONE transaction:
         // if either fails, neither persists (no points lost, no orphan discount).
         $order = new Order();
-        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $request, $customer_id, $useRewardPoints, $rewardPointValue, $subtotal, $discount, $shippingfee, $advanceTotal, &$rewardPointsUsed, &$rewardDiscount, &$grandTotal, &$payable_amount) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $request, $customer_id, $useRewardPoints, $rewardPointValue, $subtotal, $discount, $shippingfee, &$rewardPointsUsed, &$rewardDiscount, &$grandTotal, &$payable_amount) {
             if ($useRewardPoints) {
                 // Re-derive under a customer row lock: two simultaneous checkouts
                 // serialize here, so the same points can never be spent twice.
@@ -819,7 +809,7 @@ public function order_save(Request $request)
                 $rewardPointsUsed = \App\Services\RewardPointService::maxRedeemable($customer_id, $eligibleSubtotal);
                 $rewardDiscount   = $rewardPointsUsed * $rewardPointValue;
                 $grandTotal       = max(0, ($subtotal + $shippingfee) - $discount - $rewardDiscount);
-                $payable_amount   = ($advanceTotal > 0) ? $advanceTotal : $grandTotal;
+                $payable_amount   = $grandTotal;
             }
 
             $order->invoice_id      = rand(11111,99999);
@@ -993,7 +983,7 @@ public function order_save(Request $request)
 
             $info = [
                 'currency'        => "BDT",
-                'amount'          => $payable_amount, // ✅ এখানে ফিক্স করা হলো: এডভান্স থাকলে এডভান্স, না হলে ফুল
+                'amount'          => $payable_amount, // সবসময় পূর্ণ গ্র্যান্ড টোটাল (Advance Payment বাতিল)
                 'order_id'        => uniqid(),
                 'client_ip'       => $request->ip(),
                 'customer_name'   => $request->name,
@@ -1178,7 +1168,8 @@ public function order_save(Request $request)
 
     public function addresses()
     {
-        $addresses = \App\Models\CustomerAddress::where('customer_id', Auth::guard('customer')->user()->id)
+        $addresses = \App\Models\CustomerAddress::with(['district:id,name', 'zone:id,name,name_bn'])
+            ->where('customer_id', Auth::guard('customer')->user()->id)
             ->orderByDesc('is_default')
             ->orderBy('id')
             ->get();

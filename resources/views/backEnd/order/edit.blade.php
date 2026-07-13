@@ -19,13 +19,10 @@
     Session::put('product_discount', $lineProductDiscount);
     $total_discount = (float) Session::get('pos_discount', 0) + $lineProductDiscount;
     $total = ($subtotal + $shipping) - $total_discount;
+    // Advance Payment removed from this flow — Amount Paid always shows the real
+    // received payment; Due is whatever remains against the actual total.
     $paidAmount = \App\Models\Payment::where('order_id', $order->id)->sum('amount');
-    $advancePaid = 0;
-    $dueAmount = $total;
-    if ($paidAmount > 0 && $paidAmount < $total) {
-        $advancePaid = $paidAmount;
-        $dueAmount = $total - $advancePaid;
-    }
+    $dueAmount = max(0, $total - $paidAmount);
     $posPay = $order->payment;
     $posPayStatus = optional($posPay)->payment_status ?? ($order->payment_status ?? 'pending');
     $statusName = optional($order->status)->name ?? 'N/A';
@@ -461,11 +458,11 @@
                                         <td>মোট পরিশোধ</td>
                                         <td class="text-end">৳{{ number_format((float) $total, 2) }}</td>
                                     </tr>
-                                    @if($advancePaid > 0)
                                     <tr>
-                                        <td>অগ্রিম পরিশোধ</td>
-                                        <td class="text-end text-success">৳{{ number_format($advancePaid, 2) }}</td>
+                                        <td>পরিশোধিত পরিমাণ</td>
+                                        <td class="text-end text-success">৳{{ number_format($paidAmount, 2) }}</td>
                                     </tr>
+                                    @if($dueAmount > 0)
                                     <tr class="oe-summary-due">
                                         <td>বাকি</td>
                                         <td class="text-end">৳{{ number_format($dueAmount, 2) }}</td>

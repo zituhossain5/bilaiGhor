@@ -47,7 +47,7 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
 .bilai-prof-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 14px; }
 .bilai-card { background: #fff; border: 1px solid var(--bilai-prof-border); border-radius: var(--bilai-prof-radius); overflow: hidden; }
 .bilai-dash-profile-box { padding: 18px 16px 16px; }
-.bilai-dash-profile-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.bilai-dash-profile-row { display: flex; align-items: center; gap: 12px; }
 .bilai-dash-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--bilai-prof-border); flex-shrink: 0; }
 .bilai-dash-avatar-placeholder { width: 56px; height: 56px; border-radius: 50%; background: var(--bilai-prof-primary); color: #fff; font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
 .bilai-dash-profile-info { flex: 1; min-width: 0; }
@@ -182,19 +182,6 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
                                 <p class="bilai-dash-profile-name"><?php echo e($profile_edit->name ?? 'Customer'); ?></p>
                                 <p class="bilai-dash-profile-sub"><?php echo e($profile_edit->phone ?? $profile_edit->email ?? ''); ?></p>
                             </div>
-                        </div>
-                        <hr class="bilai-dash-profile-divider">
-                        <div class="bilai-dash-rp-row">
-                            <span class="bilai-dash-rp-item">
-                                
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span><span><?php echo e($customer->rewardBalance()); ?> RP</span>
-                            </span>
-                            
-                            <span class="bilai-dash-rp-sep-icon"><i class="fa fa-exchange"></i></span>
-                            <span class="bilai-dash-rp-item">
-                                
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-money"></i></span><span>৳<?php echo e(number_format($totalOrderAmount, 0)); ?> TK</span>
-                            </span>
                         </div>
                     </div>
                 </div>

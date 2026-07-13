@@ -53,7 +53,7 @@ $filter       = $filter ?? 'all';
 .bilai-rw-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 14px; }
 .bilai-card { background: #fff; border: 1px solid var(--bilai-rw-border); border-radius: var(--bilai-rw-radius); overflow: hidden; }
 .bilai-dash-profile-box { padding: 18px 16px 16px; }
-.bilai-dash-profile-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.bilai-dash-profile-row { display: flex; align-items: center; gap: 12px; }
 .bilai-dash-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--bilai-rw-border); flex-shrink: 0; }
 .bilai-dash-avatar-placeholder { width: 56px; height: 56px; border-radius: 50%; background: var(--bilai-rw-primary); color: #fff; font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
 .bilai-dash-profile-info { flex: 1; min-width: 0; }
@@ -255,19 +255,6 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                                 <p class="bilai-dash-profile-name">{{ $customer->name ?? 'Customer' }}</p>
                                 <p class="bilai-dash-profile-sub">{{ $customer->phone ?? $customer->email ?? '' }}</p>
                             </div>
-                        </div>
-                        <hr class="bilai-dash-profile-divider">
-                        <div class="bilai-dash-rp-row">
-                            <span class="bilai-dash-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span><span>{{ $rewardPoints }} RP</span>
-                            </span>
-                            {{-- Replace exchange SVG icon later --}}
-                            <span class="bilai-dash-rp-sep-icon"><i class="fa fa-exchange"></i></span>
-                            <span class="bilai-dash-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-money"></i></span><span>৳{{ number_format($totalOrderAmount, 0) }} TK</span>
-                            </span>
                         </div>
                     </div>
                 </div>

@@ -41,11 +41,15 @@ $isCancelled  = ((string) $order->order_status === '11');
 $statusToStep = ['1' => 1, '8' => 1, '2' => 2, '3' => 3, '5' => 3, '6' => 4];
 $currentStep  = $isCancelled ? 0 : ($statusToStep[(string) $order->order_status] ?? 1);
 
-$deliveredAt = $order->rider_delivered_at ?? $order->created_at;
+// Carbon::parse() accepts either a Carbon instance or a raw string, so the timeline
+// never crashes regardless of whether a given timestamp column happens to be cast.
+$toCarbon = fn ($v) => $v ? \Carbon\Carbon::parse($v) : null;
+
+$deliveredAt = $toCarbon($order->rider_delivered_at) ?? $order->created_at;
 $steps = [
     ['label' => 'Processing', 'lvl' => 1, 'time' => $order->created_at],
     ['label' => 'Confirmed',  'lvl' => 2, 'time' => $order->created_at],
-    ['label' => 'Shipped',    'lvl' => 3, 'time' => $order->courier_sent_at ?? $order->created_at],
+    ['label' => 'Shipped',    'lvl' => 3, 'time' => $toCarbon($order->courier_sent_at) ?? $order->created_at],
     ['label' => 'Delivered',  'lvl' => 4, 'time' => $deliveredAt],
 ];
 
@@ -93,7 +97,7 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
 
 /* ── Sidebar (shared style with orders/dashboard) ── */
 .bilai-od-profile-box { padding: 18px 16px 16px; }
-.bilai-od-profile-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.bilai-od-profile-row { display: flex; align-items: center; gap: 12px; }
 .bilai-od-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--bilai-od-border); flex-shrink: 0; }
 .bilai-od-avatar-ph { width: 56px; height: 56px; border-radius: 50%; background: var(--bilai-od-primary); color: #fff; font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
 .bilai-od-profile-info { flex: 1; min-width: 0; }
@@ -294,19 +298,6 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
                                 <p class="bilai-od-profile-name">{{ $customer->name ?? 'Customer' }}</p>
                                 <p class="bilai-od-profile-sub">{{ $customer->phone ?? $customer->email ?? '' }}</p>
                             </div>
-                        </div>
-                        <hr class="bilai-od-divider">
-                        <div class="bilai-od-rp-row">
-                            <span class="bilai-od-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-od-rp-icon"><i class="fa fa-star"></i></span><span>{{ $customer->rewardBalance() }} RP</span>
-                            </span>
-                            {{-- Replace exchange SVG icon later --}}
-                            <span class="bilai-od-rp-sep"><i class="fa fa-exchange"></i></span>
-                            <span class="bilai-od-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-od-rp-icon"><i class="fa fa-money"></i></span><span>৳{{ number_format($totalOrderAmount, 0) }} TK</span>
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -524,7 +515,7 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
                                 <div>
                                     <p class="bilai-od-info-name">{{ $courierName ?? 'N/A' }}</p>
                                     <p class="bilai-od-info-line">Tracking: {{ $trackingId ?? 'N/A' }}</p>
-                                    <p class="bilai-od-info-line">{{ $order->courier_sent_at ? 'Sent: ' . $order->courier_sent_at->format('M d, Y') : 'N/A' }}</p>
+                                    <p class="bilai-od-info-line">{{ $order->courier_sent_at ? 'Sent: ' . \Carbon\Carbon::parse($order->courier_sent_at)->format('M d, Y') : 'N/A' }}</p>
                                 </div>
                             </div>
                         </div>

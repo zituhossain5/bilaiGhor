@@ -46,7 +46,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
 .bilai-adr-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 14px; }
 .bilai-card { background: #fff; border: 1px solid var(--bilai-adr-border); border-radius: var(--bilai-adr-radius); overflow: hidden; }
 .bilai-dash-profile-box { padding: 18px 16px 16px; }
-.bilai-dash-profile-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.bilai-dash-profile-row { display: flex; align-items: center; gap: 12px; }
 .bilai-dash-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--bilai-adr-border); flex-shrink: 0; }
 .bilai-dash-avatar-placeholder { width: 56px; height: 56px; border-radius: 50%; background: var(--bilai-adr-primary); color: #fff; font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
 .bilai-dash-profile-info { flex: 1; min-width: 0; }
@@ -208,19 +208,6 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                                 <p class="bilai-dash-profile-sub">{{ $customer->phone ?? $customer->email ?? '' }}</p>
                             </div>
                         </div>
-                        <hr class="bilai-dash-profile-divider">
-                        <div class="bilai-dash-rp-row">
-                            <span class="bilai-dash-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span><span>{{ $customer->rewardBalance() }} RP</span>
-                            </span>
-                            {{-- Replace exchange SVG icon later --}}
-                            <span class="bilai-dash-rp-sep-icon"><i class="fa fa-exchange"></i></span>
-                            <span class="bilai-dash-rp-item">
-                                {{-- Replace SVG icon later --}}
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-money"></i></span><span>৳{{ number_format($totalOrderAmount, 0) }} TK</span>
-                            </span>
-                        </div>
                     </div>
                 </div>
 
@@ -331,6 +318,19 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                                 <div class="bilai-adr-card-body">
                                     <p class="bilai-adr-line name">{{ $addr->name }}</p>
                                     <p class="bilai-adr-line muted">{{ $addr->address }}</p>
+                                    {{-- Zone, District — built from live relationships; each part shown only when present --}}
+                                    @php
+                                        $addrLocation = array_filter([
+                                            optional($addr->zone)->name,
+                                            optional($addr->district)->name,
+                                        ]);
+                                    @endphp
+                                    @if(!empty($addrLocation))
+                                        <p class="bilai-adr-line muted">{{ implode(', ', $addrLocation) }}</p>
+                                    @endif
+                                    @if($addr->post_code)
+                                        <p class="bilai-adr-line muted">Post Code: {{ $addr->post_code }}</p>
+                                    @endif
                                     <p class="bilai-adr-line muted">{{ $addr->phone }}</p>
                                     @if($addr->email)
                                         <p class="bilai-adr-line muted">{{ $addr->email }}</p>

@@ -315,8 +315,9 @@
     $shipping = $order->shipping_charge ?? 0;
     $discount = $order->discount ?? 0;
     $finalTotal = $isResellerOrder ? $order->customer_payable_amount : $order->amount;
-    $advancePaid = \App\Models\Payment::where('order_id', $order->id)->sum('amount');
-    $dueAmount = $finalTotal - $advancePaid;
+    // Advance Payment removed from this flow — Amount Paid always shows the real received payment.
+    $paidAmount = \App\Models\Payment::where('order_id', $order->id)->sum('amount');
+    $dueAmount = max(0, $finalTotal - $paidAmount);
     $orderNoteText = $order->order_note ?? $order->note ?? '';
 @endphp
 
@@ -531,11 +532,11 @@
                             <span>{{ $isResellerOrder ? 'গ্রাহক প্রদেয়' : 'মোট পরিশোধ' }}</span>
                             <strong>৳{{ number_format($finalTotal, 2) }}</strong>
                         </div>
-                        @if($advancePaid > 0 && $advancePaid < $finalTotal)
                         <div class="inv-summary-row">
-                            <span>অগ্রিম পরিশোধ</span>
-                            <strong>৳{{ number_format($advancePaid, 2) }}</strong>
+                            <span>পরিশোধিত পরিমাণ</span>
+                            <strong>৳{{ number_format($paidAmount, 2) }}</strong>
                         </div>
+                        @if($dueAmount > 0)
                         <div class="inv-summary-row">
                             <span>বাকি</span>
                             <strong class="text-danger">৳{{ number_format($dueAmount, 2) }}</strong>
@@ -562,8 +563,9 @@
     $tqty    = $order->orderdetails->sum('qty');
     $pmethod = strtoupper(optional($order->payment)->payment_method ?? ($order->payment_gateway ?? 'N/A'));
     $pstatus = optional($order->payment)->payment_status ?? ($order->payment_status ?? 'pending');
-    $adv     = \App\Models\Payment::where('order_id', $order->id)->sum('amount');
-    $due     = $ftotal - $adv;
+    // Advance Payment removed from this flow — Amount Paid always shows the real received payment.
+    $paidReceipt = \App\Models\Payment::where('order_id', $order->id)->sum('amount');
+    $due     = max(0, $ftotal - $paidReceipt);
     $trkId   = $order->courier_tracking_id ?? $order->consignment_id ?? null;
     $courier = $order->courier_type ?? ($trkId ? 'steadfast' : null);
 @endphp
@@ -639,8 +641,8 @@
     <div class="rp">
         <div class="fl"><span>Method &nbsp;&nbsp;:</span><span><strong>{{ $pmethod }}</strong></span></div>
         <div class="fl"><span>Pay Status :</span><span><strong>{{ strtoupper($pstatus) }}</strong></span></div>
-        @if($adv > 0 && $adv < $ftotal)
-        <div class="fl"><span>Advance &nbsp;&nbsp;:</span><span>&#2547; {{ number_format($adv,2) }}</span></div>
+        <div class="fl"><span>Paid &nbsp;&nbsp;&nbsp;&nbsp;:</span><span>&#2547; {{ number_format($paidReceipt,2) }}</span></div>
+        @if($due > 0)
         <div class="fl"><span>Due &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</span><span><strong>&#2547; {{ number_format($due,2) }}</strong></span></div>
         @endif
         @if($courier)

@@ -231,7 +231,7 @@
                                 @if($paid_amount > 0 && $due_amount > 0)
                                     {{-- পার্শিয়াল পেমেন্ট (Advance) --}}
                                     <tr style="background:#27ae60;">
-                                        <td><strong>Paid / Advance</strong></td>
+                                        <td><strong>Paid Amount</strong></td>
                                         <td><strong>৳{{ number_format($paid_amount, 2) }}</strong></td>
                                     </tr>
                                     <tr style="background:#c0392b;">

@@ -55,7 +55,7 @@ $activeTab = $activeTab ?? 'all';
 
 /* ── Profile card ── */
 .bilai-dash-profile-box { padding: 18px 16px 16px; }
-.bilai-dash-profile-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.bilai-dash-profile-row { display: flex; align-items: center; gap: 12px; }
 .bilai-dash-avatar {
     width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
     border: 2px solid var(--bilai-dash-border); flex-shrink: 0;
@@ -260,23 +260,6 @@ $activeTab = $activeTab ?? 'all';
                                 <p class="bilai-dash-profile-sub"><?php echo e($customer->phone ?? $customer->email ?? ''); ?></p>
                             </div>
                         </div>
-
-                        <hr class="bilai-dash-profile-divider">
-
-                        <div class="bilai-dash-rp-row">
-                            <span class="bilai-dash-rp-item">
-                                
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-star"></i></span>
-                                <span><?php echo e($customer->rewardBalance()); ?> RP</span>
-                            </span>
-                            
-                            <span class="bilai-dash-rp-sep-icon"><i class="fa fa-exchange"></i></span>
-                            <span class="bilai-dash-rp-item">
-                                
-                                <span class="bilai-dash-rp-icon"><i class="fa fa-money"></i></span>
-                                <span>৳<?php echo e(number_format($totalOrderAmount, 0)); ?> TK</span>
-                            </span>
-                        </div>
                     </div>
                 </div>
 
@@ -435,10 +418,6 @@ $activeTab = $activeTab ?? 'all';
 
                                         $due_amount    = max(0, $grand_total - $paid_amount);
                                         $is_failed     = ($paid_amount == 0 && in_array($gateway_status, ['failed', 'cancel', 'cancelled']));
-                                        $show_download = ($paid_amount >= $grand_total) || ($paid_amount > 0 && !$is_failed);
-
-                                        $digitalDownloads  = \App\Models\DigitalDownload::where('order_id', $value->id)->get();
-                                        $hasDigitalProduct = $digitalDownloads->count() > 0;
 
                                         $hasPendingRefund = method_exists($value, 'hasPendingRefund') ? $value->hasPendingRefund() : false;
                                         $canRefund        = ($value->order_status != 11 && $paid_amount > 0 && !$hasPendingRefund);
@@ -499,17 +478,6 @@ $activeTab = $activeTab ?? 'all';
                                                         
                                                         <i class="fa fa-sticky-note-o"></i>
                                                     </a>
-                                                <?php endif; ?>
-
-                                                <?php if($hasDigitalProduct && $show_download): ?>
-                                                    <?php $__currentLoopData = $digitalDownloads; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $dl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                        <a href="<?php echo e(route('digital.download', $dl->token)); ?>"
-                                                           class="bilai-ord-btn-sm" style="background:#f0fdf4; color:#15803d;"
-                                                           target="_blank" title="Download">
-                                                            
-                                                            <i class="fa fa-download"></i>
-                                                        </a>
-                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                                 <?php endif; ?>
 
                                                 <?php if($canRefund): ?>

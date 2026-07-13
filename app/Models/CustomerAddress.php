@@ -35,4 +35,14 @@ class CustomerAddress extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
+
+    public function district()
+    {
+        return $this->belongsTo(DeliveryDistrict::class, 'district_id');
+    }
+
+    public function zone()
+    {
+        return $this->belongsTo(DeliveryZone::class, 'zone_id');
+    }
 }

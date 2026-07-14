@@ -275,7 +275,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-user"></i></span> Profile
                         </a>
-                        <a href="#" class="bilai-dash-nav-item">
+                        <a href="{{ route('customer.wishlist') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-heart-o"></i></span> Wishlist
                         </a>

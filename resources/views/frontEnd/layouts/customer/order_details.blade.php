@@ -319,7 +319,7 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-od-nav-icon"><i class="fa fa-user"></i></span> Profile
                         </a>
-                        <a href="#" class="bilai-od-nav-item">
+                        <a href="{{ route('customer.wishlist') }}" class="bilai-od-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-od-nav-icon"><i class="fa fa-heart-o"></i></span> Wishlist
                         </a>

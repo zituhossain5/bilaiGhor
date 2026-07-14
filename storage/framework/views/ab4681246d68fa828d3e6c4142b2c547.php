@@ -1,4 +1,4 @@
-@php
+<?php
     // ── Payment calc (same logic as order-details/orders pages) ──
     $payment        = \App\Models\Payment::where('order_id', $order->id)->orderBy('id', 'desc')->first();
     $gateway_status = $payment ? strtolower(trim($payment->payment_status)) : '';
@@ -44,12 +44,12 @@
     if (!empty($ship?->post_code)) { $locationLine = trim($locationLine . ' ' . $ship->post_code); }
 
     $money = fn ($v) => '৳' . number_format((float) $v, 0);
-@endphp
+?>
 
-@extends('frontEnd.layouts.master')
-@section('title', 'Invoice #' . ($order->invoice_id ?? $order->id))
 
-@push('css')
+<?php $__env->startSection('title', 'Invoice #' . ($order->invoice_id ?? $order->id)); ?>
+
+<?php $__env->startPush('css'); ?>
 <style>
 /* BilaiGhor Customer Invoice Start */
 .bilai-inv-page {
@@ -153,16 +153,16 @@
 }
 /* BilaiGhor Invoice Print End */
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <section class="bilai-inv-page">
     <div class="container">
         <div class="bilai-inv-wrap">
 
-            {{-- ── Action buttons ── --}}
+            
             <div class="bilai-invoice-actions">
-                <a href="{{ route('customer.order_details', $order->id) }}" class="bilai-inv-btn bilai-inv-btn--primary">
+                <a href="<?php echo e(route('customer.order_details', $order->id)); ?>" class="bilai-inv-btn bilai-inv-btn--primary">
                     <i class="fa fa-home"></i> Back to Order
                 </a>
                 <button type="button" onclick="window.print()" class="bilai-inv-btn bilai-inv-btn--ghost">
@@ -170,69 +170,69 @@
                 </button>
             </div>
 
-            {{-- ── Invoice card ── --}}
+            
             <div class="bilai-invoice-card">
 
                 <div class="bilai-inv-head">
                     <div class="bilai-inv-logo">
-                        @if(!empty($generalsetting->dark_logo))
-                            <img src="{{ asset($generalsetting->dark_logo) }}" alt="{{ $generalsetting->name }}">
-                        @else
-                            <span class="bilai-inv-logo-text">{{ $generalsetting->name }}</span>
-                        @endif
+                        <?php if(!empty($generalsetting->dark_logo)): ?>
+                            <img src="<?php echo e(asset($generalsetting->dark_logo)); ?>" alt="<?php echo e($generalsetting->name); ?>">
+                        <?php else: ?>
+                            <span class="bilai-inv-logo-text"><?php echo e($generalsetting->name); ?></span>
+                        <?php endif; ?>
                     </div>
                     <div class="bilai-inv-head-right">
                         <p class="bilai-inv-label">Invoice</p>
-                        <p class="bilai-inv-orderid">Order ID: #{{ $order->invoice_id ?? $order->id }}</p>
+                        <p class="bilai-inv-orderid">Order ID: #<?php echo e($order->invoice_id ?? $order->id); ?></p>
                     </div>
                 </div>
 
                 <hr class="bilai-inv-divider">
 
-                {{-- ── Info cards ── --}}
+                
                 <div class="bilai-inv-info-grid">
 
                     <div class="bilai-inv-info-card">
                         <h3 class="bilai-inv-info-title">Bill From</h3>
-                        <p class="bilai-inv-info-name">{{ $generalsetting->name }}</p>
-                        @if(!empty($contact->address))
-                            <p class="bilai-inv-info-line">{{ $contact->address }}</p>
-                        @endif
-                        @if(!empty($contact->email))
-                            <p class="bilai-inv-info-line">Email: {{ $contact->email }}</p>
-                        @endif
-                        @if(!empty($contact->phone) || !empty($contact->whatsapp))
-                            <p class="bilai-inv-info-line">Mobile/WhatsApp: {{ $contact->phone ?: $contact->whatsapp }}</p>
-                        @endif
+                        <p class="bilai-inv-info-name"><?php echo e($generalsetting->name); ?></p>
+                        <?php if(!empty($contact->address)): ?>
+                            <p class="bilai-inv-info-line"><?php echo e($contact->address); ?></p>
+                        <?php endif; ?>
+                        <?php if(!empty($contact->email)): ?>
+                            <p class="bilai-inv-info-line">Email: <?php echo e($contact->email); ?></p>
+                        <?php endif; ?>
+                        <?php if(!empty($contact->phone) || !empty($contact->whatsapp)): ?>
+                            <p class="bilai-inv-info-line">Mobile/WhatsApp: <?php echo e($contact->phone ?: $contact->whatsapp); ?></p>
+                        <?php endif; ?>
                     </div>
 
                     <div class="bilai-inv-info-card">
                         <h3 class="bilai-inv-info-title">Customer Details</h3>
-                        <p class="bilai-inv-info-name">{{ $custName }}</p>
-                        @if($addressLine !== '')
-                            <p class="bilai-inv-info-line">{{ $addressLine }}</p>
-                        @endif
-                        @if($locationLine !== '')
-                            <p class="bilai-inv-info-line">{{ $locationLine }}</p>
-                        @endif
-                        @if(!empty($custEmail))
-                            <p class="bilai-inv-info-line">Email: {{ $custEmail }}</p>
-                        @endif
-                        @if(!empty($custPhone))
-                            <p class="bilai-inv-info-line">Mobile: {{ $custPhone }}</p>
-                        @endif
+                        <p class="bilai-inv-info-name"><?php echo e($custName); ?></p>
+                        <?php if($addressLine !== ''): ?>
+                            <p class="bilai-inv-info-line"><?php echo e($addressLine); ?></p>
+                        <?php endif; ?>
+                        <?php if($locationLine !== ''): ?>
+                            <p class="bilai-inv-info-line"><?php echo e($locationLine); ?></p>
+                        <?php endif; ?>
+                        <?php if(!empty($custEmail)): ?>
+                            <p class="bilai-inv-info-line">Email: <?php echo e($custEmail); ?></p>
+                        <?php endif; ?>
+                        <?php if(!empty($custPhone)): ?>
+                            <p class="bilai-inv-info-line">Mobile: <?php echo e($custPhone); ?></p>
+                        <?php endif; ?>
                     </div>
 
                     <div class="bilai-inv-info-card">
                         <h3 class="bilai-inv-info-title">Payment Info</h3>
-                        <p class="bilai-inv-info-line">Date: {{ $order->created_at->format('j F, Y') }}</p>
-                        <p class="bilai-inv-info-line">Payment: <span class="bilai-inv-pay-method">{{ $paymentReadable }}</span></p>
-                        <p class="bilai-inv-info-line">Status: <span class="{{ $payStatusClass }}">{{ $payStatusLabel }}</span></p>
+                        <p class="bilai-inv-info-line">Date: <?php echo e($order->created_at->format('j F, Y')); ?></p>
+                        <p class="bilai-inv-info-line">Payment: <span class="bilai-inv-pay-method"><?php echo e($paymentReadable); ?></span></p>
+                        <p class="bilai-inv-info-line">Status: <span class="<?php echo e($payStatusClass); ?>"><?php echo e($payStatusLabel); ?></span></p>
                     </div>
 
                 </div>
 
-                {{-- ── Product table ── --}}
+                
                 <div class="bilai-inv-scroll">
                     <table class="bilai-inv-table">
                         <thead>
@@ -244,8 +244,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($order->orderdetails as $value)
-                                @php
+                            <?php $__currentLoopData = $order->orderdetails; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php
                                     $sizeDisplay = null;
                                     $colorDisplay = null;
                                     if ($value->size) {
@@ -267,44 +267,46 @@
                                         $sizeDisplay ? "$sizeLabel: $sizeDisplay" : null,
                                         $colorDisplay ? "Color: $colorDisplay" : null,
                                     ]);
-                                @endphp
+                                ?>
                                 <tr>
                                     <td>
-                                        <p class="bilai-inv-prod-name">{{ $value->product_name }}</p>
-                                        @if($metaParts)
-                                            <p class="bilai-inv-prod-meta">{{ implode(' · ', $metaParts) }}</p>
-                                        @endif
+                                        <p class="bilai-inv-prod-name"><?php echo e($value->product_name); ?></p>
+                                        <?php if($metaParts): ?>
+                                            <p class="bilai-inv-prod-meta"><?php echo e(implode(' · ', $metaParts)); ?></p>
+                                        <?php endif; ?>
                                     </td>
-                                    <td>{{ $value->qty }}</td>
-                                    <td>{{ $money($value->sale_price) }}</td>
-                                    <td>{{ $money($value->sale_price * $value->qty) }}</td>
+                                    <td><?php echo e($value->qty); ?></td>
+                                    <td><?php echo e($money($value->sale_price)); ?></td>
+                                    <td><?php echo e($money($value->sale_price * $value->qty)); ?></td>
                                 </tr>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </tbody>
                     </table>
                 </div>
 
-                {{-- ── Summary + Paid/Due ── --}}
+                
                 <div class="bilai-inv-bottom">
                     <div class="bilai-inv-summary">
-                        <div class="bilai-inv-sum-row"><span>Subtotal</span><span>{{ $money($subtotal) }}</span></div>
-                        <div class="bilai-inv-sum-row"><span>Delivery Charge</span><span>{{ $money($shippingCharge) }}</span></div>
-                        <div class="bilai-inv-sum-row"><span>Discount{{ !empty($order->coupon_code) ? ' ('.$order->coupon_code.')' : '' }}</span><span>-{{ $money($discount) }}</span></div>
-                        <div class="bilai-inv-sum-row"><span>Cash from Reward Points</span><span>-{{ $money($rewardDiscount) }}</span></div>
-                        <div class="bilai-inv-sum-total"><span>Grand Total</span><span>{{ $money($grand_total) }}</span></div>
+                        <div class="bilai-inv-sum-row"><span>Subtotal</span><span><?php echo e($money($subtotal)); ?></span></div>
+                        <div class="bilai-inv-sum-row"><span>Delivery Charge</span><span><?php echo e($money($shippingCharge)); ?></span></div>
+                        <div class="bilai-inv-sum-row"><span>Discount<?php echo e(!empty($order->coupon_code) ? ' ('.$order->coupon_code.')' : ''); ?></span><span>-<?php echo e($money($discount)); ?></span></div>
+                        <div class="bilai-inv-sum-row"><span>Cash from Reward Points</span><span>-<?php echo e($money($rewardDiscount)); ?></span></div>
+                        <div class="bilai-inv-sum-total"><span>Grand Total</span><span><?php echo e($money($grand_total)); ?></span></div>
 
                         <div class="bilai-inv-paycard">
-                            <div class="bilai-inv-paycard-row"><span class="bilai-inv-paycard-paid">Paid Amount</span><span>{{ $money($paid_amount) }}</span></div>
-                            <div class="bilai-inv-paycard-row"><span class="bilai-inv-paycard-due">Due Amount</span><span>{{ $money($due_amount) }}</span></div>
+                            <div class="bilai-inv-paycard-row"><span class="bilai-inv-paycard-paid">Paid Amount</span><span><?php echo e($money($paid_amount)); ?></span></div>
+                            <div class="bilai-inv-paycard-row"><span class="bilai-inv-paycard-due">Due Amount</span><span><?php echo e($money($due_amount)); ?></span></div>
                         </div>
                     </div>
                 </div>
 
-                <p class="bilai-inv-thanks">Thank you for shopping at {{ $generalsetting->name }}!</p>
+                <p class="bilai-inv-thanks">Thank you for shopping at <?php echo e($generalsetting->name); ?>!</p>
 
             </div>
 
         </div>
     </div>
 </section>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/customer/invoice.blade.php ENDPATH**/ ?>

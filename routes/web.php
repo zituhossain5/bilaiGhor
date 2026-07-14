@@ -636,6 +636,8 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ip
     // Moved out of the auth-protected group — same name, so the address modal and
     // Profile Edit keep working unchanged.
     Route::get('/delivery-zones', [CustomerController::class, 'delivery_zones'])->name('customer.delivery_zones');
+    // Wishlist toggle — public route; guests get a 401 JSON login prompt (handled in JS).
+    Route::post('/wishlist/toggle', [CustomerController::class, 'wishlist_toggle'])->name('customer.wishlist.toggle');
     Route::get('/checkout', [CustomerController::class, 'checkout'])->name('customer.checkout');
     Route::post('/order-save', [CustomerController::class, 'order_save'])->name('customer.ordersave');
     Route::post('/checkout-resend-otp', [CustomerController::class, 'checkout_resend_otp'])->name('customer.checkout.resend_otp');
@@ -662,6 +664,7 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend','middleware' => ['cus
     Route::get('/order-details/{id}', [CustomerController::class, 'order_details'])->name('customer.order_details');
     Route::get('/rewards', [CustomerController::class, 'rewards'])->name('customer.rewards');
     Route::post('/checkout/reward-preview', [CustomerController::class, 'checkout_reward_preview'])->name('customer.checkout.reward_preview');
+    Route::get('/wishlist', [CustomerController::class, 'wishlist'])->name('customer.wishlist');
 
     // Saved addresses (account "Addresses" page)
     Route::get('/addresses', [CustomerController::class, 'addresses'])->name('customer.addresses');

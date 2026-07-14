@@ -53,6 +53,11 @@ class Customer extends Authenticatable
         return \App\Services\RewardPointService::balance($this->id);
     }
 
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class, 'customer_id');
+    }
+
     public function cust_area()
     {
         return $this->belongsTo(District::class, 'area');

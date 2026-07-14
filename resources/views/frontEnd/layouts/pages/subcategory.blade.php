@@ -240,7 +240,7 @@
                             @else
                             <span></span>
                             @endif
-                            <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                            <button class="bilai-wishlist-btn" type="button" data-product-id="{{ $value->id }}" aria-label="Toggle wishlist" aria-pressed="false">
                                 <i class="far fa-heart"></i>
                             </button>
                         </div>

@@ -161,7 +161,7 @@
             <div class="bilai-product-card">
                 <div class="bilai-product-top">
                     <span class="bilai-stock-badge">Limited Stock</span>
-                    <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                    <button class="bilai-wishlist-btn" type="button" data-product-id="{{ $value->id }}" aria-label="Toggle wishlist" aria-pressed="false">
                         <i class="far fa-heart"></i>
                     </button>
                 </div>
@@ -260,7 +260,7 @@
             <div class="bilai-product-card">
                 <div class="bilai-product-top">
                     <span class="bilai-stock-badge">Best Seller</span>
-                    <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                    <button class="bilai-wishlist-btn" type="button" data-product-id="{{ $value->id }}" aria-label="Toggle wishlist" aria-pressed="false">
                         <i class="far fa-heart"></i>
                     </button>
                 </div>
@@ -395,7 +395,7 @@
 
                 {{-- Left column: wishlist circle above product image --}}
                 <div class="bilai-na-left">
-                    <button class="bilai-na-wishlist" type="button" aria-label="Add to wishlist">
+                    <button class="bilai-na-wishlist" type="button" data-product-id="{{ $value->id }}" aria-label="Toggle wishlist" aria-pressed="false">
                         <i class="far fa-heart"></i>
                     </button>
                     <a href="{{ route('product', $value->slug) }}" class="bilai-na-img-wrap">
@@ -550,7 +550,7 @@
                             @else
                             <span></span>
                             @endif
-                            <button class="bilai-wishlist-btn" type="button" aria-label="Add to wishlist">
+                            <button class="bilai-wishlist-btn" type="button" data-product-id="{{ $value->id }}" aria-label="Toggle wishlist" aria-pressed="false">
                                 <i class="far fa-heart"></i>
                             </button>
                         </div>

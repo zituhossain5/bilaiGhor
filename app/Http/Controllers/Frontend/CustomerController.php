@@ -53,12 +53,14 @@ class CustomerController extends Controller
         $this->facebookCapiService = $facebookCapiService;
         // 'delivery_zones' is guest-accessible: checkout (open to guests) loads zones
         // from it. It only returns active zones of a district — no customer data.
+        // 'wishlist_toggle' handles guests itself (401 JSON → login prompt in JS,
+        // not a middleware redirect).
         $this->middleware('customer', ['except' => [
             'register','store','verify','resendotp','account_verify',
             'login','signin','logout','checkout','forgot_password',
             'forgot_verify','forgot_reset','forgot_store','forgot_resend',
             'order_save','order_success','order_track','order_track_result',
-            'delivery_zones'
+            'delivery_zones','wishlist_toggle'
         ]]);
     }
 
@@ -1166,6 +1168,80 @@ public function order_save(Request $request)
     // Saved addresses (Addresses page)
     // ============================
 
+    /** Customer wishlist page — table of saved products + recommended products. */
+    public function wishlist()
+    {
+        $customerId = Auth::guard('customer')->id();
+
+        $wishlistItems = \App\Models\Wishlist::with([
+                'product' => fn ($q) => $q->with(['image', 'subcategory', 'prosizes', 'procolors']),
+            ])
+            ->where('customer_id', $customerId)
+            ->latest('id')
+            ->get()
+            ->filter(fn ($w) => $w->product !== null); // product deleted since → skip row
+
+        $wishlistedIds = $wishlistItems->pluck('product_id')->all();
+
+        // Same source/shape as the cart page's recommended section, minus already-wishlisted items.
+        $recommendedProducts = Product::where(['status' => 1, 'approval_status' => 'approved'])
+            ->whereNotIn('id', $wishlistedIds ?: [0])
+            ->with(['image', 'category', 'reviews', 'prosizes', 'procolors'])
+            ->latest('id')
+            ->take(4)
+            ->get();
+
+        return view('frontEnd.layouts.customer.wishlist', compact('wishlistItems', 'recommendedProducts'));
+    }
+
+    /**
+     * Toggle a product in the wishlist (AJAX). Guest-safe: returns 401 JSON so the
+     * frontend can show a login prompt instead of being redirected by middleware.
+     * customer_id always comes from the session — never from the request.
+     */
+    public function wishlist_toggle(Request $request)
+    {
+        if (!Auth::guard('customer')->check()) {
+            return response()->json([
+                'success' => false,
+                'login_required' => true,
+                'message' => 'Please login to add products to your wishlist.',
+            ], 401);
+        }
+
+        $request->validate(['product_id' => 'required|integer|exists:products,id']);
+
+        $customerId = Auth::guard('customer')->id();
+        $productId  = (int) $request->product_id;
+
+        $existing = \App\Models\Wishlist::where('customer_id', $customerId)
+            ->where('product_id', $productId)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+
+            return response()->json([
+                'success' => true,
+                'in_wishlist' => false,
+                'message' => 'Product removed from wishlist.',
+            ]);
+        }
+
+        // firstOrCreate + the UNIQUE(customer_id, product_id) index make double
+        // submits harmless (a race just lands on the existing row).
+        \App\Models\Wishlist::firstOrCreate([
+            'customer_id' => $customerId,
+            'product_id'  => $productId,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'in_wishlist' => true,
+            'message' => 'Product added to wishlist.',
+        ]);
+    }
+
     public function addresses()
     {
         $addresses = \App\Models\CustomerAddress::with(['district:id,name', 'zone:id,name,name_bn'])
@@ -1346,7 +1422,7 @@ public function order_save(Request $request)
                 'id'=>$request->id,
                 'customer_id'=>Auth::guard('customer')->user()->id
             ])
-            ->with(['orderdetails.size', 'orderdetails.color', 'payment', 'shipping', 'customer'])
+            ->with(['orderdetails.size', 'orderdetails.color', 'payment', 'shipping.zone', 'shipping.district', 'customer'])
             ->firstOrFail();
 
         return view('frontEnd.layouts.customer.invoice',compact('order'));

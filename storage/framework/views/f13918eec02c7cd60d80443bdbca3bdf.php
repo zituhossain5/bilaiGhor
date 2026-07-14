@@ -2400,6 +2400,95 @@ window.addEventListener('pageshow', function (e) {
             });
         </script>
         <?php endif; ?>
+
+        
+        <style>
+        /* BilaiGhor Wishlist Toggle Start */
+        .bilai-wishlist-btn.active i,
+        .bilai-na-wishlist.active i,
+        .bpd-wishlist.active i { color: var(--bilai-primary, #F28C00); }
+        /* BilaiGhor Wishlist Toggle End */
+        </style>
+        <?php
+            // One indexed query per page for the logged-in customer; hearts are
+            // filled client-side from this set, so per-card Blade queries (N+1)
+            // are never needed anywhere.
+            $__wishlistIds = Auth::guard('customer')->check()
+                ? \App\Models\Wishlist::where('customer_id', Auth::guard('customer')->id())->pluck('product_id')
+                : collect();
+        ?>
+        <script>
+        /* BilaiGhor Wishlist Toggle */
+        (function () {
+            var ids = new Set(<?php echo json_encode($__wishlistIds, 15, 512) ?>);
+            var toggleUrl = '<?php echo e(route('customer.wishlist.toggle')); ?>';
+            var csrf = '<?php echo e(csrf_token()); ?>';
+            var busy = false;
+
+            function paint(btn, active) {
+                btn.classList.toggle('active', active);
+                btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+                var icon = btn.querySelector('i.fa-heart');
+                if (icon) {
+                    icon.classList.toggle('fas', active);
+                    icon.classList.toggle('far', !active);
+                }
+                var label = btn.querySelector('.bpd-wishlist-label');
+                if (label) { label.textContent = active ? 'In Wishlist' : 'Add to Wishlist'; }
+            }
+
+            // Every heart for the same product paints together (duplicate cards stay in sync).
+            function paintAll(productId, active) {
+                document.querySelectorAll('[data-product-id="' + productId + '"]').forEach(function (el) {
+                    if (el.matches('.bilai-wishlist-btn, .bilai-na-wishlist, .bpd-wishlist')) { paint(el, active); }
+                });
+            }
+
+            function fillInitial() {
+                ids.forEach(function (id) { paintAll(id, true); });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', fillInitial);
+            } else {
+                fillInitial();
+            }
+
+            // Delegated: works inside Owl Carousel clones and dynamically added cards.
+            document.addEventListener('click', function (e) {
+                var btn = e.target.closest('.bilai-wishlist-btn[data-product-id], .bilai-na-wishlist[data-product-id], .bpd-wishlist[data-product-id]');
+                if (!btn) { return; }
+                e.preventDefault();
+                if (busy) { return; }
+                busy = true;
+
+                var productId = btn.dataset.productId;
+                fetch(toggleUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                    body: JSON.stringify({ product_id: productId })
+                })
+                .then(function (res) { return res.json().then(function (j) { return { status: res.status, body: j }; }); })
+                .then(function (r) {
+                    if (r.status === 401 && r.body.login_required) {
+                        if (window.toastr) { toastr.info(r.body.message); }
+                        else { alert(r.body.message); }
+                        return;
+                    }
+                    if (!r.body.success) {
+                        if (window.toastr) { toastr.error(r.body.message || 'Something went wrong.'); }
+                        return;
+                    }
+                    if (r.body.in_wishlist) { ids.add(Number(productId)); } else { ids.delete(Number(productId)); }
+                    paintAll(productId, r.body.in_wishlist);
+                    if (window.toastr) { toastr.success(r.body.message); }
+                })
+                .catch(function () {
+                    if (window.toastr) { toastr.error('Could not update wishlist. Please try again.'); }
+                })
+                .finally(function () { busy = false; });
+            });
+        }());
+        </script>
     </body>
 </html>
 

@@ -574,8 +574,8 @@ input.bpd-btn { cursor: pointer; }
                     <span class="bpd-old-price">৳{{ number_format($details->old_price, 0) }}</span>
                     <span class="bpd-disc-pill">{{ $discountPct }}% OFF</span>
                     @endif
-                    <a href="#" class="bpd-wishlist" onclick="return false;">
-                        <i class="far fa-heart"></i> Add to Wishlist
+                    <a href="#" class="bpd-wishlist" data-product-id="{{ $details->id }}" aria-pressed="false">
+                        <i class="far fa-heart"></i> <span class="bpd-wishlist-label">Add to Wishlist</span>
                     </a>
                 </div>
 

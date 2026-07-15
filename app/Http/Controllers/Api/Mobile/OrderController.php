@@ -244,13 +244,10 @@ class OrderController extends Controller
                     'product_size' => $cartItem->size_id,
                 ]);
 
-                // Reduce stock
-                $product = $cartItem->product;
-                if ($product) {
-                    $product->stock = max(0, $product->stock - $cartItem->quantity);
-                    $product->save();
-                }
             }
+
+            // Reserve stock through the central inventory service (ledger + cache sync)
+            \App\Services\InventoryService::reserveForOrder($order);
 
             // Clear cart
             CartModel::where('customer_id', $customer->id)->delete();

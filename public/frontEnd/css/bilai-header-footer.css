@@ -834,8 +834,12 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
    ============================================================ */
 
 .bilai-footer {
-    background: var(--bilai-brown);
-    color: rgba(255, 255, 255, 0.82);
+    /* Dark-brown base + subtle paw/flower pattern tile (real asset, referenced via url()) */
+    background-color: #321608;
+    background-image: url("../images/footer-paw-bg.svg");
+    background-repeat: repeat;
+    background-size: 260px 260px;
+    color: #f8f1e8;
     font-family: var(--bilai-font-main);
     position: relative;
     overflow: hidden;
@@ -853,26 +857,26 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 /* Main grid area */
 .bilai-footer__main {
-    padding: 52px 0 36px;
+    padding: 56px 0 40px;
 }
 @media (max-width: 767px) {
     .bilai-footer__main {
-        padding: 36px 0 28px;
+        padding: 40px 0 28px;
     }
 }
 
 .bilai-footer__grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1.4fr;
-    gap: 36px;
-    max-width: 1200px;
+    grid-template-columns: 1.7fr 1fr 1fr 1.3fr;
+    gap: 40px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 24px;
 }
 @media (max-width: 991px) {
     .bilai-footer__grid {
         grid-template-columns: 1fr 1fr;
-        gap: 28px;
+        gap: 32px 28px;
     }
 }
 @media (max-width: 575px) {
@@ -882,8 +886,8 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     }
     .bilai-footer__col,
     .bilai-footer__brand {
-        padding: 18px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(246, 234, 214, 0.10);
     }
     .bilai-footer__col:last-child {
         border-bottom: none;
@@ -893,24 +897,29 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 /* Brand column */
 .bilai-footer__logo {
     display: inline-block;
-    margin-bottom: 15px;
+    margin-bottom: 22px;
 }
 .bilai-footer__logo img {
-    height: 52px;
+    height: 64px;
     width: auto;
-    filter: brightness(0) invert(1);
+    max-width: 100%;
 }
-.bilai-footer__about {
+@media (max-width: 767px) {
+    .bilai-footer__logo img { height: 56px; }
+}
+.bilai-footer__hours {
     font-size: 14px;
-    line-height: 1.72;
-    color: rgba(255, 255, 255, 0.68);
-    margin-bottom: 20px;
+    line-height: 1.7;
+    color: #e6d8c8;
+    margin: 0 0 24px;
     max-width: 300px;
 }
+
+/* Social row (platform-native colored circles from settings) */
 .bilai-footer__social {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 12px;
     list-style: none;
     padding: 0;
     margin: 0;
@@ -919,74 +928,34 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.09);
-    border: 1px solid rgba(255, 255, 255, 0.13);
-    color: rgba(255, 255, 255, 0.82);
-    font-size: 15px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 16px;
     text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     transition:
-        background 0.2s,
         transform 0.2s,
-        color 0.2s;
+        box-shadow 0.2s,
+        filter 0.2s;
 }
 .bilai-footer__social a:hover {
-    background: var(--bilai-primary);
-    transform: translateY(-2px);
-    color: #fff;
-}
-
-/* App badges */
-.bilai-footer__apps {
-    margin-top: 20px;
-}
-.bilai-footer__apps-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 8px;
-    letter-spacing: 0.03em;
-}
-.bilai-footer__app-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-.bilai-footer__app-badges a {
-    display: block;
-}
-.bilai-footer__app-badges img {
-    height: 38px;
-    width: auto;
-    border-radius: 7px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    transition: transform 0.2s;
-}
-.bilai-footer__app-badges a:hover img {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    filter: brightness(1.12);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.32);
 }
 
 /* Column headings */
 .bilai-footer__title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
-    color: #fff;
+    color: var(--bilai-primary);
     margin: 0 0 16px 0;
-    padding-bottom: 10px;
-    position: relative;
     display: block;
 }
-.bilai-footer__title::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 30px;
-    height: 2px;
-    background: var(--bilai-primary);
-    border-radius: 2px;
+.bilai-footer__title--tight {
+    margin-top: 20px;
 }
 
 /* Link lists */
@@ -996,12 +965,12 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     margin: 0;
 }
 .bilai-footer__links li {
-    margin-bottom: 9px;
+    margin-bottom: 12px;
 }
 .bilai-footer__links a {
-    color: rgba(255, 255, 255, 0.68);
+    color: #f0e6d8;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 14.5px;
     font-family: var(--bilai-font-main);
     display: inline-flex;
     align-items: center;
@@ -1019,128 +988,106 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 .bilai-footer__contacts {
     list-style: none;
     padding: 0;
-    margin: 0 0 20px 0;
+    margin: 0;
 }
 .bilai-footer__contacts li {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 11px;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.55;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    font-size: 14.5px;
+    line-height: 1.5;
 }
-.bilai-footer__contacts li i {
+.bilai-footer__contacts a {
+    color: #f0e6d8;
+    text-decoration: none;
+    transition: color 0.18s;
+    word-break: break-word;
+}
+.bilai-footer__contacts a:hover {
     color: var(--bilai-primary);
+}
+.bilai-footer__ci {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
     font-size: 14px;
-    margin-top: 2px;
     flex-shrink: 0;
-    width: 16px;
-    text-align: center;
+}
+.bilai-footer__ci--light {
+    background: rgba(246, 234, 214, 0.12);
+    color: #f6ead6;
+}
+.bilai-footer__ci--wa {
+    background: #25d366;
+    color: #fff;
+}
+.bilai-footer__address {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #e6d8c8;
+    margin: 0;
+    max-width: 280px;
 }
 
-/* Newsletter form */
-.bilai-footer__nl-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 8px;
-    display: block;
-}
-.bilai-footer__nl-form {
-    display: flex;
-    gap: 0;
-}
-.bilai-footer__nl-form input {
-    flex: 1;
-    min-width: 0;
-    padding: 10px 13px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-right: none;
-    border-radius: var(--bilai-radius-sm) 0 0 var(--bilai-radius-sm);
-    background: rgba(255, 255, 255, 0.07);
-    color: #fff;
-    font-size: 13.5px;
-    font-family: var(--bilai-font-main);
-    outline: none;
-    transition: border-color 0.2s;
-}
-.bilai-footer__nl-form input:focus {
-    border-color: var(--bilai-primary);
-}
-.bilai-footer__nl-form input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-}
-.bilai-footer__nl-form button {
-    padding: 10px 15px;
-    background: var(--bilai-primary);
-    border: 1px solid var(--bilai-primary);
-    border-radius: 0 var(--bilai-radius-sm) var(--bilai-radius-sm) 0;
-    color: #fff;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background 0.2s;
-    font-family: var(--bilai-font-main);
-    white-space: nowrap;
-}
-.bilai-footer__nl-form button:hover {
-    background: var(--bilai-primary-dark);
-    border-color: var(--bilai-primary-dark);
-}
-
-/* Bottom bar */
+/* Bottom bar — inside the same patterned footer */
 .bilai-footer__bottom {
-    background: var(--bilai-brown-dark);
-    padding: 16px 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid rgba(242, 140, 0, 0.20);
 }
 @media (max-width: 767px) {
     .bilai-footer__bottom {
-        padding-bottom: 92px;
+        padding-bottom: 80px;
     }
 }
-
 .bilai-footer__bottom-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 14px;
     flex-wrap: wrap;
-    max-width: 1200px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 20px 24px;
 }
 @media (max-width: 575px) {
     .bilai-footer__bottom-inner {
         flex-direction: column;
         align-items: center;
         text-align: center;
-        gap: 6px;
+        gap: 14px;
     }
 }
 .bilai-footer__copy {
     font-size: 13.5px;
-    color: rgba(255, 255, 255, 0.6);
+    color: #d8c8b6;
     margin: 0;
 }
-.bilai-footer__copy strong {
-    color: rgba(255, 255, 255, 0.88);
+.bilai-footer__payments {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
 }
-.bilai-footer__credit {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.5);
+.bilai-footer__pay-label {
+    font-size: 13.5px;
+    color: #d8c8b6;
+    margin-right: 2px;
+}
+.bilai-footer__pay-pill {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-}
-.bilai-footer__credit a {
-    color: rgba(255, 255, 255, 0.76);
+    padding: 5px 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f2e8db;
+    font-size: 12.5px;
     font-weight: 600;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-.bilai-footer__credit a:hover {
-    color: var(--bilai-primary);
+    line-height: 1.4;
+    white-space: nowrap;
 }
 
 /* ============================================================
@@ -3227,12 +3174,12 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     align-items: flex-start;
 }
 .bilai-cat-sidebar {
-    width: 240px;
+    width: 250px;
     flex-shrink: 0;
-    background: #fff;
-    border: 1.5px solid var(--bilai-border, #dccab2);
-    border-radius: var(--bilai-radius-md, 14px);
-    padding: 20px;
+    background: #fdfaf3;
+    border: 1.5px solid #ecdcc0;
+    border-radius: 16px;
+    padding: 22px 20px;
     position: sticky;
     top: 90px;
 }
@@ -3248,7 +3195,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 .bilai-cat-filter-title {
     font-family: var(--bilai-font-main);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--bilai-body-title, #2a1505);
     margin-bottom: 12px;
@@ -3266,14 +3213,20 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 .bilai-cat-price-display {
     font-family: var(--bilai-font-main);
-    font-size: 13px;
+    font-size: 13.5px;
     color: var(--bilai-muted);
-    margin-bottom: 12px;
+    margin: 16px 0 2px;
+}
+.bilai-cat-price-display strong {
+    color: var(--bilai-body-title, #2a1505);
+    font-weight: 600;
 }
 .bilai-price-slider {
-    margin: 8px 4px 4px;
+    margin: 16px 8px 4px;
     height: 4px;
     border-radius: 4px;
+    background: #ecdcc0;
+    border: none;
 }
 .bilai-price-slider .ui-slider-range {
     background: var(--bilai-primary);
@@ -3289,27 +3242,35 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 .bilai-cat-filter-search {
     position: relative;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 .bilai-brand-search-input {
     width: 100%;
-    border: 1.5px solid var(--bilai-border, #dccab2);
-    border-radius: 8px;
-    padding: 7px 30px 7px 10px;
+    border: 1.5px solid #e6d5ba;
+    border-radius: 10px;
+    padding: 9px 34px 9px 14px;
     font-size: 13px;
     font-family: var(--bilai-font-main);
     color: var(--bilai-text);
-    background: #fdfcf8;
+    background: #fffdf9;
     outline: none;
     box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+.bilai-brand-search-input:focus {
+    border-color: var(--bilai-primary, #e8861a);
+}
+.bilai-brand-search-input::placeholder {
+    color: #a99a89;
 }
 .bilai-cat-filter-search .fa-search {
     position: absolute;
-    right: 10px;
+    right: 13px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--bilai-muted);
-    font-size: 12px;
+    font-size: 13px;
+    pointer-events: none;
 }
 .bilai-cat-check-list {
     list-style: none;
@@ -3545,21 +3506,23 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     flex: 1;
 }
 .bilai-cat-count-badge {
-    background: #f0e4d0;
+    background: #fbf6ee;
     color: var(--bilai-body-title, #2a1505);
+    border: 1px solid #e6d5ba;
     font-family: var(--bilai-font-main);
     font-size: 11px;
     font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 10px;
-    min-width: 24px;
+    padding: 2px 9px;
+    border-radius: 100px;
+    min-width: 30px;
     text-align: center;
     flex-shrink: 0;
+    line-height: 1.5;
 }
 
-/* Remove the old search input block from sidebar (brand search is gone) */
+/* Brand search box (Figma "Find a Brand") */
 .bilai-cat-filter-search {
-    display: none;
+    display: block;
 }
 
 /* ============================================================
@@ -3575,16 +3538,21 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     list-style: none;
     padding: 0;
     margin: 0;
-    max-height: 200px;
+    max-height: 176px;
     overflow-y: auto;
     scrollbar-width: thin;
+    scrollbar-color: #d3ba95 transparent;
+    padding-right: 6px;
 }
 .bilai-cat-attr-link-list::-webkit-scrollbar {
-    width: 3px;
+    width: 5px;
+}
+.bilai-cat-attr-link-list::-webkit-scrollbar-track {
+    background: transparent;
 }
 .bilai-cat-attr-link-list::-webkit-scrollbar-thumb {
-    background: var(--bilai-border);
-    border-radius: 4px;
+    background: #d3ba95;
+    border-radius: 100px;
 }
 .bilai-cat-attr-link {
     display: flex;
@@ -3615,6 +3583,49 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 /* ============================================================
    BilaiGhor Attribute Filters End
+   ============================================================ */
+
+/* ============================================================
+   BilaiGhor Listing Sidebar Row Fix Start
+   Figma: every filter option sits on its own row, with the
+   count pill pushed to the right edge of the sidebar card.
+   Defensive against theme sheets (float/inline li rules).
+   ============================================================ */
+.bilai-cat-attr-link-list li,
+.bilai-cat-check-list li {
+    display: block;
+    width: 100%;
+    float: none;
+}
+.bilai-cat-attr-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 0;
+}
+.bilai-cat-check-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 0;
+    margin: 0;
+}
+.bilai-cat-attr-link .bilai-cat-attr-name,
+.bilai-cat-check-label .bilai-cat-check-name {
+    flex: 1 1 auto;
+    text-align: left;
+}
+.bilai-cat-attr-link .bilai-cat-count-badge,
+.bilai-cat-check-label .bilai-cat-count-badge {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+/* ============================================================
+   BilaiGhor Listing Sidebar Row Fix End
    ============================================================ */
 
 /* ============================================================

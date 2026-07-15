@@ -32,7 +32,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         {{-- BilaiGhor Figma — header & footer CSS --}}
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=26">
+        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=29">
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/main.css')}}" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
@@ -724,95 +724,101 @@
             <!-- content end -->
 
 {{-- BilaiGhor Figma Footer Start --}}
+@php
+    // ── Popular Categories: real subcategories (fallback to categories) — no invented routes ──
+    $footerSubcats = collect();
+    foreach ($menucategories as $mc) {
+        $footerSubcats = $footerSubcats->merge($mc->subcategories ?? []);
+    }
+    $footerSubcats = $footerSubcats->filter(fn ($s) => ($s->status ?? 1) == 1)->take(5);
+
+    // ── Useful Link: real routes + real CMS pages only ──
+    $footerPages = collect($pages ?? [])->merge($pagesright ?? [])->take(4);
+@endphp
 <footer class="bilai-footer">
     <div class="bilai-footer__accent"></div>
     <div class="bilai-footer__main">
         <div class="bilai-footer__grid">
-            {{-- Column 1: Brand --}}
+
+            {{-- Column 1: Brand / Opening Hours / Social --}}
             <div class="bilai-footer__brand">
                 <a href="{{ url('/') }}" class="bilai-footer__logo">
-                    <img src="{{ asset(optional($generalsetting)->white_logo ?? optional($generalsetting)->dark_logo ?? 'public/logo.png') }}" alt="{{ optional($generalsetting)->name ?? 'BilaiGhor' }}">
+                    <img src="{{ asset(optional($generalsetting)->dark_logo ?? optional($generalsetting)->white_logo ?? 'public/logo.png') }}" alt="{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}">
                 </a>
-                <p class="bilai-footer__about">
-                    {{ optional($generalsetting)->footer_about_text ?? "Bangladesh's trusted online pet shop. Premium cat food, accessories and care products." }}
+
+                <h5 class="bilai-footer__title">Opening Hours</h5>
+                <p class="bilai-footer__hours">
+                    {{ optional($generalsetting)->opening_hours ?? 'Saturday to Friday: 8 am to 2 pm' }}
                 </p>
+
+                <h5 class="bilai-footer__title">Social Links</h5>
                 <ul class="bilai-footer__social">
                     @foreach($socialicons as $si)
-                    <li><a href="{{ $si->link }}" target="_blank" rel="noopener"><i class="{{ $si->icon }}"></i></a></li>
+                    <li>
+                        <a href="{{ $si->link }}" target="_blank" rel="noopener" aria-label="{{ $si->title ?? 'Social' }}"
+                           style="background: {{ $si->color ?: 'rgba(255,255,255,0.10)' }};">
+                            <i class="{{ $si->icon }}"></i>
+                        </a>
+                    </li>
                     @endforeach
                 </ul>
-                @if(optional($generalsetting)->google_play_link || optional($generalsetting)->app_store_link)
-                <div class="bilai-footer__apps">
-                    <span class="bilai-footer__apps-label">DOWNLOAD OUR APP</span>
-                    <div class="bilai-footer__app-badges">
-                        @if(optional($generalsetting)->google_play_link)
-                        <a href="{{ $generalsetting->google_play_link }}" target="_blank" rel="noopener">
-                            <img src="{{ asset('public/uploads/play.svg') }}" alt="Google Play">
-                        </a>
-                        @endif
-                        @if(optional($generalsetting)->app_store_link)
-                        <a href="{{ $generalsetting->app_store_link }}" target="_blank" rel="noopener">
-                            <img src="{{ asset('public/uploads/app.png') }}" alt="App Store">
-                        </a>
-                        @endif
-                    </div>
-                </div>
-                @endif
             </div>
 
             {{-- Column 2: Popular Categories --}}
             <div class="bilai-footer__col">
                 <h5 class="bilai-footer__title">Popular Categories</h5>
                 <ul class="bilai-footer__links">
-                    @foreach($menucategories->take(7) as $cat)
+                    @forelse($footerSubcats as $sub)
+                    <li><a href="{{ route('subcategory', $sub->slug) }}">{{ $sub->subcategoryName ?? $sub->name }}</a></li>
+                    @empty
+                    @foreach($menucategories->take(5) as $cat)
                     <li><a href="{{ route('category', $cat->slug) }}">{{ $cat->name }}</a></li>
                     @endforeach
+                    @endforelse
                 </ul>
             </div>
 
-            {{-- Column 3: Quick Links --}}
+            {{-- Column 3: Useful Link --}}
             <div class="bilai-footer__col">
-                <h5 class="bilai-footer__title">Quick Links</h5>
+                <h5 class="bilai-footer__title">Useful Link</h5>
                 <ul class="bilai-footer__links">
-                    <li><a href="{{ route('home') }}">Home</a></li>
-                    <li><a href="{{ route('contact') }}">Contact Us</a></li>
-                    <li><a href="{{ route('customer.order_track') }}">Track Order</a></li>
-                    @if(($generalsetting?->vendor_enabled ?? 1) == 1)
-                    <li><a href="{{ route('sellers') }}">Sellers</a></li>
-                    @endif
-                    <li><a href="{{ route('complaint') }}">Complaints</a></li>
-                    @foreach($pages as $page)
+                    <li><a href="{{ route('shop') }}">Shop</a></li>
+                    <li><a href="{{ route('blogs') }}">Blog</a></li>
+                    <li><a href="{{ route('hotdeals') }}">Best Deals</a></li>
+                    @foreach($footerPages as $page)
                     <li><a href="{{ route('page', ['slug' => $page->slug]) }}">{{ $page->name }}</a></li>
                     @endforeach
-                    @foreach($pagesright as $value)
-                    <li><a href="{{ route('page', ['slug' => $value->slug]) }}">{{ $value->name }}</a></li>
-                    @endforeach
                 </ul>
             </div>
 
-            {{-- Column 4: Contact + Newsletter --}}
+            {{-- Column 4: Contact + Address --}}
             <div class="bilai-footer__col">
-                <h5 class="bilai-footer__title">Contact Us</h5>
+                <h5 class="bilai-footer__title">Contact</h5>
                 <ul class="bilai-footer__contacts">
-                    @if(optional($contact)->hotline)
-                    <li><i class="fas fa-phone-alt"></i><span>{{ $contact->hotline }}</span></li>
+                    @if(optional($contact)->hotline ?? optional($contact)->phone)
+                    <li>
+                        <span class="bilai-footer__ci bilai-footer__ci--light"><i class="fas fa-phone-alt"></i></span>
+                        <a href="tel:{{ $contact->hotline ?? $contact->phone }}">{{ $contact->hotline ?? $contact->phone }}</a>
+                    </li>
+                    @endif
+                    @if(optional($contact)->email ?? optional($contact)->hotmail)
+                    <li>
+                        <span class="bilai-footer__ci bilai-footer__ci--light"><i class="fas fa-envelope"></i></span>
+                        <a href="mailto:{{ $contact->email ?? $contact->hotmail }}">{{ $contact->email ?? $contact->hotmail }}</a>
+                    </li>
                     @endif
                     @if(optional($contact)->whatsapp)
-                    <li><i class="fab fa-whatsapp"></i><span>{{ $contact->whatsapp }}</span></li>
-                    @endif
-                    @if(optional($contact)->email ?? optional($contact)->mail ?? false)
-                    <li><i class="fas fa-envelope"></i><span>{{ $contact->email ?? $contact->mail }}</span></li>
-                    @endif
-                    @if(optional($contact)->address)
-                    <li><i class="fas fa-map-marker-alt"></i><span>{{ $contact->address }}</span></li>
+                    <li>
+                        <span class="bilai-footer__ci bilai-footer__ci--wa"><i class="fab fa-whatsapp"></i></span>
+                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $contact->whatsapp) }}" target="_blank" rel="noopener">{{ $contact->whatsapp }}</a>
+                    </li>
                     @endif
                 </ul>
-                <span class="bilai-footer__nl-label">Subscribe for updates</span>
-                <form action="{{ route('frontend.newsletter.subscribe') }}" method="POST" class="bilai-footer__nl-form">
-                    @csrf
-                    <input type="email" name="email" placeholder="Your email address..." required autocomplete="off">
-                    <button type="submit"><i class="fas fa-paper-plane"></i></button>
-                </form>
+
+                @if(optional($contact)->address)
+                <h5 class="bilai-footer__title bilai-footer__title--tight">Address</h5>
+                <p class="bilai-footer__address">{{ $contact->address }}</p>
+                @endif
             </div>
 
         </div>
@@ -821,11 +827,14 @@
     <div class="bilai-footer__bottom">
         <div class="bilai-footer__bottom-inner">
             <p class="bilai-footer__copy">
-                &copy; {{ date('Y') }} <strong>{{ optional($generalsetting)->name ?? config('app.name') }}</strong>. All rights reserved.
+                &copy; {{ date('Y') }} {{ optional($generalsetting)->name ?? config('app.name') }}. All rights reserved.
             </p>
-            <span class="bilai-footer__credit">
-                Designed by <a href="https://www.bmitltd.com" target="_blank" rel="noopener">BMITLTD</a>
-            </span>
+            <div class="bilai-footer__payments">
+                <span class="bilai-footer__pay-label">Payment:</span>
+                @foreach(['bKash', 'Nagad', 'Rocket', 'VISA', 'MasterCard'] as $pm)
+                <span class="bilai-footer__pay-pill">{{ $pm }}</span>
+                @endforeach
+            </div>
         </div>
     </div>
 

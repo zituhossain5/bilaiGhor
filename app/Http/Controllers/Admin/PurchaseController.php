@@ -167,11 +167,14 @@ class PurchaseController extends Controller
             'line_total'       => $subtotal,
         ]);
 
-        // STOCK UPDATE
+        // STOCK UPDATE — creating a purchase means the goods physically arrived
+        // (this shop records purchases on receipt), so receive it into inventory.
+        // Idempotent: the service never books the same purchase in twice.
         $product = Product::findOrFail($request->product_id);
-        $product->stock += $qty;
-        $product->purchase_price = $unit_cost;
+        $product->purchase_price = $unit_cost; // latest cost drives inventory valuation
         $product->save();
+
+        \App\Services\InventoryService::receivePurchase($purchase);
 
         if ($request->variant_price_id) {
             $variant = ProductVariantPrice::find($request->variant_price_id);
@@ -289,7 +292,7 @@ class PurchaseController extends Controller
         $item->returned_qty += $qty;
         $item->save();
 
-        $item->product->decrement('stock', $qty);
+        \App\Services\InventoryService::returnPurchaseItem($item, $qty, Auth::id());
 
         if ($item->variant) {
             $item->variant->decrement('stock', $qty);
@@ -614,14 +617,10 @@ class PurchaseController extends Controller
                 $payment->delete();
             }
 
-            // Reverse stock updates
-            foreach ($purchase->items as $item) {
-                $product = $item->product;
-                if ($product) {
-                    $product->stock = max(0, $product->stock - ($item->qty - $item->returned_qty));
-                    $product->save();
-                }
+            // Reverse stock updates (audited: leaves correction movements in the ledger)
+            \App\Services\InventoryService::reversePurchase($purchase, Auth::id());
 
+            foreach ($purchase->items as $item) {
                 if ($item->variant) {
                     $item->variant->stock = max(0, $item->variant->stock - ($item->qty - $item->returned_qty));
                     $item->variant->save();

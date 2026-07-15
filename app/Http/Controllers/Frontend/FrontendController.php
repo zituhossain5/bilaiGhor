@@ -767,8 +767,29 @@ $brands = Brand::where('status', 1)
 
     public function shop(Request $request)
     {
-        $products = Product::where(['status' => 1, 'approval_status' => 'approved'])
-            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'stock');
+        // Same listing implementation as category(), minus the category scope.
+        $shopBase = ['status' => 1, 'approval_status' => 'approved'];
+
+        // Attribute counts for sidebar (all active products, before other filters)
+        $brandCountMap = Product::where($shopBase)->whereNotNull('brand_id')
+            ->select('brand_id', DB::raw('count(*) as cnt'))->groupBy('brand_id')->pluck('cnt', 'brand_id');
+        $brands = Brand::whereIn('id', $brandCountMap->keys())->orderBy('name')->get();
+
+        $weightCountMap = Product::where($shopBase)->whereNotNull('weight_id')
+            ->select('weight_id', DB::raw('count(*) as cnt'))->groupBy('weight_id')->pluck('cnt', 'weight_id');
+        $weights = ProductWeight::whereIn('id', $weightCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $lifeStageCountMap = Product::where($shopBase)->whereNotNull('life_stage_id')
+            ->select('life_stage_id', DB::raw('count(*) as cnt'))->groupBy('life_stage_id')->pluck('cnt', 'life_stage_id');
+        $lifeStages = ProductLifeStage::whereIn('id', $lifeStageCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $flavorCountMap = Product::where($shopBase)->whereNotNull('flavor_id')
+            ->select('flavor_id', DB::raw('count(*) as cnt'))->groupBy('flavor_id')->pluck('cnt', 'flavor_id');
+        $flavors = ProductFlavor::whereIn('id', $flavorCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $products = Product::where($shopBase)
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
+            ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'brand']);
 
         if ($request->sort == 1) {
             $products = $products->orderBy('created_at', 'desc');
@@ -786,27 +807,37 @@ $brands = Brand::where('status', 1)
             $products = $products->latest();
         }
 
-        $minDb = (clone $products)->min('new_price');
-        $maxDb = (clone $products)->max('new_price');
-        $min_price = $minDb !== null ? (float) $minDb : 0.0;
-        $max_price = $maxDb !== null ? (float) $maxDb : max(1.0, $min_price + 1);
-        if ($max_price <= $min_price) {
-            $max_price = $min_price + 1;
+        $min_price = $products->min('new_price');
+        $max_price = $products->max('new_price');
+        if ($request->min_price && $request->max_price) {
+            $products = $products->where('new_price', '>=', $request->min_price);
+            $products = $products->where('new_price', '<=', $request->max_price);
         }
 
-        if ($request->filled('min_price') && $request->filled('max_price')) {
-            $products = $products->whereBetween('new_price', [
-                (float) $request->min_price,
-                (float) $request->max_price,
-            ]);
+        // Brand filter (link-based, single ID)
+        $activeBrandId = $request->input('brand');
+        if ($activeBrandId) {
+            $products = $products->where('brand_id', $activeBrandId);
         }
 
-        $products = $products
-            ->with(['prosizes', 'procolors', 'image', 'reviews'])
-            ->paginate(36)
-            ->withQueryString();
+        // Attribute filters (checkboxes)
+        $selectedWeights = $request->input('weight', []);
+        $products = $products->when($selectedWeights, fn($q) => $q->whereIn('weight_id', $selectedWeights));
 
-        return view('frontEnd.layouts.pages.shop', compact('products', 'min_price', 'max_price'));
+        $selectedLifeStages = $request->input('life_stage', []);
+        $products = $products->when($selectedLifeStages, fn($q) => $q->whereIn('life_stage_id', $selectedLifeStages));
+
+        $selectedFlavors = $request->input('flavor', []);
+        $products = $products->when($selectedFlavors, fn($q) => $q->whereIn('flavor_id', $selectedFlavors));
+
+        $products = $products->paginate(24)->withQueryString();
+        return view('frontEnd.layouts.pages.shop', compact(
+            'products', 'min_price', 'max_price',
+            'brands', 'brandCountMap', 'activeBrandId',
+            'weights', 'weightCountMap', 'selectedWeights',
+            'lifeStages', 'lifeStageCountMap', 'selectedLifeStages',
+            'flavors', 'flavorCountMap', 'selectedFlavors'
+        ));
     }
 
 

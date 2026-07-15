@@ -799,8 +799,26 @@ public function order_save(Request $request)
             }
         }
 
-        // Main Order save — order creation and reward spending live in ONE transaction:
-        // if either fails, neither persists (no points lost, no orphan discount).
+        // Main Order save — stock gate, order creation, reward spending, order details
+        // and the inventory reservation all live in ONE outer transaction (committed
+        // right after the reservation below): a failure anywhere rolls back atomically.
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            // Authoritative availability check. Locks the inventory rows (FOR UPDATE),
+            // held until commit — two customers racing for the last unit serialize here.
+            \App\Services\InventoryService::assertAvailable(
+                collect(Cart::instance('shopping')->content())->map(fn ($c) => [
+                    'product_id' => (int) $c->id,
+                    'qty'        => (int) $c->qty,
+                    'name'       => $c->name,
+                ])->all()
+            );
+        } catch (\App\Exceptions\InsufficientStockException $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            Toastr::error($e->getMessage(), 'Stock Out!');
+            return redirect()->back()->withInput();
+        }
+
         $order = new Order();
         \Illuminate\Support\Facades\DB::transaction(function () use ($order, $request, $customer_id, $useRewardPoints, $rewardPointValue, $subtotal, $discount, $shippingfee, &$rewardPointsUsed, &$rewardDiscount, &$grandTotal, &$payable_amount) {
             if ($useRewardPoints) {
@@ -893,16 +911,16 @@ public function order_save(Request $request)
         // Order details save
         OrderHelper::saveOrderDetails($order);
 
-        // Stock reduce
-        $details = OrderDetails::where('order_id', $order->id)
-            ->with('product:id,stock')
-            ->get();
-
-        foreach ($details as $row) {
-            if ($row->product) {
-                $row->product->stock = max(0, $row->product->stock - $row->qty);
-                $row->product->save();
-            }
+        // Reserve stock (ledger + reserved counter; products.stock cache synced by the
+        // service). Cannot fail here: assertAvailable() above still holds the row locks.
+        try {
+            \App\Services\InventoryService::reserveForOrder($order, strict: true);
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            \Log::error('Checkout reservation failed for order draft: '.$e->getMessage());
+            Toastr::error('দুঃখিত! স্টক সংক্রান্ত সমস্যার কারণে অর্ডারটি সম্পন্ন করা যায়নি।', 'Failed!');
+            return redirect()->route('checkout')->withInput();
         }
 
         // === Customer SMS ===

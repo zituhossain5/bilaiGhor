@@ -33,7 +33,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         
-        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=26">
+        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=29">
         <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/main.css')); ?>" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
@@ -728,96 +728,102 @@
             <!-- content end -->
 
 
+<?php
+    // ── Popular Categories: real subcategories (fallback to categories) — no invented routes ──
+    $footerSubcats = collect();
+    foreach ($menucategories as $mc) {
+        $footerSubcats = $footerSubcats->merge($mc->subcategories ?? []);
+    }
+    $footerSubcats = $footerSubcats->filter(fn ($s) => ($s->status ?? 1) == 1)->take(5);
+
+    // ── Useful Link: real routes + real CMS pages only ──
+    $footerPages = collect($pages ?? [])->merge($pagesright ?? [])->take(4);
+?>
 <footer class="bilai-footer">
     <div class="bilai-footer__accent"></div>
     <div class="bilai-footer__main">
         <div class="bilai-footer__grid">
+
             
             <div class="bilai-footer__brand">
                 <a href="<?php echo e(url('/')); ?>" class="bilai-footer__logo">
-                    <img src="<?php echo e(asset(optional($generalsetting)->white_logo ?? optional($generalsetting)->dark_logo ?? 'public/logo.png')); ?>" alt="<?php echo e(optional($generalsetting)->name ?? 'BilaiGhor'); ?>">
+                    <img src="<?php echo e(asset(optional($generalsetting)->dark_logo ?? optional($generalsetting)->white_logo ?? 'public/logo.png')); ?>" alt="<?php echo e(optional($generalsetting)->name ?? 'Bilai Ghor'); ?>">
                 </a>
-                <p class="bilai-footer__about">
-                    <?php echo e(optional($generalsetting)->footer_about_text ?? "Bangladesh's trusted online pet shop. Premium cat food, accessories and care products."); ?>
+
+                <h5 class="bilai-footer__title">Opening Hours</h5>
+                <p class="bilai-footer__hours">
+                    <?php echo e(optional($generalsetting)->opening_hours ?? 'Saturday to Friday: 8 am to 2 pm'); ?>
 
                 </p>
+
+                <h5 class="bilai-footer__title">Social Links</h5>
                 <ul class="bilai-footer__social">
                     <?php $__currentLoopData = $socialicons; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $si): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <li><a href="<?php echo e($si->link); ?>" target="_blank" rel="noopener"><i class="<?php echo e($si->icon); ?>"></i></a></li>
+                    <li>
+                        <a href="<?php echo e($si->link); ?>" target="_blank" rel="noopener" aria-label="<?php echo e($si->title ?? 'Social'); ?>"
+                           style="background: <?php echo e($si->color ?: 'rgba(255,255,255,0.10)'); ?>;">
+                            <i class="<?php echo e($si->icon); ?>"></i>
+                        </a>
+                    </li>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
-                <?php if(optional($generalsetting)->google_play_link || optional($generalsetting)->app_store_link): ?>
-                <div class="bilai-footer__apps">
-                    <span class="bilai-footer__apps-label">DOWNLOAD OUR APP</span>
-                    <div class="bilai-footer__app-badges">
-                        <?php if(optional($generalsetting)->google_play_link): ?>
-                        <a href="<?php echo e($generalsetting->google_play_link); ?>" target="_blank" rel="noopener">
-                            <img src="<?php echo e(asset('public/uploads/play.svg')); ?>" alt="Google Play">
-                        </a>
-                        <?php endif; ?>
-                        <?php if(optional($generalsetting)->app_store_link): ?>
-                        <a href="<?php echo e($generalsetting->app_store_link); ?>" target="_blank" rel="noopener">
-                            <img src="<?php echo e(asset('public/uploads/app.png')); ?>" alt="App Store">
-                        </a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                <?php endif; ?>
             </div>
 
             
             <div class="bilai-footer__col">
                 <h5 class="bilai-footer__title">Popular Categories</h5>
                 <ul class="bilai-footer__links">
-                    <?php $__currentLoopData = $menucategories->take(7); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php $__empty_1 = true; $__currentLoopData = $footerSubcats; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sub): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <li><a href="<?php echo e(route('subcategory', $sub->slug)); ?>"><?php echo e($sub->subcategoryName ?? $sub->name); ?></a></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                    <?php $__currentLoopData = $menucategories->take(5); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <li><a href="<?php echo e(route('category', $cat->slug)); ?>"><?php echo e($cat->name); ?></a></li>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    <?php endif; ?>
                 </ul>
             </div>
 
             
             <div class="bilai-footer__col">
-                <h5 class="bilai-footer__title">Quick Links</h5>
+                <h5 class="bilai-footer__title">Useful Link</h5>
                 <ul class="bilai-footer__links">
-                    <li><a href="<?php echo e(route('home')); ?>">Home</a></li>
-                    <li><a href="<?php echo e(route('contact')); ?>">Contact Us</a></li>
-                    <li><a href="<?php echo e(route('customer.order_track')); ?>">Track Order</a></li>
-                    <?php if(($generalsetting?->vendor_enabled ?? 1) == 1): ?>
-                    <li><a href="<?php echo e(route('sellers')); ?>">Sellers</a></li>
-                    <?php endif; ?>
-                    <li><a href="<?php echo e(route('complaint')); ?>">Complaints</a></li>
-                    <?php $__currentLoopData = $pages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $page): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <li><a href="<?php echo e(route('shop')); ?>">Shop</a></li>
+                    <li><a href="<?php echo e(route('blogs')); ?>">Blog</a></li>
+                    <li><a href="<?php echo e(route('hotdeals')); ?>">Best Deals</a></li>
+                    <?php $__currentLoopData = $footerPages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $page): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <li><a href="<?php echo e(route('page', ['slug' => $page->slug])); ?>"><?php echo e($page->name); ?></a></li>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    <?php $__currentLoopData = $pagesright; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <li><a href="<?php echo e(route('page', ['slug' => $value->slug])); ?>"><?php echo e($value->name); ?></a></li>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
 
             
             <div class="bilai-footer__col">
-                <h5 class="bilai-footer__title">Contact Us</h5>
+                <h5 class="bilai-footer__title">Contact</h5>
                 <ul class="bilai-footer__contacts">
-                    <?php if(optional($contact)->hotline): ?>
-                    <li><i class="fas fa-phone-alt"></i><span><?php echo e($contact->hotline); ?></span></li>
+                    <?php if(optional($contact)->hotline ?? optional($contact)->phone): ?>
+                    <li>
+                        <span class="bilai-footer__ci bilai-footer__ci--light"><i class="fas fa-phone-alt"></i></span>
+                        <a href="tel:<?php echo e($contact->hotline ?? $contact->phone); ?>"><?php echo e($contact->hotline ?? $contact->phone); ?></a>
+                    </li>
+                    <?php endif; ?>
+                    <?php if(optional($contact)->email ?? optional($contact)->hotmail): ?>
+                    <li>
+                        <span class="bilai-footer__ci bilai-footer__ci--light"><i class="fas fa-envelope"></i></span>
+                        <a href="mailto:<?php echo e($contact->email ?? $contact->hotmail); ?>"><?php echo e($contact->email ?? $contact->hotmail); ?></a>
+                    </li>
                     <?php endif; ?>
                     <?php if(optional($contact)->whatsapp): ?>
-                    <li><i class="fab fa-whatsapp"></i><span><?php echo e($contact->whatsapp); ?></span></li>
-                    <?php endif; ?>
-                    <?php if(optional($contact)->email ?? optional($contact)->mail ?? false): ?>
-                    <li><i class="fas fa-envelope"></i><span><?php echo e($contact->email ?? $contact->mail); ?></span></li>
-                    <?php endif; ?>
-                    <?php if(optional($contact)->address): ?>
-                    <li><i class="fas fa-map-marker-alt"></i><span><?php echo e($contact->address); ?></span></li>
+                    <li>
+                        <span class="bilai-footer__ci bilai-footer__ci--wa"><i class="fab fa-whatsapp"></i></span>
+                        <a href="https://wa.me/<?php echo e(preg_replace('/[^0-9]/', '', $contact->whatsapp)); ?>" target="_blank" rel="noopener"><?php echo e($contact->whatsapp); ?></a>
+                    </li>
                     <?php endif; ?>
                 </ul>
-                <span class="bilai-footer__nl-label">Subscribe for updates</span>
-                <form action="<?php echo e(route('frontend.newsletter.subscribe')); ?>" method="POST" class="bilai-footer__nl-form">
-                    <?php echo csrf_field(); ?>
-                    <input type="email" name="email" placeholder="Your email address..." required autocomplete="off">
-                    <button type="submit"><i class="fas fa-paper-plane"></i></button>
-                </form>
+
+                <?php if(optional($contact)->address): ?>
+                <h5 class="bilai-footer__title bilai-footer__title--tight">Address</h5>
+                <p class="bilai-footer__address"><?php echo e($contact->address); ?></p>
+                <?php endif; ?>
             </div>
 
         </div>
@@ -826,11 +832,14 @@
     <div class="bilai-footer__bottom">
         <div class="bilai-footer__bottom-inner">
             <p class="bilai-footer__copy">
-                &copy; <?php echo e(date('Y')); ?> <strong><?php echo e(optional($generalsetting)->name ?? config('app.name')); ?></strong>. All rights reserved.
+                &copy; <?php echo e(date('Y')); ?> <?php echo e(optional($generalsetting)->name ?? config('app.name')); ?>. All rights reserved.
             </p>
-            <span class="bilai-footer__credit">
-                Designed by <a href="https://www.bmitltd.com" target="_blank" rel="noopener">BMITLTD</a>
-            </span>
+            <div class="bilai-footer__payments">
+                <span class="bilai-footer__pay-label">Payment:</span>
+                <?php $__currentLoopData = ['bKash', 'Nagad', 'Rocket', 'VISA', 'MasterCard']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pm): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <span class="bilai-footer__pay-pill"><?php echo e($pm); ?></span>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </div>
         </div>
     </div>
 

@@ -1,14 +1,12 @@
-{{-- Shared listing JS: price range slider, filter auto-submit, sort submit,
-     sidebar section toggles, SEO accordion toggle (no-op when absent).
-     Expects: $min_price, $max_price. Push inside @push('script'). --}}
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 <script>
 $(function () {
-    var minP   = {{ $min_price ?? 0 }};
-    var maxP   = {{ $max_price ?? 10000 }};
-    var curMin = {{ request('min_price') ?: ($min_price ?? 0) }};
-    var curMax = {{ request('max_price') ?: ($max_price ?? 10000) }};
+    var minP   = <?php echo e($min_price ?? 0); ?>;
+    var maxP   = <?php echo e($max_price ?? 10000); ?>;
+    var curMin = <?php echo e(request('min_price') ?: ($min_price ?? 0)); ?>;
+    var curMax = <?php echo e(request('max_price') ?: ($max_price ?? 10000)); ?>;
 
     $("#bilai-price-range").slider({
         range: true, step: 5, min: minP, max: maxP,
@@ -62,3 +60,4 @@ $(function () {
     });
 });
 </script>
+<?php /**PATH D:\projects\bilaiGhor\resources\views/frontEnd/layouts/partials/listing-js.blade.php ENDPATH**/ ?>

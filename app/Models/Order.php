@@ -33,6 +33,15 @@ class Order extends Model
                 // Reward bookkeeping must never break a status update (webhooks etc.).
                 \Log::error('Reward point hook failed for order '.$order->id.': '.$e->getMessage());
             }
+
+            try {
+                // Inventory reacts to every status transition through one idempotent
+                // service — this hook is the only interception point that also covers
+                // the IonCube-encoded admin OrderController's status updates.
+                \App\Services\InventoryService::syncOrderStatus($order, (int) $order->order_status);
+            } catch (\Throwable $e) {
+                \Log::error('Inventory status hook failed for order '.$order->id.': '.$e->getMessage());
+            }
         });
     }
 

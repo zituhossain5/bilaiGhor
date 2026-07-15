@@ -153,19 +153,10 @@ class IncompleteOrderController extends Controller
                 $detail->variant_price_id = $item['variant_price_id'] ?? null;
                 $detail->save();
 
-                if ($product) {
-                    if (Schema::hasColumn('products', 'stock')) {
-                        $product->stock = max(0, (int) $product->stock - $qty);
-                        $product->save();
-                    } elseif (Schema::hasColumn('products', 'qty')) {
-                        $product->qty = max(0, (int) $product->qty - $qty);
-                        $product->save();
-                    } elseif (Schema::hasColumn('products', 'quantity')) {
-                        $product->quantity = max(0, (int) $product->quantity - $qty);
-                        $product->save();
-                    }
-                }
             }
+
+            // Reserve stock through the central inventory service (ledger + cache sync)
+            \App\Services\InventoryService::reserveForOrder($order);
 
             $incomplete->delete();
 

@@ -222,38 +222,9 @@ class ResellerOrderController extends Controller
      */
     private function handleStockChange(Order $order, int $oldStatus, int $newStatus)
     {
-        $activeStatuses = [1, 2, 3, 5, 6, 8];
-        
-        $wasActive = in_array($oldStatus, $activeStatuses);
-        $isActive = in_array($newStatus, $activeStatuses);
-
-        // 1) প্রথমবার active status এ ঢুকলে স্টক কমবে
-        if ($isActive && !$wasActive) {
-            $details = OrderDetails::where('order_id', $order->id)
-                ->with('product:id,stock') // Eager load products to avoid N+1
-                ->get();
-
-            foreach ($details as $row) {
-                if ($row->product) {
-                    $row->product->stock = max(0, $row->product->stock - $row->qty);
-                    $row->product->save();
-                }
-            }
-        }
-
-        // 2) cancel (11) হলে, যদি আগেরটা active group এ থাকে -> স্টক রিস্টোর
-        if ($newStatus == 11 && $wasActive) {
-            $details = OrderDetails::where('order_id', $order->id)
-                ->with('product:id,stock') // Eager load products to avoid N+1
-                ->get();
-
-            foreach ($details as $row) {
-                if ($row->product) {
-                    $row->product->stock = $row->product->stock + $row->qty;
-                    $row->product->save();
-                }
-            }
-        }
+        // Intentionally empty: stock now flows through InventoryService via the
+        // Order::updated hook (idempotent ledger), so stock math here would
+        // double-count. Kept as a no-op because call sites remain.
     }
 
     /**

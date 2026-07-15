@@ -280,13 +280,8 @@ class LandingOrderController extends Controller
             'amount' => $request->payment_method === 'cod' ? $grandTotal : 0,
         ]);
 
-        foreach ($orderDetailsData as $item) {
-            $product = $item['product'];
-            if ($product->stock >= $item['qty']) {
-                $product->stock -= $item['qty'];
-                $product->save();
-            }
-        }
+        // Reserve stock through the central inventory service (ledger + cache sync)
+        \App\Services\InventoryService::reserveForOrder($order);
 
         session()->forget($this->getCartKey($slug));
 

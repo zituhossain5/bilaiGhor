@@ -54,9 +54,30 @@ $steps = [
 ];
 
 // ── Courier / tracking ──
-$courierName    = $order->courier_type ? ucfirst($order->courier_type) : null;
-$trackingId     = $order->courier_tracking_id ?? $order->consignment_id ?? null;
-$steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
+// Same null-safe resolution used across admin quick-view, shipping label and
+// reseller orders: a courier is "assigned" once either courier_type or a
+// tracking id exists; a bare tracking id (legacy data) is assumed Steadfast.
+$trackingId  = $order->courier_tracking_id ?? null;
+$courierType = $order->courier_type ?? null;
+if (!$courierType && $trackingId) { $courierType = 'steadfast'; }
+$hasCourierInfo = (bool) ($courierType || $trackingId);
+// Same readable-label convention used in admin/reseller fraud-check views.
+$courierLabels  = ['pathao' => 'Pathao', 'steadfast' => 'SteadFast', 'redx' => 'RedX'];
+$courierName    = $courierType ? ($courierLabels[strtolower($courierType)] ?? ucfirst($courierType)) : null;
+
+$trackingUrl = null;
+if ($trackingId) {
+    $ct = strtolower($courierType ?? '');
+    if ($ct === 'pathao') {
+        $trackingUrl = 'https://merchant.pathao.com/public-tracking?consignment_id=' . $trackingId;
+    } elseif ($ct === 'redx') {
+        $trackingUrl = 'https://redx.com.bd/track/' . $trackingId;
+    } elseif ($ct === 'steadfast') {
+        $sfSlug = ($order->courier_tracking_code ?: $trackingId);
+        $trackingUrl = sprintf(config('services.steadfast.public_track_url_pattern'), $sfSlug);
+    }
+    // Unknown/unsupported provider: no public tracking URL is invented, button stays hidden.
+}
 @endphp
 
 @extends('frontEnd.layouts.master')
@@ -181,6 +202,7 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
 
 /* ── Two-up cards row ── */
 .bilai-od-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.bilai-od-2col--single { grid-template-columns: 1fr; }
 .bilai-od-info-row { display: flex; gap: 12px; }
 .bilai-od-info-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--bilai-od-cream); border: 1px solid var(--bilai-od-border); display: flex; align-items: center; justify-content: center; color: var(--bilai-od-primary); flex-shrink: 0; font-size: 14px; }
 .bilai-od-info-name { font-size: 13.5px; font-weight: 600; color: var(--bilai-od-text); margin: 0 0 3px; }
@@ -379,17 +401,11 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
                     <div class="bilai-od-cardbody">
                         <div class="bilai-od-card-head">
                             <h3 class="bilai-od-card-title">Order Status</h3>
-                            @if($trackingId && $courierName)
-                                <a href="{{ $order->courier_type === 'steadfast' && $steadfastTrack ? 'https://steadfast.com.bd/t/' . $steadfastTrack : '#' }}"
-                                   target="_blank" class="bilai-od-btn bilai-od-btn--soft">
+                            @if($trackingUrl)
+                                <a href="{{ $trackingUrl }}" target="_blank" rel="noopener noreferrer" class="bilai-od-btn bilai-od-btn--soft">
                                     {{-- Replace SVG icon later --}}
                                     <i class="fa fa-truck"></i> Track with {{ $courierName }}
                                 </a>
-                            @else
-                                <span class="bilai-od-btn bilai-od-btn--disabled">
-                                    {{-- Replace SVG icon later --}}
-                                    <i class="fa fa-truck"></i> Tracking N/A
-                                </span>
                             @endif
                         </div>
 
@@ -482,7 +498,7 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
                 </div>
 
                 {{-- ── Shipping + Delivery Partner ── --}}
-                <div class="bilai-od-2col">
+                <div class="bilai-od-2col {{ $hasCourierInfo ? '' : 'bilai-od-2col--single' }}">
                     {{-- Shipping Address --}}
                     <div class="bilai-card">
                         <div class="bilai-od-cardbody">
@@ -503,23 +519,31 @@ $steadfastTrack = ($order->courier_tracking_code ?? $trackingId);
                         </div>
                     </div>
 
-                    {{-- Delivery Partner --}}
-                    <div class="bilai-card">
-                        <div class="bilai-od-cardbody">
-                            <div class="bilai-od-card-head bilai-od-card-head--plain"><h3 class="bilai-od-card-title">Delivery Partner Info</h3></div>
-                            <div class="bilai-od-info-row">
-                                <div class="bilai-od-info-icon">
-                                    {{-- Replace SVG icon later --}}
-                                    <i class="fa fa-bicycle"></i>
-                                </div>
-                                <div>
-                                    <p class="bilai-od-info-name">{{ $courierName ?? 'N/A' }}</p>
-                                    <p class="bilai-od-info-line">Tracking: {{ $trackingId ?? 'N/A' }}</p>
-                                    <p class="bilai-od-info-line">{{ $order->courier_sent_at ? 'Sent: ' . \Carbon\Carbon::parse($order->courier_sent_at)->format('M d, Y') : 'N/A' }}</p>
+                    {{-- Delivery Partner: hidden entirely until a courier is actually assigned --}}
+                    @if($hasCourierInfo)
+                        <div class="bilai-card">
+                            <div class="bilai-od-cardbody">
+                                <div class="bilai-od-card-head bilai-od-card-head--plain"><h3 class="bilai-od-card-title">Delivery Partner Info</h3></div>
+                                <div class="bilai-od-info-row">
+                                    <div class="bilai-od-info-icon">
+                                        {{-- Replace SVG icon later --}}
+                                        <i class="fa fa-bicycle"></i>
+                                    </div>
+                                    <div>
+                                        <p class="bilai-od-info-name">{{ $courierName ?? 'Courier' }}</p>
+                                        @if($trackingId)
+                                            <p class="bilai-od-info-line">Tracking: {{ $trackingId }}</p>
+                                        @else
+                                            <p class="bilai-od-info-line">Tracking information is not available yet.</p>
+                                        @endif
+                                        @if($order->courier_sent_at)
+                                            <p class="bilai-od-info-line">Sent: {{ \Carbon\Carbon::parse($order->courier_sent_at)->format('M d, Y') }}</p>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
 
                 {{-- ── Order Summary ── --}}

@@ -251,6 +251,9 @@ class ProductController extends Controller
         // CREATE PRODUCT
         $product = Product::create($input);
 
+        // Start inventory tracking (opening_stock movement from the entered stock)
+        \App\Services\InventoryService::seedProduct($product, null, 'Opening stock (product created)');
+
         // সাইজ ও কালার অপশনাল – দিলে attach, না দিলে কিছু করব না
         if ($request->proSize && is_array($request->proSize) && count($request->proSize) > 0) {
             $product->sizes()->attach($request->proSize);
@@ -528,8 +531,15 @@ class ProductController extends Controller
             $input['download_expire_days']= null;
         }
 
+        // Stock edits go through the inventory ledger (no silent stock changes):
+        // the field means "available", so the service corrects on_hand to match
+        // and records a correction movement with the admin user.
+        $targetStock = (int) ($input['stock'] ?? 0);
+        unset($input['stock']);
+
         // PRODUCT UPDATE
         $product->update($input);
+        \App\Services\InventoryService::applyProductStockEdit($product, $targetStock, Auth::id());
         Cache::forget('product_details_' . $product->slug);
 
         // SIZE & COLOR

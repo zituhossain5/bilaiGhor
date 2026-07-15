@@ -41,7 +41,8 @@ class CourierWebhookOrderService
 
         $this->syncPaymentRecordStatus($order, $newOrderStatus);
 
-        $this->handleStockChange($order, $oldStatus, $newOrderStatus);
+        // Stock is handled centrally: the Order::updated hook routes every status
+        // change through InventoryService (idempotent), so no manual stock math here.
 
         if (SteadfastWebhookStatus::isCancelled($newOrderStatus)) {
             \App\Helpers\ResellerOrderHelper::deductDeliveryChargeOnCancel($order);
@@ -93,31 +94,6 @@ class CourierWebhookOrderService
         $existing = trim((string) ($order->admin_note ?? ''));
         $order->admin_note = $existing !== '' ? $existing."\n".$line : $line;
         $order->save();
-    }
-
-    private function handleStockChange(Order $order, int $oldStatus, int $newStatus): void
-    {
-        $activeStatuses = [1, 2, 3, 5, 6, 8];
-
-        if (in_array($newStatus, $activeStatuses, true) && ! in_array($oldStatus, $activeStatuses, true)) {
-            $details = OrderDetails::where('order_id', $order->id)->with('product:id,stock')->get();
-            foreach ($details as $row) {
-                if ($row->product) {
-                    $row->product->stock = max(0, $row->product->stock - $row->qty);
-                    $row->product->save();
-                }
-            }
-        }
-
-        if ($newStatus === 11 && in_array($oldStatus, $activeStatuses, true)) {
-            $details = OrderDetails::where('order_id', $order->id)->with('product:id,stock')->get();
-            foreach ($details as $row) {
-                if ($row->product) {
-                    $row->product->stock = $row->product->stock + $row->qty;
-                    $row->product->save();
-                }
-            }
-        }
     }
 
     private function distributeVendorEarnings(Order $order, string $sourceLabel): void

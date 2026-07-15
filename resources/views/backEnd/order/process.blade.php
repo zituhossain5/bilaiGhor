@@ -4,6 +4,8 @@
     $admSelDiv = (int) ($shipRow->division_id ?? old('division_id', 0));
     $admSelDist = (int) ($shipRow->district_id ?? old('district_id', 0));
     $admSelUp = (int) ($shipRow->upazila_id ?? 0);
+    $admProcZone = (int) ($shipRow->zone_id ?? old('zone_id', 0));
+    $admProcPostCode = $shipRow->post_code ?? old('post_code', '');
     $processDistricts = collect($districts ?? []);
     $processUpazilas = collect($upazilas ?? []);
     $selDelBoy = (int) ($data->delivery_boy_id ?? 0);
@@ -376,37 +378,36 @@
                             </div>
                         </div>
 
+                        {{-- Legacy Division/Upazila are retired from this UI (District → Zone replaces them).
+                             Their tables/data are untouched — the hidden inputs below keep the encoded
+                             order-change controller's legacy validation satisfied without exposing either
+                             field to the admin. Both are auto-derived from the selected District in JS. --}}
+                        <input type="hidden" id="adm_process_division_hidden" name="division_id" value="{{ $admSelDiv }}">
+                        <input type="hidden" id="adm_process_upazila_hidden" name="upazila_id" value="{{ $admSelUp }}">
+
                         <div class="op-section-label mt-2">ডেলিভারি লোকেশন</div>
                         <div class="row g-3">
-                            <div class="col-12 op-input-group">
-                                <label class="op-form-label" for="adm_process_division">বিভাগ</label>
-                                <select name="division_id" id="adm_process_division" class="form-select" required>
-                                    <option value="">বিভাগ নির্বাচন করুন</option>
-                                    @foreach(($divisions ?? []) as $d)
-                                        <option value="{{ $d->id }}" {{ $admSelDiv === (int) $d->id ? 'selected' : '' }}>{{ $d->name }}</option>
-                                    @endforeach
-                                </select>
+                            <div class="col-md-5 op-input-group">
+                                <label class="op-form-label" for="adm_process_postcode">পোস্ট কোড</label>
+                                <input type="text" id="adm_process_postcode" class="form-control" name="post_code"
+                                       maxlength="20" placeholder="১xxxx" value="{{ $admProcPostCode }}">
                             </div>
-                            <div class="col-md-6 op-input-group">
-                                <label class="op-form-label" for="adm_process_district">জেলা</label>
+                            <div class="col-md-7 op-input-group">
+                                <label class="op-form-label" for="adm_process_district">জেলা <span class="text-danger">*</span></label>
                                 <select name="district_id" id="adm_process_district" class="form-select" required>
-                                    <option value="">{{ $admSelDiv ? 'জেলা নির্বাচন করুন' : 'আগে বিভাগ সিলেক্ট করুন' }}</option>
-                                    @foreach($processDistricts->where('division_id', $admSelDiv) as $district)
-                                        <option value="{{ $district->id }}" {{ $admSelDist === (int) $district->id ? 'selected' : '' }}>
+                                    <option value="">জেলা নির্বাচন করুন</option>
+                                    @foreach($processDistricts as $district)
+                                        <option value="{{ $district->id }}" data-division="{{ $district->division_id }}"
+                                            {{ $admSelDist === (int) $district->id ? 'selected' : '' }}>
                                             {{ $district->name }} (৳{{ $district->delivery_charge }})
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-6 op-input-group">
-                                <label class="op-form-label" for="adm_process_upazila">উপজেলা</label>
-                                <select name="upazila_id" id="adm_process_upazila" class="form-select" required>
-                                    <option value="">{{ $admSelDist ? 'উপজেলা নির্বাচন করুন' : 'আগে জেলা সিলেক্ট করুন' }}</option>
-                                    @foreach($processUpazilas->where('district_id', $admSelDist) as $upazila)
-                                        <option value="{{ $upazila->id }}" {{ $admSelUp === (int) $upazila->id ? 'selected' : '' }}>
-                                            {{ $upazila->name }}
-                                        </option>
-                                    @endforeach
+                            <div class="col-12 op-input-group">
+                                <label class="op-form-label" for="adm_process_zone">জোন <span class="text-danger">*</span></label>
+                                <select name="zone_id" id="adm_process_zone" class="form-select" required {{ $admSelDist ? '' : 'disabled' }}>
+                                    <option value="">{{ $admSelDist ? 'জোন লোড হচ্ছে...' : 'আগে জেলা সিলেক্ট করুন' }}</option>
                                 </select>
                             </div>
                         </div>
@@ -525,76 +526,79 @@
 <script src="{{ asset('public/backEnd') }}/assets/libs/select2/js/select2.min.js"></script>
 <script>
 (function () {
-    var admSelDiv = {{ $admSelDiv }};
-    var admSelDist = {{ $admSelDist }};
-    var admSelUp = {{ $admSelUp }};
+    // ── District → Zone (Division/Upazila retired from this UI) ──
+    // allUpazilas is kept ONLY to silently derive a legacy-compatible hidden upazila_id
+    // whenever District changes. The encoded order-change controller hard-requires
+    // division_id + upazila_id, so both are recomputed here from the chosen district.
     var allDistricts = @json($processDistricts->values());
-    var allUpazilas = @json($processUpazilas->values());
+    var allUpazilas  = @json($processUpazilas->values());
+    var procZonesUrl = '{{ route("customer.delivery_zones") }}';
+    var procSelectedZone = {{ $admProcZone }};
 
-    function esc(value) {
-        return String(value == null ? '' : value)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    function syncLegacyHiddenFields(districtId) {
+        var d = allDistricts.find(function (r) { return parseInt(r.id, 10) === parseInt(districtId, 10); });
+        $('#adm_process_division_hidden').val(d ? d.division_id : '');
+        var u = allUpazilas.find(function (r) { return parseInt(r.district_id, 10) === parseInt(districtId, 10); });
+        $('#adm_process_upazila_hidden').val(u ? u.id : '');
     }
 
-    function fillDistricts(divId, preselect, then) {
-        var $d = $('#adm_process_district');
-        divId = parseInt(divId || 0, 10);
-        $('#adm_process_upazila').html('<option value="">আগে জেলা সিলেক্ট করুন</option>').prop('disabled', false);
-        if (!divId) {
-            $d.html('<option value="">আগে বিভাগ সিলেক্ট করুন</option>').prop('disabled', false);
-            if (then) then();
+    function loadZones(districtId, preselectZoneId) {
+        var $zone = $('#adm_process_zone');
+        $zone.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
+        if (!districtId) {
+            $zone.html('<option value="">আগে জেলা সিলেক্ট করুন</option>');
             return;
         }
-        var opts = '<option value="">জেলা নির্বাচন করুন</option>';
-        allDistricts.filter(function (r) { return parseInt(r.division_id, 10) === divId; })
-            .forEach(function (r) {
-                opts += '<option value="' + esc(r.id) + '">' + esc(r.name) + ' (৳' + esc(r.delivery_charge) + ')</option>';
+        $.get(procZonesUrl, { district_id: districtId }, function (res) {
+            var opts = '<option value="">জোন নির্বাচন করুন</option>';
+            (res.data || []).forEach(function (z) {
+                var label = z.name + (z.name_bn ? ' — ' + z.name_bn : '');
+                opts += '<option value="' + z.id + '">' + label + '</option>';
             });
-        $d.html(opts).prop('disabled', false);
-        if (preselect) $d.val(String(preselect));
-        if (then) then();
-        if ($d.find('option').length <= 1) {
-            $d.html('<option value="">এই বিভাগের কোনো জেলা নেই</option>');
-        }
-    }
-
-    function fillUpazilas(distId, preselect, then) {
-        var $u = $('#adm_process_upazila');
-        distId = parseInt(distId || 0, 10);
-        if (!distId) {
-            $u.html('<option value="">আগে জেলা সিলেক্ট করুন</option>').prop('disabled', false);
-            if (then) then();
-            return;
-        }
-        var opts = '<option value="">উপজেলা নির্বাচন করুন</option>';
-        allUpazilas.filter(function (r) { return parseInt(r.district_id, 10) === distId; })
-            .forEach(function (r) {
-                opts += '<option value="' + esc(r.id) + '">' + esc(r.name) + '</option>';
-            });
-        $u.html(opts).prop('disabled', false);
-        if (preselect) $u.val(String(preselect));
-        if (then) then();
-        if ($u.find('option').length <= 1) {
-            $u.html('<option value="">এই জেলার কোনো উপজেলা নেই</option>');
-        }
+            $zone.html(opts).prop('disabled', false);
+            if (preselectZoneId) { $zone.val(String(preselectZoneId)); }
+        }).fail(function () {
+            $zone.html('<option value="">জোন লোড ব্যর্থ হয়েছে</option>');
+        });
     }
 
     $(function () {
         if ($.fn.select2) {
             $('.select2-multiple').select2({ width: '100%' });
         }
-        $('#adm_process_division').on('change', function () {
-            fillDistricts($(this).val(), null, null);
-        });
+
         $('#adm_process_district').on('change', function () {
-            fillUpazilas($(this).val(), null, null);
+            var id = $(this).val();
+            syncLegacyHiddenFields(id);
+            loadZones(id, null); // district changed by admin -> old zone selection clears
         });
-        if (admSelDiv) {
-            fillDistricts(admSelDiv, admSelDist || null, function () {
-                if (admSelDist) fillUpazilas(admSelDist, admSelUp || null, null);
-            });
+
+        var initialDistrict = $('#adm_process_district').val();
+        if (initialDistrict) {
+            syncLegacyHiddenFields(initialDistrict);
+            loadZones(initialDistrict, procSelectedZone || null);
         }
+
+        // Save Zone + Post Code (columns the encoded order-change controller cannot write)
+        // BEFORE the legacy form submits, so both saves complete without racing.
+        $('form[name="editForm"]').on('submit', function (e) {
+            var $form = $(this);
+            if ($form.data('shippingLocationSaved')) { return; }
+            e.preventDefault();
+            $.post('{{ route("admin.order.update_shipping_location") }}', {
+                _token: '{{ csrf_token() }}',
+                order_id: {{ $data->id }},
+                district_id: $('#adm_process_district').val(),
+                zone_id: $('#adm_process_zone').val(),
+                post_code: $('#adm_process_postcode').val()
+            }).fail(function (xhr) {
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'জোন/পোস্ট কোড সংরক্ষণ ব্যর্থ হয়েছে';
+                if (typeof toastr !== 'undefined') { toastr.error(msg, 'ত্রুটি'); }
+            }).always(function () {
+                $form.data('shippingLocationSaved', true);
+                $form.trigger('submit');
+            });
+        });
     });
 })();
 

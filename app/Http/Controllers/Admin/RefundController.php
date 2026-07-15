@@ -174,18 +174,11 @@ class RefundController extends Controller
             $refund->processed_at = now();
             $refund->save();
 
-            // Restore product stock if order was cancelled
+            // Settle inventory if the order was cancelled. Idempotent: if the
+            // cancellation already released/restocked (webhook, admin panel), this
+            // is a no-op — fixing the old double-restock on refund processing.
             if ($refund->order->order_status == 11) { // 11 = cancelled
-                $orderDetails = OrderDetails::where('order_id', $refund->order_id)
-                    ->with('product')
-                    ->get();
-
-                foreach ($orderDetails as $detail) {
-                    if ($detail->product) {
-                        $detail->product->stock += $detail->qty;
-                        $detail->product->save();
-                    }
-                }
+                \App\Services\InventoryService::releaseReservation($refund->order);
             }
         });
 

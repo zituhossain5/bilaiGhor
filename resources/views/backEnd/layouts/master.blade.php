@@ -435,6 +435,31 @@
   </a>
 </li>
 @endcanany
+
+{{-- BilaiGhor Inventory (Phase 1) --}}
+@php
+    $invLowCount = \App\Models\InventoryStock::whereRaw('(on_hand - reserved) <= low_stock_threshold')->count();
+@endphp
+<li>
+  <a href="#sidebar-inventory" data-bs-toggle="collapse">
+    <i data-feather="box"></i>
+    <span> Inventory </span>
+    @if($invLowCount > 0)
+      <span class="badge bg-danger rounded-pill float-end me-2">{{ $invLowCount }}</span>
+    @endif
+    <span class="menu-arrow"></span>
+  </a>
+  <div class="collapse" id="sidebar-inventory">
+    <ul class="nav-second-level">
+      <li><a href="{{ route('admin.inventory.dashboard') }}"><i data-feather="grid"></i> Dashboard</a></li>
+      <li><a href="{{ route('admin.inventory.stock') }}"><i data-feather="layers"></i> Stock Overview</a></li>
+      <li><a href="{{ route('admin.inventory.movements') }}"><i data-feather="list"></i> Stock Movements</a></li>
+      <li><a href="{{ route('admin.inventory.low_stock') }}"><i data-feather="alert-triangle"></i> Low Stock</a></li>
+      <li><a href="{{ route('admin.inventory.adjust') }}"><i data-feather="sliders"></i> Stock Adjustments</a></li>
+      <li><a href="{{ route('admin.inventory.reports') }}"><i data-feather="bar-chart-2"></i> Reports</a></li>
+    </ul>
+  </div>
+</li>
 @canany(['supplier-list', 'supplier-create', 'supplier-edit'])
 <li>
   <a href="{{ route('admin.suppliers.index') }}">

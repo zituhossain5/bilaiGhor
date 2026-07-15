@@ -17,15 +17,15 @@
     <input type="hidden" name="brand" value="{{ $activeBrandId }}">
     @endif
 
-    {{-- FILTER BY PRICE --}}
+    {{-- FILTER BY PRICE (Figma: title → slider → price label below) --}}
     <div class="bilai-cat-filter-block">
         <div class="bilai-cat-filter-title">Filter by Price</div>
+        <div id="bilai-price-range" class="bilai-price-slider"></div>
         <div class="bilai-cat-price-display">
             Price: <strong>&#2547;<span id="bilai-min-val">{{ request('min_price', $min_price) }}</span></strong>
-            &nbsp;—&nbsp;
+            &nbsp;–&nbsp;
             <strong>&#2547;<span id="bilai-max-val">{{ request('max_price', $max_price) }}</span></strong>
         </div>
-        <div id="bilai-price-range" class="bilai-price-slider"></div>
         <input type="hidden" name="min_price" id="bilai_min_price" value="{{ request('min_price', $min_price) }}">
         <input type="hidden" name="max_price" id="bilai_max_price" value="{{ request('max_price', $max_price) }}">
     </div>
@@ -37,7 +37,14 @@
             Brand <i class="fas fa-chevron-up bilai-cat-toggle-icon"></i>
         </div>
         <div class="bilai-cat-filter-body" id="bilai-brand-list">
-            <ul class="bilai-cat-attr-link-list">
+            @if($brands->count() > 1)
+            <div class="bilai-cat-filter-search">
+                <input type="text" class="bilai-brand-search-input" id="bilaiBrandSearch"
+                       placeholder="Find a Brand" autocomplete="off" aria-label="Search brands">
+                <i class="fas fa-search"></i>
+            </div>
+            @endif
+            <ul class="bilai-cat-attr-link-list" id="bilaiBrandList">
                 @foreach($brands as $brand)
                 @php
                     $isBrandActive = (string)$activeBrandId === (string)$brand->id;

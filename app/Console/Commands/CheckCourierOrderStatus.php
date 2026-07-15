@@ -79,12 +79,20 @@ class CheckCourierOrderStatus extends Command
                     continue;
                 }
 
-                $oldStatus           = $order->order_status;
-                $order->order_status = $status;
-                $order->save();
+                $oldStatus = $order->order_status;
 
-                if ($status == 11) {
-                    \App\Helpers\ResellerOrderHelper::deductDeliveryChargeOnCancel($order);
+                // Route the transition through the SAME service the courier webhooks use, so
+                // polling and webhook updates share one code path: payment_status sync, fund /
+                // vendor / reseller settlement, delivery-charge-on-cancel, and status SMS.
+                // The service early-returns when old === new, and the Order::updated model hook
+                // keeps inventory + reward-point effects idempotent — so a status repeated every
+                // 10 minutes can never double-deduct stock, double-award points, or resend SMS.
+                $changed = app(\App\Services\CourierWebhookOrderService::class)
+                    ->applyStatusChange($order, (int) $status, ucfirst((string) $order->courier_type) . ' Cron');
+
+                if (! $changed) {
+                    $unchanged++;
+                    continue;
                 }
 
                 $updated++;

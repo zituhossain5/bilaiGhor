@@ -789,6 +789,17 @@ Route::get('purchases/ajax', [PurchaseController::class, 'ajaxIndex'])
     ->name('purchases.ajax');
 
 
+// ==== INVENTORY (Phase 1) ==== //
+Route::get('inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'dashboard'])->name('admin.inventory.dashboard');
+Route::get('inventory/stock', [\App\Http\Controllers\Admin\InventoryController::class, 'stock'])->name('admin.inventory.stock');
+Route::get('inventory/movements', [\App\Http\Controllers\Admin\InventoryController::class, 'movements'])->name('admin.inventory.movements');
+Route::get('inventory/low-stock', [\App\Http\Controllers\Admin\InventoryController::class, 'lowStock'])->name('admin.inventory.low_stock');
+Route::get('inventory/adjust', [\App\Http\Controllers\Admin\InventoryController::class, 'adjust'])->name('admin.inventory.adjust');
+Route::post('inventory/adjust', [\App\Http\Controllers\Admin\InventoryController::class, 'adjustStore'])->name('admin.inventory.adjust.store');
+Route::post('inventory/threshold/{product}', [\App\Http\Controllers\Admin\InventoryController::class, 'threshold'])->name('admin.inventory.threshold');
+Route::get('inventory/reports', [\App\Http\Controllers\Admin\InventoryController::class, 'reports'])->name('admin.inventory.reports');
+
+
 // ==== REPORT ROUTES ==== //
 Route::get('reports/orders',        [ReportController::class, 'orders'])->name('admin.reports.orders');
 Route::get('reports/purchases',     [ReportController::class, 'purchases'])->name('admin.reports.purchases');

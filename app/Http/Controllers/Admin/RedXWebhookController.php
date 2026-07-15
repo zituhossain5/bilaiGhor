@@ -144,35 +144,9 @@ class RedXWebhookController extends Controller
      */
     private function handleStockChange(Order $order, int $oldStatus, int $newStatus)
     {
-        $activeStatuses = [1, 2, 3, 5, 6, 8];
-
-        // 1) প্রথমবার active status এ ঢুকলে স্টক কমবে
-        if (in_array($newStatus, $activeStatuses) && !in_array($oldStatus, $activeStatuses)) {
-            $details = OrderDetails::where('order_id', $order->id)
-                ->with('product:id,stock')
-                ->get();
-
-            foreach ($details as $row) {
-                if ($row->product) {
-                    $row->product->stock = max(0, $row->product->stock - $row->qty);
-                    $row->product->save();
-                }
-            }
-        }
-
-        // 2) cancel (11) হলে, যদি আগেরটা active group এ থাকে -> স্টক রিস্টোর
-        if ($newStatus == 11 && in_array($oldStatus, $activeStatuses)) {
-            $details = OrderDetails::where('order_id', $order->id)
-                ->with('product:id,stock')
-                ->get();
-
-            foreach ($details as $row) {
-                if ($row->product) {
-                    $row->product->stock = $row->product->stock + $row->qty;
-                    $row->product->save();
-                }
-            }
-        }
+        // Intentionally empty: stock now flows through InventoryService via the
+        // Order::updated hook (idempotent ledger), so webhook-side stock math here
+        // would double-count. Kept as a no-op because call sites remain.
     }
 
     /**

@@ -32,6 +32,16 @@
                     <input type="text" class="form-control @error('stock') is-invalid @enderror"
                            name="stock" value="{{ $edit_data->stock }}" id="stock" placeholder="0" />
                     @error('stock')<span class="invalid-feedback"><strong>{{ $message }}</strong></span>@enderror
+                    @php $__inv = \App\Models\InventoryStock::where('product_id', $edit_data->id)->first(); @endphp
+                    @if($__inv)
+                        <small class="text-muted d-block mt-1">
+                            Inventory: On hand <strong>{{ $__inv->on_hand }}</strong> ·
+                            Reserved <strong>{{ $__inv->reserved }}</strong> ·
+                            Available <strong>{{ $__inv->on_hand - $__inv->reserved }}</strong>
+                            — changes here are logged as a correction.
+                            <a href="{{ route('admin.inventory.adjust', ['product_id' => $edit_data->id]) }}">Adjust instead</a>
+                        </small>
+                    @endif
                 </div>
                 <div class="col-6">
                     <label for="pro_unit" class="form-label">Unit</label>

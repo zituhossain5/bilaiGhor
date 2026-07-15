@@ -427,14 +427,8 @@ class ResellerCheckoutController extends Controller
 
         $payment = Payment::create($paymentData);
 
-        // Stock reduce
-        foreach ($order->orderdetails as $detail) {
-            $product = Product::find($detail->product_id);
-            if ($product && $product->stock >= $detail->qty) {
-                $product->stock -= $detail->qty;
-                $product->save();
-            }
-        }
+        // Reserve stock through the central inventory service (ledger + cache sync)
+        \App\Services\InventoryService::reserveForOrder($order);
 
         // Clear cart
         Cart::instance('shopping')->destroy();

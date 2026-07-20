@@ -650,6 +650,20 @@ new ApexCharts(document.querySelector("#statusChart"), {
 
 // ── SMS Balance ──
 const SMS_BAL_URL = "{{ route('smsgeteway.balance') }}";
+const BD_PLAN_URL = "{{ route('bdcourier.myplan') }}";
+const SF_WIDGET_URL = "{{ route('steadfast.dashboard.widget') }}";
+
+function fetchJsonWithTimeout(url, options, timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(function() {
+        controller.abort();
+    }, timeoutMs);
+
+    options = Object.assign({}, options, { signal: controller.signal });
+    return fetch(url, options).finally(function() {
+        clearTimeout(timer);
+    });
+}
 
 function fetchSmsBalance() {
     const btn = document.getElementById('sms-bal-btn');
@@ -662,15 +676,14 @@ function fetchSmsBalance() {
     val.innerHTML = '<span style="font-size:13px;color:#9ca3af;font-weight:500;">Loading...</span>';
     msg.textContent = '';
 
-    fetch(SMS_BAL_URL, {
+    fetchJsonWithTimeout(SMS_BAL_URL, {
         headers: {
             'Accept':        'application/json',
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN':  '{{ csrf_token() }}'
         }
-    })
+    }, 5000)
     .then(function(r) {
-        // If response is a redirect or HTML (license/auth page), handle gracefully
         const ct = r.headers.get('content-type') || '';
         if (!ct.includes('application/json')) {
             return r.text().then(function(txt) {
@@ -695,7 +708,7 @@ function fetchSmsBalance() {
         } else {
             val.textContent = '—';
             val.style.color = '#9ca3af';
-            msg.textContent = d.message || 'Could not fetch balance';
+            msg.textContent = d.message || 'SMS balance unavailable';
             msg.style.color = '#ef4444';
         }
     })
@@ -703,9 +716,10 @@ function fetchSmsBalance() {
         if (btn) { btn.disabled = false; btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.48-3.44"/></svg> Retry'; }
         val.textContent = '—';
         val.style.color = '#9ca3af';
-        // Show useful debug info
         const errTxt = err && err.message ? err.message : 'Request failed';
-        if (errTxt.includes('non-JSON')) {
+        if (errTxt === 'The user aborted a request.') {
+            msg.textContent = 'SMS balance unavailable';
+        } else if (errTxt.includes('non-JSON')) {
             msg.textContent = 'Session expired — please reload page';
         } else if (errTxt.includes('Failed to fetch')) {
             msg.textContent = 'Cannot connect to server';
@@ -723,9 +737,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(fetchSteadfastWidget, 900);
 });
 
-const BD_PLAN_URL = "{{ route('bdcourier.myplan') }}";
-const SF_WIDGET_URL = "{{ route('steadfast.dashboard.widget') }}";
-
 function fetchSteadfastWidget() {
     var btn   = document.getElementById('sf-btn');
     var main  = document.getElementById('sf-main');
@@ -739,13 +750,13 @@ function fetchSteadfastWidget() {
     if (det)  det.textContent = '';
     if (msgEl){ msgEl.textContent = ''; msgEl.style.color = ''; }
 
-    fetch(SF_WIDGET_URL, {
+    fetchJsonWithTimeout(SF_WIDGET_URL, {
         headers: {
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         }
-    })
+    }, 5000)
     .then(function(r) {
         var ct = r.headers.get('content-type') || '';
         if (!ct.includes('application/json')) throw new Error('non-JSON');
@@ -761,7 +772,7 @@ function fetchSteadfastWidget() {
 
         if (!d.success) {
             if (main) { main.textContent = '—'; main.style.color = '#9ca3af'; }
-            if (msgEl){ msgEl.textContent = d.message || 'লোড করতে পারিনি'; msgEl.style.color = '#ef4444'; }
+            if (msgEl){ msgEl.textContent = d.message || 'Courier dashboard unavailable'; msgEl.style.color = '#ef4444'; }
             return;
         }
 
@@ -786,7 +797,7 @@ function fetchSteadfastWidget() {
         }
         if (main) main.textContent = '—';
         if (det)  det.textContent = '';
-        if (msgEl){ msgEl.textContent = 'সার্ভার বা নেটওয়ার্ক সমস্যা'; msgEl.style.color = '#ef4444'; }
+        if (msgEl){ msgEl.textContent = 'Courier dashboard unavailable'; msgEl.style.color = '#ef4444'; }
     });
 }
 
@@ -803,13 +814,13 @@ function fetchBdCourierPlan() {
     if (det)  det.textContent = '';
     if (msg)  { msg.textContent = ''; msg.style.color = ''; }
 
-    fetch(BD_PLAN_URL, {
+    fetchJsonWithTimeout(BD_PLAN_URL, {
         headers: {
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         }
-    })
+    }, 5000)
     .then(function(r) {
         var ct = r.headers.get('content-type') || '';
         if (!ct.includes('application/json')) {
@@ -827,7 +838,7 @@ function fetchBdCourierPlan() {
 
         if (!d.success) {
             if (main) { main.textContent = '—'; main.style.color = '#9ca3af'; }
-            if (msg) { msg.textContent = d.message || 'লোড করতে পারিনি'; msg.style.color = '#ef4444'; }
+            if (msg) { msg.textContent = d.message || 'Plan info unavailable'; msg.style.color = '#ef4444'; }
             return;
         }
 
@@ -863,7 +874,7 @@ function fetchBdCourierPlan() {
         }
         if (main) main.textContent = '—';
         if (det)  det.textContent = '';
-        if (msg)  { msg.textContent = 'সার্ভার বা নেটওয়ার্ক সমস্যা'; msg.style.color = '#ef4444'; }
+        if (msg)  { msg.textContent = 'Plan info unavailable'; msg.style.color = '#ef4444'; }
     });
 }
 </script>

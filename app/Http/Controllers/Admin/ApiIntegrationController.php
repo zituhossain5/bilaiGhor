@@ -116,7 +116,7 @@ public function sms_balance()
     $sms = SmsGateway::first();
 
     if (!$sms || empty($sms->api_key)) {
-        return response()->json(['success' => false, 'message' => 'API Key সেট করা নেই।']);
+        return response()->json(['success' => false, 'message' => 'SMS balance unavailable']);
     }
 
     $url = 'http://bulksmsbd.net/api/getBalanceApi?api_key=' . urlencode($sms->api_key);
@@ -125,27 +125,28 @@ public function sms_balance()
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT        => 10,
-        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_CONNECTTIMEOUT => 3,
+        CURLOPT_TIMEOUT        => 5,
     ]);
     $response = curl_exec($ch);
     $err      = curl_error($ch);
     curl_close($ch);
 
-    if ($err) {
-        return response()->json(['success' => false, 'message' => 'Connection error: ' . $err]);
+    if ($err || $response === false) {
+        return response()->json(['success' => false, 'message' => 'SMS balance unavailable']);
     }
 
     $data = json_decode($response, true);
+    if (!is_array($data)) {
+        return response()->json(['success' => false, 'message' => 'SMS balance unavailable']);
+    }
 
-    // BulkSMSBD returns: {"response_code":202,"success_message":"Your current balance is 100.00 tk"}
     if (isset($data['response_code']) && $data['response_code'] == 202) {
         $balance = $data['balance'] ?? $data['success_message'] ?? 'N/A';
         return response()->json(['success' => true, 'balance' => $balance, 'raw' => $data]);
     }
 
-    $errMsg = $data['error_message'] ?? $data['message'] ?? 'Invalid API Key বা সমস্যা হয়েছে।';
-    return response()->json(['success' => false, 'message' => $errMsg, 'raw' => $data]);
+    return response()->json(['success' => false, 'message' => 'SMS balance unavailable', 'raw' => $data]);
 }
 
 /**
@@ -244,7 +245,7 @@ public function bdcourier_my_plan()
     if (! $apiKey) {
         return response()->json([
             'success' => false,
-            'message' => 'BD Courier API কী নেই। ফ্রড সেটিংসে কী দিন অথবা .env এ BDCOURIER_API_KEY যোগ করুন।',
+            'message' => 'Plan info unavailable',
         ]);
     }
 
@@ -252,7 +253,9 @@ public function bdcourier_my_plan()
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $apiKey,
             'Accept'        => 'application/json',
-        ])->timeout(12)->get('https://api.bdcourier.com/my-plan');
+        ])
+        ->withOptions(['connect_timeout' => 3, 'timeout' => 5])
+        ->get('https://api.bdcourier.com/my-plan');
 
         $body = $response->json();
         if (! is_array($body)) {
@@ -285,11 +288,12 @@ public function bdcourier_my_plan()
 
         return response()->json([
             'success' => false,
-            'message' => $body['message'] ?? 'প্ল্যান তথ্য পাওয়া যায়নি।',
+            'message' => 'Plan info unavailable',
             'raw'     => $body,
         ]);
     } catch (\Throwable $e) {
-        return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        \Log::warning('BD Courier dashboard plan fetch', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'message' => 'Plan info unavailable']);
     }
 }
 
@@ -303,7 +307,7 @@ public function steadfast_dashboard_widget()
     if (! $cfg || empty($cfg->api_key) || empty($cfg->secret_key)) {
         return response()->json([
             'success' => false,
-            'message' => 'স্টেডফাস্ট API কনফিগার করা নেই বা নিষ্ক্রিয়।',
+            'message' => 'Courier dashboard unavailable',
         ]);
     }
 
@@ -320,14 +324,21 @@ public function steadfast_dashboard_widget()
 
     $balanceRaw       = null;
     $balanceFormatted = null;
+    $remoteOk         = false;
 
     try {
-        $br = Http::withHeaders($headers)->timeout(10)->get($baseUrl.'/get_balance');
+        $br = Http::withHeaders($headers)
+            ->withOptions(['connect_timeout' => 3, 'timeout' => 5])
+            ->get($baseUrl.'/get_balance');
+
         if ($br->successful()) {
             $bj = $br->json();
-            if ((int) ($bj['status'] ?? 0) === 200 && array_key_exists('current_balance', $bj)) {
+            if (is_array($bj)
+                && (int) ($bj['status'] ?? 0) === 200
+                && array_key_exists('current_balance', $bj)) {
                 $balanceRaw = $bj['current_balance'];
                 $balanceFormatted = '৳'.number_format((float) $balanceRaw, 2);
+                $remoteOk = true;
             }
         }
     } catch (\Throwable $e) {
@@ -376,7 +387,11 @@ public function steadfast_dashboard_widget()
             $responses = Http::pool(function ($pool) use ($pendingRequests, $headers) {
                 $batch = [];
                 foreach ($pendingRequests as $id => $url) {
-                    $batch[] = $pool->as($id)->withHeaders($headers)->timeout(10)->get($url);
+                    $batch[] = $pool
+                        ->as($id)
+                        ->withHeaders($headers)
+                        ->withOptions(['connect_timeout' => 3, 'timeout' => 5])
+                        ->get($url);
                 }
 
                 return $batch;
@@ -401,10 +416,19 @@ public function steadfast_dashboard_widget()
                     && strtolower((string) ($json['delivery_status'] ?? '')) === 'in_review') {
                     $inReviewCount++;
                 }
+
+                $remoteOk = true;
             }
         } catch (\Throwable $e) {
             \Log::warning('Steadfast dashboard status pool', ['error' => $e->getMessage()]);
         }
+    }
+
+    if (! $remoteOk) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Courier dashboard unavailable',
+        ]);
     }
 
     return response()->json([

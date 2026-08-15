@@ -222,9 +222,9 @@ class ProductController extends Controller
         if ($request->hasFile('meta_image')) {
             $metaImg  = $request->file('meta_image');
             $metaName = time().'-meta-'.$metaImg->getClientOriginalName();
-            $metaPath = 'public/uploads/product/meta/';
+            $metaPath = public_path('uploads/product/meta/');
             $metaImg->move($metaPath, $metaName);
-            $input['meta_image'] = $metaPath.$metaName;
+            $input['meta_image'] = 'uploads/product/meta/'.$metaName;
         }
 
         // DIGITAL FILE UPLOAD
@@ -262,12 +262,12 @@ class ProductController extends Controller
             foreach ($request->file('image') as $img) {
                 $name = time().'-'.$img->getClientOriginalName();
                 $name = strtolower(preg_replace('/\s+/', '-', $name));
-                $path = 'public/uploads/product/';
+                $path = public_path('uploads/product/');
                 $img->move($path, $name);
 
                 Productimage::create([
                     'product_id' => $product->id,
-                    'image'      => $path.$name,
+                    'image'      => 'uploads/product/'.$name,
                 ]);
             }
 
@@ -294,9 +294,9 @@ class ProductController extends Controller
                 if (!isset($savedFiles[$imageRow])) {
                     $name = time().'-'.uniqid().'-'.$file->getClientOriginalName();
                     $name = strtolower(preg_replace('/\s+/', '-', $name));
-                    $path = 'public/uploads/product/';
+                    $path = public_path('uploads/product/');
                     $file->move($path, $name);
-                    $savedFiles[$imageRow] = $path.$name;
+                    $savedFiles[$imageRow] = 'uploads/product/'.$name;
                 }
                 Productimage::create([
                     'product_id' => $product->id,
@@ -505,9 +505,9 @@ class ProductController extends Controller
             }
             $metaImg  = $request->file('meta_image');
             $metaName = time().'-meta-'.$metaImg->getClientOriginalName();
-            $metaPath = 'public/uploads/product/meta/';
+            $metaPath = public_path('uploads/product/meta/');
             $metaImg->move($metaPath, $metaName);
-            $input['meta_image'] = $metaPath.$metaName;
+            $input['meta_image'] = 'uploads/product/meta/'.$metaName;
         }
 
         // DIGITAL FILE UPDATE
@@ -548,12 +548,12 @@ class ProductController extends Controller
             foreach ($request->file('image') as $img) {
                 $name = time().'-'.$img->getClientOriginalName();
                 $name = strtolower(preg_replace('/\s+/', '-', $name));
-                $path = 'public/uploads/product/';
+                $path = public_path('uploads/product/');
                 $img->move($path, $name);
 
                 Productimage::create([
                     'product_id' => $product->id,
-                    'image'      => $path.$name,
+                    'image'      => 'uploads/product/'.$name,
                 ]);
             }
         }
@@ -575,9 +575,9 @@ class ProductController extends Controller
                 if (!isset($savedFiles[$imageRow])) {
                     $name = time().'-'.uniqid().'-'.$file->getClientOriginalName();
                     $name = strtolower(preg_replace('/\s+/', '-', $name));
-                    $path = 'public/uploads/product/';
+                    $path = public_path('uploads/product/');
                     $file->move($path, $name);
-                    $savedFiles[$imageRow] = $path.$name;
+                   $savedFiles[$imageRow] = 'uploads/product/'.$name;
                 }
                 Productimage::create([
                     'product_id' => $product->id,

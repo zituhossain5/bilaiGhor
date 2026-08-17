@@ -1,0 +1,1 @@
+<?php echo e(Cart::instance('compare')->count()); ?><?php /**PATH C:\laragon\www\bilaiGhor\resources\views\frontEnd\layouts\ajax\compare_count.blade.php ENDPATH**/ ?>

@@ -32,7 +32,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         {{-- BilaiGhor Figma — header & footer CSS --}}
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=29">
+        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=30">
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/main.css')}}" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
@@ -725,43 +725,85 @@
 
 {{-- BilaiGhor Figma Footer Start --}}
 @php
-    // ── Popular Categories: real subcategories (fallback to categories) — no invented routes ──
     $footerSubcats = collect();
     foreach ($menucategories as $mc) {
         $footerSubcats = $footerSubcats->merge($mc->subcategories ?? []);
     }
-    $footerSubcats = $footerSubcats->filter(fn ($s) => ($s->status ?? 1) == 1)->take(5);
+    $footerSubcats = $footerSubcats->filter(fn ($s) => ($s->status ?? 1) == 1)->unique('id');
+    $orderedFooterSubcats = collect();
+    foreach (['dry food', 'wet food', 'treat', 'litter', 'grooming'] as $term) {
+        $match = $footerSubcats->first(
+            fn ($sub) => str_contains(strtolower($sub->subcategoryName ?? $sub->name ?? ''), $term)
+        );
+        if ($match && !$orderedFooterSubcats->contains('id', $match->id)) {
+            $orderedFooterSubcats->push($match);
+        }
+    }
+    $footerSubcats = $orderedFooterSubcats
+        ->merge($footerSubcats->reject(fn ($sub) => $orderedFooterSubcats->contains('id', $sub->id)))
+        ->take(5);
 
-    // ── Useful Link: real routes + real CMS pages only ──
-    $footerPages = collect($pages ?? [])->merge($pagesright ?? [])->take(4);
+    $footerPages = collect($pages ?? [])->merge($pagesright ?? [])->unique('id');
+    $findFooterPage = fn (string $name) => $footerPages->first(
+        fn ($page) => strtolower(trim($page->name ?? '')) === strtolower($name)
+    );
+    $aboutPage = $findFooterPage('About Us');
+    $bilaiParaPage = $findFooterPage('Bilai Para');
+
+    $footerSocialAsset = function ($social) {
+        $identity = strtolower(($social->title ?? '') . ' ' . ($social->icon ?? ''));
+        foreach (['facebook', 'instagram', 'tiktok', 'youtube'] as $platform) {
+            if (str_contains($identity, $platform)) {
+                return asset("public/frontEnd/images/footer-figma/{$platform}.svg");
+            }
+        }
+        return null;
+    };
+
+    $footerPhone = optional($contact)->hotline ?? optional($contact)->phone;
+    $footerEmail = optional($contact)->email ?? optional($contact)->hotmail;
+    $footerWhatsapp = optional($contact)->whatsapp;
 @endphp
 <footer class="bilai-footer">
-    <div class="bilai-footer__accent"></div>
     <div class="bilai-footer__main">
         <div class="bilai-footer__grid">
 
             {{-- Column 1: Brand / Opening Hours / Social --}}
             <div class="bilai-footer__brand">
                 <a href="{{ url('/') }}" class="bilai-footer__logo">
-                    <img src="{{ asset(optional($generalsetting)->dark_logo ?? optional($generalsetting)->white_logo ?? 'public/logo.png') }}" alt="{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}">
+                    <img src="{{ asset('public/frontEnd/images/footer-figma/bilai-ghor-logo.png') }}" alt="{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}">
                 </a>
 
-                <h5 class="bilai-footer__title">Opening Hours</h5>
-                <p class="bilai-footer__hours">
-                    {{ optional($generalsetting)->opening_hours ?? 'Saturday to Friday: 8 am to 2 pm' }}
-                </p>
+                <div class="bilai-footer__group">
+                    <h5 class="bilai-footer__title">Opening Hours</h5>
+                    <p class="bilai-footer__hours">
+                        {{ optional($generalsetting)->opening_hours ?? 'Saturday to Friday: 8 am to 2 pm' }}
+                    </p>
+                </div>
 
-                <h5 class="bilai-footer__title">Social Links</h5>
-                <ul class="bilai-footer__social">
-                    @foreach($socialicons as $si)
-                    <li>
-                        <a href="{{ $si->link }}" target="_blank" rel="noopener" aria-label="{{ $si->title ?? 'Social' }}"
-                           style="background: {{ $si->color ?: 'rgba(255,255,255,0.10)' }};">
-                            <i class="{{ $si->icon }}"></i>
-                        </a>
-                    </li>
-                    @endforeach
-                </ul>
+                <div class="bilai-footer__group bilai-footer__social-group">
+                    <h5 class="bilai-footer__title">Social Links</h5>
+                    <ul class="bilai-footer__social">
+                        @foreach($socialicons as $si)
+                        @php
+                            $socialAsset = $footerSocialAsset($si);
+                            $socialIdentity = strtolower(($si->title ?? '') . ' ' . ($si->icon ?? ''));
+                            $socialHref = str_contains($socialIdentity, 'whatsapp')
+                                ? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $si->link)
+                                : $si->link;
+                        @endphp
+                        <li>
+                            <a href="{{ $socialHref }}" target="_blank" rel="noopener" aria-label="{{ $si->title ?? 'Social' }}">
+                                @if($socialAsset)
+                                <img src="{{ $socialAsset }}" alt="">
+                                @else
+                                <span style="background-color: {{ $si->color ?: '#3c2a1e' }}"><i class="{{ $si->icon }}"></i></span>
+                                @endif
+                            </a>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
 
             {{-- Column 2: Popular Categories --}}
@@ -782,42 +824,45 @@
             <div class="bilai-footer__col">
                 <h5 class="bilai-footer__title">Useful Link</h5>
                 <ul class="bilai-footer__links">
-                    <li><a href="{{ route('shop') }}">Shop</a></li>
+                    <li><a href="{{ $aboutPage ? route('page', ['slug' => $aboutPage->slug]) : url('/') }}">About Us</a></li>
                     <li><a href="{{ route('blogs') }}">Blog</a></li>
                     <li><a href="{{ route('hotdeals') }}">Best Deals</a></li>
-                    @foreach($footerPages as $page)
-                    <li><a href="{{ route('page', ['slug' => $page->slug]) }}">{{ $page->name }}</a></li>
-                    @endforeach
+                    <li><a href="{{ route('shop') }}">Brands</a></li>
+                    <li><a href="{{ $bilaiParaPage ? route('page', ['slug' => $bilaiParaPage->slug]) : route('blogs') }}">Bilai Para</a></li>
                 </ul>
             </div>
 
             {{-- Column 4: Contact + Address --}}
-            <div class="bilai-footer__col">
-                <h5 class="bilai-footer__title">Contact</h5>
-                <ul class="bilai-footer__contacts">
-                    @if(optional($contact)->hotline ?? optional($contact)->phone)
-                    <li>
-                        <span class="bilai-footer__ci bilai-footer__ci--light"><i class="fas fa-phone-alt"></i></span>
-                        <a href="tel:{{ $contact->hotline ?? $contact->phone }}">{{ $contact->hotline ?? $contact->phone }}</a>
-                    </li>
-                    @endif
-                    @if(optional($contact)->email ?? optional($contact)->hotmail)
-                    <li>
-                        <span class="bilai-footer__ci bilai-footer__ci--light"><i class="fas fa-envelope"></i></span>
-                        <a href="mailto:{{ $contact->email ?? $contact->hotmail }}">{{ $contact->email ?? $contact->hotmail }}</a>
-                    </li>
-                    @endif
-                    @if(optional($contact)->whatsapp)
-                    <li>
-                        <span class="bilai-footer__ci bilai-footer__ci--wa"><i class="fab fa-whatsapp"></i></span>
-                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $contact->whatsapp) }}" target="_blank" rel="noopener">{{ $contact->whatsapp }}</a>
-                    </li>
-                    @endif
-                </ul>
+            <div class="bilai-footer__col bilai-footer__contact-col">
+                <div class="bilai-footer__group">
+                    <h5 class="bilai-footer__title">Contact</h5>
+                    <ul class="bilai-footer__contacts">
+                        @if($footerPhone)
+                        <li>
+                            <span class="bilai-footer__ci"><img src="{{ asset('public/frontEnd/images/footer-figma/phone.png') }}" alt=""></span>
+                            <a href="tel:{{ $footerPhone }}">{{ $footerPhone }}</a>
+                        </li>
+                        @endif
+                        @if($footerEmail)
+                        <li>
+                            <span class="bilai-footer__ci"><img src="{{ asset('public/frontEnd/images/footer-figma/email.png') }}" alt=""></span>
+                            <a href="mailto:{{ $footerEmail }}">{{ $footerEmail }}</a>
+                        </li>
+                        @endif
+                        @if($footerWhatsapp)
+                        <li>
+                            <span class="bilai-footer__ci bilai-footer__ci--whatsapp"><img src="{{ asset('public/frontEnd/images/footer-figma/whatsapp.png') }}" alt=""></span>
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $footerWhatsapp) }}" target="_blank" rel="noopener">{{ $footerWhatsapp }}</a>
+                        </li>
+                        @endif
+                    </ul>
+                </div>
 
                 @if(optional($contact)->address)
-                <h5 class="bilai-footer__title bilai-footer__title--tight">Address</h5>
-                <p class="bilai-footer__address">{{ $contact->address }}</p>
+                <div class="bilai-footer__group">
+                    <h5 class="bilai-footer__title">Address</h5>
+                    <p class="bilai-footer__address">{{ $contact->address }}</p>
+                </div>
                 @endif
             </div>
 

@@ -765,8 +765,8 @@
                     >
                     <div class="bilai-blog-img-overlay">
                         <div class="bilai-blog-brand">
-                            <img src="{{ asset($generalsetting->dark_logo) }}" alt="{{ $generalsetting->name }}">
-                            <span>Bilai Ghor</span>
+                            <img src="{{ asset(optional($generalsetting)->dark_logo ?? 'public/logo.png') }}" alt="{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}">
+                            <span>{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}</span>
                         </div>
                         <div class="bilai-blog-img-actions">
                             <span><i class="fas fa-share-alt"></i></span>

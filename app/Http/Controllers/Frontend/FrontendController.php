@@ -54,7 +54,7 @@ class FrontendController extends Controller
     public function index()
     {
         // ✅ Homepage cache (5 min) - reduces DB load on high traffic
-        $cacheKey = 'frontend_homepage_v1';
+        $cacheKey = 'frontend_homepage_v2';
         $cacheMinutes = 5;
         $data = Cache::remember($cacheKey, $cacheMinutes * 60, function () {
             return $this->getHomepageData();
@@ -68,7 +68,7 @@ class FrontendController extends Controller
     protected function getHomepageData()
     {
         // General setting
-        $generalsetting = GeneralSetting::where('status', 1)->limit(1)->first();
+        $generalsetting = GeneralSetting::where('status', 1)->first() ?? GeneralSetting::first();
 
         // SEO setting
         $seo = DB::table('seo_settings')->first();

@@ -33,7 +33,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         
-        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=29">
+        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=30">
         <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/main.css')); ?>" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
@@ -729,44 +729,86 @@
 
 
 <?php
-    // ── Popular Categories: real subcategories (fallback to categories) — no invented routes ──
     $footerSubcats = collect();
     foreach ($menucategories as $mc) {
         $footerSubcats = $footerSubcats->merge($mc->subcategories ?? []);
     }
-    $footerSubcats = $footerSubcats->filter(fn ($s) => ($s->status ?? 1) == 1)->take(5);
+    $footerSubcats = $footerSubcats->filter(fn ($s) => ($s->status ?? 1) == 1)->unique('id');
+    $orderedFooterSubcats = collect();
+    foreach (['dry food', 'wet food', 'treat', 'litter', 'grooming'] as $term) {
+        $match = $footerSubcats->first(
+            fn ($sub) => str_contains(strtolower($sub->subcategoryName ?? $sub->name ?? ''), $term)
+        );
+        if ($match && !$orderedFooterSubcats->contains('id', $match->id)) {
+            $orderedFooterSubcats->push($match);
+        }
+    }
+    $footerSubcats = $orderedFooterSubcats
+        ->merge($footerSubcats->reject(fn ($sub) => $orderedFooterSubcats->contains('id', $sub->id)))
+        ->take(5);
 
-    // ── Useful Link: real routes + real CMS pages only ──
-    $footerPages = collect($pages ?? [])->merge($pagesright ?? [])->take(4);
+    $footerPages = collect($pages ?? [])->merge($pagesright ?? [])->unique('id');
+    $findFooterPage = fn (string $name) => $footerPages->first(
+        fn ($page) => strtolower(trim($page->name ?? '')) === strtolower($name)
+    );
+    $aboutPage = $findFooterPage('About Us');
+    $bilaiParaPage = $findFooterPage('Bilai Para');
+
+    $footerSocialAsset = function ($social) {
+        $identity = strtolower(($social->title ?? '') . ' ' . ($social->icon ?? ''));
+        foreach (['facebook', 'instagram', 'tiktok', 'youtube'] as $platform) {
+            if (str_contains($identity, $platform)) {
+                return asset("public/frontEnd/images/footer-figma/{$platform}.svg");
+            }
+        }
+        return null;
+    };
+
+    $footerPhone = optional($contact)->hotline ?? optional($contact)->phone;
+    $footerEmail = optional($contact)->email ?? optional($contact)->hotmail;
+    $footerWhatsapp = optional($contact)->whatsapp;
 ?>
 <footer class="bilai-footer">
-    <div class="bilai-footer__accent"></div>
     <div class="bilai-footer__main">
         <div class="bilai-footer__grid">
 
             
             <div class="bilai-footer__brand">
                 <a href="<?php echo e(url('/')); ?>" class="bilai-footer__logo">
-                    <img src="<?php echo e(asset(optional($generalsetting)->dark_logo ?? optional($generalsetting)->white_logo ?? 'public/logo.png')); ?>" alt="<?php echo e(optional($generalsetting)->name ?? 'Bilai Ghor'); ?>">
+                    <img src="<?php echo e(asset('public/frontEnd/images/footer-figma/bilai-ghor-logo.png')); ?>" alt="<?php echo e(optional($generalsetting)->name ?? 'Bilai Ghor'); ?>">
                 </a>
 
-                <h5 class="bilai-footer__title">Opening Hours</h5>
-                <p class="bilai-footer__hours">
-                    <?php echo e(optional($generalsetting)->opening_hours ?? 'Saturday to Friday: 8 am to 2 pm'); ?>
+                <div class="bilai-footer__group">
+                    <h5 class="bilai-footer__title">Opening Hours</h5>
+                    <p class="bilai-footer__hours">
+                        <?php echo e(optional($generalsetting)->opening_hours ?? 'Saturday to Friday: 8 am to 2 pm'); ?>
 
-                </p>
+                    </p>
+                </div>
 
-                <h5 class="bilai-footer__title">Social Links</h5>
-                <ul class="bilai-footer__social">
-                    <?php $__currentLoopData = $socialicons; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $si): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <li>
-                        <a href="<?php echo e($si->link); ?>" target="_blank" rel="noopener" aria-label="<?php echo e($si->title ?? 'Social'); ?>"
-                           style="background: <?php echo e($si->color ?: 'rgba(255,255,255,0.10)'); ?>;">
-                            <i class="<?php echo e($si->icon); ?>"></i>
-                        </a>
-                    </li>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </ul>
+                <div class="bilai-footer__group bilai-footer__social-group">
+                    <h5 class="bilai-footer__title">Social Links</h5>
+                    <ul class="bilai-footer__social">
+                        <?php $__currentLoopData = $socialicons; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $si): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php
+                            $socialAsset = $footerSocialAsset($si);
+                            $socialIdentity = strtolower(($si->title ?? '') . ' ' . ($si->icon ?? ''));
+                            $socialHref = str_contains($socialIdentity, 'whatsapp')
+                                ? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $si->link)
+                                : $si->link;
+                        ?>
+                        <li>
+                            <a href="<?php echo e($socialHref); ?>" target="_blank" rel="noopener" aria-label="<?php echo e($si->title ?? 'Social'); ?>">
+                                <?php if($socialAsset): ?>
+                                <img src="<?php echo e($socialAsset); ?>" alt="">
+                                <?php else: ?>
+                                <span style="background-color: <?php echo e($si->color ?: '#3c2a1e'); ?>"><i class="<?php echo e($si->icon); ?>"></i></span>
+                                <?php endif; ?>
+                            </a>
+                        </li>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </ul>
+                </div>
             </div>
 
             
@@ -787,42 +829,45 @@
             <div class="bilai-footer__col">
                 <h5 class="bilai-footer__title">Useful Link</h5>
                 <ul class="bilai-footer__links">
-                    <li><a href="<?php echo e(route('shop')); ?>">Shop</a></li>
+                    <li><a href="<?php echo e($aboutPage ? route('page', ['slug' => $aboutPage->slug]) : url('/')); ?>">About Us</a></li>
                     <li><a href="<?php echo e(route('blogs')); ?>">Blog</a></li>
                     <li><a href="<?php echo e(route('hotdeals')); ?>">Best Deals</a></li>
-                    <?php $__currentLoopData = $footerPages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $page): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <li><a href="<?php echo e(route('page', ['slug' => $page->slug])); ?>"><?php echo e($page->name); ?></a></li>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    <li><a href="<?php echo e(route('shop')); ?>">Brands</a></li>
+                    <li><a href="<?php echo e($bilaiParaPage ? route('page', ['slug' => $bilaiParaPage->slug]) : route('blogs')); ?>">Bilai Para</a></li>
                 </ul>
             </div>
 
             
-            <div class="bilai-footer__col">
-                <h5 class="bilai-footer__title">Contact</h5>
-                <ul class="bilai-footer__contacts">
-                    <?php if(optional($contact)->hotline ?? optional($contact)->phone): ?>
-                    <li>
-                        <span class="bilai-footer__ci bilai-footer__ci--light"><i class="fas fa-phone-alt"></i></span>
-                        <a href="tel:<?php echo e($contact->hotline ?? $contact->phone); ?>"><?php echo e($contact->hotline ?? $contact->phone); ?></a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if(optional($contact)->email ?? optional($contact)->hotmail): ?>
-                    <li>
-                        <span class="bilai-footer__ci bilai-footer__ci--light"><i class="fas fa-envelope"></i></span>
-                        <a href="mailto:<?php echo e($contact->email ?? $contact->hotmail); ?>"><?php echo e($contact->email ?? $contact->hotmail); ?></a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if(optional($contact)->whatsapp): ?>
-                    <li>
-                        <span class="bilai-footer__ci bilai-footer__ci--wa"><i class="fab fa-whatsapp"></i></span>
-                        <a href="https://wa.me/<?php echo e(preg_replace('/[^0-9]/', '', $contact->whatsapp)); ?>" target="_blank" rel="noopener"><?php echo e($contact->whatsapp); ?></a>
-                    </li>
-                    <?php endif; ?>
-                </ul>
+            <div class="bilai-footer__col bilai-footer__contact-col">
+                <div class="bilai-footer__group">
+                    <h5 class="bilai-footer__title">Contact</h5>
+                    <ul class="bilai-footer__contacts">
+                        <?php if($footerPhone): ?>
+                        <li>
+                            <span class="bilai-footer__ci"><img src="<?php echo e(asset('public/frontEnd/images/footer-figma/phone.png')); ?>" alt=""></span>
+                            <a href="tel:<?php echo e($footerPhone); ?>"><?php echo e($footerPhone); ?></a>
+                        </li>
+                        <?php endif; ?>
+                        <?php if($footerEmail): ?>
+                        <li>
+                            <span class="bilai-footer__ci"><img src="<?php echo e(asset('public/frontEnd/images/footer-figma/email.png')); ?>" alt=""></span>
+                            <a href="mailto:<?php echo e($footerEmail); ?>"><?php echo e($footerEmail); ?></a>
+                        </li>
+                        <?php endif; ?>
+                        <?php if($footerWhatsapp): ?>
+                        <li>
+                            <span class="bilai-footer__ci bilai-footer__ci--whatsapp"><img src="<?php echo e(asset('public/frontEnd/images/footer-figma/whatsapp.png')); ?>" alt=""></span>
+                            <a href="https://wa.me/<?php echo e(preg_replace('/[^0-9]/', '', $footerWhatsapp)); ?>" target="_blank" rel="noopener"><?php echo e($footerWhatsapp); ?></a>
+                        </li>
+                        <?php endif; ?>
+                    </ul>
+                </div>
 
                 <?php if(optional($contact)->address): ?>
-                <h5 class="bilai-footer__title bilai-footer__title--tight">Address</h5>
-                <p class="bilai-footer__address"><?php echo e($contact->address); ?></p>
+                <div class="bilai-footer__group">
+                    <h5 class="bilai-footer__title">Address</h5>
+                    <p class="bilai-footer__address"><?php echo e($contact->address); ?></p>
+                </div>
                 <?php endif; ?>
             </div>
 

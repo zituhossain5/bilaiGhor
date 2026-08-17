@@ -1090,6 +1090,295 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     white-space: nowrap;
 }
 
+/* Figma footer frame 439:4532 */
+.bilai-footer {
+    background-color: #2a1505;
+    background-image: none;
+    color: #fbf5e6;
+}
+.bilai-footer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("../images/footer-figma/footer-pattern.png");
+    background-position: center -348px;
+    background-repeat: repeat-x;
+    background-size: 1920px 1282px;
+    opacity: 0.02;
+    pointer-events: none;
+}
+.bilai-footer__main {
+    position: relative;
+    z-index: 1;
+    padding: 60px 24px 37px;
+}
+.bilai-footer__grid {
+    grid-template-columns: 349px 219px 219px 346px;
+    column-gap: 102px;
+    row-gap: 0;
+    align-items: start;
+    max-width: 1440px;
+    padding: 0;
+}
+.bilai-footer__brand,
+.bilai-footer__col,
+.bilai-footer__group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.bilai-footer__brand,
+.bilai-footer__contact-col {
+    gap: 30px;
+}
+.bilai-footer__group {
+    gap: 30px;
+    width: 100%;
+}
+.bilai-footer__logo {
+    display: block;
+    width: 349px;
+    height: 108px;
+    max-width: 100%;
+    margin: 0;
+}
+.bilai-footer__logo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: contain;
+    object-position: left center;
+}
+.bilai-footer__title {
+    color: #e8861a;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 36px;
+    margin: 0;
+}
+.bilai-footer__col > .bilai-footer__title {
+    white-space: nowrap;
+}
+.bilai-footer__hours,
+.bilai-footer__address {
+    color: #fbf5e6;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    margin: 0;
+    max-width: none;
+    width: 100%;
+}
+.bilai-footer__social-group {
+    gap: 20px;
+}
+.bilai-footer__social {
+    align-items: center;
+    gap: 10px;
+}
+.bilai-footer__social a {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    box-shadow: none;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+.bilai-footer__social img,
+.bilai-footer__social a > span {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+.bilai-footer__social img {
+    object-fit: contain;
+}
+.bilai-footer__social a > span {
+    color: #fff;
+    font-size: 18px;
+}
+.bilai-footer__social a:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    box-shadow: none;
+}
+.bilai-footer__links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    margin: 30px 0 0;
+}
+.bilai-footer__links li {
+    margin: 0;
+}
+.bilai-footer__links a {
+    color: #fbf5e6;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    transition: color 0.18s ease;
+}
+.bilai-footer__links a:hover {
+    color: #e8861a;
+    padding-left: 0;
+}
+.bilai-footer__contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.bilai-footer__contacts li {
+    gap: 10px;
+    margin: 0;
+    font-size: 18px;
+    line-height: 27px;
+}
+.bilai-footer__contacts a {
+    color: #fbf5e6;
+}
+.bilai-footer__ci {
+    display: flex;
+    width: 30px;
+    height: 30px;
+    padding: 6px;
+    background: #fdf9f4;
+    box-sizing: border-box;
+}
+.bilai-footer__ci img {
+    display: block;
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+.bilai-footer__ci--whatsapp {
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+    background: #fdf9f4;
+}
+.bilai-footer__ci--whatsapp img {
+    width: 20px;
+    height: 20px;
+}
+.bilai-footer__bottom {
+    position: relative;
+    z-index: 1;
+    border-top: 0;
+    box-shadow: inset 0 1px #503311;
+    padding: 0 24px;
+}
+.bilai-footer__bottom-inner {
+    gap: 24px;
+    flex-wrap: nowrap;
+    max-width: 1440px;
+    padding: 30px 0 60px;
+}
+.bilai-footer__copy,
+.bilai-footer__pay-label {
+    color: #fbf5e6;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+}
+.bilai-footer__copy {
+    white-space: nowrap;
+}
+.bilai-footer__payments {
+    gap: 10px;
+}
+.bilai-footer__pay-label {
+    margin-right: 10px;
+}
+.bilai-footer__pay-pill {
+    justify-content: center;
+    padding: 10px;
+    border: 0;
+    border-radius: 10px;
+    background: #3c2a1e;
+    color: #fbf5e6;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+}
+
+@media (max-width: 1499px) {
+    .bilai-footer__grid {
+        grid-template-columns: minmax(260px, 1.5fr) repeat(2, minmax(170px, 0.9fr)) minmax(280px, 1.35fr);
+        column-gap: clamp(32px, 5vw, 72px);
+    }
+}
+@media (max-width: 1099px) {
+    .bilai-footer__main {
+        padding-top: 52px;
+        padding-bottom: 48px;
+    }
+    .bilai-footer__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 56px 64px;
+    }
+    .bilai-footer__bottom-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        padding-bottom: 44px;
+    }
+}
+@media (max-width: 767px) {
+    .bilai-footer::before {
+        background-position: center top;
+        background-repeat: repeat;
+        background-size: 960px 641px;
+    }
+    .bilai-footer__main {
+        padding: 40px 20px 36px;
+    }
+    .bilai-footer__grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    .bilai-footer__brand,
+    .bilai-footer__col {
+        padding: 28px 0;
+        border-bottom: 1px solid #503311;
+    }
+    .bilai-footer__brand {
+        padding-top: 0;
+    }
+    .bilai-footer__col:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+    .bilai-footer__logo {
+        width: min(100%, 349px);
+        height: auto;
+        aspect-ratio: 349 / 108;
+    }
+    .bilai-footer__title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+    .bilai-footer__bottom {
+        padding: 0 20px 80px;
+    }
+    .bilai-footer__bottom-inner {
+        gap: 20px;
+        padding: 28px 0 0;
+    }
+    .bilai-footer__copy {
+        white-space: normal;
+    }
+    .bilai-footer__payments {
+        width: 100%;
+    }
+    .bilai-footer__pay-label {
+        flex-basis: 100%;
+        margin-right: 0;
+    }
+}
+
 /* ============================================================
    BilaiGhor Footer End
    ============================================================ */

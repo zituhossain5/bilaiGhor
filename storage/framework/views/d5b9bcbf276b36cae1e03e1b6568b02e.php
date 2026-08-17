@@ -768,8 +768,8 @@
                     >
                     <div class="bilai-blog-img-overlay">
                         <div class="bilai-blog-brand">
-                            <img src="<?php echo e(asset($generalsetting->dark_logo)); ?>" alt="<?php echo e($generalsetting->name); ?>">
-                            <span>Bilai Ghor</span>
+                            <img src="<?php echo e(asset(optional($generalsetting)->dark_logo ?? 'public/logo.png')); ?>" alt="<?php echo e(optional($generalsetting)->name ?? 'Bilai Ghor'); ?>">
+                            <span><?php echo e(optional($generalsetting)->name ?? 'Bilai Ghor'); ?></span>
                         </div>
                         <div class="bilai-blog-img-actions">
                             <span><i class="fas fa-share-alt"></i></span>

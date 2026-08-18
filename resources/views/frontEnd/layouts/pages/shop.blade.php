@@ -1,9 +1,9 @@
 @extends('frontEnd.layouts.master')
-@section('title', 'All Products')
+@section('title', $listingPageTitle ?? 'All Products')
 
 @push('seo')
     <meta name="robots" content="index, follow" />
-    <meta name="description" content="{{ optional($generalsetting)->tagline ?? 'Browse all approved products in one place.' }}" />
+    <meta name="description" content="{{ $listingMetaDescription ?? optional($generalsetting)->tagline ?? 'Browse all approved products in one place.' }}" />
 @endpush
 
 @push('css')
@@ -18,7 +18,7 @@
         <nav class="bilai-cat-breadcrumb" aria-label="breadcrumb">
             <a href="{{ route('home') }}">Home</a>
             <span class="bilai-cat-breadcrumb-sep"><i class="fas fa-chevron-right"></i></span>
-            <span class="bilai-cat-breadcrumb-current">Shop</span>
+            <span class="bilai-cat-breadcrumb-current">{{ $listingBreadcrumb ?? 'Shop' }}</span>
         </nav>
 
         {{-- MAIN LAYOUT --}}
@@ -26,7 +26,7 @@
 
             {{-- LEFT SIDEBAR --}}
             <aside class="bilai-cat-sidebar">
-                @include('frontEnd.layouts.partials.listing-filter-sidebar', ['filterBaseUrl' => route('shop')])
+                @include('frontEnd.layouts.partials.listing-filter-sidebar', ['filterBaseUrl' => $filterBaseUrl ?? route('shop')])
             </aside>
 
             {{-- RIGHT PRODUCT AREA --}}
@@ -66,8 +66,8 @@
 @push('script')
     @include('frontEnd.layouts.partials.listing-js')
     @include('frontEnd.layouts.partials.listing-analytics-js', [
-        'listName' => 'Shop',
-        'listSlug' => 'shop',
-        'fbEvent'  => 'ViewShop',
+        'listName' => $listingAnalyticsName ?? 'Shop',
+        'listSlug' => $listingAnalyticsSlug ?? 'shop',
+        'fbEvent'  => $listingFacebookEvent ?? 'ViewShop',
     ])
 @endpush

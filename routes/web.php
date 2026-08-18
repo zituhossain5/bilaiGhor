@@ -431,11 +431,7 @@ Route::prefix('admin')
     });
 
 	
-Route::get('/complaint', function () {
-    $contact = \App\Models\Contact::where('status',1)->first();
-    $cmnmenu = \App\Models\CreatePage::where('status',1)->get();
-    return view('frontEnd.layouts.pages.complaint', compact('contact','cmnmenu'));
-})->name('complaint');
+Route::get('/complaint', [ComplaintController::class, 'create'])->name('complaint');
 
 Route::post('/complaint-store', [ComplaintController::class, 'store'])
     ->name('complaint.store');
@@ -445,6 +441,9 @@ Route::get('/admin/complaints', [AdminComplaintController::class, 'index'])
 
 Route::post('/admin/complaints/{id}/status', [AdminComplaintController::class, 'updateStatus'])
     ->middleware(['auth:admin', 'admin', 'demo_mode'])->name('backEnd.complaints.status');
+
+Route::get('/admin/complaints/{complaint}/attachment', [AdminComplaintController::class, 'attachment'])
+    ->middleware(['auth:admin', 'admin'])->name('backEnd.complaints.attachment');
 
 Route::delete('/admin/complaints/{id}', [AdminComplaintController::class, 'destroy'])
     ->middleware(['auth:admin', 'admin', 'demo_mode'])->name('backEnd.complaints.destroy');
@@ -545,8 +544,6 @@ Route::post('admin/manual-duplicate-order-check', [App\Http\Controllers\Admin\Or
 
 Route::get('/ajax/delivery/districts/{division}', [DeliveryAjaxController::class, 'districts'])->name('ajax.delivery.districts');
 Route::get('/ajax/delivery/upazilas/{district}', [DeliveryAjaxController::class, 'upazilas'])->name('ajax.delivery.upazilas');
-
-Route::get('/admin/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
 Route::get('/controller', function() {
     Artisan::call('make:controller Admin/TagManagerController');

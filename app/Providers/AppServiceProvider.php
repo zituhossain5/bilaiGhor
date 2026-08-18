@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\Contact;
 use App\Models\CreatePage;
 use App\Models\GeneralSetting;
+use App\Models\Order;
+use App\Models\OrderStatus;
 use App\Models\SocialMedia;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -24,6 +26,29 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('*', function ($view) {
             $view->with($this->sharedViewData());
+        });
+
+        View::composer('backEnd.layouts.master', function ($view) {
+            $pendingOrders = $this->safeValue(
+                fn () => Order::where('order_status', 1)
+                    ->with('customer')
+                    ->latest()
+                    ->limit(10)
+                    ->get(),
+                collect()
+            );
+
+            $view->with([
+                'neworder' => $this->safeValue(
+                    fn () => Order::where('order_status', 1)->count(),
+                    0
+                ),
+                'pendingorder' => $pendingOrders,
+                'orderstatus' => $this->safeValue(
+                    fn () => OrderStatus::orderBy('id')->get(),
+                    collect()
+                ),
+            ]);
         });
     }
 

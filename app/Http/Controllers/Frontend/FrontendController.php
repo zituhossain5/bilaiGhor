@@ -684,8 +684,28 @@ $brands = Brand::where('status', 1)
 
     public function hotdeals(Request $request)
     {
-        $products = Product::where(['status' => 1, 'approval_status' => 'approved', 'topsale' => 1])
-            ->select('id', 'name', 'slug', 'new_price', 'old_price','stock');
+        $hotDealBase = ['status' => 1, 'approval_status' => 'approved', 'topsale' => 1];
+
+        // Keep sidebar options and counts scoped to Hot Deals products.
+        $brandCountMap = Product::where($hotDealBase)->whereNotNull('brand_id')
+            ->select('brand_id', DB::raw('count(*) as cnt'))->groupBy('brand_id')->pluck('cnt', 'brand_id');
+        $brands = Brand::whereIn('id', $brandCountMap->keys())->orderBy('name')->get();
+
+        $weightCountMap = Product::where($hotDealBase)->whereNotNull('weight_id')
+            ->select('weight_id', DB::raw('count(*) as cnt'))->groupBy('weight_id')->pluck('cnt', 'weight_id');
+        $weights = ProductWeight::whereIn('id', $weightCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $lifeStageCountMap = Product::where($hotDealBase)->whereNotNull('life_stage_id')
+            ->select('life_stage_id', DB::raw('count(*) as cnt'))->groupBy('life_stage_id')->pluck('cnt', 'life_stage_id');
+        $lifeStages = ProductLifeStage::whereIn('id', $lifeStageCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $flavorCountMap = Product::where($hotDealBase)->whereNotNull('flavor_id')
+            ->select('flavor_id', DB::raw('count(*) as cnt'))->groupBy('flavor_id')->pluck('cnt', 'flavor_id');
+        $flavors = ProductFlavor::whereIn('id', $flavorCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $products = Product::where($hotDealBase)
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
+            ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'brand']);
 
         if ($request->sort == 1) {
             $products = $products->orderBy('created_at', 'desc');
@@ -705,12 +725,42 @@ $brands = Brand::where('status', 1)
 
         $min_price = $products->min('new_price');
         $max_price = $products->max('new_price');
-        if($request->min_price && $request->max_price){
-            $products = $products->where('new_price','>=',$request->min_price);
-            $products = $products->where('new_price','<=',$request->max_price);
+        if ($request->min_price && $request->max_price) {
+            $products = $products->where('new_price', '>=', $request->min_price);
+            $products = $products->where('new_price', '<=', $request->max_price);
         }
-        $products = $products->paginate(36);
-        return view('frontEnd.layouts.pages.hotdeals', compact('products'));
+
+        $activeBrandId = $request->input('brand');
+        if ($activeBrandId) {
+            $products = $products->where('brand_id', $activeBrandId);
+        }
+
+        $selectedWeights = $request->input('weight', []);
+        $products = $products->when($selectedWeights, fn($q) => $q->whereIn('weight_id', $selectedWeights));
+
+        $selectedLifeStages = $request->input('life_stage', []);
+        $products = $products->when($selectedLifeStages, fn($q) => $q->whereIn('life_stage_id', $selectedLifeStages));
+
+        $selectedFlavors = $request->input('flavor', []);
+        $products = $products->when($selectedFlavors, fn($q) => $q->whereIn('flavor_id', $selectedFlavors));
+
+        $products = $products->paginate(24)->withQueryString();
+
+        return view('frontEnd.layouts.pages.shop', compact(
+            'products', 'min_price', 'max_price',
+            'brands', 'brandCountMap', 'activeBrandId',
+            'weights', 'weightCountMap', 'selectedWeights',
+            'lifeStages', 'lifeStageCountMap', 'selectedLifeStages',
+            'flavors', 'flavorCountMap', 'selectedFlavors'
+        ))->with([
+            'listingPageTitle' => 'Hot Deals',
+            'listingMetaDescription' => 'Browse the latest hot deals and discounted products.',
+            'listingBreadcrumb' => 'Hot Deals',
+            'filterBaseUrl' => route('hotdeals'),
+            'listingAnalyticsName' => 'Hot Deals',
+            'listingAnalyticsSlug' => 'hot-deals',
+            'listingFacebookEvent' => 'ViewHotDeals',
+        ]);
     }
 
     public function sellers(Request $request)

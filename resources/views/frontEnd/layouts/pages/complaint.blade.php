@@ -1,262 +1,647 @@
 @extends('frontEnd.layouts.master')
-@section('title','Complaint')
+@section('title', 'Support Ticket')
 
 @section('content')
+@php
+    $submittedTicket = session('ticket_number');
+    $supportPhone = optional($contact)->hotline ?: optional($contact)->phone;
+    $supportEmail = optional($contact)->email;
+@endphp
+
 <style>
-    :root {
-        --complaint-red: #e74c3c;
-        --soft-bg: #f4f7f6;
-        --card-shadow: 0 20px 60px rgba(0,0,0,0.08);
+    .support-ticket-page {
+        --st-brown: #2a1505;
+        --st-brown-heading: #503311;
+        --st-orange: #e8861a;
+        --st-cream: #fbf5e6;
+        --st-surface: #fdfcf8;
+        --st-pill: #f8eee0;
+        --st-border: #dccab2;
+        --st-border-subtle: #edd9a6;
+        --st-body: #4f4f4f;
+        --st-muted: #8e6331;
+        --st-on-dark: #f0e6d8;
+        background: var(--st-surface);
+        padding: 100px 20px 120px;
+        font-family: "DM Sans", sans-serif;
+        color: var(--st-body);
     }
 
-    .complaint-wrapper {
-        padding: 80px 0;
-        background-color: var(--soft-bg);
+    .support-ticket-page *,
+    .support-ticket-page *::before,
+    .support-ticket-page *::after {
+        box-sizing: border-box;
+        letter-spacing: 0;
     }
 
-    /* উপরের মেনু ডিজাইন */
-    .cmn_menu ul {
-        display: flex;
-        justify-content: center;
-        list-style: none;
-        padding: 0;
-        gap: 15px;
-        margin-bottom: 50px;
-        flex-wrap: wrap;
-    }
-    .cmn_menu ul li a {
-        text-decoration: none;
-        color: #555;
-        font-weight: 500;
-        padding: 10px 25px;
-        border-radius: 50px;
-        background: #fff;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        transition: all 0.3s ease;
-    }
-    .cmn_menu ul li.active a, .cmn_menu ul li a:hover {
-        background: var(--complaint-red);
-        color: #fff;
-    }
-
-    /* মেইন কার্ড */
-    .complaint-main-card {
-        background: #ffffff;
-        border-radius: 25px;
-        overflow: hidden;
-        box-shadow: var(--card-shadow);
-        border: none;
-    }
-
-    /* সাইডবার ইমেজ সেকশন */
-    .complaint-sidebar-img {
-        background-image: url('{{ asset('public/frontEnd/images/login.avif') }}'); 
-        background-size: cover;
-        background-position: center;
-        min-height: 100%;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        padding: 40px;
-        color: white;
-    }
-
-    .complaint-sidebar-img::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.1) 30%, rgba(231, 76, 60, 0.9) 100%);
-    }
-
-    .sidebar-content {
-        position: relative;
-        z-index: 2;
-    }
-
-    /* ফর্ম সেকশন */
-    .form-side {
-        padding: 50px;
-    }
-
-    .account-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 30px;
-        border-left: 5px solid var(--complaint-red);
-        padding-left: 15px;
-    }
-
-    .form-label {
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #444;
-        margin-bottom: 8px;
-    }
-
-    .form-control {
-        padding: 12px 15px;
-        border-radius: 12px;
-        border: 1px solid #e1e1e1;
-        background-color: #fdfdfd;
-        transition: all 0.3s;
-    }
-
-    .form-control:focus {
-        border-color: var(--complaint-red);
-        box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
-        background-color: #fff;
-    }
-
-    .submit-btn {
-        background: var(--complaint-red);
-        color: white;
-        padding: 15px;
-        border-radius: 12px;
-        font-weight: 600;
-        border: none;
+    .support-ticket-container {
         width: 100%;
-        transition: 0.3s;
-        display: flex;
+        max-width: 1240px;
+        margin: 0 auto;
+    }
+
+    .support-ticket-intro {
+        width: min(100%, 844px);
+        margin: 0 auto 60px;
+        text-align: center;
+    }
+
+    .support-ticket-kicker {
+        display: inline-flex;
+        min-height: 44px;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        margin-bottom: 30px;
+        padding: 10px 20px;
+        border: 1px solid var(--st-border-subtle);
+        border-radius: 30px;
+        background: var(--st-pill);
+        color: var(--st-body);
+        font-size: 16px;
+        line-height: 24px;
     }
 
-    .submit-btn:hover {
-        background: #c0392b;
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+    .support-ticket-title {
+        margin: 0 0 20px;
+        color: var(--st-brown);
+        font-family: "Mochiy Pop One", sans-serif;
+        font-size: 36px;
+        font-weight: 400;
+        line-height: 48px;
+        white-space: normal;
+        overflow-wrap: break-word;
     }
 
-    /* ছোট ইনফো বক্স */
-    .quick-info {
+    .support-ticket-subtitle {
+        margin: 0;
+        color: var(--st-body);
+        font-size: 16px;
+        line-height: 24px;
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+
+    .support-ticket-shell {
+        display: grid;
+        grid-template-columns: 496px minmax(0, 744px);
+        align-items: stretch;
+        width: 100%;
+        min-height: 950px;
+    }
+
+    .support-ticket-info {
+        padding: 40px;
+        border-radius: 30px 0 0 30px;
+        background: var(--st-brown);
+        color: var(--st-on-dark);
+    }
+
+    .support-ticket-info-title {
+        margin: 0 0 30px;
+        color: var(--st-orange);
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 16px;
+    }
+
+    .support-ticket-info-block {
+        padding-bottom: 30px;
+        border-bottom: 1px dotted rgba(240, 230, 216, .65);
+        margin-bottom: 30px;
+    }
+
+    .support-ticket-info-label {
+        margin: 0 0 10px;
+        color: var(--st-on-dark);
+        font-size: 14px;
+        line-height: 21px;
+    }
+
+    .support-ticket-number {
+        margin: 0;
+        color: var(--st-on-dark);
+        font-size: 24px;
+        line-height: 36px;
+        overflow-wrap: anywhere;
+    }
+
+    .support-ticket-number.is-pending {
+        max-width: 260px;
+        font-size: 16px;
+        line-height: 24px;
+        color: rgba(240, 230, 216, .8);
+    }
+
+    .support-ticket-times {
         display: flex;
-        gap: 20px;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
+        gap: 37px;
     }
-    .info-box {
+
+    .support-ticket-time-label {
+        margin: 0 0 10px;
+        color: var(--st-on-dark);
+        font-size: 16px;
+        line-height: 16px;
+    }
+
+    .support-ticket-time-value {
+        margin: 0;
+        color: var(--st-orange);
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 18px;
+    }
+
+    .support-ticket-security-title,
+    .support-ticket-contact-line {
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 0.85rem;
-        color: #666;
     }
-    .info-box i {
-        color: var(--complaint-red);
+
+    .support-ticket-security-title {
+        margin-bottom: 20px;
+    }
+
+    .support-ticket-info i {
+        width: 20px;
+        color: var(--st-orange);
+        font-size: 16px;
+        text-align: center;
+    }
+
+    .support-ticket-security-title span,
+    .support-ticket-security-copy,
+    .support-ticket-contact-heading,
+    .support-ticket-contact-line {
+        color: var(--st-on-dark);
+        font-size: 16px;
+        line-height: 16px;
+    }
+
+    .support-ticket-security-copy {
+        margin: 0;
+        line-height: 24px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .support-ticket-contact-heading {
+        margin: 0 0 20px;
+        white-space: normal;
+    }
+
+    .support-ticket-contact-line {
+        color: var(--st-on-dark);
+        line-height: 20px;
+        text-decoration: none;
+        overflow-wrap: anywhere;
+    }
+
+    .support-ticket-contact-line + .support-ticket-contact-line {
+        margin-top: 16px;
+    }
+
+    .support-ticket-form-panel {
+        min-width: 0;
+        padding: 40px;
+        border: 1px solid var(--st-border);
+        border-left: 0;
+        border-radius: 0 30px 30px 0;
+        background: var(--st-cream);
+    }
+
+    .support-ticket-form-title {
+        margin: 0 0 30px;
+        color: var(--st-brown-heading);
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 36px;
+    }
+
+    .support-ticket-success {
+        margin-bottom: 30px;
+        padding: 16px 18px;
+        border: 1px solid #9ac58c;
+        border-radius: 10px;
+        background: #eef8e9;
+        color: #285b28;
+        font-size: 15px;
+        line-height: 24px;
+    }
+
+    .support-ticket-success strong {
+        display: block;
+        color: #1f481f;
+        font-size: 18px;
+    }
+
+    .support-ticket-fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 30px;
+    }
+
+    .support-ticket-field {
+        min-width: 0;
+    }
+
+    .support-ticket-field.is-full {
+        grid-column: 1 / -1;
+    }
+
+    .support-ticket-label {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--st-body);
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 24px;
+    }
+
+    .support-ticket-required {
+        color: #ff0f0f;
+    }
+
+    .support-ticket-control {
+        display: block;
+        width: 100%;
+        height: 64px;
+        padding: 20px;
+        border: 1px solid var(--st-border);
+        border-radius: 10px;
+        outline: 0;
+        background: var(--st-surface);
+        color: var(--st-body);
+        font-family: "DM Sans", sans-serif;
+        font-size: 16px;
+        line-height: 24px;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .support-ticket-control::placeholder {
+        color: var(--st-border);
+        opacity: 1;
+    }
+
+    .support-ticket-control:focus {
+        border-color: var(--st-orange);
+        box-shadow: 0 0 0 3px rgba(232, 134, 26, .14);
+    }
+
+    textarea.support-ticket-control {
+        height: 160px;
+        min-height: 160px;
+        resize: vertical;
+    }
+
+    .support-ticket-control.is-invalid,
+    .support-ticket-upload.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .support-ticket-error {
+        display: block;
+        margin-top: 7px;
+        color: #c62828;
+        font-size: 13px;
+        line-height: 18px;
+    }
+
+    .support-ticket-upload {
+        position: relative;
+        display: flex;
+        width: 100%;
+        height: 160px;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        border: 1px solid var(--st-border);
+        border-radius: 10px;
+        background: var(--st-surface);
+        cursor: pointer;
+        transition: border-color .2s, background .2s;
+    }
+
+    .support-ticket-upload:hover,
+    .support-ticket-upload.is-dragging {
+        border-color: var(--st-orange);
+        background: #fffaf0;
+    }
+
+    .support-ticket-upload input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .support-ticket-upload-content {
+        display: flex;
+        max-width: 100%;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .support-ticket-upload-content i {
+        width: 24px;
+        height: 24px;
+        color: var(--st-body);
+        font-size: 22px;
+        line-height: 24px;
+    }
+
+    .support-ticket-upload-text {
+        color: var(--st-body);
+        font-size: 16px;
+        line-height: 24px;
+        overflow-wrap: anywhere;
+    }
+
+    .support-ticket-upload-text strong {
+        color: var(--st-orange);
+        font-weight: 400;
+    }
+
+    .support-ticket-submit-wrap {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .support-ticket-submit {
+        display: flex;
+        width: 100%;
+        min-height: 59px;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 10px;
+        border: 0;
+        border-radius: 12px;
+        background: var(--st-orange);
+        color: var(--st-surface);
+        font-family: "DM Sans", sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 27px;
+        cursor: pointer;
+        transition: background .2s;
+    }
+
+    .support-ticket-submit:hover,
+    .support-ticket-submit:focus {
+        background: #cf7312;
+        color: var(--st-surface);
+    }
+
+    .support-ticket-terms {
+        margin: 20px 0 0;
+        color: var(--st-muted);
+        font-size: 14px;
+        line-height: 21px;
+    }
+
+    @media (max-width: 1100px) {
+        .support-ticket-shell {
+            grid-template-columns: minmax(310px, 40%) minmax(0, 60%);
+        }
+
+        .support-ticket-info,
+        .support-ticket-form-panel {
+            padding: 32px;
+        }
     }
 
     @media (max-width: 991px) {
-        .complaint-sidebar-img { min-height: 300px; }
-        .form-side { padding: 30px 20px; }
-        .complaint-wrapper { padding: 40px 0; }
+        .support-ticket-page {
+            padding: 64px 20px 80px;
+        }
+
+        .support-ticket-shell {
+            grid-template-columns: 1fr;
+            min-height: 0;
+        }
+
+        .support-ticket-info {
+            border-radius: 30px 30px 0 0;
+        }
+
+        .support-ticket-form-panel {
+            border-top: 0;
+            border-left: 1px solid var(--st-border);
+            border-radius: 0 0 30px 30px;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .support-ticket-page {
+            padding: 48px 12px 64px;
+        }
+
+        .support-ticket-intro {
+            margin-bottom: 40px;
+        }
+
+        .support-ticket-title {
+            font-size: 28px;
+            line-height: 40px;
+            word-break: normal;
+        }
+
+        .support-ticket-info,
+        .support-ticket-form-panel {
+            padding: 28px 20px;
+        }
+
+        .support-ticket-info {
+            border-radius: 20px 20px 0 0;
+        }
+
+        .support-ticket-form-panel {
+            border-radius: 0 0 20px 20px;
+        }
+
+        .support-ticket-fields {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .support-ticket-field.is-full {
+            grid-column: auto;
+        }
+
+        .support-ticket-control {
+            padding: 16px;
+        }
+
+        .support-ticket-terms {
+            white-space: normal;
+        }
     }
 </style>
 
-<div class="complaint-wrapper">
-    <div class="container">
-        
+<main class="support-ticket-page">
+    <div class="support-ticket-container">
+        <header class="support-ticket-intro">
+            <span class="support-ticket-kicker">Customer Support</span>
+            <h1 class="support-ticket-title">Your Problem, Our Priority</h1>
+            <p class="support-ticket-subtitle">Fill out the form below — you will receive a ticket number upon submission and our team will be in touch as soon as possible.</p>
+        </header>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-11">
-                <div class="complaint-main-card">
-                    <div class="row g-0">
-                        
-                        <div class="col-lg-5">
-                            <div class="complaint-sidebar-img">
-                                <div class="sidebar-content">
-                                    <h3 class="fw-bold mb-2">আপনার মতামত আমাদের কাছে মূল্যবান</h3>
-                                    <p class="small opacity-90"><span style="color: white;">আমাদের সেবা নিয়ে কোনো অভিযোগ থাকলে আমাদের জানান। আমরা দ্রুত ব্যবস্থা গ্রহণ করবো।</span></p>                                    
-                                    
-                                    <div class="mt-4">
-                                        <div class="d-flex align-items-center gap-3 mb-2">
-                                            <i data-feather="phone-call"></i> <span>{{ $contact->hotline }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-3">
-                                            <i data-feather="mail"></i> <span>{{ $contact->email }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <div class="support-ticket-shell">
+            <aside class="support-ticket-info" aria-label="Support ticket information">
+                <h2 class="support-ticket-info-title">Support Ticket</h2>
+
+                <div class="support-ticket-info-block">
+                    <p class="support-ticket-info-label">Ticket Number</p>
+                    <p class="support-ticket-number {{ $submittedTicket ? '' : 'is-pending' }}">
+                        {{ $submittedTicket ?: 'Generated after submission' }}
+                    </p>
+                </div>
+
+                <div class="support-ticket-info-block">
+                    <div class="support-ticket-times">
+                        <div>
+                            <p class="support-ticket-time-label">Avg. Reply</p>
+                            <p class="support-ticket-time-value">1 Hour</p>
                         </div>
-
-                        <div class="col-lg-7">
-                            <div class="form-side">
-                                <h5 class="account-title">কমপ্লেইন জমা দিন</h5>
-
-                                @if(session('success'))
-                                    <div class="alert alert-success border-0 shadow-sm mb-4">
-                                        <i class="me-2" data-feather="check-circle"></i> {{ session('success') }}
-                                    </div>
-                                @endif
-
-                                
-
-                                <form action="{{ route('complaint.store') }}" method="POST" enctype="multipart/form-data">
-                                    @csrf
-
-                                    <div class="row g-4">
-                                        <div class="col-md-6">
-                                            <label class="form-label">আপনার নাম *</label>
-                                            <input type="text" name="name" class="form-control" placeholder="নাম লিখুন" required>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">মোবাইল নম্বর *</label>
-                                            <input type="tel" name="phone" class="form-control" placeholder="০১xxx-xxxxxx" required maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g,'')">
-                                        </div>
-
-                                        <div class="col-12">
-                                            <label class="form-label">অর্ডার আইডি (যদি থাকে)</label>
-                                            <input type="number" name="order_id" class="form-control" placeholder="Order ID লিখুন" min="1" oninput="this.value = this.value.replace(/[^0-9]/g,'')">
-                                        </div>
-
-                                        <div class="col-12">
-                                            <label class="form-label">কমপ্লেইনের বিবরণ *</label>
-                                            <textarea name="description" class="form-control" rows="4" placeholder="আপনার সমস্যাটি বিস্তারিত লিখুন..." required></textarea>
-                                        </div>
-
-                                        <div class="col-12">
-                                            <label class="form-label">প্রমাণস্বরূপ ছবি (ঐচ্ছিক)</label>
-                                            <input type="file" name="image" class="form-control">
-                                            <small class="text-muted">আপনি সমস্যার স্ক্রিনশট বা ছবি যুক্ত করতে পারেন।</small>
-                                        </div>
-
-                                        <div class="col-12 mt-4">
-                                            <button type="submit" class="submit-btn w-100">
-                                                কমপ্লেইন পাঠান <i data-feather="send" style="width: 18px"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-
-                                <div class="quick-info">
-                                    <div class="info-box">
-                                        <i data-feather="shield"></i> <span>নিরাপদ ডাটা</span>
-                                    </div>
-                                    <div class="info-box">
-                                        <i data-feather="clock"></i> <span>২৪-৪৮ ঘণ্টার সমাধান</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div>
+                            <p class="support-ticket-time-label">Max Time</p>
+                            <p class="support-ticket-time-value">24 Hours</p>
                         </div>
-
                     </div>
                 </div>
-            </div>
+
+                <div class="support-ticket-info-block">
+                    <div class="support-ticket-security-title">
+                        <i class="fas fa-lock" aria-hidden="true"></i>
+                        <span>Secure &amp; Confidential</span>
+                    </div>
+                    <p class="support-ticket-security-copy">Your information is never shared with third parties.</p>
+                </div>
+
+                <div>
+                    <p class="support-ticket-contact-heading">Contact Directly</p>
+                    @if($supportPhone)
+                        <a class="support-ticket-contact-line" href="tel:{{ preg_replace('/[^0-9+]/', '', $supportPhone) }}">
+                            <i class="fas fa-phone" aria-hidden="true"></i>
+                            <span>{{ $supportPhone }}</span>
+                        </a>
+                    @endif
+                    @if($supportEmail)
+                        <a class="support-ticket-contact-line" href="mailto:{{ $supportEmail }}">
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
+                            <span>{{ $supportEmail }}</span>
+                        </a>
+                    @endif
+                </div>
+            </aside>
+
+            <section class="support-ticket-form-panel">
+                <h2 class="support-ticket-form-title">Enter Ticket Details</h2>
+
+                @if(session('success'))
+                    <div class="support-ticket-success" role="status">
+                        {{ session('success') }}
+                        <strong>Ticket Number: {{ $submittedTicket }}</strong>
+                    </div>
+                @endif
+
+                <form action="{{ route('complaint.store') }}" method="POST" enctype="multipart/form-data" novalidate>
+                    @csrf
+
+                    <div class="support-ticket-fields">
+                        <div class="support-ticket-field">
+                            <label class="support-ticket-label" for="ticket-name">Your Name <span class="support-ticket-required">*</span></label>
+                            <input id="ticket-name" class="support-ticket-control @error('name') is-invalid @enderror" type="text" name="name" value="{{ old('name', optional($customer)->name) }}" placeholder="MD. Hossain" autocomplete="name" required>
+                            @error('name')<span class="support-ticket-error">{{ $message }}</span>@enderror
+                        </div>
+
+                        <div class="support-ticket-field">
+                            <label class="support-ticket-label" for="ticket-phone">Mobile Number <span class="support-ticket-required">*</span></label>
+                            <input id="ticket-phone" class="support-ticket-control @error('phone') is-invalid @enderror" type="tel" name="phone" value="{{ old('phone', optional($customer)->phone) }}" placeholder="01xxxx-xxxxx" inputmode="numeric" autocomplete="tel" maxlength="11" required>
+                            @error('phone')<span class="support-ticket-error">{{ $message }}</span>@enderror
+                        </div>
+
+                        <div class="support-ticket-field">
+                            <label class="support-ticket-label" for="ticket-email">Email (Optional)</label>
+                            <input id="ticket-email" class="support-ticket-control @error('email') is-invalid @enderror" type="email" name="email" value="{{ old('email', optional($customer)->email) }}" placeholder="you@example.com" autocomplete="email">
+                            @error('email')<span class="support-ticket-error">{{ $message }}</span>@enderror
+                        </div>
+
+                        <div class="support-ticket-field">
+                            <label class="support-ticket-label" for="ticket-order">Order ID (If Any)</label>
+                            <input id="ticket-order" class="support-ticket-control @error('order_reference') is-invalid @enderror" type="text" name="order_reference" value="{{ old('order_reference') }}" placeholder="#BG - xxxxx" maxlength="55">
+                            @error('order_reference')<span class="support-ticket-error">{{ $message }}</span>@enderror
+                        </div>
+
+                        <div class="support-ticket-field is-full">
+                            <label class="support-ticket-label" for="ticket-details">Details <span class="support-ticket-required">*</span></label>
+                            <textarea id="ticket-details" class="support-ticket-control @error('description') is-invalid @enderror" name="description" placeholder="Write your note or the complaint" required>{{ old('description') }}</textarea>
+                            @error('description')<span class="support-ticket-error">{{ $message }}</span>@enderror
+                        </div>
+
+                        <div class="support-ticket-field is-full">
+                            <label class="support-ticket-label" for="ticket-image">Photo as Proof (Optional)</label>
+                            <label class="support-ticket-upload @error('image') is-invalid @enderror" id="ticket-upload-area" for="ticket-image">
+                                <input id="ticket-image" type="file" name="image" accept="image/jpeg,image/png,image/webp">
+                                <span class="support-ticket-upload-content">
+                                    <i class="fas fa-upload" aria-hidden="true"></i>
+                                    <span class="support-ticket-upload-text" id="ticket-upload-text">Drag photo here or <strong>browse</strong></span>
+                                </span>
+                            </label>
+                            @error('image')<span class="support-ticket-error">{{ $message }}</span>@enderror
+                        </div>
+                    </div>
+
+                    <div class="support-ticket-submit-wrap">
+                        <button class="support-ticket-submit" type="submit">Submit your Ticket</button>
+                        <p class="support-ticket-terms">By submitting, you are agreeing to our Terms of Service.</p>
+                    </div>
+                </form>
+            </section>
         </div>
     </div>
-</div>
+</main>
 @endsection
 
 @push('script')
-<script src="https://unpkg.com/feather-icons"></script>
 <script>
-    feather.replace();
+(function () {
+    var input = document.getElementById('ticket-image');
+    var area = document.getElementById('ticket-upload-area');
+    var text = document.getElementById('ticket-upload-text');
+    if (!input || !area || !text) return;
+
+    function showFile(file) {
+        text.textContent = file ? file.name : 'Drag photo here or browse';
+    }
+
+    input.addEventListener('change', function () {
+        showFile(input.files[0]);
+    });
+
+    ['dragenter', 'dragover'].forEach(function (eventName) {
+        area.addEventListener(eventName, function (event) {
+            event.preventDefault();
+            area.classList.add('is-dragging');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(function (eventName) {
+        area.addEventListener(eventName, function (event) {
+            event.preventDefault();
+            area.classList.remove('is-dragging');
+        });
+    });
+
+    area.addEventListener('drop', function (event) {
+        if (!event.dataTransfer.files.length) return;
+        input.files = event.dataTransfer.files;
+        showFile(input.files[0]);
+    });
+})();
 </script>
 @endpush

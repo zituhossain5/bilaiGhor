@@ -1,4 +1,4 @@
-﻿
+
 
 <?php $__env->startSection('title', $seo->meta_title ?? 'Home'); ?>
 
@@ -80,22 +80,17 @@
                 <span class="bilai-promo-icon">
                     <img src="<?php echo e(asset('public/frontEnd/images/truck.svg')); ?>" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Free Delivery Icon" width="42" height="42">
                 </span>
-                <span class="bilai-promo-text">ঢাকায় ফ্রী ডেলিভারী <strong>১৫০০ টাকার উপর অর্ডারে</strong></span>
-            </div>
-            <div class="bilai-promo-item">
-                <span class="bilai-promo-icon">
-                    <img src="<?php echo e(asset('public/frontEnd/images/percent.svg')); ?>" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Discount Icon" width="42" height="42">                </span>
-                <span class="bilai-promo-text"><strong>৫% ডিসকাউন্ট</strong> প্রথম অর্ডারে</span>
+                <span class="bilai-promo-text">পুরান ঢাকার নির্দিষ্ট এলাকায় ফ্রী ডেলিভারি</span>
             </div>
             <div class="bilai-promo-item">
                 <span class="bilai-promo-icon">
                     <img src="<?php echo e(asset('public/frontEnd/images/redeem.svg')); ?>" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Reedem Icon" width="42" height="42">                </span>
-                <span class="bilai-promo-text">প্রতি অর্ডারে <strong>রিডিম পয়েন্ট জিতুন</strong></span>
+                <span class="bilai-promo-text">প্রতি অর্ডারে রিডিম পয়েন্ট জিতুন</span>
             </div>
             <div class="bilai-promo-item">
                 <span class="bilai-promo-icon">
                     <img src="<?php echo e(asset('public/frontEnd/images/return.svg')); ?>" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Return" width="42" height="42">                </span>
-                <span class="bilai-promo-text"><strong>সহজ রিটার্ন</strong></span>
+                <span class="bilai-promo-text">সহজ রিটার্ন  (শর্ত প্রযোজ্য)</span>
             </div>
         </div>
     </div>
@@ -393,7 +388,7 @@
             ?>
             <div class="bilai-na-card">
                 
-                <img src="<?php echo e(asset('public/frontEnd/images/NewIcon.svg')); ?>" class="bilai-na-badge" alt="New" width="54" height="54">
+                <img src="<?php echo e(asset('public/frontEnd/images/NewIcon.svg')); ?>" class="bilai-na-badge" alt="New" width="64" height="64">
 
                 
                 <div class="bilai-na-left">
@@ -411,6 +406,7 @@
 
                 
                 <div class="bilai-na-info">
+                    <span class="bilai-na-sold"><?php echo e((int) ($value->sold ?? 0)); ?> Sold</span>
 
                     
                     <h3 class="bilai-na-name">
@@ -750,7 +746,7 @@
 
 
 
-<?php if(isset($blogs) && $blogs->count() > 0): ?>
+<!-- <?php if(isset($blogs) && $blogs->count() > 0): ?>
 <section class="bilai-blog-section">
     <div class="container">
         <div class="bilai-blog-header">
@@ -793,7 +789,7 @@
         </div>
     </div>
 </section>
-<?php endif; ?>
+<?php endif; ?> -->
 
 
 

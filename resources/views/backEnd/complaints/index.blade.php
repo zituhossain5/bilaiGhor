@@ -113,6 +113,7 @@
                         <thead>
                             <tr>
                                 <th style="width: 50px;">SL</th>
+                                <th>Ticket / Submitted</th>
                                 <th>Order ID</th>
                                 <th>Customer Info</th>
                                 <th style="width: 25%;">Description</th>
@@ -125,15 +126,23 @@
                             @forelse($complaints as $complaint)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
+
+                                <td>
+                                    <span class="fw-bold text-primary">{{ $complaint->ticket_number ?? 'Legacy ticket' }}</span>
+                                    <small class="d-block text-muted">{{ optional($complaint->created_at)->format('d M Y, h:i A') }}</small>
+                                </td>
                                 
                                 <td>
-                                    <span class="fw-bold text-primary">#{{ $complaint->order_id ?? 'N/A' }}</span>
+                                    <span class="fw-bold text-primary">{{ $complaint->order_reference ?? $complaint->order_id ?? 'N/A' }}</span>
                                 </td>
 
                                 <td>
                                     <div class="d-flex flex-column">
                                         <span class="customer-name">{{ $complaint->name }}</span>
                                         <span class="customer-phone"><i class="fe-phone me-1"></i>{{ $complaint->phone }}</span>
+                                        @if($complaint->email)
+                                            <span class="customer-phone"><i class="fe-mail me-1"></i>{{ $complaint->email }}</span>
+                                        @endif
                                     </div>
                                 </td>
 
@@ -145,8 +154,8 @@
 
                                 <td>
                                     @if($complaint->image)
-                                        <a href="{{ asset('public/'.$complaint->image) }}" target="_blank">
-                                            <img src="{{ asset('public/'.$complaint->image) }}" class="complaint-img" alt="Evidence">
+                                        <a href="{{ route('backEnd.complaints.attachment', $complaint) }}" target="_blank" rel="noopener">
+                                            <span class="badge bg-primary"><i class="fe-paperclip me-1"></i>View proof</span>
                                         </a>
                                     @else
                                         <span class="badge bg-light text-dark">No Image</span>

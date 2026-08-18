@@ -615,7 +615,9 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     color: var(--bilai-primary);
 }
 @media (max-width: 991px) {
-    .bilai-mega-panel { display: none !important; }
+    .bilai-mega-panel {
+        display: none !important;
+    }
 }
 /* BilaiGhor Mega Menu Figma End */
 
@@ -887,7 +889,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     .bilai-footer__col,
     .bilai-footer__brand {
         padding: 20px 0;
-        border-bottom: 1px solid rgba(246, 234, 214, 0.10);
+        border-bottom: 1px solid rgba(246, 234, 214, 0.1);
     }
     .bilai-footer__col:last-child {
         border-bottom: none;
@@ -905,7 +907,9 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     max-width: 100%;
 }
 @media (max-width: 767px) {
-    .bilai-footer__logo img { height: 56px; }
+    .bilai-footer__logo img {
+        height: 56px;
+    }
 }
 .bilai-footer__hours {
     font-size: 14px;
@@ -1035,7 +1039,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 /* Bottom bar — inside the same patterned footer */
 .bilai-footer__bottom {
-    border-top: 1px solid rgba(242, 140, 0, 0.20);
+    border-top: 1px solid rgba(242, 140, 0, 0.2);
 }
 @media (max-width: 767px) {
     .bilai-footer__bottom {
@@ -1081,7 +1085,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     align-items: center;
     padding: 5px 12px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.08);
     color: #f2e8db;
     font-size: 12.5px;
@@ -1182,7 +1186,9 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     width: 40px;
     height: 40px;
     box-shadow: none;
-    transition: transform 0.2s ease, filter 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
 }
 .bilai-footer__social img,
 .bilai-footer__social a > span {
@@ -1307,7 +1313,10 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 @media (max-width: 1499px) {
     .bilai-footer__grid {
-        grid-template-columns: minmax(260px, 1.5fr) repeat(2, minmax(170px, 0.9fr)) minmax(280px, 1.35fr);
+        grid-template-columns: minmax(260px, 1.5fr) repeat(
+                2,
+                minmax(170px, 0.9fr)
+            ) minmax(280px, 1.35fr);
         column-gap: clamp(32px, 5vw, 72px);
     }
 }
@@ -1403,38 +1412,51 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 .bilai-hero-owl .owl-nav {
     position: absolute;
     top: 50%;
-    left: 0;
-    right: 0;
+    left: -84px;
+    right: -84px;
     transform: translateY(-50%);
     display: flex;
     justify-content: space-between;
     pointer-events: none;
-    padding: 0 10px;
+    padding: 0;
 }
 
 .bilai-hero-owl .owl-prev,
 .bilai-hero-owl .owl-next {
     pointer-events: all;
-    width: 40px;
-    height: 40px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9) !important;
-    color: var(--bilai-brown, #3a1f0f) !important;
+    background: #f5e9c6 !important;
+    color: var(--bilai-primary, #e8861a) !important;
     display: flex !important;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    font-size: 24px;
+    line-height: 1;
+    box-shadow: none;
     transition:
         background 0.2s,
         color 0.2s;
-    border: 1px solid var(--bilai-border, #dccab2);
+    border: 0;
+    margin: 0 !important;
+    padding: 9px !important;
+}
+
+.bilai-hero-owl .owl-prev i,
+.bilai-hero-owl .owl-next i {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4f4f4f;
 }
 
 .bilai-hero-owl .owl-prev:hover,
 .bilai-hero-owl .owl-next:hover {
-    background: var(--bilai-primary, #e8861a) !important;
-    color: #fff !important;
+    background: #f5e9c6 !important;
+    color: var(--bilai-primary-dark, #c4552a) !important;
 }
 
 .bilai-hero-section .owl-carousel {
@@ -1522,6 +1544,13 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     display: block;
 }
 
+@media (max-width: 1279px) {
+    .bilai-hero-owl .owl-nav {
+        left: 12px;
+        right: 12px;
+    }
+}
+
 @media (max-width: 768px) {
     .bilai-hero-section {
         padding: 16px 0;
@@ -1546,9 +1575,9 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     }
     .bilai-hero-owl .owl-prev,
     .bilai-hero-owl .owl-next {
-        width: 32px;
-        height: 32px;
-        font-size: 14px;
+        width: 54px;
+        height: 54px;
+        font-size: 24px;
     }
 }
 
@@ -3112,6 +3141,437 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
+    }
+}
+
+/* Figma node 439:4906 */
+.bilai-new-arrivals-section,
+.bilai-new-arrivals-section *,
+.bilai-new-arrivals-section *::before,
+.bilai-new-arrivals-section *::after {
+    box-sizing: border-box;
+}
+
+.bilai-new-arrivals-section {
+    padding: 60px 0;
+    background: #fff;
+}
+
+.bilai-new-arrivals-section .bilai-na-header {
+    min-height: 48px;
+    margin-bottom: 60px;
+}
+
+.bilai-new-arrivals-section .bilai-na-title {
+    width: 282px;
+    font-family: var(--bilai-font-title);
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 48px;
+    color: #2a1505;
+}
+
+.bilai-new-arrivals-section .bilai-na-more-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 27px;
+    color: #2a1505;
+    background: #f0e6d8;
+    border: 1px solid #dccab2;
+    border-radius: 12px;
+    padding: 9px 20px;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s;
+}
+
+.bilai-new-arrivals-section .bilai-na-more-btn:hover {
+    color: #2a1505;
+    background: #eadbc7;
+    border-color: #c4a881;
+}
+
+.bilai-new-arrivals-section .bilai-na-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 20px;
+    row-gap: 40px;
+}
+
+.bilai-new-arrivals-section .bilai-na-card {
+    display: grid;
+    grid-template-columns: minmax(0, 41.755%) minmax(0, 58.245%);
+    align-items: stretch;
+    gap: 0;
+    height: 297px;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 20px;
+    box-shadow: none;
+}
+
+.bilai-new-arrivals-section .bilai-na-card:hover {
+    box-shadow: none;
+}
+
+.bilai-new-arrivals-section .bilai-na-badge {
+    top: -28px;
+    left: 10px;
+    width: 64px;
+    height: 64px;
+    z-index: 3;
+}
+
+.bilai-new-arrivals-section .bilai-na-left {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 297px;
+    min-width: 0;
+    background: #fdf9f4;
+    border: 1px solid #c4a881;
+    border-right: 0;
+    border-radius: 20px 0 0 20px;
+}
+
+.bilai-new-arrivals-section .bilai-na-wishlist {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    width: 42px;
+    height: 42px;
+    color: #4f4f4f;
+    font-size: 20px;
+    background: #f0e6d8;
+    border: 0;
+    box-shadow: none;
+    transition:
+        color 0.2s,
+        background-color 0.2s;
+}
+
+.bilai-new-arrivals-section .bilai-na-wishlist:hover {
+    color: #e8861a;
+    background: #eadbc7;
+}
+
+.bilai-new-arrivals-section .bilai-na-img-wrap {
+    position: absolute;
+    top: 82px;
+    right: 19px;
+    bottom: 32px;
+    left: 19px;
+    width: auto;
+    height: auto;
+    background: transparent;
+    border-radius: 0;
+}
+
+.bilai-new-arrivals-section .bilai-na-info {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 297px;
+    min-width: 0;
+    overflow: hidden;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #c4a881;
+    border-left: 0;
+    border-radius: 0 20px 20px 0;
+}
+
+.bilai-new-arrivals-section .bilai-na-sold {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: #4f4f4f;
+    background: transparent;
+    border: 1px solid #aa8453;
+    border-radius: 16px;
+    padding: 2px 10px;
+    margin: 0 0 10px;
+    white-space: nowrap;
+}
+
+.bilai-new-arrivals-section .bilai-na-name {
+    display: -webkit-box;
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    color: #4f4f4f;
+}
+
+.bilai-new-arrivals-section .bilai-na-cat-rating {
+    align-items: flex-start;
+    gap: 8px;
+    min-height: 24px;
+    margin: 10px 0 16px;
+}
+
+.bilai-new-arrivals-section .bilai-na-category {
+    width: 77px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: #aa8453;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.bilai-new-arrivals-section .bilai-na-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 20px;
+    font-size: 18px;
+    line-height: 20px;
+    color: #ffb800;
+}
+
+.bilai-new-arrivals-section .bilai-na-price-row {
+    gap: 16px;
+    min-height: 30px;
+    margin: 0 0 20px;
+}
+
+.bilai-new-arrivals-section .bilai-na-price-left {
+    gap: 12px;
+    min-width: 0;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.bilai-new-arrivals-section .bilai-na-price,
+.bilai-new-arrivals-section .bilai-na-old-price {
+    font-size: 20px;
+    line-height: 30px;
+    color: #3c2a1e;
+}
+
+.bilai-new-arrivals-section .bilai-na-price {
+    font-weight: 600;
+}
+
+.bilai-new-arrivals-section .bilai-na-old-price {
+    font-weight: 400;
+}
+
+.bilai-new-arrivals-section .bilai-na-discount {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 21px;
+    color: #fbf5e6;
+    background: #c4552a;
+    border-radius: 20px;
+    padding: 4px 10px;
+    white-space: nowrap;
+}
+
+.bilai-new-arrivals-section .bilai-na-actions {
+    gap: 20px;
+    min-height: 47px;
+}
+
+.bilai-new-arrivals-section .bilai-na-cart-form {
+    display: flex;
+    align-self: stretch;
+    margin: 0;
+}
+
+.bilai-new-arrivals-section .bilai-na-cart-btn {
+    width: 58px;
+    height: 47px;
+    font-size: 18px;
+    background: #e8861a;
+    border-radius: 12px;
+}
+
+.bilai-new-arrivals-section .bilai-na-buy-btn {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 27px;
+    color: #edf4f0;
+    background: #2a1505;
+    border-radius: 12px;
+    padding: 10px 20px;
+}
+
+@media (max-width: 1279px) {
+    .bilai-new-arrivals-section .bilai-na-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .bilai-new-arrivals-section .bilai-na-card {
+        grid-template-columns: minmax(132px, 41.75%) minmax(0, 58.25%);
+    }
+
+    .bilai-new-arrivals-section .bilai-na-left,
+    .bilai-new-arrivals-section .bilai-na-info {
+        width: 100%;
+    }
+}
+
+@media (max-width: 991px) {
+    .bilai-new-arrivals-section {
+        padding: 48px 0;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-header {
+        margin-bottom: 48px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-card,
+    .bilai-new-arrivals-section .bilai-na-left,
+    .bilai-new-arrivals-section .bilai-na-info {
+        height: 280px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-info {
+        padding: 14px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-stars {
+        gap: 2px;
+        font-size: 14px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-category {
+        width: auto;
+        font-size: 14px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-price,
+    .bilai-new-arrivals-section .bilai-na-old-price {
+        font-size: 17px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-price-left {
+        gap: 8px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-actions {
+        gap: 12px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-cart-btn {
+        width: 48px;
+    }
+}
+
+@media (max-width: 767px) {
+    .bilai-new-arrivals-section .bilai-na-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-header {
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 44px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-title {
+        width: auto;
+        font-size: 28px;
+        line-height: 40px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-more-btn {
+        font-size: 16px;
+        line-height: 24px;
+        padding: 8px 16px;
+    }
+}
+
+@media (max-width: 420px) {
+    .bilai-new-arrivals-section .bilai-na-card {
+        grid-template-columns: 38% minmax(0, 62%);
+    }
+
+    .bilai-new-arrivals-section .bilai-na-info {
+        padding: 12px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-sold {
+        font-size: 13px;
+        line-height: 20px;
+        padding: 2px 8px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-name {
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-cat-rating {
+        gap: 4px;
+        margin-top: 8px;
+        margin-bottom: 10px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-category {
+        max-width: 60px;
+        font-size: 12px;
+        line-height: 18px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-stars {
+        gap: 1px;
+        font-size: 11px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-price-row {
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-price,
+    .bilai-new-arrivals-section .bilai-na-old-price {
+        font-size: 14px;
+        line-height: 24px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-price-left {
+        gap: 5px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-discount {
+        font-size: 10px;
+        line-height: 16px;
+        padding: 3px 6px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-actions {
+        gap: 8px;
+        min-height: 40px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-cart-btn {
+        width: 42px;
+        height: 40px;
+        font-size: 15px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-buy-btn {
+        font-size: 14px;
+        line-height: 20px;
+        padding: 10px 8px;
     }
 }
 /* ============================================================

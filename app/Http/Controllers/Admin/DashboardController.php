@@ -288,7 +288,7 @@ class DashboardController extends Controller
         if (Hash::check($request->old_password, $hashPass)) {
             $user->fill(['password' => Hash::make($request->new_password)])->save();
             Toastr::success('Success', 'Password changed successfully!');
-            return redirect()->route('dashboard');
+            return redirect()->route('admin.dashboard');
         }
 
         Toastr::error('Failed', 'Old password not match!');
@@ -310,7 +310,7 @@ class DashboardController extends Controller
         if (Hash::check($request->password, Auth::user()->password)) {
             Session::forget('locked');
             Toastr::success('Success', 'You are logged in successfully!');
-            return redirect()->route('dashboard');
+            return redirect()->route('admin.dashboard');
         }
 
         Toastr::error('Failed', 'Your password not match!');

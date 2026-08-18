@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Complaint;
+use Illuminate\Support\Facades\Storage;
 
 class AdminComplaintController extends Controller
 {
@@ -43,6 +44,24 @@ class AdminComplaintController extends Controller
         return back()->with('success', 'Complaint status updated successfully');
     }
 
+    public function attachment(Complaint $complaint)
+    {
+        abort_unless($complaint->image, 404);
+
+        if (Storage::disk('private')->exists($complaint->image)) {
+            $extension = pathinfo($complaint->image, PATHINFO_EXTENSION);
+
+            return response()->file(Storage::disk('private')->path($complaint->image), [
+                'Content-Disposition' => 'inline; filename="ticket-proof-' . $complaint->id . '.' . $extension . '"',
+            ]);
+        }
+
+        $legacyPath = public_path($complaint->image);
+        abort_unless(is_file($legacyPath), 404);
+
+        return response()->file($legacyPath);
+    }
+
     /**
      * Delete complaint
      */
@@ -52,9 +71,11 @@ class AdminComplaintController extends Controller
 
         // ✅ Image delete (public/complaints folder)
         if ($complaint->image) {
-            $imagePath = public_path('complaints/' . $complaint->image);
-            if (file_exists($imagePath)) {
-                unlink($imagePath);
+            if (!Storage::disk('private')->delete($complaint->image)) {
+                $legacyPath = public_path($complaint->image);
+                if (is_file($legacyPath)) {
+                    unlink($legacyPath);
+                }
             }
         }
 

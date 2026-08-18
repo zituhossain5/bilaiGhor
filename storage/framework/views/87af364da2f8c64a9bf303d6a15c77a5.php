@@ -1,13 +1,13 @@
-@php
+<?php
     $customer = Auth::guard('customer')->user();
-@endphp
+?>
 
-@extends('frontEnd.layouts.master')
 
-@section('title', 'Refund Requests')
 
-@push('css')
-    @include('frontEnd.layouts.customer.partials.figma-account-styles')
+<?php $__env->startSection('title', 'Refund Requests'); ?>
+
+<?php $__env->startPush('css'); ?>
+    <?php echo $__env->make('frontEnd.layouts.customer.partials.figma-account-styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
     <style>
         .bilai-refunds-main { min-height: 556px; color: var(--account-text); }
         .bilai-refunds-header {
@@ -87,13 +87,13 @@
             .bilai-refunds-empty { min-height: 280px; padding: 30px 0; }
         }
     </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="bilai-account-page">
     <div class="bilai-account-container">
         <nav class="bilai-account-breadcrumb" aria-label="Breadcrumb">
-            <a href="{{ route('home') }}">Home</a>
+            <a href="<?php echo e(route('home')); ?>">Home</a>
             <span class="bilai-account-breadcrumb-separator" aria-hidden="true">&rsaquo;</span>
             <span>Profile</span>
             <span class="bilai-account-breadcrumb-separator" aria-hidden="true">&rsaquo;</span>
@@ -101,18 +101,18 @@
         </nav>
 
         <div class="bilai-account-layout">
-            @include('frontEnd.layouts.customer.partials.figma-account-sidebar')
+            <?php echo $__env->make('frontEnd.layouts.customer.partials.figma-account-sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
             <main class="bilai-account-main bilai-refunds-main">
                 <header class="bilai-refunds-header">
                     <h1 class="bilai-refunds-heading">Refund Requests</h1>
-                    @if($refunds->count() > 0)
-                        <span class="bilai-refunds-count">{{ $refunds->total() }} {{ \Illuminate\Support\Str::plural('request', $refunds->total()) }}</span>
-                    @endif
+                    <?php if($refunds->count() > 0): ?>
+                        <span class="bilai-refunds-count"><?php echo e($refunds->total()); ?> <?php echo e(\Illuminate\Support\Str::plural('request', $refunds->total())); ?></span>
+                    <?php endif; ?>
                 </header>
 
                 <div class="bilai-refunds-content">
-                    @if($refunds->count() > 0)
+                    <?php if($refunds->count() > 0): ?>
                         <div class="bilai-refunds-table-wrap">
                             <table class="bilai-refunds-table">
                                 <thead>
@@ -126,8 +126,8 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($refunds as $refund)
-                                        @php
+                                    <?php $__currentLoopData = $refunds; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $refund): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <?php
                                             $status = strtolower($refund->status ?? 'pending');
                                             $statusIcons = [
                                                 'pending' => 'fa-clock-o',
@@ -135,65 +135,70 @@
                                                 'rejected' => 'fa-times',
                                                 'processed' => 'fa-check-circle',
                                             ];
-                                        @endphp
+                                        ?>
                                         <tr>
-                                            <td><span class="bilai-refunds-id">#{{ $refund->refund_id }}</span></td>
+                                            <td><span class="bilai-refunds-id">#<?php echo e($refund->refund_id); ?></span></td>
                                             <td>
-                                                <a href="{{ route('customer.invoice', ['id' => $refund->order->id]) }}" class="bilai-refunds-order-link">
-                                                    #{{ $refund->order->invoice_id ?? $refund->order->id }}
+                                                <a href="<?php echo e(route('customer.invoice', ['id' => $refund->order->id])); ?>" class="bilai-refunds-order-link">
+                                                    #<?php echo e($refund->order->invoice_id ?? $refund->order->id); ?>
+
                                                 </a>
                                                 <span class="bilai-refunds-caption">Invoice ID</span>
                                             </td>
-                                            <td class="bilai-refunds-amount">&#2547;{{ number_format($refund->amount + $refund->shipping_charge, 2) }}</td>
+                                            <td class="bilai-refunds-amount">&#2547;<?php echo e(number_format($refund->amount + $refund->shipping_charge, 2)); ?></td>
                                             <td>
-                                                <span class="bilai-refunds-status bilai-refunds-status--{{ in_array($status, ['pending', 'approved', 'rejected', 'processed']) ? $status : 'default' }}">
-                                                    <i class="fa {{ $statusIcons[$status] ?? 'fa-circle-o' }}" aria-hidden="true"></i>
-                                                    {{ ucfirst($status) }}
+                                                <span class="bilai-refunds-status bilai-refunds-status--<?php echo e(in_array($status, ['pending', 'approved', 'rejected', 'processed']) ? $status : 'default'); ?>">
+                                                    <i class="fa <?php echo e($statusIcons[$status] ?? 'fa-circle-o'); ?>" aria-hidden="true"></i>
+                                                    <?php echo e(ucfirst($status)); ?>
+
                                                 </span>
                                             </td>
                                             <td class="bilai-refunds-date">
-                                                {{ $refund->created_at->format('d M, Y') }}
-                                                <span class="bilai-refunds-caption">{{ $refund->created_at->format('h:i A') }}</span>
+                                                <?php echo e($refund->created_at->format('d M, Y')); ?>
+
+                                                <span class="bilai-refunds-caption"><?php echo e($refund->created_at->format('h:i A')); ?></span>
                                             </td>
                                             <td>
                                                 <div class="bilai-refunds-actions">
-                                                    <a href="{{ route('customer.refunds.show', $refund->id) }}" class="bilai-refunds-action" title="View refund details" aria-label="View refund details">
+                                                    <a href="<?php echo e(route('customer.refunds.show', $refund->id)); ?>" class="bilai-refunds-action" title="View refund details" aria-label="View refund details">
                                                         <i class="fa fa-eye" aria-hidden="true"></i>
                                                     </a>
-                                                    @if($status === 'pending')
-                                                        <form action="{{ route('customer.refunds.cancel', $refund->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this refund request?');">
-                                                            @csrf
-                                                            @method('DELETE')
+                                                    <?php if($status === 'pending'): ?>
+                                                        <form action="<?php echo e(route('customer.refunds.cancel', $refund->id)); ?>" method="POST" onsubmit="return confirm('Are you sure you want to cancel this refund request?');">
+                                                            <?php echo csrf_field(); ?>
+                                                            <?php echo method_field('DELETE'); ?>
                                                             <button type="submit" class="bilai-refunds-action bilai-refunds-action--cancel" title="Cancel refund request" aria-label="Cancel refund request">
                                                                 <i class="fa fa-times" aria-hidden="true"></i>
                                                             </button>
                                                         </form>
-                                                    @endif
+                                                    <?php endif; ?>
                                                 </div>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </tbody>
                             </table>
                         </div>
 
-                        @if($refunds->hasPages())
-                            <div class="bilai-refunds-pagination">{{ $refunds->links() }}</div>
-                        @endif
-                    @else
+                        <?php if($refunds->hasPages()): ?>
+                            <div class="bilai-refunds-pagination"><?php echo e($refunds->links()); ?></div>
+                        <?php endif; ?>
+                    <?php else: ?>
                         <div class="bilai-refunds-empty">
                             <span class="bilai-refunds-empty-icon" aria-hidden="true"><i class="fa fa-file-text-o"></i></span>
                             <h2 class="bilai-refunds-empty-title">No refund requests yet</h2>
                             <p class="bilai-refunds-empty-copy">You have not submitted a refund request for any order.</p>
-                            <a href="{{ route('customer.orders') }}" class="bilai-refunds-button">
+                            <a href="<?php echo e(route('customer.orders')); ?>" class="bilai-refunds-button">
                                 <i class="fa fa-list-alt" aria-hidden="true"></i>
                                 View Orders
                             </a>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </main>
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\bilaiGhor\resources\views/frontEnd/layouts/customer/refunds.blade.php ENDPATH**/ ?>

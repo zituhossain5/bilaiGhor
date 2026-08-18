@@ -1,12 +1,12 @@
-@php
+<?php
     $customer = Auth::guard('customer')->user();
-@endphp
+?>
 
-@extends('frontEnd.layouts.master')
-@section('title', 'Request Refund')
 
-@push('css')
-    @include('frontEnd.layouts.customer.partials.figma-account-styles')
+<?php $__env->startSection('title', 'Request Refund'); ?>
+
+<?php $__env->startPush('css'); ?>
+    <?php echo $__env->make('frontEnd.layouts.customer.partials.figma-account-styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
     <style>
         .bilai-refund-main { color: var(--account-text); }
         .bilai-refund-heading {
@@ -89,21 +89,21 @@
             .bilai-refund-button { width: 100%; }
         }
     </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="bilai-account-page">
     <div class="bilai-account-container">
         <nav class="bilai-account-breadcrumb" aria-label="Breadcrumb">
-            <a href="{{ route('home') }}">Home</a>
+            <a href="<?php echo e(route('home')); ?>">Home</a>
             <span class="bilai-account-breadcrumb-separator" aria-hidden="true">&rsaquo;</span>
-            <a href="{{ route('customer.refunds') }}">Refund Requests</a>
+            <a href="<?php echo e(route('customer.refunds')); ?>">Refund Requests</a>
             <span class="bilai-account-breadcrumb-separator" aria-hidden="true">&rsaquo;</span>
             <span class="bilai-account-breadcrumb-current">Request Refund</span>
         </nav>
 
         <div class="bilai-account-layout">
-            @include('frontEnd.layouts.customer.partials.figma-account-sidebar')
+            <?php echo $__env->make('frontEnd.layouts.customer.partials.figma-account-sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
             <main class="bilai-account-main bilai-refund-main">
                 <h1 class="bilai-refund-heading">Request Refund</h1>
@@ -113,27 +113,27 @@
                     <div class="bilai-refund-summary">
                         <div class="bilai-refund-summary-item">
                             <span class="bilai-refund-summary-label">Order Invoice</span>
-                            <span class="bilai-refund-summary-value">#{{ $order->invoice_id }}</span>
+                            <span class="bilai-refund-summary-value">#<?php echo e($order->invoice_id); ?></span>
                         </div>
                         <div class="bilai-refund-summary-item">
                             <span class="bilai-refund-summary-label">Order Date</span>
-                            <span class="bilai-refund-summary-value">{{ $order->created_at->format('d-m-Y h:i A') }}</span>
+                            <span class="bilai-refund-summary-value"><?php echo e($order->created_at->format('d-m-Y h:i A')); ?></span>
                         </div>
                         <div class="bilai-refund-summary-item">
                             <span class="bilai-refund-summary-label">Order Status</span>
-                            <span class="bilai-refund-status">{{ $order->status ? $order->status->name : 'Pending' }}</span>
+                            <span class="bilai-refund-status"><?php echo e($order->status ? $order->status->name : 'Pending'); ?></span>
                         </div>
                         <div class="bilai-refund-summary-item">
                             <span class="bilai-refund-summary-label">Total Amount</span>
-                            <span class="bilai-refund-summary-value">&#2547;{{ number_format($order->amount, 2) }}</span>
+                            <span class="bilai-refund-summary-value">&#2547;<?php echo e(number_format($order->amount, 2)); ?></span>
                         </div>
                         <div class="bilai-refund-summary-item">
                             <span class="bilai-refund-summary-label">Shipping Charge</span>
-                            <span class="bilai-refund-summary-value">&#2547;{{ number_format($order->shipping_charge, 2) }}</span>
+                            <span class="bilai-refund-summary-value">&#2547;<?php echo e(number_format($order->shipping_charge, 2)); ?></span>
                         </div>
                         <div class="bilai-refund-summary-item">
                             <span class="bilai-refund-summary-label">Grand Total</span>
-                            <span class="bilai-refund-summary-value">&#2547;{{ number_format($order->amount + $order->shipping_charge, 2) }}</span>
+                            <span class="bilai-refund-summary-value">&#2547;<?php echo e(number_format($order->amount + $order->shipping_charge, 2)); ?></span>
                         </div>
                     </div>
 
@@ -143,13 +143,13 @@
                                 <tr><th>Product</th><th>Qty</th><th>Price</th></tr>
                             </thead>
                             <tbody>
-                                @foreach($order->orderdetails as $item)
+                                <?php $__currentLoopData = $order->orderdetails; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <tr>
-                                        <td>{{ $item->product_name }}</td>
-                                        <td>{{ $item->qty }}</td>
-                                        <td>&#2547;{{ number_format($item->sale_price * $item->qty, 2) }}</td>
+                                        <td><?php echo e($item->product_name); ?></td>
+                                        <td><?php echo e($item->qty); ?></td>
+                                        <td>&#2547;<?php echo e(number_format($item->sale_price * $item->qty, 2)); ?></td>
                                     </tr>
-                                @endforeach
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </tbody>
                         </table>
                     </div>
@@ -157,63 +157,147 @@
 
                 <section class="bilai-refund-section">
                     <h2 class="bilai-refund-section-title">Refund Details</h2>
-                    <form action="{{ route('customer.refunds.store') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="order_id" value="{{ $order->id }}">
+                    <form action="<?php echo e(route('customer.refunds.store')); ?>" method="POST">
+                        <?php echo csrf_field(); ?>
+                        <input type="hidden" name="order_id" value="<?php echo e($order->id); ?>">
 
                         <div class="bilai-refund-form-grid">
                             <div class="bilai-refund-field">
                                 <label for="amount" class="bilai-refund-label">Refund Amount <span class="bilai-refund-required">*</span></label>
-                                <input type="number" class="bilai-refund-control @error('amount') is-invalid @enderror"
-                                       id="amount" name="amount" value="{{ old('amount', $order->amount) }}"
-                                       min="1" max="{{ $order->amount }}" step="0.01" required>
-                                <span class="bilai-refund-help">Maximum: &#2547;{{ number_format($order->amount, 2) }}</span>
-                                @error('amount')<div class="bilai-refund-error">{{ $message }}</div>@enderror
+                                <input type="number" class="bilai-refund-control <?php $__errorArgs = ['amount'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                       id="amount" name="amount" value="<?php echo e(old('amount', $order->amount)); ?>"
+                                       min="1" max="<?php echo e($order->amount); ?>" step="0.01" required>
+                                <span class="bilai-refund-help">Maximum: &#2547;<?php echo e(number_format($order->amount, 2)); ?></span>
+                                <?php $__errorArgs = ['amount'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="bilai-refund-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
 
                             <div class="bilai-refund-field">
                                 <label for="shipping_charge" class="bilai-refund-label">Shipping Charge Refund</label>
-                                <input type="number" class="bilai-refund-control @error('shipping_charge') is-invalid @enderror"
-                                       id="shipping_charge" name="shipping_charge" value="{{ old('shipping_charge', $order->shipping_charge) }}"
-                                       min="0" max="{{ $order->shipping_charge }}" step="0.01">
-                                <span class="bilai-refund-help">Maximum: &#2547;{{ number_format($order->shipping_charge, 2) }}</span>
-                                @error('shipping_charge')<div class="bilai-refund-error">{{ $message }}</div>@enderror
+                                <input type="number" class="bilai-refund-control <?php $__errorArgs = ['shipping_charge'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                       id="shipping_charge" name="shipping_charge" value="<?php echo e(old('shipping_charge', $order->shipping_charge)); ?>"
+                                       min="0" max="<?php echo e($order->shipping_charge); ?>" step="0.01">
+                                <span class="bilai-refund-help">Maximum: &#2547;<?php echo e(number_format($order->shipping_charge, 2)); ?></span>
+                                <?php $__errorArgs = ['shipping_charge'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="bilai-refund-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
 
                             <div class="bilai-refund-field bilai-refund-field--full">
                                 <label for="reason" class="bilai-refund-label">Reason for Refund <span class="bilai-refund-required">*</span></label>
-                                <textarea class="bilai-refund-control @error('reason') is-invalid @enderror" id="reason" name="reason"
-                                          required placeholder="Please explain why you want a refund...">{{ old('reason') }}</textarea>
-                                @error('reason')<div class="bilai-refund-error">{{ $message }}</div>@enderror
+                                <textarea class="bilai-refund-control <?php $__errorArgs = ['reason'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="reason" name="reason"
+                                          required placeholder="Please explain why you want a refund..."><?php echo e(old('reason')); ?></textarea>
+                                <?php $__errorArgs = ['reason'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="bilai-refund-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
 
                             <div class="bilai-refund-field">
                                 <label for="refund_method" class="bilai-refund-label">Refund Method <span class="bilai-refund-required">*</span></label>
-                                <select class="bilai-refund-control @error('refund_method') is-invalid @enderror" id="refund_method" name="refund_method" required>
+                                <select class="bilai-refund-control <?php $__errorArgs = ['refund_method'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="refund_method" name="refund_method" required>
                                     <option value="">Select Method</option>
-                                    <option value="original_payment" {{ old('refund_method') == 'original_payment' ? 'selected' : '' }}>Original Payment Method</option>
-                                    <option value="bkash" {{ old('refund_method') == 'bkash' ? 'selected' : '' }}>bKash</option>
-                                    <option value="nagad" {{ old('refund_method') == 'nagad' ? 'selected' : '' }}>Nagad</option>
-                                    <option value="bank" {{ old('refund_method') == 'bank' ? 'selected' : '' }}>Bank Transfer</option>
-                                    <option value="manual" {{ old('refund_method') == 'manual' ? 'selected' : '' }}>Manual/Cash</option>
+                                    <option value="original_payment" <?php echo e(old('refund_method') == 'original_payment' ? 'selected' : ''); ?>>Original Payment Method</option>
+                                    <option value="bkash" <?php echo e(old('refund_method') == 'bkash' ? 'selected' : ''); ?>>bKash</option>
+                                    <option value="nagad" <?php echo e(old('refund_method') == 'nagad' ? 'selected' : ''); ?>>Nagad</option>
+                                    <option value="bank" <?php echo e(old('refund_method') == 'bank' ? 'selected' : ''); ?>>Bank Transfer</option>
+                                    <option value="manual" <?php echo e(old('refund_method') == 'manual' ? 'selected' : ''); ?>>Manual/Cash</option>
                                 </select>
-                                @error('refund_method')<div class="bilai-refund-error">{{ $message }}</div>@enderror
+                                <?php $__errorArgs = ['refund_method'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="bilai-refund-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
 
                             <div class="bilai-refund-field">
                                 <label for="refund_account" class="bilai-refund-label">Account Number/Phone <span class="bilai-refund-required">*</span></label>
-                                <input type="text" class="bilai-refund-control @error('refund_account') is-invalid @enderror"
-                                       id="refund_account" name="refund_account" value="{{ old('refund_account') }}" required
+                                <input type="text" class="bilai-refund-control <?php $__errorArgs = ['refund_account'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                       id="refund_account" name="refund_account" value="<?php echo e(old('refund_account')); ?>" required
                                        placeholder="Enter bKash/Nagad number or bank account number">
-                                @error('refund_account')<div class="bilai-refund-error">{{ $message }}</div>@enderror
+                                <?php $__errorArgs = ['refund_account'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="bilai-refund-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
 
                             <div class="bilai-refund-field bilai-refund-field--full">
                                 <label for="refund_account_name" class="bilai-refund-label">Account Holder Name</label>
-                                <input type="text" class="bilai-refund-control @error('refund_account_name') is-invalid @enderror"
-                                       id="refund_account_name" name="refund_account_name" value="{{ old('refund_account_name') }}"
+                                <input type="text" class="bilai-refund-control <?php $__errorArgs = ['refund_account_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                       id="refund_account_name" name="refund_account_name" value="<?php echo e(old('refund_account_name')); ?>"
                                        placeholder="Enter account holder name (if applicable)">
-                                @error('refund_account_name')<div class="bilai-refund-error">{{ $message }}</div>@enderror
+                                <?php $__errorArgs = ['refund_account_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="bilai-refund-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
                         </div>
 
@@ -226,7 +310,7 @@
                             <button type="submit" class="bilai-refund-button bilai-refund-button--primary">
                                 <i class="fa fa-paper-plane" aria-hidden="true"></i> Submit Refund Request
                             </button>
-                            <a href="{{ route('customer.orders') }}" class="bilai-refund-button bilai-refund-button--secondary">
+                            <a href="<?php echo e(route('customer.orders')); ?>" class="bilai-refund-button bilai-refund-button--secondary">
                                 <i class="fa fa-arrow-left" aria-hidden="true"></i> Back to Orders
                             </a>
                         </div>
@@ -236,4 +320,6 @@
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('frontEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\bilaiGhor\resources\views/frontEnd/layouts/customer/refund_request.blade.php ENDPATH**/ ?>

@@ -189,7 +189,27 @@
                             <?php $__currentLoopData = $logos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $slug => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div class="col-md-6">
                                 <label class="form-label-pro"><?php echo e($label); ?></label>
-                                <input type="file" name="<?php echo e($slug); ?>" class="form-control custom-input mb-2">
+                                <input type="file"
+                                       name="<?php echo e($slug); ?>"
+                                       accept="image/jpeg,image/png,image/webp"
+                                       class="form-control custom-input mb-2 <?php $__errorArgs = [$slug];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>">
+                                <?php $__errorArgs = [$slug];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <div class="invalid-feedback d-block mb-2"><?php echo e($message); ?></div>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 <div class="logo-preview-box">
                                     <img src="<?php echo e(asset($edit_data->$slug)); ?>" class="edit-image-pro" alt="Preview">
                                 </div>
@@ -328,4 +348,5 @@
     });
 </script>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('backEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\bilaiGhor\resources\views/backEnd/settings/edit.blade.php ENDPATH**/ ?>

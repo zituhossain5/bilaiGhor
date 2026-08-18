@@ -6,6 +6,9 @@ use App\Models\GeneralSetting;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Toastr;
 use Image;
 use File;
@@ -39,86 +42,24 @@ class GeneralSettingController extends Controller
     {
         $this->validate($request, [
             'name' => 'required',
-
-			'fraud_api_key' => 'required',
-			'copyright_color' => 'required',
-			'primary_color' => 'required',
-			'secodery_color' => 'required',
-			'footer_color' => 'required',
-			'facebook_page_username' => 'required',
-			
-            'white_logo' => 'required',
-			'og_baner' => 'required',
-            'favicon' => 'required',
+            'fraud_api_key' => 'required',
+            'copyright_color' => 'required',
+            'primary_color' => 'required',
+            'secodery_color' => 'required',
+            'footer_color' => 'required',
+            'facebook_page_username' => 'required',
+            'white_logo' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'dark_logo' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'og_baner' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'favicon' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required',
         ]);
 
-        // image with intervention 
-        $image = $request->file('white_logo');
-        $name =  time().'-'.$image->getClientOriginalName();
-        $name = preg_replace('"\.(jpg|jpeg|png|webp)$"', '.webp',$name);
-        $name = strtolower(preg_replace('/\s+/', '-', $name));
-        $uploadpath = 'public/uploads/settings/';
-        $imageUrl = $uploadpath.$name; 
-        $img=Image::make($image->getRealPath());
-        $img->encode('webp', 90);
-        $width = '';
-        $height = '';
-        $img->height() > $img->width() ? $width=null : $height=null;
-        $img->resize($width, $height);
-        $img->save($imageUrl);
-
-        // dark logo
-        $image2 = $request->file('dark_logo');
-        $name2 =  time().'-'.$image2->getClientOriginalName();
-        $name2 = preg_replace('"\.(jpg|jpeg|png|webp)$"', '.webp',$name2);
-        $name2 = strtolower(preg_replace('/\s+/', '-', $name2));
-        $uploadpath2 = 'public/uploads/settings/';
-        $image2Url = $uploadpath2.$name2; 
-        $img2=Image::make($image2->getRealPath());
-        $img2->encode('webp', 90);
-        $width2 = '';
-        $height2 = '';
-        $img2->height() > $img2->width() ? $width2=null : $height2=null;
-        $img2->resize($width2, $height2);
-        $img2->save($image2Url);
-
-        // OG Baner
-        $image4 = $request->file('og_baner');
-        $name4 =  time().'-'.$image4->getClientOriginalName();
-        $name4 = preg_replace('"\.(jpg|jpeg|png|webp)$"', '.webp',$name4);
-        $name4 = strtolower(preg_replace('/\s+/', '-', $name4));
-        $uploadpath4 = 'public/uploads/settings/';
-        $image4Url = $uploadpath4.$name4; 
-        $img4=Image::make($image4->getRealPath());
-        $img4->encode('webp', 90);
-        $width4 = '';
-        $height4 = '';
-        $img4->height() > $img4->width() ? $width4=null : $height4=null;
-        $img4->resize($width4, $height4);
-        $img4->save($image4Url);
-
-
-        // image with intervention 
-        $image3 = $request->file('favicon');
-        $name3 =  time().'-'.$image3->getClientOriginalName();
-        $name3 = preg_replace('"\.(jpg|jpeg|png|webp)$"', '.png',$name3);
-        $name3 = strtolower(preg_replace('/\s+/', '-', $name3));
-        $uploadpath3 = 'public/uploads/settings/';
-        $image3Url = $uploadpath3.$name3; 
-        $img3=Image::make($image3->getRealPath());
-        //$img3->encode('webp', 90);
-        $width3 = 256;
-        $height3 = 256;
-        //$img3->height() > $img3->width() ? $width3=null : $height3=null;
-        //$img3->resize($width3, $height3);
-        $img3->save($image3Url);
-
-        $input = $request->all();
-        $input['white_logo'] = $imageUrl;
-        $input['dark_logo'] = $image2Url;
-        $input['favicon'] = $image3Url;
-		 $input['og_baner'] = $image4Url;
+        $input = $request->except(['_token', 'white_logo', 'dark_logo', 'favicon', 'og_baner']);
+        $input['white_logo'] = $this->storeSettingImage($request->file('white_logo'), 'white_logo');
+        $input['dark_logo'] = $this->storeSettingImage($request->file('dark_logo'), 'dark_logo');
+        $input['og_baner'] = $this->storeSettingImage($request->file('og_baner'), 'og_baner');
+        $input['favicon'] = $this->storeSettingImage($request->file('favicon'), 'favicon', 'png', 32, 32);
         
         $input['vendor_enabled'] = $request->has('vendor_enabled') ? 1 : 0;
         $input['reseller_enabled'] = $request->has('reseller_enabled') ? 1 : 0;
@@ -144,97 +85,24 @@ class GeneralSettingController extends Controller
     public function update(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required'
+            'name' => 'required',
+            'white_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'dark_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'og_baner' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'favicon' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
-        $update_data = GeneralSetting::find($request->id);
-        $input = $request->all();
-        // new white logo
-        $image = $request->file('white_logo');
-        if($image){
-            // image with intervention 
-            $image = $request->file('white_logo');
-            $name =  time().'-'.$image->getClientOriginalName();
-            $name = preg_replace('"\.(jpg|jpeg|png|webp)$"', '.webp',$name);
-            $name = strtolower(preg_replace('/\s+/', '-', $name));
-            $uploadpath = 'public/uploads/settings/';
-            $imageUrl = $uploadpath.$name; 
-            $img=Image::make($image->getRealPath());
-            $img->encode('webp', 90);
-            $width = '';
-            $height = '';
-            $img->height() > $img->width() ? $width=null : $height=null;
-            $img->resize($width, $height);
-            $img->save($imageUrl);
-            $input['white_logo'] = $imageUrl;
-        }else{
-            $input['white_logo'] = $update_data->white_logo;
-        }
-        // new dark logo
-        $image2 = $request->file('dark_logo');
-        if($image2){
-            // image with intervention 
-            $image2 = $request->file('dark_logo');
-            $name2 =  time().'-'.$image2->getClientOriginalName();
-            $name2 = preg_replace('"\.(jpg|jpeg|png|webp)$"', '.webp',$name2);
-            $name2 = strtolower(preg_replace('/\s+/', '-', $name2));
-            $uploadpath2 = 'public/uploads/settings/';
-            $image2Url = $uploadpath2.$name2; 
-            $img2=Image::make($image2->getRealPath());
-            $img2->encode('webp', 90);
-            $width2 = '';
-            $height2 = '';
-            $img2->height() > $img2->width() ? $width2=null : $height2=null;
-            $img2->resize($width2, $height2);
-            $img2->save($image2Url);
-            $input['dark_logo'] = $image2Url;
-        }else{
-            $input['dark_logo'] = $update_data->dark_logo;
+        $update_data = GeneralSetting::findOrFail($request->id);
+        $input = $request->except(['_token', 'white_logo', 'dark_logo', 'favicon', 'og_baner']);
+
+        foreach (['white_logo', 'dark_logo', 'og_baner'] as $field) {
+            $input[$field] = $request->hasFile($field)
+                ? $this->storeSettingImage($request->file($field), $field)
+                : $update_data->{$field};
         }
 
-			// new OG image
-        $image4 = $request->file('og_baner');
-        if($image4){
-            $image4 = $request->file('og_baner');
-            $name4 =  time().'-'.$image4->getClientOriginalName();
-            $name4 = preg_replace('"\.(jpg|jpeg|png|webp)$"', '.webp',$name4);
-            $name4 = strtolower(preg_replace('/\s+/', '-', $name4));
-            $uploadpath4 = 'public/uploads/settings/';
-            $image4Url = $uploadpath4.$name4; 
-            $img4=Image::make($image4->getRealPath());
-            $img4->encode('webp', 90);
-            $width4 = 1440;
-            $height4 = 793;
-            $img4->height() > $img4->width() ? $width4=null : $height4=null;
-            $img4->resize($width4, $height4);
-            $img4->save($image4Url);
-            $input['og_baner'] = $image4Url;
-        }else{
-            $input['og_baner'] = $update_data->og_baner;
-        }
-
-
-
-
-        // new favicon image
-        $image3 = $request->file('favicon');
-        if($image3){
-            $image3 = $request->file('favicon');
-            $name3 =  time().'-'.$image3->getClientOriginalName();
-            $name3 = preg_replace('"\.(jpg|jpeg|png|webp)$"', '.webp',$name3);
-            $name3 = strtolower(preg_replace('/\s+/', '-', $name3));
-            $uploadpath3 = 'public/uploads/settings/';
-            $image3Url = $uploadpath3.$name3; 
-            $img3=Image::make($image3->getRealPath());
-            $img3->encode('webp', 90);
-            $width3 = 32;
-            $height3 = 32;
-            //$img3->height() > $img3->width() ? $width3=null : $height3=null;
-            $img3->resize($width3, $height3);
-            $img3->save($image3Url);
-            $input['favicon'] = $image3Url;
-        }else{
-            $input['favicon'] = $update_data->favicon;
-        }
+        $input['favicon'] = $request->hasFile('favicon')
+            ? $this->storeSettingImage($request->file('favicon'), 'favicon', 'webp', 32, 32)
+            : $update_data->favicon;
         $input['status'] = 1;
         
         // Handle vendor_enabled and reseller_enabled (checkbox returns '1' if checked, null if unchecked)
@@ -259,7 +127,7 @@ class GeneralSettingController extends Controller
         Cache::forget('common_menu');
 
         Toastr::success('Settings updated successfully!', 'Success');
-        return redirect()->route('settings.edit', $update_data->id);
+        return redirect()->route('settings.edit', ['id' => $update_data->id]);
     }
  
     public function inactive(Request $request)
@@ -285,6 +153,57 @@ class GeneralSettingController extends Controller
         $delete_data->delete();
         Toastr::success('Success','Data delete successfully');
         return redirect()->back();
+    }
+
+    private function storeSettingImage(
+        UploadedFile $file,
+        string $field,
+        string $format = 'webp',
+        ?int $width = null,
+        ?int $height = null
+    ): string {
+        $directory = public_path('uploads/settings');
+
+        try {
+            if (!File::isDirectory($directory)) {
+                File::makeDirectory($directory, 0755, true, true);
+            }
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages([
+                $field => 'The settings upload directory could not be created.',
+            ]);
+        }
+
+        if (!is_writable($directory)) {
+            throw ValidationException::withMessages([
+                $field => 'The settings upload directory is not writable.',
+            ]);
+        }
+
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeName = Str::slug($originalName) ?: 'settings-image';
+        $filename = now()->format('YmdHis').'-'.Str::lower(Str::random(8)).'-'.$safeName.'.'.$format;
+        $absolutePath = $directory.DIRECTORY_SEPARATOR.$filename;
+
+        try {
+            $image = Image::make($file->getRealPath())->encode($format, 90);
+
+            if ($width !== null || $height !== null) {
+                $image->resize($width, $height);
+            }
+
+            $image->save($absolutePath);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages([
+                $field => 'The image could not be saved. Please try another valid image.',
+            ]);
+        }
+
+        return 'public/uploads/settings/'.$filename;
     }
 
     private function updateEnvAppName(string $name): void

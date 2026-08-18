@@ -189,7 +189,13 @@
                             @foreach($logos as $slug => $label)
                             <div class="col-md-6">
                                 <label class="form-label-pro">{{ $label }}</label>
-                                <input type="file" name="{{ $slug }}" class="form-control custom-input mb-2">
+                                <input type="file"
+                                       name="{{ $slug }}"
+                                       accept="image/jpeg,image/png,image/webp"
+                                       class="form-control custom-input mb-2 @error($slug) is-invalid @enderror">
+                                @error($slug)
+                                    <div class="invalid-feedback d-block mb-2">{{ $message }}</div>
+                                @enderror
                                 <div class="logo-preview-box">
                                     <img src="{{asset($edit_data->$slug)}}" class="edit-image-pro" alt="Preview">
                                 </div>

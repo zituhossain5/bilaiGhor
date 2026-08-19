@@ -519,7 +519,7 @@
                                 @endif
 
                                 {{-- ShurjoPay --}}
-                                @if($shurjopay_gateway)
+                                <!-- @if($shurjopay_gateway)
                                     <label class="payment-option-label">
                                         <input type="radio" name="payment_method" value="shurjopay" {{ $hasAdvance && !$bkash_gateway ? 'checked' : '' }} required>
                                         <div class="payment-content">
@@ -531,7 +531,7 @@
                                         </div>
                                         <div class="check-circle"></div>
                                     </label>
-                                @endif
+                                @endif -->
 
                                 {{-- UddoktaPay --}}
                                 @if($uddoktapay_gateway)

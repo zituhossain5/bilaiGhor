@@ -21,7 +21,7 @@ use App\Support\DeliveryLocation;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Str;
-use shurjopayv2\ShurjopayLaravelPackage8\Http\Controllers\ShurjopayController;
+// use shurjopayv2\ShurjopayLaravelPackage8\Http\Controllers\ShurjopayController;
 use App\Http\Controllers\Frontend\ShoppingController;
 
 class ResellerCheckoutController extends Controller
@@ -111,7 +111,7 @@ class ResellerCheckoutController extends Controller
 
         // Get payment gateways
         $bkash_gateway = PaymentGateway::where(['status' => 1, 'type' => 'bkash'])->first();
-        $shurjopay_gateway = PaymentGateway::where(['status' => 1, 'type' => 'shurjopay'])->first();
+        // $shurjopay_gateway = PaymentGateway::where(['status' => 1, 'type' => 'shurjopay'])->first();
         $uddoktapay_gateway = PaymentGateway::where(['status' => 1, 'type' => 'uddoktapay'])->first();
         $aamarpay_gateway = PaymentGateway::where(['status' => 1, 'type' => 'aamarpay'])->first();
         $manual_gateways = ManualPaymentGateway::enabled()
@@ -163,7 +163,7 @@ class ResellerCheckoutController extends Controller
             'totalResellerPrice',
             'requires_shipping',
             'bkash_gateway',
-            'shurjopay_gateway',
+            // 'shurjopay_gateway',
             'uddoktapay_gateway',
             'aamarpay_gateway',
             'manual_gateways',
@@ -277,7 +277,7 @@ class ResellerCheckoutController extends Controller
         // Check advance payment requirement
         $advanceAmount = ShoppingController::getCartAdvanceAmount();
         $hasAdvance = $advanceAmount > 0;
-        
+
         if ($hasAdvance && in_array($request->payment_method, ['cod'])) {
             Toastr::error('এই অর্ডারে অগ্রিম পেমেন্ট প্রয়োজন। অনুগ্রহ করে অনলাইন পেমেন্ট মেথড সিলেক্ট করুন।', 'Failed!');
             return redirect()->back();
@@ -336,7 +336,7 @@ class ResellerCheckoutController extends Controller
         // Calculate advance payment
         $advanceAmount = ShoppingController::getCartAdvanceAmount();
         $hasAdvance = $advanceAmount > 0;
-        
+
         // Payment amount logic - if advance exists, only advance amount needs to be paid
         // Otherwise, full customer payable amount
         $payableAmount = $hasAdvance ? $advanceAmount : $customerPayableAmount;
@@ -376,7 +376,7 @@ class ResellerCheckoutController extends Controller
         // Create order details
         foreach (Cart::instance('shopping')->content() as $cartItem) {
             $product = Product::find($cartItem->id);
-            
+
             OrderDetails::create([
                 'order_id' => $order->id,
                 'product_id' => $cartItem->id,
@@ -442,28 +442,30 @@ class ResellerCheckoutController extends Controller
             Session::forget('discount');
             return redirect('/bkash/checkout-url/create?order_id=' . $order->id);
 
-        } elseif ($request->payment_method == 'shurjopay') {
-            $info = [
-                'currency'        => "BDT",
-                'amount'          => $payableAmount,
-                'order_id'        => uniqid(),
-                'client_ip'       => $request->ip(),
-                'customer_name'   => $request->name,
-                'customer_phone'  => $request->phone,
-                'email'           => "customer@gmail.com",
-                'customer_address'=> $request->address,
-                'customer_city'   => $locationLabelForGateway,
-                'customer_country'=> "BD",
-                'value1'          => $order->id
-            ];
+        }
+        // elseif ($request->payment_method == 'shurjopay') {
+        //     $info = [
+        //         'currency'        => "BDT",
+        //         'amount'          => $payableAmount,
+        //         'order_id'        => uniqid(),
+        //         'client_ip'       => $request->ip(),
+        //         'customer_name'   => $request->name,
+        //         'customer_phone'  => $request->phone,
+        //         'email'           => "customer@gmail.com",
+        //         'customer_address'=> $request->address,
+        //         'customer_city'   => $locationLabelForGateway,
+        //         'customer_country'=> "BD",
+        //         'value1'          => $order->id
+        //     ];
 
-            Session::forget('coupon_code');
-            Session::forget('discount');
+        //     Session::forget('coupon_code');
+        //     Session::forget('discount');
 
-            $sp = new ShurjopayController();
-            return $sp->checkout($info);
+        //     $sp = new ShurjopayController();
+        //     return $sp->checkout($info);
 
-        } elseif ($request->payment_method == 'uddoktapay') {
+        // }
+        elseif ($request->payment_method == 'uddoktapay') {
             Session::forget('coupon_code');
             Session::forget('discount');
             return redirect()->route('uddoktapay.checkout', ['order_id' => $order->id]);
@@ -480,7 +482,7 @@ class ResellerCheckoutController extends Controller
             if (!$hasAdvance) {
                 $this->createDigitalDownloads($order);
             }
-            
+
             Session::forget('coupon_code');
             Session::forget('discount');
             return redirect()->route('reseller.order.success', $order->id);

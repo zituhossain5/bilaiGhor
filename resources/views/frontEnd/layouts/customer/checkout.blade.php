@@ -645,7 +645,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                 @endif
 
                                 {{-- ShurjoPay (hidden from frontend; toggle $__showOnlineGateways to re-enable) --}}
-                                @if($__showOnlineGateways && $shurjopay_gateway)
+                                <!-- @if($__showOnlineGateways && $shurjopay_gateway)
                                     <label class="payment-option-label">
                                         <input type="radio" name="payment_method" value="shurjopay" required>
                                         <div class="payment-content">
@@ -657,7 +657,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                         </div>
                                         <div class="check-circle"></div>
                                     </label>
-                                @endif
+                                @endif -->
 
                                 {{-- UddoktaPay (hidden from frontend; toggle $__showOnlineGateways to re-enable) --}}
                                 @if($__showOnlineGateways && $uddoktapay_gateway)

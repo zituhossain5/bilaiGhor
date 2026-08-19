@@ -12,7 +12,7 @@ use App\Http\Controllers\Frontend\CustomerController;
 use App\Http\Controllers\Frontend\CustomerPasswordResetController;
 use App\Http\Controllers\Frontend\SocialAuthController;
 use App\Http\Controllers\Frontend\BkashController;
-use App\Http\Controllers\Frontend\ShurjopayControllers;
+// use App\Http\Controllers\Frontend\ShurjopayControllers;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
@@ -702,8 +702,8 @@ Route::post('newsletter/subscribe',
     Route::get('bkash/checkout-url/pay',[BkashController::class,'pay'])->name('url-pay');
 Route::any('bkash/checkout-url/create',[BkashController::class,'create'])->name('url-create');
 Route::get('bkash/checkout-url/callback',[BkashController::class,'callback'])->name('url-callback');
-    Route::get('/payment-success', [ShurjopayControllers::class, 'payment_success'])->name('payment_success');
-    Route::get('/payment-cancel', [ShurjopayControllers::class, 'payment_cancel'])->name('payment_cancel');
+    // Route::get('/payment-success', [ShurjopayControllers::class, 'payment_success'])->name('payment_success');
+    // Route::get('/payment-cancel', [ShurjopayControllers::class, 'payment_cancel'])->name('payment_cancel');
 
 });
 

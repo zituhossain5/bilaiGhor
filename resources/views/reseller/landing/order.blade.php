@@ -137,10 +137,10 @@
                         <input type="radio" name="payment_method" value="bkash" {{ old('payment_method') == 'bkash' ? 'checked' : '' }}>
                         <span class="font-medium">bKash</span>
                     </label>
-                    <label class="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-blue-50 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50">
+                    <!-- <label class="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-blue-50 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50">
                         <input type="radio" name="payment_method" value="shurjopay" {{ old('payment_method') == 'shurjopay' ? 'checked' : '' }}>
                         <span class="font-medium">ShurjoPay</span>
-                    </label>
+                    </label> -->
                 </div>
             </div>
 

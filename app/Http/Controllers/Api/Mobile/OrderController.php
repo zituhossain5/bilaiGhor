@@ -89,7 +89,7 @@ class OrderController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:500',
-            'payment_method' => 'required|in:cod,bkash,shurjopay,uddoktapay,aamarpay',
+            'payment_method' => 'required|in:cod,bkash,uddoktapay,aamarpay',
             'note' => 'nullable|string|max:500',
             'order_note' => 'nullable|string|max:500',
             'division_id' => 'nullable|integer|exists:divisions,id',
@@ -227,7 +227,7 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'customer_id' => $customer->id,
                 'payment_method' => $request->payment_method,
-                'amount' => in_array($request->payment_method, ['bkash', 'shurjopay', 'uddoktapay', 'aamarpay']) ? 0 : $grandTotal,
+                'amount' => in_array($request->payment_method, ['bkash', 'uddoktapay', 'aamarpay']) ? 0 : $grandTotal,
                 'payment_status' => 'pending',
             ]);
 
@@ -353,14 +353,12 @@ class OrderController extends Controller
      */
     private function getPaymentUrl($order, $paymentMethod)
     {
-        if (in_array($paymentMethod, ['bkash', 'shurjopay', 'uddoktapay', 'aamarpay'])) {
+        if (in_array($paymentMethod, ['bkash', 'uddoktapay', 'aamarpay'])) {
             $baseUrl = config('app.url');
             
             switch ($paymentMethod) {
                 case 'bkash':
                     return $baseUrl . '/bkash/checkout-url/create?order_id=' . $order->id;
-                case 'shurjopay':
-                    return $baseUrl . '/shurjopay/checkout?order_id=' . $order->id;
                 case 'uddoktapay':
                     return $baseUrl . '/uddoktapay/checkout?order_id=' . $order->id;
                 case 'aamarpay':

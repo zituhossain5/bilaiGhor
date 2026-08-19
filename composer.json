@@ -2,7 +2,10 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -16,7 +19,6 @@
         "laravel/socialite": "^5.28",
         "laravel/tinker": "^2.7",
         "laravel/ui": "^4.2",
-        "shurjopayv2/laravel8": "dev-master",
         "spatie/laravel-permission": "^6.4",
         "spatie/laravel-sitemap": "^7.0",
         "uddoktapay/laravel-sdk": "^2.1"

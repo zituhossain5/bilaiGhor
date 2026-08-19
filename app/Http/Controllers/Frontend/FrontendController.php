@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use shurjopayv2\ShurjopayLaravelPackage8\Http\Controllers\ShurjopayController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Brian2694\Toastr\Facades\Toastr;
@@ -94,7 +93,7 @@ class FrontendController extends Controller
             ->get();
 $brands = Brand::where('status', 1)
     ->select('id', 'name', 'slug', 'image')
-	 ->limit(12) 
+	 ->limit(12)
     ->get();
     $blogs = Blog::where('status', 1)
         ->latest()
@@ -298,21 +297,21 @@ $brands = Brand::where('status', 1)
             'product_color' => 'nullable|integer',
             'product_size'  => 'nullable|integer',
         ]);
-        
+
         // =========================================================
         // [START] এডমিন প্যানেল থেকে সেট করা ডাইনামিক লিমিট লজিক
         // =========================================================
-        
+
         // ১. ডাটাবেস থেকে সেটিং লোড করা
         $setting = GeneralSetting::select('order_limit_time', 'order_limit_qty')->first();
-        
+
         // যদি সেটিং না পায় বা ভ্যালু না থাকে, তবে ডিফল্ট হিসেবে ৪৮ ঘন্টা এবং ২ বার ধরবে
-        $limitHours = $setting->order_limit_time ?? 48; 
+        $limitHours = $setting->order_limit_time ?? 48;
         $limitQty   = $setting->order_limit_qty ?? 2;
 
         $productId = $request->id;
         // ডাইনামিক সময় ক্যালকুলেশন
-        $timeLimit = Carbon::now()->subHours($limitHours); 
+        $timeLimit = Carbon::now()->subHours($limitHours);
         $currentIp = $request->ip();
 
         // কুয়েরি তৈরি
@@ -327,7 +326,7 @@ $brands = Brand::where('status', 1)
             $query->where('orders.customer_id', $customerId);
         } else {
             // [সতর্কতা] আপনার ডাটাবেসে কলামের নাম 'ip_address' না 'ip' সেটা নিশ্চিত হয়ে নিবেন
-            $query->where('orders.ip_address', $currentIp); 
+            $query->where('orders.ip_address', $currentIp);
         }
 
         // মোট কতবার অর্ডার করেছে তা গণনা
@@ -340,7 +339,7 @@ $brands = Brand::where('status', 1)
            }
            return redirect()->back()->with('show_order_limit_modal', true);
         }
-        
+
         // =========================================================
         // [END] লজিক শেষ
         // =========================================================
@@ -498,11 +497,11 @@ $brands = Brand::where('status', 1)
     // ===========================
     // Rest of original controller methods
     // ===========================
-	
-	
-	
-	
-	
+
+
+
+
+
 	public function brand($slug, Request $request)
 {
     $brand = Brand::where('slug', $slug)
@@ -585,14 +584,14 @@ $brands = Brand::where('status', 1)
             ->where('status', 1)
             ->where('approval_status', 'approved')
             ->pluck('id');
-        
+
         $reviews = Review::whereIn('product_id', $vendorProducts)
             ->where('status', 'active')
             ->get();
-        
+
         $vendor->total_reviews = $reviews->count();
-        $vendor->average_rating = $reviews->count() > 0 
-            ? round($reviews->avg('ratting'), 1) 
+        $vendor->average_rating = $reviews->count() > 0
+            ? round($reviews->avg('ratting'), 1)
             : 0;
         $vendor->total_products = $vendorProducts->count();
 
@@ -607,7 +606,7 @@ $brands = Brand::where('status', 1)
             'seo'
         ));
     }
-	
+
     public function storeIncompleteOrder(Request $request)
     {
         try {
@@ -793,14 +792,14 @@ $brands = Brand::where('status', 1)
                 ->where('status', 1)
                 ->where('approval_status', 'approved')
                 ->pluck('id');
-            
+
             $reviews = Review::whereIn('product_id', $vendorProducts)
                 ->where('status', 'active')
                 ->get();
-            
+
             $vendor->total_reviews = $reviews->count();
-            $vendor->average_rating = $reviews->count() > 0 
-                ? round($reviews->avg('ratting'), 1) 
+            $vendor->average_rating = $reviews->count() > 0
+                ? round($reviews->avg('ratting'), 1)
                 : 0;
         }
 
@@ -1405,60 +1404,7 @@ $brands = Brand::where('status', 1)
         return view('frontEnd.layouts.pages.campaign.campaign', compact('campaign_data', 'products', 'shippingcharge', 'fb_view_content_event_id', 'campaignVariants'));
     }
 
-    public function payment_success(Request $request)
-    {
-        $order_id = $request->order_id;
-        $shurjopay_service = new ShurjopayController();
-        $json = $shurjopay_service->verify($order_id);
-        $data = json_decode($json);
 
-        if ($data[0]->sp_code != 1000) {
-            Toastr::error('Your payment failed, try again', 'Oops!');
-            return redirect()->route('home');
-        }
-
-        if ($data[0]->value1 == 'customer_payment') {
-            $customer = Customer::find(Auth::guard('customer')->user()->id);
-
-            $order = new Order();
-            $order->invoice_id   = $data[0]->id;
-            $order->amount       = $data[0]->amount;
-            $order->customer_id  = Auth::guard('customer')->user()->id;
-            $order->order_status = $data[0]->bank_status;
-            $order->save();
-
-            $payment = new Payment();
-            $payment->order_id       = $order->id;
-            $payment->customer_id    = Auth::guard('customer')->user()->id;
-            $payment->payment_method = 'shurjopay';
-            $payment->amount         = $order->amount;
-            $payment->trx_id         = $data[0]->bank_trx_id;
-            $payment->sender_number  = $data[0]->phone_no;
-            $payment->payment_status = 'paid';
-            $payment->save();
-
-            // Order details + stock update helper
-            OrderHelper::saveOrderDetails($order);
-
-            Cart::instance('shopping')->destroy();
-            Toastr::success('Thanks, Your payment send successfully', 'Success!');
-            return redirect()->route('home');
-        }
-
-        Toastr::error('Something wrong, please try again', 'Error!');
-        return redirect()->route('home');
-    }
-
-    public function payment_cancel(Request $request)
-    {
-        $order_id = $request->order_id;
-        $shurjopay_service = new ShurjopayController();
-        $json = $shurjopay_service->verify($order_id);
-        $data = json_decode($json);
-
-        Toastr::error('Your payment cancelled', 'Cancelled!');
-        return redirect()->route('home');
-    }
 
     public function offers()
     {

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use shurjopayv2\ShurjopayLaravelPackage8\Http\Controllers\ShurjopayController;
+// use shurjopayv2\ShurjopayLaravelPackage8\Http\Controllers\ShurjopayController;
 use App\Mail\OrderPlace;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -115,14 +115,14 @@ class CustomerController extends Controller
         $isResellerPhone = false;
         $vendor = null;
         $resellerUser = null;
-        
+
         if (preg_match('/^[0-9+]+$/', $login)) {
             // Check if it's a vendor phone
             $vendor = \App\Models\Vendor::where('phone', $login)->first();
             if ($vendor) {
                 $isVendorPhone = true;
             }
-            
+
             // Check if it's a reseller phone (via customer record email matching)
             $customer = Customer::where('phone', $login)->first();
             if ($customer && $customer->email) {
@@ -152,7 +152,7 @@ class CustomerController extends Controller
                 return redirect()->intended('customer/account');
             }
         }
-        
+
         // If reseller phone, use admin guard with reseller email
         if ($isResellerPhone && $resellerUser) {
             $adminCredentials = ['email' => $resellerUser->email, 'password' => $password];
@@ -182,7 +182,7 @@ class CustomerController extends Controller
                           });
                 })
                 ->first();
-            
+
             if ($resellerUser) {
                 // It's a reseller email, use admin guard
                 $adminCredentials = ['email' => $login, 'password' => $password];
@@ -204,7 +204,7 @@ class CustomerController extends Controller
                                   });
                         })
                         ->exists();
-                    
+
                     if ($customerExists && !$isResellerCustomer && Auth::guard('customer')->attempt(['email' => $login, 'password' => $password], $remember)) {
                         Toastr::success('You are login successfully', 'success!');
                         if (Cart::instance('shopping')->count() > 0) {
@@ -220,18 +220,18 @@ class CustomerController extends Controller
 
         if ($adminCredentials && Auth::guard('admin')->attempt($adminCredentials)) {
             $user = Auth::guard('admin')->user();
-            
+
             // Check if user has reseller role, redirect to reseller dashboard
             // Check both Spatie role and direct role column
-            $isReseller = $user->hasRole('reseller') || 
+            $isReseller = $user->hasRole('reseller') ||
                           (isset($user->role) && strtolower($user->role) === 'reseller') ||
                           $user->getRoleNames()->contains('reseller');
-            
+
             if ($isReseller) {
                 Toastr::success('You are login successfully', 'success!');
                 return redirect()->route('reseller.dashboard');
             }
-            
+
             if ($user->hasRole('vendor')) {
                 Toastr::success('You are login successfully', 'success!');
                 return redirect()->route('vendor.dashboard');
@@ -284,7 +284,7 @@ class CustomerController extends Controller
                 $frontImage = $request->file('voter_id_front');
                 $frontName = time() . '-voter-front-' . uniqid() . '.webp';
                 $frontPath = 'public/uploads/reseller/verification/';
-                
+
                 if (!File::exists($frontPath)) {
                     File::makeDirectory($frontPath, 0755, true);
                 }
@@ -303,7 +303,7 @@ class CustomerController extends Controller
                 $backImage = $request->file('voter_id_back');
                 $backName = time() . '-voter-back-' . uniqid() . '.webp';
                 $backPath = 'public/uploads/reseller/verification/';
-                
+
                 if (!File::exists($backPath)) {
                     File::makeDirectory($backPath, 0755, true);
                 }
@@ -322,7 +322,7 @@ class CustomerController extends Controller
                 $selfImage = $request->file('self_image');
                 $selfName = time() . '-self-' . uniqid() . '.webp';
                 $selfPath = 'public/uploads/reseller/verification/';
-                
+
                 if (!File::exists($selfPath)) {
                     File::makeDirectory($selfPath, 0755, true);
                 }
@@ -357,7 +357,7 @@ class CustomerController extends Controller
                 ['name' => 'reseller', 'guard_name' => 'admin']
             );
             $user->assignRole($role);
-            
+
             // Clear role cache to ensure role is immediately available
             app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
@@ -543,7 +543,7 @@ class CustomerController extends Controller
     {
         $divisions = DeliveryDivision::active()->ordered()->get();
         $bkash_gateway = PaymentGateway::where(['status'=> 1, 'type'=>'bkash'])->first();
-        $shurjopay_gateway = PaymentGateway::where(['status'=> 1, 'type'=>'shurjopay'])->first();
+        // $shurjopay_gateway = PaymentGateway::where(['status'=> 1, 'type'=>'shurjopay'])->first();
         $uddoktapay_gateway = PaymentGateway::where(['status'=> 1, 'type'=>'uddoktapay'])->first();
         $aamarpay_gateway = PaymentGateway::where(['status'=> 1, 'type'=>'aamarpay'])->first();
         $manual_gateways = ManualPaymentGateway::enabled()
@@ -571,10 +571,10 @@ class CustomerController extends Controller
 
         if (Auth::guard('admin')->check()) {
             $resellerUser = Auth::guard('admin')->user();
-            $isReseller = $resellerUser->hasRole('reseller') || 
+            $isReseller = $resellerUser->hasRole('reseller') ||
                           (isset($resellerUser->role) && strtolower($resellerUser->role) === 'reseller') ||
                           $resellerUser->getRoleNames()->contains('reseller');
-            
+
             if ($isReseller && Cart::instance('shopping')->count() > 0) {
                 return redirect()->route('reseller.checkout');
             }
@@ -649,7 +649,7 @@ class CustomerController extends Controller
             'divisions',
             'checkoutDistricts',
             'bkash_gateway',
-            'shurjopay_gateway',
+            // 'shurjopay_gateway',
             'uddoktapay_gateway',
             'aamarpay_gateway',
             'manual_gateways',
@@ -989,8 +989,8 @@ public function order_save(Request $request)
         // =========================================================
         // ⭐ পেমেন্ট গেটওয়ে রিডাইরেক্ট (FIXED)
         // =========================================================
-        
-        // Bkash এবং UddoktaPay এর জন্য সেশনে এমাউন্ট সেট করে দিচ্ছি 
+
+        // Bkash এবং UddoktaPay এর জন্য সেশনে এমাউন্ট সেট করে দিচ্ছি
         // যাতে ওই কন্ট্রোলারগুলো সঠিক এমাউন্ট পায়
         Session::put('payable_amount', $payable_amount);
 
@@ -999,29 +999,31 @@ public function order_save(Request $request)
             Session::forget('discount');
             return redirect('/bkash/checkout-url/create?order_id='.$order->id);
 
-        } elseif($request->payment_method == 'shurjopay'){
+        }
+        // elseif($request->payment_method == 'shurjopay'){
 
-            $info = [
-                'currency'        => "BDT",
-                'amount'          => $payable_amount, // সবসময় পূর্ণ গ্র্যান্ড টোটাল (Advance Payment বাতিল)
-                'order_id'        => uniqid(),
-                'client_ip'       => $request->ip(),
-                'customer_name'   => $request->name,
-                'customer_phone'  => $request->phone,
-                'email'           => "customer@gmail.com",
-                'customer_address'=> $request->address,
-                'customer_city'   => $locationLabelForGateway,
-                'customer_country'=> "BD",
-                'value1'          => $order->id
-            ];
+        //     $info = [
+        //         'currency'        => "BDT",
+        //         'amount'          => $payable_amount, // সবসময় পূর্ণ গ্র্যান্ড টোটাল (Advance Payment বাতিল)
+        //         'order_id'        => uniqid(),
+        //         'client_ip'       => $request->ip(),
+        //         'customer_name'   => $request->name,
+        //         'customer_phone'  => $request->phone,
+        //         'email'           => "customer@gmail.com",
+        //         'customer_address'=> $request->address,
+        //         'customer_city'   => $locationLabelForGateway,
+        //         'customer_country'=> "BD",
+        //         'value1'          => $order->id
+        //     ];
 
-            Session::forget('coupon_code');
-            Session::forget('discount');
+        //     Session::forget('coupon_code');
+        //     Session::forget('discount');
 
-            $sp = new ShurjopayController();
-            return $sp->checkout($info);
+        //     $sp = new ShurjopayController();
+        //     return $sp->checkout($info);
 
-        } elseif($request->payment_method == 'uddoktapay'){
+        // }
+        elseif($request->payment_method == 'uddoktapay'){
             Session::forget('coupon_code');
             Session::forget('discount');
             return redirect()->route('uddoktapay.checkout',['order_id'=>$order->id]);
@@ -1035,7 +1037,7 @@ public function order_save(Request $request)
             || ManualPaymentGateway::isManualPaymentMethod($request->payment_method)) {
             // Cash On Delivery বা ম্যানুয়াল গাইডেড পেমেন্ট — সরাসরি সাফল্য পেইজ
             $this->createDigitalDownloads($order);
-            
+
             // Send Facebook Purchase event for COD orders (async - don't block order submission)
             try {
                 $order->loadMissing(['shipping', 'customer', 'orderdetails']);
@@ -1080,7 +1082,7 @@ public function order_save(Request $request)
             } catch (\Exception $e) {
                 \Log::error('Facebook CAPI setup failed for order '.$order->id.': '.$e->getMessage());
             }
-            
+
             Session::forget('coupon_code');
             Session::forget('discount');
             return redirect('customer/order-success/'.$order->id);
@@ -1518,10 +1520,10 @@ public function order_save(Request $request)
                 if (!file_exists($uploadFullPath)) {
                     \Illuminate\Support\Facades\File::makeDirectory($uploadFullPath, 0755, true);
                 }
-                
+
                 // Full path for saving
                 $imageUrl = $uploadFullPath . $name;
-                
+
                 // Process and save image
                 $img = Image::make($image->getRealPath());
                 $img->encode('webp', 90);
@@ -1530,12 +1532,12 @@ public function order_save(Request $request)
                     $constraint->upsize();
                 });
                 $img->save($imageUrl);
-                
+
                 // Verify image was saved
                 if (!file_exists($imageUrl)) {
                     throw new \Exception('Image file was not saved successfully');
                 }
-                
+
                 // Save path in database (with public/ prefix for asset() helper)
                 $imageUrl = $uploadpath . $name;
             } catch (\Exception $e) {

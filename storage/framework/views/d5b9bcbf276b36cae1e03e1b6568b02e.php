@@ -406,7 +406,6 @@
 
                 
                 <div class="bilai-na-info">
-                    <span class="bilai-na-sold"><?php echo e((int) ($value->sold ?? 0)); ?> Sold</span>
 
                     
                     <h3 class="bilai-na-name">

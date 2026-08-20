@@ -404,7 +404,6 @@
 
                 {{-- Right column: sold → name → category+stars → price → actions --}}
                 <div class="bilai-na-info">
-                    <span class="bilai-na-sold">{{ (int) ($value->sold ?? 0) }} Sold</span>
 
                     {{-- Product name --}}
                     <h3 class="bilai-na-name">

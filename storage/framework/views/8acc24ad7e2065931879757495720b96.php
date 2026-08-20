@@ -397,6 +397,67 @@
     .footer-v2__main { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
 }
 
+@media (max-width: 480px) {
+    .footer-v2__main {
+        padding: 22px max(14px, env(safe-area-inset-right)) 18px max(14px, env(safe-area-inset-left));
+    }
+
+    .footer-v2__grid {
+        gap: 12px;
+    }
+
+    .footer-v2__logo {
+        margin-bottom: 10px;
+    }
+
+    .footer-v2__logo img {
+        height: 42px;
+    }
+
+    .footer-v2__tagline,
+    .footer-v2__newsletter-desc {
+        margin-bottom: 12px;
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .footer-v2__block {
+        padding: 12px 0;
+    }
+
+    .footer-v2__title {
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .footer-v2__title::after {
+        margin-top: 6px;
+    }
+
+    .footer-v2__links {
+        gap: 4px;
+    }
+
+    .footer-v2__links a {
+        padding: 3px 0;
+        font-size: 13px;
+    }
+
+    .footer-v2__apps,
+    .footer-v2__social-title {
+        margin-top: 12px;
+    }
+
+    .footer-v2__form input,
+    .footer-v2__form button {
+        height: 42px;
+    }
+
+    .footer-v2__bottom {
+        padding: 12px 14px calc(92px + env(safe-area-inset-bottom));
+    }
+}
+
 /* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
     .copyright-wrapper {
@@ -1221,7 +1282,7 @@
 @media (max-width: 480px) {
   .chat-widget {
     right: 14px;
-    bottom: calc(86px + env(safe-area-inset-bottom));
+    bottom: calc(94px + env(safe-area-inset-bottom));
     z-index: 9997;
   }
 

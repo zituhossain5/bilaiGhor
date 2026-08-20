@@ -457,6 +457,447 @@ input.bpd-btn { cursor: pointer; }
 }
 
 /* BilaiGhor Product Top Fix End */
+
+/* BilaiGhor Product Details Mobile Fix Start */
+@media (max-width: 480px) {
+    html,
+    body {
+        overflow-x: hidden;
+    }
+
+    .bpd-breadcrumb-wrap .container,
+    .bpd-product-section .container,
+    .bpd-delivery-section .container,
+    .bpd-tabs-section .container,
+    .bpd-related-section .container {
+        max-width: 100%;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .bpd-breadcrumb-wrap {
+        padding: 10px 0 6px;
+    }
+
+    .bpd-breadcrumb {
+        gap: 5px;
+        font-size: 11px;
+        line-height: 1.4;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+    }
+
+    .bpd-breadcrumb::-webkit-scrollbar {
+        display: none;
+    }
+
+    .bpd-product-section {
+        padding: 12px 0 20px;
+    }
+
+    .bpd-product-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        grid-template-columns: none;
+        width: 100%;
+    }
+
+    .bpd-main-img-col {
+        order: 1;
+        width: 100%;
+        min-height: 0;
+        aspect-ratio: 1 / 1;
+        border-radius: 16px;
+    }
+
+    .bpd-main-img-col .details_slider,
+    .bpd-main-img-col .owl-stage-outer,
+    .bpd-main-img-col .owl-stage,
+    .bpd-main-img-col .owl-item,
+    .bpd-main-img-col .dimage_item {
+        height: 100%;
+        min-height: 0;
+    }
+
+    .bpd-main-img-col .dimage_item {
+        aspect-ratio: 1 / 1;
+        padding: 14px;
+    }
+
+    .bpd-main-img-col .block__pic {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .bpd-main-discount-badge {
+        top: 10px;
+        right: 10px;
+        padding: 4px 10px;
+        font-size: 11px;
+        z-index: 4;
+    }
+
+    .bpd-thumbs-col {
+        order: 2;
+        flex-direction: row;
+        width: 100%;
+        max-height: none;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 8px;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+    }
+
+    .bpd-thumbs-col::-webkit-scrollbar {
+        display: none;
+    }
+
+    #indicator_thumb_wrapper {
+        display: flex;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .bpd-thumbs-col .indicator-item {
+        width: 64px;
+        height: 64px;
+        flex: 0 0 64px;
+        border-radius: 10px;
+    }
+
+    .bpd-info-col {
+        order: 3;
+        width: 100%;
+        min-width: 0;
+        grid-column: auto;
+    }
+
+    .bpd-title {
+        margin-bottom: 10px;
+        font-size: 20px;
+        line-height: 1.35;
+    }
+
+    .bpd-meta-line {
+        gap: 6px 8px;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .bpd-meta-sep {
+        display: none;
+    }
+
+    .bpd-stars-sm {
+        white-space: nowrap;
+    }
+
+    .bpd-price-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px 10px;
+        margin-bottom: 12px;
+    }
+
+    .bpd-new-price {
+        font-size: 24px;
+        line-height: 1.2;
+    }
+
+    .bpd-old-price {
+        font-size: 14px;
+    }
+
+    .bpd-disc-pill {
+        justify-self: end;
+        padding: 4px 9px;
+        font-size: 11px;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .bpd-wishlist {
+        grid-column: 1 / -1;
+        justify-self: start;
+        min-height: 36px;
+        margin-left: 0;
+        padding: 7px 11px;
+        border: 1px solid var(--bilai-border);
+        border-radius: 999px;
+    }
+
+    .bpd-weight-row,
+    .bpd-qty-row {
+        flex-wrap: wrap;
+        gap: 8px 10px;
+        margin-bottom: 12px;
+    }
+
+    .bpd-qty-label {
+        width: 100%;
+    }
+
+    .bpd-qty-control.quantity .minus,
+    .bpd-qty-control.quantity .plus {
+        width: 42px;
+        height: 42px;
+        line-height: 42px;
+    }
+
+    .bpd-qty-control.quantity input[name="qty"] {
+        width: 56px;
+        height: 42px;
+    }
+
+    .bpd-btn-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .bpd-btn-row .bpd-btn,
+    .bpd-btn-row .bpd-btn-wa {
+        width: 100%;
+        min-width: 0;
+        height: 44px;
+        padding: 0 10px;
+        font-size: 13px;
+    }
+
+    .bpd-btn-row .bpd-btn-buy {
+        grid-column: 1 / -1;
+    }
+
+    .bpd-info-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .bpd-info-card {
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .bpd-card-icon {
+        font-size: 18px;
+    }
+
+    .bpd-card-label {
+        font-size: 10px;
+    }
+
+    .bpd-card-value {
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .bpd-delivery-section {
+        padding-bottom: 18px;
+    }
+
+    .bpd-delivery-grid {
+        gap: 10px;
+    }
+
+    .bpd-accordion-btn {
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    .bpd-accordion-body {
+        padding: 4px 12px 14px;
+        font-size: 12.5px;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    .bpd-tabs-section {
+        padding: 18px 0 24px;
+    }
+
+    .bpd-tab-nav {
+        gap: 8px;
+        margin-bottom: 16px;
+        border-bottom: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .bpd-tab-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .bilai-product-tab {
+        flex: 0 0 auto;
+        min-width: 112px;
+        padding: 10px 12px;
+        border: 1px solid var(--bilai-border);
+        border-radius: 12px;
+        margin-bottom: 0;
+        font-size: 13px;
+    }
+
+    .bpd-description-content {
+        max-width: 100%;
+        font-size: 13px;
+        line-height: 1.65;
+        overflow-x: auto;
+    }
+
+    .bpd-description-content img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .bpd-description-content table {
+        min-width: 480px;
+    }
+
+    .bpd-reviews-layout {
+        gap: 14px;
+    }
+
+    .bpd-review-summary {
+        position: static;
+        padding: 18px 14px;
+    }
+
+    .bpd-review-avg {
+        font-size: 40px;
+    }
+
+    .bpd-rcard,
+    .bpd-rform {
+        padding: 14px;
+    }
+
+    .bpd-rcard-hdr {
+        flex-wrap: wrap;
+    }
+
+    .bpd-rcard-stars {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .bpd-rform-actions {
+        flex-direction: column;
+    }
+
+    .bpd-related-section {
+        padding: 24px 0 96px;
+        overflow: hidden;
+    }
+
+    .bpd-related-hdr {
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .bpd-related-title {
+        font-size: 22px;
+    }
+
+    .bpd-view-all {
+        padding: 7px 14px;
+        font-size: 12px;
+    }
+
+    .bpd-related-section .bilai-cat-grid-home {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 260px;
+        grid-template-columns: none;
+        gap: 14px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-right: 12px;
+        margin-right: -12px;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+    }
+
+    .bpd-related-section .bilai-cat-grid-home::-webkit-scrollbar {
+        display: none;
+    }
+
+    .bpd-related-section .bilai-product-card {
+        width: 260px;
+        min-width: 0;
+        height: auto;
+        min-height: 0;
+        scroll-snap-align: start;
+    }
+
+    .bpd-related-section .bilai-product-image {
+        height: 170px;
+        max-width: 100%;
+    }
+
+    .bpd-related-section .bilai-product-title {
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .bpd-related-section .bilai-product-cat-rating {
+        gap: 8px;
+    }
+
+    .bpd-related-section .bilai-product-category,
+    .bpd-related-section .bilai-product-rating {
+        white-space: nowrap;
+    }
+
+    .bpd-related-section .bilai-product-price {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .bpd-related-section .bilai-discount-badge {
+        justify-self: start;
+    }
+
+    .bpd-related-section .bilai-product-actions {
+        gap: 8px;
+    }
+
+    .bpd-related-section .bilai-cart-btn {
+        flex: 0 0 48px;
+        width: 48px;
+        height: 40px;
+    }
+
+    .bpd-related-section .bilai-buy-btn {
+        min-height: 40px;
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 360px) {
+    .bpd-info-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .bpd-related-section .bilai-cat-grid-home {
+        grid-auto-columns: 236px;
+    }
+
+    .bpd-related-section .bilai-product-card {
+        width: 236px;
+    }
+}
+/* BilaiGhor Product Details Mobile Fix End */
 /* BilaiGhor Product Details End */
 </style>
 @endpush

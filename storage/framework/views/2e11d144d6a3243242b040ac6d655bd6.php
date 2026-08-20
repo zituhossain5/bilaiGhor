@@ -900,6 +900,7 @@ input.bpd-btn { cursor: pointer; }
 /* BilaiGhor Product Details Mobile Fix End */
 /* BilaiGhor Product Details End */
 </style>
+<link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/product-details-figma.css')); ?>?v=2">
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -917,6 +918,7 @@ input.bpd-btn { cursor: pointer; }
     /* BilaiGhor Product Sold Fix Start */
     $soldCount    = $details->sold ?? 0;
     /* BilaiGhor Product Sold Fix End */
+    $rewardPoints = \App\Services\RewardPointService::earnedPointsFor((float) $details->new_price);
 ?>
 
 
@@ -947,6 +949,8 @@ input.bpd-btn { cursor: pointer; }
     <div class="container">
         <div class="bpd-product-layout">
 
+            <div class="bpd-gallery">
+
             
             <div class="bpd-thumbs-col">
                 <div id="indicator_thumb_wrapper">
@@ -974,6 +978,8 @@ input.bpd-btn { cursor: pointer; }
                 </div>
             </div>
 
+            </div>
+
             
             <div class="bpd-info-col">
 
@@ -997,10 +1003,9 @@ input.bpd-btn { cursor: pointer; }
                         <span class="bpd-stars-sm">
                             <?php $fs = floor($reviewAvg); $hs = ($reviewAvg - $fs) >= 0.5; ?>
                             <?php for($i = 1; $i <= 5; $i++): ?>
-                                <?php if($i <= $fs): ?><i class="fas fa-star"></i>
-                                <?php elseif($hs && $i == $fs + 1): ?><i class="fas fa-star-half-alt"></i><?php $hs = false; ?>
-                                <?php else: ?><i class="far fa-star" style="color:#ccc;"></i>
-                                <?php endif; ?>
+                                <img src="<?php echo e(asset($i <= $fs || ($hs && $i == $fs + 1) ? 'public/uploads/default/product-star.svg' : 'public/uploads/default/product-star-empty.svg')); ?>"
+                                     alt="" aria-hidden="true">
+                                <?php if($hs && $i == $fs + 1): ?> <?php $hs = false; ?> <?php endif; ?>
                             <?php endfor; ?>
                             (<?php echo e($reviewAvg); ?>)
                         </span>
@@ -1016,7 +1021,10 @@ input.bpd-btn { cursor: pointer; }
                     <span class="bpd-disc-pill"><?php echo e($discountPct); ?>% OFF</span>
                     <?php endif; ?>
                     <a href="#" class="bpd-wishlist" data-product-id="<?php echo e($details->id); ?>" aria-pressed="false">
-                        <i class="far fa-heart"></i> <span class="bpd-wishlist-label">Add to Wishlist</span>
+                        <span class="bpd-wishlist-icon">
+                            <img src="<?php echo e(asset('public/uploads/default/product-wishlist.svg')); ?>" alt="" aria-hidden="true">
+                        </span>
+                        <span class="bpd-wishlist-label">Add to Wishlist</span>
                     </a>
                 </div>
 
@@ -1138,7 +1146,9 @@ input.bpd-btn { cursor: pointer; }
                     <div class="bpd-qty-row">
                         <span class="bpd-qty-label">Quantity</span>
                         <div class="quantity bpd-qty-control">
-                            <span class="minus">-</span>
+                            <span class="minus" role="button" tabindex="0" aria-label="Decrease quantity">
+                                <img src="<?php echo e(asset('public/uploads/default/product-minus.svg')); ?>" alt="" aria-hidden="true">
+                            </span>
                             <?php
                                 $defaultQty = 1;
                                 if ($details->is_wholesale && $details->wholesalePrices && $details->wholesalePrices->count() > 0) {
@@ -1148,27 +1158,33 @@ input.bpd-btn { cursor: pointer; }
                             <input type="number" name="qty"
                                    class="product-qty-input bpd-qty-input"
                                    value="<?php echo e($defaultQty); ?>" min="1" step="1" />
-                            <span class="plus">+</span>
+                            <span class="plus" role="button" tabindex="0" aria-label="Increase quantity">
+                                <img src="<?php echo e(asset('public/uploads/default/product-plus.svg')); ?>" alt="" aria-hidden="true">
+                            </span>
                         </div>
                     </div>
 
                     
                     <div class="bpd-btn-row">
-                        <input type="submit"
-                               class="bpd-btn bpd-btn-buy order_now_btn order_now_btn_m"
-                               onclick="return sendSuccess();"
-                               name="order_now"
-                               value="Buy Now" />
-                        <input type="submit"
-                               class="bpd-btn bpd-btn-cart add_cart_btn cart_store"
-                               data-id="<?php echo e($details->id); ?>"
-                               onclick="return sendSuccess();"
-                               name="add_cart"
-                               value="Add to Cart" />
+                        <button type="submit"
+                                class="bpd-btn bpd-btn-buy order_now_btn order_now_btn_m"
+                                onclick="return sendSuccess();"
+                                name="order_now"
+                                value="Buy Now">Buy Now</button>
+                        <button type="submit"
+                                class="bpd-btn bpd-btn-cart add_cart_btn cart_store"
+                                data-id="<?php echo e($details->id); ?>"
+                                onclick="return sendSuccess();"
+                                name="add_cart"
+                                value="Add to Cart">
+                            <img class="bpd-btn-icon" src="<?php echo e(asset('public/uploads/default/product-cart.svg')); ?>" alt="" aria-hidden="true">
+                            Add to Cart
+                        </button>
                         <a href="https://api.whatsapp.com/send?phone=<?php echo e(optional($contact)->whatsapp); ?>&text=<?php echo e(urlencode($details->name . ' - ' . Request::url())); ?>"
                            target="_blank"
                            class="bpd-btn bpd-btn-wa">
-                            <i class="fab fa-whatsapp" style="font-size:16px;"></i> WhatsApp
+                            <img class="bpd-btn-icon" src="<?php echo e(asset('public/uploads/default/product-whatsapp.svg')); ?>" alt="" aria-hidden="true">
+                            Order on WhatsApp
                         </a>
                     </div>
                 </form>
@@ -1176,18 +1192,18 @@ input.bpd-btn { cursor: pointer; }
                 
                 <div class="bpd-info-cards">
                     <div class="bpd-info-card">
-                        <i class="fas fa-gift bpd-card-icon"></i>
-                        <div>
+                        <div class="bpd-info-card-heading">
+                            <img class="bpd-card-icon" src="<?php echo e(asset('public/uploads/default/rewardIcon.svg')); ?>" alt="" aria-hidden="true">
                             <div class="bpd-card-label">Reward Point</div>
-                            <div class="bpd-card-value">Earn 10 Reward Points on this item</div>
                         </div>
+                        <div class="bpd-card-value">Earn <strong><?php echo e($rewardPoints); ?> Reward Points</strong> on this item</div>
                     </div>
                     <div class="bpd-info-card">
-                        <i class="fas fa-box bpd-card-icon"></i>
-                        <div>
+                        <div class="bpd-info-card-heading">
+                            <img class="bpd-card-icon" src="<?php echo e(asset('public/uploads/default/soldIcon.svg')); ?>" alt="" aria-hidden="true">
                             <div class="bpd-card-label">Sold</div>
-                            <div class="bpd-card-value"><?php echo e($soldCount > 0 ? $soldCount . '+' : '0'); ?> sold in last 7 days</div>
                         </div>
+                        <div class="bpd-card-value"><strong><?php echo e($soldCount > 0 ? $soldCount . '+' : '0'); ?></strong> sold in last 7 days</div>
                     </div>
                 </div>
 
@@ -1206,11 +1222,12 @@ input.bpd-btn { cursor: pointer; }
             <div class="bpd-accordion">
                 <button class="bpd-accordion-btn" onclick="bpdAccordion(this)" type="button">
                     <span class="bpd-accordion-ico">
-                        
-                        <svg class="bpd-acc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        <span class="bpd-accordion-icon-box">
+                            <img src="<?php echo e(asset('public/uploads/default/carIcon.svg')); ?>" alt="" aria-hidden="true">
+                        </span>
                         Delivery Details
                     </span>
-                    <i class="fas fa-chevron-up bpd-acc-chevron collapsed"></i>
+                    <img class="bpd-acc-chevron collapsed" src="<?php echo e(asset('public/uploads/default/product-chevron.svg')); ?>" alt="" aria-hidden="true">
                 </button>
                 <div class="bpd-accordion-body" style="display:none;">
                     <p><strong>Estimated Delivery Time</strong></p>
@@ -1231,11 +1248,12 @@ input.bpd-btn { cursor: pointer; }
             <div class="bpd-accordion">
                 <button class="bpd-accordion-btn" onclick="bpdAccordion(this)" type="button">
                     <span class="bpd-accordion-ico">
-                        
-                        <svg class="bpd-acc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        <span class="bpd-accordion-icon-box">
+                            <img src="<?php echo e(asset('public/uploads/default/delivery-charge.svg')); ?>" alt="" aria-hidden="true">
+                        </span>
                         Delivery Charges
                     </span>
-                    <i class="fas fa-chevron-up bpd-acc-chevron collapsed"></i>
+                    <img class="bpd-acc-chevron collapsed" src="<?php echo e(asset('public/uploads/default/product-chevron.svg')); ?>" alt="" aria-hidden="true">
                 </button>
                 <div class="bpd-accordion-body" style="display:none;">
                     <ul>

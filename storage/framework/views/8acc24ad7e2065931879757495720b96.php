@@ -33,7 +33,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         
-        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=33">
+        <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/bilai-header-footer.css')); ?>?v=37">
         <link rel="stylesheet" href="<?php echo e(asset('public/frontEnd/css/main.css')); ?>" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
@@ -993,7 +993,8 @@
     justify-content: space-around;
     align-items: flex-end; /* আইটেমগুলো নিচে সমান থাকবে */
     position: relative;
-    padding: 0 10px;
+    min-height: 54px;
+    padding: 0 8px;
 }
 
 /* সাধারণ মেনু আইটেম */
@@ -1017,6 +1018,7 @@
 
 .nav_text {
     font-weight: 500;
+    line-height: 1.2;
 }
 
 /* হোভার এবং একটিভ কালার */
@@ -1035,15 +1037,15 @@
 }
 
 .home_fab {
-    width: 60px;
-    height: 60px;
+    width: 52px;
+    height: 52px;
     background: <?php echo e($generalsetting->primary_color); ?>; /* ব্র্যান্ড কালার */
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     color: #fff;
-    font-size: 24px;
+    font-size: 21px;
     box-shadow: 0 8px 15px rgba(255, 102, 0, 0.4);
     border: 4px solid #fff; /* সাদা বর্ডার */
     transition: transform 0.3s ease;
@@ -1070,6 +1072,35 @@
     justify-content: center;
     align-items: center;
     border: 2px solid #fff;
+}
+
+@media (max-width: 480px) {
+    .mobile_bottom_nav {
+        min-height: calc(72px + env(safe-area-inset-bottom));
+        padding: 7px 0 calc(7px + env(safe-area-inset-bottom));
+        border-radius: 16px 16px 0 0;
+    }
+
+    .nav_item {
+        min-width: 0;
+        font-size: 10.5px;
+    }
+
+    .icon_box {
+        font-size: 18px;
+        margin-bottom: 3px;
+    }
+
+    .nav_text {
+        max-width: 64px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .home_wrapper {
+        bottom: 16px;
+    }
 }
 </style>
         
@@ -1187,6 +1218,31 @@
   opacity: 0.9;
 }
 
+@media (max-width: 480px) {
+  .chat-widget {
+    right: 14px;
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    z-index: 9997;
+  }
+
+  .chat-toggle {
+    width: 46px;
+    height: 46px;
+    font-size: 20px;
+  }
+
+  .chat-options {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .chat-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+}
+
 </style>
 
 
@@ -1233,6 +1289,11 @@
     .floating-cart-widget { top: 35%; width: 48px; height: 60px; z-index: 9999; }
     .floating-cart-widget i { font-size: 20px; }
     .floating-cart-badge { min-width: 20px; height: 20px; font-size: 10px; }
+}
+@media (max-width: 480px) {
+    .floating-cart-widget {
+        display: none;
+    }
 }
 .sidebar-cart-overlay {
     position: fixed;

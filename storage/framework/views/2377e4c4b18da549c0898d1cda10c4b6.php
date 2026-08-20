@@ -1,0 +1,269 @@
+
+<?php $__env->startSection('title', isset($supplier) ? 'Edit Supplier' : 'Suppliers Management'); ?>
+
+<?php $__env->startSection('css'); ?>
+<style>
+    /* --- Form & Card Styles --- */
+    .card-modern {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.02);
+        background: #fff;
+        transition: all 0.3s ease;
+    }
+    .card-header-modern {
+        background: #fff;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 1.25rem 1.5rem;
+        border-radius: 12px 12px 0 0 !important;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    .form-control-modern {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.65rem 1rem;
+        font-size: 0.9rem;
+        color: #334155;
+    }
+    .form-control-modern:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    .form-label-modern {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* --- Table Styles --- */
+    .table-modern th {
+        background-color: #f8fafc;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .table-modern td {
+        padding: 1rem;
+        vertical-align: middle;
+        font-size: 0.9rem;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .table-modern tr:last-child td { border-bottom: none; }
+    .table-modern tr:hover td { background-color: #f8fafc; }
+
+    /* --- Action Buttons --- */
+    .btn-icon {
+        width: 32px; height: 32px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 8px; transition: all 0.2s;
+    }
+    .btn-icon:hover { transform: translateY(-2px); }
+    .btn-edit { background: #e0e7ff; color: #4338ca; }
+    .btn-delete { background: #fee2e2; color: #991b1b; }
+    
+    .due-amount { font-weight: 600; color: #ef4444; }
+</style>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="container-fluid py-4">
+
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1 fw-bold text-dark">
+                <i data-feather="users" class="text-primary me-2"></i> Supplier Management
+            </h4>
+            <p class="text-muted small mb-0">Manage your supplier list and track dues.</p>
+        </div>
+        <?php if(isset($supplier)): ?>
+            <a href="<?php echo e(route('admin.suppliers.index')); ?>" class="btn btn-white border shadow-sm rounded-pill px-3">
+                <i data-feather="plus" class="me-1"></i> Add New Supplier
+            </a>
+        <?php endif; ?>
+    </div>
+
+    <div class="row g-4">
+
+        
+        <div class="col-lg-4">
+            <div class="card card-modern h-100">
+                <div class="card-header-modern">
+                    <i data-feather="<?php echo e(isset($supplier) ? 'edit-2' : 'plus-circle'); ?>" class="me-2" style="width:18px;"></i>
+                    <?php echo e(isset($supplier) ? 'Edit Supplier' : 'Add New Supplier'); ?>
+
+                </div>
+                <div class="card-body p-4">
+                    <form action="<?php echo e(isset($supplier) ? route('admin.suppliers.update', $supplier->id) : route('admin.suppliers.store')); ?>" method="POST">
+                        <?php echo csrf_field(); ?>
+                        <?php if(isset($supplier)): ?> <?php echo method_field('PUT'); ?> <?php endif; ?>
+
+                        <div class="mb-3">
+                            <label class="form-label-modern">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control form-control-modern <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                   value="<?php echo e(old('name', $supplier->name ?? '')); ?>" placeholder="e.g. John Doe" required>
+                            <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-modern">Phone Number</label>
+                            <input type="text" name="phone" class="form-control form-control-modern" 
+                                   value="<?php echo e(old('phone', $supplier->phone ?? '')); ?>" placeholder="e.g. 017xxxxxxxx">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-modern">Email Address</label>
+                            <input type="email" name="email" class="form-control form-control-modern" 
+                                   value="<?php echo e(old('email', $supplier->email ?? '')); ?>" placeholder="supplier@example.com">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label-modern">Address</label>
+                            <textarea name="address" class="form-control form-control-modern" rows="3" 
+                                      placeholder="Full address here..."><?php echo e(old('address', $supplier->address ?? '')); ?></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary py-2 fw-bold">
+                                <?php echo e(isset($supplier) ? 'Update Supplier' : 'Save Supplier'); ?>
+
+                            </button>
+                            <?php if(isset($supplier)): ?>
+                                <a href="<?php echo e(route('admin.suppliers.index')); ?>" class="btn btn-light py-2">Cancel Edit</a>
+                            <?php endif; ?>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="col-lg-8">
+            <div class="card card-modern h-100">
+                <div class="card-header-modern d-flex justify-content-between align-items-center">
+                    <span>Registered Suppliers</span>
+                    <span class="badge bg-light text-dark border"><?php echo e($suppliers->total()); ?> Found</span>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div id="supplier-table-wrapper" class="table-responsive">
+                        <table class="table table-modern mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="25%">Supplier Info</th>
+                                    <th width="20%">Contact</th>
+                                    <th width="20%">Address</th>
+                                    <th width="15%">Due Amount</th>
+                                    <th width="15%" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php $__empty_1 = true; $__currentLoopData = $suppliers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                    <tr>
+                                        <td><?php echo e($loop->iteration + ($suppliers->currentPage()-1)*$suppliers->perPage()); ?></td>
+                                        <td>
+                                            <div class="fw-bold text-dark"><?php echo e($s->name); ?></div>
+                                            <small class="text-muted"><?php echo e($s->phone); ?></small>
+                                        </td>
+                                        <td>
+                                            <?php if($s->email): ?>
+                                                <div class="d-flex align-items-center text-muted small">
+                                                    <i data-feather="mail" class="me-1" style="width:12px;"></i> <?php echo e($s->email); ?>
+
+                                                </div>
+                                            <?php else: ?>
+                                                <span class="text-muted small">-</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted small"><?php echo e(Str::limit($s->address, 30) ?? '-'); ?></span>
+                                        </td>
+                                        <td>
+                                            <?php if($s->current_due > 0): ?>
+                                                <span class="due-amount"><?php echo e(number_format($s->current_due, 2)); ?> ৳</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-light text-success border border-success">Paid</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="<?php echo e(route('admin.suppliers.edit', $s->id)); ?>" class="btn-icon btn-edit me-1" title="Edit">
+                                                <i data-feather="edit-2" style="width:16px;"></i>
+                                            </a>
+                                            
+                                            <form action="<?php echo e(route('admin.suppliers.destroy', $s->id)); ?>" method="POST" class="d-inline" 
+                                                  onsubmit="return confirm('Are you sure? This will delete all history related to this supplier.');">
+                                                <?php echo csrf_field(); ?>
+                                                <?php echo method_field('DELETE'); ?>
+                                                <button type="submit" class="btn-icon btn-delete" title="Delete">
+                                                    <i data-feather="trash-2" style="width:16px;"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5">
+                                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="60" class="mb-3 opacity-25">
+                                            <p class="text-muted fw-bold mb-0">No Suppliers Found</p>
+                                            <small class="text-muted">Add a new supplier from the left form.</small>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+
+                        <div id="supplier-pagination" class="p-3 border-top d-flex justify-content-end">
+                            <?php echo e($suppliers->links('pagination::bootstrap-4')); ?>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script>
+    // AJAX Pagination Script
+    $(document).on('click', '#supplier-pagination a', function(e){
+        e.preventDefault();
+        let url = $(this).attr('href');
+        $('#supplier-table-wrapper').css('opacity', '0.5'); // Loading effect
+        
+        $.get(url, function(response){
+            let html = $(response).find('#supplier-table-wrapper').html();
+            $('#supplier-table-wrapper').html(html);
+            $('#supplier-table-wrapper').css('opacity', '1');
+            feather.replace(); // Re-init icons
+        });
+    });
+</script>
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make('backEnd.layouts.master', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\bilaiGhor\resources\views/backEnd/suppliers/index.blade.php ENDPATH**/ ?>

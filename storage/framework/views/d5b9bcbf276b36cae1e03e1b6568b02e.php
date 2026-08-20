@@ -406,6 +406,9 @@
 
                 
                 <div class="bilai-na-info">
+                    <?php if($value->sold && $value->sold > 0): ?>
+                    <span class="bilai-na-sold"><?php echo e($value->sold); ?> Sold</span>
+                    <?php endif; ?>
 
                     
                     <h3 class="bilai-na-name">

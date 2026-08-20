@@ -3156,6 +3156,13 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     background: #fff;
 }
 
+.bilai-new-arrivals-section .container {
+    width: min(100% - 30px, 1440px);
+    max-width: 1440px;
+    padding-right: 0;
+    padding-left: 0;
+}
+
 .bilai-new-arrivals-section .bilai-na-header {
     min-height: 48px;
     margin-bottom: 60px;
@@ -3206,6 +3213,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     gap: 0;
     height: 297px;
     width: 100%;
+    max-width: 100%;
     min-width: 0;
     padding: 0;
     background: transparent;
@@ -3317,20 +3325,27 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 
 .bilai-new-arrivals-section .bilai-na-cat-rating {
+    display: flex;
     align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
     min-height: 24px;
     margin: 10px 0 16px;
 }
 
 .bilai-new-arrivals-section .bilai-na-category {
-    width: 77px;
+    width: auto;
+    min-width: 77px;
+    max-width: calc(100% - 118px);
     font-size: 16px;
     font-weight: 400;
     line-height: 24px;
     color: #aa8453;
     text-transform: none;
     letter-spacing: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .bilai-new-arrivals-section .bilai-na-stars {
@@ -3344,16 +3359,26 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 
 .bilai-new-arrivals-section .bilai-na-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 16px;
     min-height: 30px;
     margin: 0 0 20px;
+    width: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
 }
 
 .bilai-new-arrivals-section .bilai-na-price-left {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
     gap: 12px;
     min-width: 0;
     flex-wrap: nowrap;
     white-space: nowrap;
+    overflow: hidden;
 }
 
 .bilai-new-arrivals-section .bilai-na-price,
@@ -3365,10 +3390,14 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 .bilai-new-arrivals-section .bilai-na-price {
     font-weight: 600;
+    flex: 0 0 auto;
 }
 
 .bilai-new-arrivals-section .bilai-na-old-price {
     font-weight: 400;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .bilai-new-arrivals-section .bilai-na-discount {
@@ -3379,6 +3408,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     background: #c4552a;
     border-radius: 20px;
     padding: 4px 10px;
+    flex: 0 0 auto;
     white-space: nowrap;
 }
 

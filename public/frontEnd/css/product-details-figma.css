@@ -6,13 +6,14 @@
     font-family: "DM Sans", sans-serif;
 }
 
+.bpd-breadcrumb-wrap > .container,
 .bpd-product-section > .container,
 .bpd-delivery-section > .container,
 .bpd-tabs-section > .container {
-    width: calc(100% - 48px);
-    max-width: 1440px;
-    padding-right: 0;
-    padding-left: 0;
+    width: 100%;
+    max-width: 1200px;
+    padding-right: 20px;
+    padding-left: 20px;
 }
 
 .bpd-product-section {
@@ -21,21 +22,24 @@
 
 .bpd-product-layout {
     display: grid;
-    grid-template-columns: 630px minmax(0, 770px);
-    gap: 40px;
+    grid-template-columns: minmax(0, 63fr) minmax(0, 77fr);
+    gap: 32px;
     align-items: start;
+    width: 100%;
+    min-width: 0;
 }
 
 .bpd-gallery {
     display: grid;
-    grid-template-columns: 120px 480px;
-    gap: 30px;
+    grid-template-columns: minmax(84px, 12fr) minmax(0, 48fr);
+    gap: 24px;
     align-items: start;
+    width: 100%;
     min-width: 0;
 }
 
 .bpd-thumbs-col {
-    width: 120px;
+    width: 100%;
     max-height: 587px;
     overflow-x: hidden;
     gap: 0;
@@ -48,24 +52,26 @@
 }
 
 .bpd-thumbs-col .indicator-item {
-    width: 120px;
-    height: 120px;
-    padding: 26px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    padding: 21px;
     border: 1px solid #dccab2;
     border-radius: 20px;
     background: #fdfcf8;
 }
 
 .bpd-thumbs-col .indicator-item img {
-    width: 68px;
-    height: 68px;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
 }
 
 .bpd-main-img-col {
-    width: 480px;
-    height: 587px;
-    min-height: 587px;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 480 / 587;
     border: 1px solid #edd9a6;
     border-radius: 30px;
     background: #fdfcf8;
@@ -300,8 +306,8 @@
 
 .bpd-btn-row {
     display: grid;
-    grid-template-columns: 209px 209px 231px;
-    gap: 20px;
+    grid-template-columns: minmax(0, 209fr) minmax(0, 209fr) minmax(0, 231fr);
+    gap: 16px;
     margin-bottom: 20px;
 }
 
@@ -313,6 +319,7 @@
     margin: 0;
     padding: 10px 20px;
     border-radius: 12px;
+    font-family: "DM Sans";
     font-size: 18px;
     font-weight: 400;
     line-height: 27px;
@@ -345,7 +352,7 @@
 
 .bpd-info-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 29px;
+    gap: 23px;
     margin-top: 0;
 }
 
@@ -394,7 +401,7 @@
 
 .bpd-delivery-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 40px;
+    gap: 32px;
 }
 
 .bpd-accordion {
@@ -454,9 +461,9 @@
 }
 
 .bpd-tab-nav {
-    width: min(100%, 1000px);
+    width: 100%;
     height: 70px;
-    margin: 0 auto 60px;
+    margin: 0 0 60px;
     border-bottom: 0;
 }
 
@@ -534,6 +541,12 @@
 
     .bpd-btn-row .bpd-btn-wa {
         grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .bpd-delivery-grid {
+        grid-template-columns: 1fr;
     }
 }
 

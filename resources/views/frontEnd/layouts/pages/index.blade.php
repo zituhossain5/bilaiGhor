@@ -26,12 +26,11 @@
 @section('content')
 {{-- HERO SLIDER --}}
 <section class="bilai-hero-section">
-    <div class="container">
-        <div class="main_slider owl-carousel bilai-hero-owl">
-            @foreach ($sliders as $key => $value)
-            <div class="slider-item">
-                <div class="bilai-hero-slide">
-                    <div class="bilai-hero-content" style="background-image: url('{{ asset('public/frontEnd/images/sliderContent.png') }}');">
+    <div class="main_slider owl-carousel bilai-hero-owl">
+        @foreach ($sliders as $key => $value)
+        <div class="slider-item">
+            <div class="bilai-hero-slide">
+                    <!-- <div class="bilai-hero-content" style="background-image: url('{{ asset('public/frontEnd/images/sliderContent.png') }}');">
                         @if($value->title)
                             @if($key === 0)
                             <h1 class="bilai-hero-title">
@@ -57,16 +56,15 @@
                             {{ $value->button_text }} &rarr;
                         </a>
                         @endif
-                    </div>
-                    <div class="bilai-hero-image">
-                        <img src="{{ asset($value->image) }}"
-                             alt="{{ $value->image_alt ?: ($value->title ?: 'Hero Slide') }}"
-                             loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
-                    </div>
+                    </div> -->
+                <div class="bilai-hero-image">
+                    <img src="{{ asset($value->image) }}"
+                         alt="{{ $value->image_alt ?: ($value->title ?: 'Hero Slide') }}"
+                         loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
                 </div>
             </div>
-            @endforeach
         </div>
+        @endforeach
     </div>
 </section>
 

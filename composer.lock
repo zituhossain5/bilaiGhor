@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "74dc8a181761c513bc1ed78e38f66244",
+    "content-hash": "cbbd7abb86f56f3000acd7698f0eaf09",
     "packages": [
         {
             "name": "brian2694/laravel-toastr",
@@ -1781,16 +1781,16 @@
         },
         {
             "name": "laravel/socialite",
-            "version": "v5.28.0",
+            "version": "v5.30.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/socialite.git",
-                "reference": "4c131ff4b24d8881a9c8fe4eecb5ffeff9803f26"
+                "reference": "caf714f55d51ab0d914b40033d8b0f489d6219cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/socialite/zipball/4c131ff4b24d8881a9c8fe4eecb5ffeff9803f26",
-                "reference": "4c131ff4b24d8881a9c8fe4eecb5ffeff9803f26",
+                "url": "https://api.github.com/repos/laravel/socialite/zipball/caf714f55d51ab0d914b40033d8b0f489d6219cc",
+                "reference": "caf714f55d51ab0d914b40033d8b0f489d6219cc",
                 "shasum": ""
             },
             "require": {
@@ -1849,7 +1849,7 @@
                 "issues": "https://github.com/laravel/socialite/issues",
                 "source": "https://github.com/laravel/socialite"
             },
-            "time": "2026-06-12T03:24:05+00:00"
+            "time": "2026-08-13T23:01:33+00:00"
         },
         {
             "name": "laravel/tinker",

@@ -900,7 +900,7 @@ input.bpd-btn { cursor: pointer; }
 /* BilaiGhor Product Details Mobile Fix End */
 /* BilaiGhor Product Details End */
 </style>
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=2">
+<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=4">
 @endpush
 
 @section('content')

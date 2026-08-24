@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\InsufficientStockException;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\Customer;
@@ -89,95 +90,101 @@ class ManualOrderController extends Controller
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        $order = DB::transaction(function () use ($validated) {
-            $items = $this->normalizeItems($validated['items']);
-            $subtotal = collect($items)->sum('gross');
-            $itemDiscount = collect($items)->sum('discount');
-            $orderDiscount = min((float) ($validated['order_discount'] ?? 0), max(0, $subtotal - $itemDiscount));
-            $delivery = (float) ($validated['delivery_charge'] ?? 0);
-            $grandTotal = max(0, $subtotal - $itemDiscount - $orderDiscount + $delivery);
-            $paid = min((float) ($validated['paid_amount'] ?? 0), $grandTotal);
-            $due = max(0, $grandTotal - $paid);
-            $paymentStatus = $this->paymentStatus($paid, $grandTotal);
+        try {
+            $order = DB::transaction(function () use ($validated) {
+                $items = $this->normalizeItems($validated['items']);
+                $subtotal = collect($items)->sum('gross');
+                $itemDiscount = collect($items)->sum('discount');
+                $orderDiscount = min((float) ($validated['order_discount'] ?? 0), max(0, $subtotal - $itemDiscount));
+                $delivery = (float) ($validated['delivery_charge'] ?? 0);
+                $grandTotal = max(0, $subtotal - $itemDiscount - $orderDiscount + $delivery);
+                $paid = min((float) ($validated['paid_amount'] ?? 0), $grandTotal);
+                $due = max(0, $grandTotal - $paid);
+                $paymentStatus = $this->paymentStatus($paid, $grandTotal);
 
-            $stockLines = collect($items)
-                ->filter(fn ($item) => !empty($item['product_id']))
-                ->map(fn ($item) => [
-                    'product_id' => (int) $item['product_id'],
-                    'qty' => (int) $item['qty'],
-                    'name' => $item['name'],
+                $stockLines = collect($items)
+                    ->filter(fn ($item) => !empty($item['product_id']))
+                    ->map(fn ($item) => [
+                        'product_id' => (int) $item['product_id'],
+                        'qty' => (int) $item['qty'],
+                        'name' => $item['name'],
+                    ]);
+
+                InventoryService::assertAvailable($stockLines);
+
+                $invoice = $this->nextInvoiceNumber();
+                $customerId = $validated['customer_id'] ?? null;
+
+                $order = Order::create([
+                    'is_manual_order' => 1,
+                    'invoice_id' => $invoice,
+                    'invoice_number' => $invoice,
+                    'amount' => (int) round($grandTotal),
+                    'discount' => (int) round($itemDiscount + $orderDiscount),
+                    'order_discount' => $orderDiscount,
+                    'shipping_charge' => (int) round($delivery),
+                    'customer_id' => $customerId,
+                    'manual_customer_name' => $validated['customer_name'],
+                    'manual_customer_phone' => $validated['customer_phone'],
+                    'manual_customer_email' => $validated['customer_email'] ?? null,
+                    'manual_customer_address' => $validated['customer_address'],
+                    'order_status' => 1,
+                    'order_source' => $validated['order_source'],
+                    'payment_method' => $validated['payment_method'],
+                    'transaction_id' => $validated['transaction_id'] ?? null,
+                    'payment_status' => $paymentStatus,
+                    'paid_amount' => $paid,
+                    'due_amount' => $due,
+                    'note' => $validated['notes'] ?? null,
+                    'order_note' => $validated['notes'] ?? null,
+                    'created_by' => Auth::guard('admin')->id(),
+                    'public_token' => $this->uniquePublicToken(),
                 ]);
 
-            InventoryService::assertAvailable($stockLines);
+                foreach ($items as $item) {
+                    OrderDetails::create([
+                        'order_id' => $order->id,
+                        'product_id' => $item['product_id'],
+                        'product_name' => $item['name'],
+                        'manual_variant' => $item['variant'],
+                        'is_manual_item' => empty($item['product_id']),
+                        'purchase_price' => $item['purchase_price'],
+                        'sale_price' => (int) round($item['unit_price']),
+                        'product_discount' => (int) round($item['discount']),
+                        'line_discount' => $item['discount'],
+                        'line_total' => $item['line_total'],
+                        'qty' => $item['qty'],
+                    ]);
+                }
 
-            $invoice = $this->nextInvoiceNumber();
-            $customerId = $validated['customer_id'] ?? null;
-
-            $order = Order::create([
-                'is_manual_order' => 1,
-                'invoice_id' => $invoice,
-                'invoice_number' => $invoice,
-                'amount' => (int) round($grandTotal),
-                'discount' => (int) round($itemDiscount + $orderDiscount),
-                'order_discount' => $orderDiscount,
-                'shipping_charge' => (int) round($delivery),
-                'customer_id' => $customerId,
-                'manual_customer_name' => $validated['customer_name'],
-                'manual_customer_phone' => $validated['customer_phone'],
-                'manual_customer_email' => $validated['customer_email'] ?? null,
-                'manual_customer_address' => $validated['customer_address'],
-                'order_status' => 1,
-                'order_source' => $validated['order_source'],
-                'payment_method' => $validated['payment_method'],
-                'transaction_id' => $validated['transaction_id'] ?? null,
-                'payment_status' => $paymentStatus,
-                'paid_amount' => $paid,
-                'due_amount' => $due,
-                'note' => $validated['notes'] ?? null,
-                'order_note' => $validated['notes'] ?? null,
-                'created_by' => Auth::guard('admin')->id(),
-                'public_token' => $this->uniquePublicToken(),
-            ]);
-
-            foreach ($items as $item) {
-                OrderDetails::create([
+                Shipping::create([
                     'order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'product_name' => $item['name'],
-                    'manual_variant' => $item['variant'],
-                    'is_manual_item' => empty($item['product_id']),
-                    'purchase_price' => $item['purchase_price'],
-                    'sale_price' => (int) round($item['unit_price']),
-                    'product_discount' => (int) round($item['discount']),
-                    'line_discount' => $item['discount'],
-                    'line_total' => $item['line_total'],
-                    'qty' => $item['qty'],
+                    'customer_id' => $customerId,
+                    'name' => $validated['customer_name'],
+                    'phone' => $validated['customer_phone'],
+                    'address' => $validated['customer_address'],
+                    'area' => 'Manual Order',
                 ]);
-            }
 
-            Shipping::create([
-                'order_id' => $order->id,
-                'customer_id' => $customerId,
-                'name' => $validated['customer_name'],
-                'phone' => $validated['customer_phone'],
-                'address' => $validated['customer_address'],
-                'area' => 'Manual Order',
-            ]);
+                Payment::create([
+                    'order_id' => $order->id,
+                    'customer_id' => $customerId,
+                    'amount' => (int) round($paid),
+                    'trx_id' => $validated['transaction_id'] ?? null,
+                    'sender_number' => $validated['customer_phone'],
+                    'payment_method' => $validated['payment_method'],
+                    'payment_status' => $paymentStatus,
+                ]);
 
-            Payment::create([
-                'order_id' => $order->id,
-                'customer_id' => $customerId,
-                'amount' => (int) round($paid),
-                'trx_id' => $validated['transaction_id'] ?? null,
-                'sender_number' => $validated['customer_phone'],
-                'payment_method' => $validated['payment_method'],
-                'payment_status' => $paymentStatus,
-            ]);
+                InventoryService::reserveForOrder($order, strict: true);
 
-            InventoryService::reserveForOrder($order, strict: true);
-
-            return $order;
-        });
+                return $order;
+            });
+        } catch (InsufficientStockException $e) {
+            return back()
+                ->withInput()
+                ->withErrors(['stock' => $e->validationMessage()]);
+        }
 
         Toastr::success('Manual order created successfully.', 'Success');
         return redirect()->route('admin.manual_orders.show', $order);

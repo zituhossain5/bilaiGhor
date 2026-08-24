@@ -9,6 +9,8 @@
 .mo-summary { background: #fff8ec; border: 1px solid #f3cf9e; border-radius: 10px; padding: 16px; position: sticky; top: 90px; }
 .mo-summary-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px dashed #e7c48e; }
 .mo-summary-row.total { margin-top: 8px; padding: 12px; background: #3a1f0f; color: #fff; border-radius: 8px; border: none; font-weight: 800; }
+.mo-stock-hint { display: block; margin-top: 5px; font-size: 11px; font-weight: 700; color: #198754; }
+.mo-stock-hint.is-warning { color: #dc3545; }
 </style>
 @endsection
 
@@ -49,7 +51,7 @@
                                 <label>Order Source *</label>
                                 <select name="order_source" class="form-select" required>
                                     @foreach($sources as $source)
-                                        <option value="{{ $source }}">{{ ucwords(str_replace('_', ' ', $source)) }}</option>
+                                        <option value="{{ $source }}" @selected(old('order_source', 'manual') === $source)>{{ ucwords(str_replace('_', ' ', $source)) }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -69,7 +71,7 @@
                                 <label>Payment Method *</label>
                                 <select name="payment_method" class="form-select" required>
                                     @foreach($methods as $method)
-                                        <option value="{{ $method }}">{{ ucwords(str_replace('_', ' ', $method)) }}</option>
+                                        <option value="{{ $method }}" @selected(old('payment_method', 'cash') === $method)>{{ ucwords(str_replace('_', ' ', $method)) }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -158,7 +160,10 @@
             <input type="text" class="form-control mt-1 item-name" name="items[__INDEX__][name]" placeholder="Custom item name">
         </td>
         <td><input type="text" class="form-control item-variant" name="items[__INDEX__][variant]" placeholder="Weight/variant"></td>
-        <td><input type="number" class="form-control item-qty" name="items[__INDEX__][qty]" value="1" min="1" required></td>
+        <td>
+            <input type="number" class="form-control item-qty" name="items[__INDEX__][qty]" value="1" min="1" required>
+            <span class="mo-stock-hint"></span>
+        </td>
         <td><input type="number" class="form-control item-price" name="items[__INDEX__][unit_price]" value="0" min="0" step="0.01" required></td>
         <td><input type="number" class="form-control item-discount" name="items[__INDEX__][discount]" value="0" min="0" step="0.01"></td>
         <td><strong class="line-total">৳0.00</strong></td>
@@ -174,9 +179,55 @@
     var tbody = document.querySelector('#items-table tbody');
     var tpl = document.getElementById('item-row-template').innerHTML;
     var money = function (n) { return '৳' + Number(n || 0).toFixed(2); };
+    var initialItems = @json(old('items', [['qty' => 1, 'unit_price' => 0, 'discount' => 0]]));
 
-    function addRow() {
+    function selectedProduct(row) {
+        var select = row.querySelector('.product-select');
+        return select.options[select.selectedIndex];
+    }
+
+    function syncProductRow(row) {
+        var opt = selectedProduct(row);
+        var qtyInput = row.querySelector('.item-qty');
+        var hint = row.querySelector('.mo-stock-hint');
+
+        if (!opt || !opt.value) {
+            qtyInput.removeAttribute('max');
+            qtyInput.setCustomValidity('');
+            hint.textContent = '';
+            hint.classList.remove('is-warning');
+            return;
+        }
+
+        var stock = parseInt(opt.dataset.stock || 0, 10);
+        var qty = parseInt(qtyInput.value || 0, 10);
+        qtyInput.max = stock;
+
+        if (qty > stock) {
+            hint.textContent = 'Only ' + stock + ' items are currently available.';
+            hint.classList.add('is-warning');
+            qtyInput.setCustomValidity(hint.textContent);
+        } else {
+            hint.textContent = 'Available: ' + stock;
+            hint.classList.remove('is-warning');
+            qtyInput.setCustomValidity('');
+        }
+    }
+
+    function addRow(item) {
         tbody.insertAdjacentHTML('beforeend', tpl.replaceAll('__INDEX__', rowIndex++));
+        var row = tbody.lastElementChild;
+
+        if (item) {
+            row.querySelector('.product-select').value = item.product_id || '';
+            row.querySelector('.item-name').value = item.name || '';
+            row.querySelector('.item-variant').value = item.variant || '';
+            row.querySelector('.item-qty').value = item.qty || 1;
+            row.querySelector('.item-price').value = item.unit_price || 0;
+            row.querySelector('.item-discount').value = item.discount || 0;
+        }
+
+        syncProductRow(row);
         recalc();
     }
 
@@ -184,6 +235,7 @@
         var subtotal = 0;
         var itemDiscount = 0;
         tbody.querySelectorAll('tr').forEach(function (row) {
+            syncProductRow(row);
             var qty = parseFloat(row.querySelector('.item-qty').value) || 0;
             var price = parseFloat(row.querySelector('.item-price').value) || 0;
             var discount = Math.min(parseFloat(row.querySelector('.item-discount').value) || 0, qty * price);
@@ -217,9 +269,13 @@
         document.getElementById('customer_address').value = opt.dataset.address || '';
     });
 
-    document.getElementById('add-row').addEventListener('click', addRow);
+    document.getElementById('add-row').addEventListener('click', function () { addRow(); });
     document.addEventListener('input', function (e) {
-        if (e.target.matches('.item-qty,.item-price,.item-discount,.calc-input')) recalc();
+        if (e.target.matches('.item-qty,.item-price,.item-discount,.calc-input')) {
+            var row = e.target.closest('tr');
+            if (row) syncProductRow(row);
+            recalc();
+        }
     });
     document.addEventListener('change', function (e) {
         if (!e.target.matches('.product-select')) return;
@@ -228,6 +284,7 @@
         row.querySelector('.item-name').value = opt.dataset.name || '';
         row.querySelector('.item-price').value = opt.dataset.price || 0;
         row.querySelector('.item-variant').value = opt.dataset.variant || '';
+        syncProductRow(row);
         recalc();
     });
     document.addEventListener('click', function (e) {
@@ -237,7 +294,11 @@
         recalc();
     });
 
-    addRow();
+    if (Array.isArray(initialItems) && initialItems.length) {
+        initialItems.forEach(addRow);
+    } else {
+        addRow();
+    }
 }());
 </script>
 @endsection

@@ -179,7 +179,7 @@
     var tbody = document.querySelector('#items-table tbody');
     var tpl = document.getElementById('item-row-template').innerHTML;
     var money = function (n) { return '৳' + Number(n || 0).toFixed(2); };
-    var initialItems = @json(old('items', [['qty' => 1, 'unit_price' => 0, 'discount' => 0]]));
+    var initialItems = {{ Illuminate\Support\Js::from(old('items', [['qty' => 1, 'unit_price' => 0, 'discount' => 0]])) }};
 
     function selectedProduct(row) {
         var select = row.querySelector('.product-select');

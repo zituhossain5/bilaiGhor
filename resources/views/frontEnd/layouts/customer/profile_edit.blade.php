@@ -1,4 +1,4 @@
-@php
+﻿@php
 use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 
@@ -43,7 +43,7 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
 /* Layout */
 .bilai-prof-layout { display: grid; grid-template-columns: 248px 1fr; gap: 20px; align-items: start; }
 
-/* ── Shared sidebar (same look as other account pages) ── */
+/* â”€â”€ Shared sidebar (same look as other account pages) â”€â”€ */
 .bilai-prof-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 14px; }
 .bilai-card { background: #fff; border: 1px solid var(--bilai-prof-border); border-radius: var(--bilai-prof-radius); overflow: hidden; }
 .bilai-dash-profile-box { padding: 18px 16px 16px; }
@@ -71,7 +71,7 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
 .bilai-dash-nav-item--logout .bilai-dash-nav-icon { opacity: 0.8; }
 .bilai-dash-nav-item--logout:hover { background: #fff5f5; color: #a93226; }
 
-/* ── Profile card ── */
+/* â”€â”€ Profile card â”€â”€ */
 .bilai-prof-card { background: var(--bilai-prof-card); border: 1px solid var(--bilai-prof-border); border-radius: var(--bilai-prof-radius); padding: 22px 30px 34px; }
 .bilai-prof-card-title { font-size: 16px; font-weight: 700; color: var(--bilai-prof-text); text-align: center; margin: 0 0 16px; }
 .bilai-prof-card-divider { border: none; border-top: 1px solid var(--bilai-prof-border); margin: 0 0 26px; }
@@ -133,7 +133,7 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
 }
 .bilai-prof-submit:hover { background: var(--bilai-prof-primary-dark); }
 
-/* Select2 skin — match the input height/colors above */
+/* Select2 skin â€” match the input height/colors above */
 .bilai-prof-card .select2-container .select2-selection--single { height: 44px; border: 1px solid var(--bilai-prof-border); border-radius: 8px; background: #fff; }
 .bilai-prof-card .select2-container .select2-selection--single .select2-selection__rendered { line-height: 42px; padding-left: 14px; font-size: 13.5px; color: var(--bilai-prof-text); }
 .bilai-prof-card .select2-container .select2-selection--single .select2-selection__placeholder { color: #b6ab9c; }
@@ -159,15 +159,15 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
         {{-- Breadcrumb --}}
         <nav class="bilai-prof-bc" aria-label="breadcrumb">
             <a href="{{ route('home') }}">Home</a>
-            <span class="bilai-prof-bc-sep">›</span>
+            <span class="bilai-prof-bc-sep">â€º</span>
             <a href="{{ route('customer.account') }}">My Account</a>
-            <span class="bilai-prof-bc-sep">›</span>
+            <span class="bilai-prof-bc-sep">â€º</span>
             <span class="bilai-prof-bc-active">Profile</span>
         </nav>
 
         <div class="bilai-prof-layout">
 
-            {{-- ═══════════ LEFT SIDEBAR ═══════════ --}}
+            {{-- â•â•â•â•â•â•â•â•â•â•â• LEFT SIDEBAR â•â•â•â•â•â•â•â•â•â•â• --}}
             <aside class="bilai-prof-sidebar">
                 <div class="bilai-card">
                     <div class="bilai-dash-profile-box">
@@ -210,10 +210,7 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-map-marker"></i></span> Addresses
                         </a>
-                        <a href="#" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-ticket"></i></span> Coupon
-                        </a>
+                        <!-- -->
                         <a href="{{ route('customer.rewards') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
@@ -242,7 +239,7 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
                 </div>
             </aside>
 
-            {{-- ═══════════ RIGHT CONTENT ═══════════ --}}
+            {{-- â•â•â•â•â•â•â•â•â•â•â• RIGHT CONTENT â•â•â•â•â•â•â•â•â•â•â• --}}
             <main>
                 <div class="bilai-prof-card">
                     <h2 class="bilai-prof-card-title">Profile Info</h2>
@@ -351,14 +348,14 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
 </div>
 @endsection
 
-{{-- Shared District→Zone helper (also loads select2 once). --}}
+{{-- Shared Districtâ†’Zone helper (also loads select2 once). --}}
 @include('frontEnd.layouts.customer.partials.district-zone-js')
 
 @push('script')
 <script>
-/* BilaiGhor Customer Profile Edit — avatar preview + District→Zone */
+/* BilaiGhor Customer Profile Edit â€” avatar preview + Districtâ†’Zone */
 (function () {
-    // ── Avatar preview (2MB / image types, same limits as the backend rule) ──
+    // â”€â”€ Avatar preview (2MB / image types, same limits as the backend rule) â”€â”€
     var input    = document.getElementById('bilai-prof-image-input');
     var img      = document.getElementById('bilai-prof-avatar-img');
     var fallback = document.getElementById('bilai-prof-avatar-fallback');
@@ -391,7 +388,7 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
         });
     }
 
-    // ── District → Zone (shared helper; same endpoint as the address modal) ──
+    // â”€â”€ District â†’ Zone (shared helper; same endpoint as the address modal) â”€â”€
     // District is rendered pre-selected; the helper loads its zones and then selects
     // the saved zone once the AJAX response arrives (no setTimeout).
     $(function () {
@@ -405,3 +402,4 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
 }());
 </script>
 @endpush
+

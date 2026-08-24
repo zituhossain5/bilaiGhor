@@ -1,4 +1,4 @@
-@php
+﻿@php
 use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 
@@ -49,7 +49,7 @@ $filter       = $filter ?? 'all';
 .bilai-rw-layout { display: grid; grid-template-columns: 248px 1fr; gap: 20px; align-items: start; }
 .bilai-rw-content { display: flex; flex-direction: column; gap: 18px; }
 
-/* ── Shared sidebar (same look as dashboard/orders) ── */
+/* â”€â”€ Shared sidebar (same look as dashboard/orders) â”€â”€ */
 .bilai-rw-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 14px; }
 .bilai-card { background: #fff; border: 1px solid var(--bilai-rw-border); border-radius: var(--bilai-rw-radius); overflow: hidden; }
 .bilai-dash-profile-box { padding: 18px 16px 16px; }
@@ -77,7 +77,7 @@ $filter       = $filter ?? 'all';
 .bilai-dash-nav-item--logout .bilai-dash-nav-icon { opacity: 0.8; }
 .bilai-dash-nav-item--logout:hover { background: #fff5f5; color: #a93226; }
 
-/* ── Hero card ── */
+/* â”€â”€ Hero card â”€â”€ */
 .bilai-rw-hero { background: var(--bilai-rw-hero); border-radius: var(--bilai-rw-radius); overflow: hidden; }
 .bilai-rw-hero-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 26px 28px; }
 .bilai-rw-hero-hello { font-size: 13px; color: #d8c6b2; margin: 0 0 6px; }
@@ -101,14 +101,14 @@ $filter       = $filter ?? 'all';
 .bilai-rw-strip-value.orange { color: var(--bilai-rw-primary); }
 .bilai-rw-strip-sub { font-size: 12px; color: var(--bilai-rw-muted); margin: 0; }
 
-/* ── Generic card ── */
+/* â”€â”€ Generic card â”€â”€ */
 .bilai-rw-card { background: var(--bilai-rw-card); border: 1px solid var(--bilai-rw-border); border-radius: var(--bilai-rw-radius); padding: 22px 24px; }
 .bilai-rw-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
 .bilai-rw-card-title { display: flex; align-items: center; gap: 9px; font-size: 15.5px; font-weight: 700; color: var(--bilai-rw-text); margin: 0; }
 .bilai-rw-card-title .ic { color: var(--bilai-rw-primary); font-size: 16px; }
 .bilai-rw-badge-pill { background: var(--bilai-rw-cream); border: 1px solid var(--bilai-rw-border); border-radius: 100px; padding: 5px 14px; font-size: 12px; font-weight: 600; color: var(--bilai-rw-muted); white-space: nowrap; }
 
-/* ── Membership progress ── */
+/* â”€â”€ Membership progress â”€â”€ */
 .bilai-rw-stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
 .bilai-rw-stage { text-align: center; }
 .bilai-rw-stage-ic {
@@ -127,7 +127,7 @@ $filter       = $filter ?? 'all';
 .bilai-rw-progress-foot .pts { color: var(--bilai-rw-muted); font-weight: 600; }
 .bilai-rw-progress-foot .hint { color: var(--bilai-rw-primary); font-weight: 600; }
 
-/* ── How it works ── */
+/* â”€â”€ How it works â”€â”€ */
 .bilai-rw-how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .bilai-rw-how-card { background: var(--bilai-rw-cream); border: 1px solid var(--bilai-rw-border); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; }
 .bilai-rw-how-num {
@@ -143,7 +143,7 @@ $filter       = $filter ?? 'all';
 .bilai-rw-how-pill { align-self: flex-start; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 100px; background: #fff3dd; color: var(--bilai-rw-primary-dark); }
 .bilai-rw-how-card:nth-child(3) .bilai-rw-how-pill { background: #fde8e4; color: #c0564a; }
 
-/* ── Point history ── */
+/* â”€â”€ Point history â”€â”€ */
 .bilai-rw-hist-sub { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--bilai-rw-border); padding-top: 16px; margin-bottom: 8px; }
 .bilai-rw-hist-sub-title { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--bilai-rw-text); margin: 0; }
 .bilai-rw-hist-tabs { display: flex; gap: 6px; }
@@ -232,15 +232,15 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
         {{-- Breadcrumb --}}
         <nav class="bilai-rw-bc" aria-label="breadcrumb">
             <a href="{{ route('home') }}">Home</a>
-            <span class="bilai-rw-bc-sep">›</span>
+            <span class="bilai-rw-bc-sep">â€º</span>
             <span>Profile</span>
-            <span class="bilai-rw-bc-sep">›</span>
+            <span class="bilai-rw-bc-sep">â€º</span>
             <span class="bilai-rw-bc-active">Reward Points</span>
         </nav>
 
         <div class="bilai-rw-layout">
 
-            {{-- ═══════════ LEFT SIDEBAR (shared style) ═══════════ --}}
+            {{-- â•â•â•â•â•â•â•â•â•â•â• LEFT SIDEBAR (shared style) â•â•â•â•â•â•â•â•â•â•â• --}}
             <aside class="bilai-rw-sidebar">
                 <div class="bilai-card">
                     <div class="bilai-dash-profile-box">
@@ -283,10 +283,6 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-map-marker"></i></span> Addresses
                         </a>
-                        <a href="#" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-ticket"></i></span> Coupon
-                        </a>
                         {{-- Gift Cards removed from sidebar UI per design (backend untouched) --}}
                         <a href="{{ route('customer.rewards') }}" class="bilai-dash-nav-item active">
                             {{-- Replace sidebar SVG icon later --}}
@@ -316,7 +312,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                 </div>
             </aside>
 
-            {{-- ═══════════ RIGHT CONTENT ═══════════ --}}
+            {{-- â•â•â•â•â•â•â•â•â•â•â• RIGHT CONTENT â•â•â•â•â•â•â•â•â•â•â• --}}
             <main class="bilai-rw-content">
 
                 {{-- Hero --}}
@@ -333,7 +329,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                             <p class="sub">Reward Points</p>
                         </div>
                     </div>
-                    {{-- Hidden for now — change @if(false) to @if(true) to show the summary strip again --}}
+                    {{-- Hidden for now â€” change @if(false) to @if(true) to show the summary strip again --}}
                     @if(false)
                     <div class="bilai-rw-hero-strip">
                         <div class="bilai-rw-strip-col">
@@ -343,8 +339,8 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                         </div>
                         <div class="bilai-rw-strip-col">
                             <p class="bilai-rw-strip-label"><span class="bilai-rw-strip-dot"></span> Cash Value</p>
-                            <p class="bilai-rw-strip-value orange">৳{{ number_format($cashValue, 2) }}</p>
-                            <p class="bilai-rw-strip-sub">1 point = ৳1.00</p>
+                            <p class="bilai-rw-strip-value orange">à§³{{ number_format($cashValue, 2) }}</p>
+                            <p class="bilai-rw-strip-sub">1 point = à§³1.00</p>
                         </div>
                         <div class="bilai-rw-strip-col">
                             <p class="bilai-rw-strip-label"><span class="bilai-rw-strip-dot"></span> Membership Tier</p>
@@ -355,7 +351,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                     @endif
                 </div>
 
-                {{-- Membership Progress — hidden for now; change @if(false) to @if(true) to show it again --}}
+                {{-- Membership Progress â€” hidden for now; change @if(false) to @if(true) to show it again --}}
                 @if(false)
                 <div class="bilai-rw-card">
                     <div class="bilai-rw-card-head">
@@ -363,7 +359,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                             {{-- Replace crown SVG icon later --}}
                             <span class="ic"><i class="fa fa-trophy"></i></span> Membership Progress
                         </h3>
-                        <span class="bilai-rw-badge-pill">500 pts – Silver</span>
+                        <span class="bilai-rw-badge-pill">500 pts â€“ Silver</span>
                     </div>
 
                     <div class="bilai-rw-stages">
@@ -410,19 +406,19 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                         <div class="bilai-rw-how-card">
                             <div class="bilai-rw-how-num">1</div>
                             <p class="bilai-rw-how-title">Collect Points</p>
-                            <p class="bilai-rw-how-text">Earn 1 Reward Point for every ৳100 of eligible product spending. Points are credited after your order has been successfully delivered.</p>
-                            <span class="bilai-rw-how-pill">1 pt per ৳100 spent</span>
+                            <p class="bilai-rw-how-text">Earn 1 Reward Point for every à§³100 of eligible product spending. Points are credited after your order has been successfully delivered.</p>
+                            <span class="bilai-rw-how-pill">1 pt per à§³100 spent</span>
                         </div>
                         <div class="bilai-rw-how-card">
                             <div class="bilai-rw-how-num">2</div>
                             <p class="bilai-rw-how-title">Redeem at Checkout</p>
-                            <p class="bilai-rw-how-text">Use your available points during checkout. Each Reward Point gives ৳1 discount on your product total.</p>
-                            <span class="bilai-rw-how-pill">1 point = ৳1 off</span>
+                            <p class="bilai-rw-how-text">Use your available points during checkout. Each Reward Point gives à§³1 discount on your product total.</p>
+                            <span class="bilai-rw-how-pill">1 point = à§³1 off</span>
                         </div>
                         <div class="bilai-rw-how-card">
                             <div class="bilai-rw-how-num">3</div>
                             <p class="bilai-rw-how-title">Points Expiry</p>
-                            <p class="bilai-rw-how-text">Your points currently do not expire — every point you earn stays available until you spend it.</p>
+                            <p class="bilai-rw-how-text">Your points currently do not expire â€” every point you earn stays available until you spend it.</p>
                             <span class="bilai-rw-how-pill">No expiry</span>
                         </div>
                     </div>
@@ -475,7 +471,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                             {{-- Replace empty-state SVG icon later --}}
                             <div class="bilai-rw-hist-empty-ic"><i class="fa fa-clipboard"></i></div>
                             <p class="bilai-rw-hist-empty-title">No transactions yet</p>
-                            <p class="bilai-rw-hist-empty-text">Your full point history — every time you earn or spend points — will appear here after your first order.</p>
+                            <p class="bilai-rw-hist-empty-text">Your full point history â€” every time you earn or spend points â€” will appear here after your first order.</p>
                             <a href="{{ route('shop') }}" class="bilai-rw-browse-btn">Browse Products <i class="fa fa-arrow-right"></i></a>
                         </div>
                     @endif
@@ -487,7 +483,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                         <h3 class="bilai-rw-card-title">Terms &amp; Conditions</h3>
                     </div>
 
-                    {{-- Static placeholder copy for now — replace with CMS/admin content later --}}
+                    {{-- Static placeholder copy for now â€” replace with CMS/admin content later --}}
                     <div class="bilai-rw-acc">
                         <div class="bilai-rw-acc-item open">
                             <button type="button" class="bilai-rw-acc-head">
@@ -498,7 +494,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                             </button>
                             <div class="bilai-rw-acc-body">
                                 <ul>
-                                    <li>You earn 1 Reward Point for every ৳100 of your order value. Non-round totals round to the nearest ৳0.5 — e.g. a ৳9.3 order earns 9 pts, a ৳9.9 order earns 10 pts.</li>
+                                    <li>You earn 1 Reward Point for every à§³100 of your order value. Non-round totals round to the nearest à§³0.5 â€” e.g. a à§³9.3 order earns 9 pts, a à§³9.9 order earns 10 pts.</li>
                                     <li>Bonus points may be awarded during special offers and promotions; these will be announced on our website and newsletters.</li>
                                     <li>Points are only credited to your account once the order has been successfully shipped.</li>
                                 </ul>
@@ -529,7 +525,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                             </button>
                             <div class="bilai-rw-acc-body">
                                 <ul>
-                                    <li>Each point is worth ৳1 and can be applied as a discount at checkout.</li>
+                                    <li>Each point is worth à§³1 and can be applied as a discount at checkout.</li>
                                     <li>A maximum of 50 points can be redeemed per day.</li>
                                     <li>Points cannot be exchanged for cash.</li>
                                 </ul>
@@ -609,3 +605,4 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
 @endpush
 
 @endsection
+

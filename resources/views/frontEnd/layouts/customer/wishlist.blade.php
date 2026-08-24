@@ -1,4 +1,4 @@
-@php
+﻿@php
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\Order;
@@ -41,7 +41,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
 /* Layout */
 .bilai-wl-layout { display: grid; grid-template-columns: 248px 1fr; gap: 20px; align-items: start; }
 
-/* ── Shared sidebar (same look as other account pages) ── */
+/* â”€â”€ Shared sidebar (same look as other account pages) â”€â”€ */
 .bilai-wl-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 14px; }
 .bilai-card { background: #fff; border: 1px solid var(--bilai-wl-border); border-radius: var(--bilai-wl-radius); overflow: hidden; }
 .bilai-dash-profile-box { padding: 18px 16px 16px; }
@@ -64,7 +64,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
 .bilai-dash-nav-item--logout .bilai-dash-nav-icon { opacity: 0.8; }
 .bilai-dash-nav-item--logout:hover { background: #fff5f5; color: #a93226; }
 
-/* ── Wishlist table ── */
+/* â”€â”€ Wishlist table â”€â”€ */
 .bilai-wl-title { font-size: 19px; font-weight: 800; color: var(--bilai-wl-text); margin: 0 0 16px; }
 .bilai-wl-tablewrap { background: var(--bilai-wl-card); border: 1px solid var(--bilai-wl-border); border-radius: var(--bilai-wl-radius); overflow: hidden; }
 .bilai-wl-scroll { overflow-x: auto; }
@@ -143,15 +143,15 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
         {{-- Breadcrumb --}}
         <nav class="bilai-wl-bc" aria-label="breadcrumb">
             <a href="{{ route('home') }}">Home</a>
-            <span class="bilai-wl-bc-sep">›</span>
+            <span class="bilai-wl-bc-sep">â€º</span>
             <a href="{{ route('customer.account') }}">My Account</a>
-            <span class="bilai-wl-bc-sep">›</span>
+            <span class="bilai-wl-bc-sep">â€º</span>
             <span class="bilai-wl-bc-active">Wishlist</span>
         </nav>
 
         <div class="bilai-wl-layout">
 
-            {{-- ═══════════ LEFT SIDEBAR ═══════════ --}}
+            {{-- â•â•â•â•â•â•â•â•â•â•â• LEFT SIDEBAR â•â•â•â•â•â•â•â•â•â•â• --}}
             <aside class="bilai-wl-sidebar">
                 <div class="bilai-card">
                     <div class="bilai-dash-profile-box">
@@ -194,10 +194,6 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-map-marker"></i></span> Addresses
                         </a>
-                        <a href="#" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-ticket"></i></span> Coupon
-                        </a>
                         <a href="{{ route('customer.rewards') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
@@ -226,7 +222,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
                 </div>
             </aside>
 
-            {{-- ═══════════ RIGHT CONTENT ═══════════ --}}
+            {{-- â•â•â•â•â•â•â•â•â•â•â• RIGHT CONTENT â•â•â•â•â•â•â•â•â•â•â• --}}
             <main>
                 <h2 class="bilai-wl-title">My Wishlist</h2>
 
@@ -323,7 +319,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
             </main>
         </div>
 
-        {{-- ═══════ Recommended Products (same card as the rest of the site) ═══════ --}}
+        {{-- â•â•â•â•â•â•â• Recommended Products (same card as the rest of the site) â•â•â•â•â•â•â• --}}
         @if(isset($recommendedProducts) && $recommendedProducts->count() > 0)
         <div class="bilai-wl-rec">
             <div class="bilai-wl-rec-head">
@@ -422,7 +418,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
 
 @push('script')
 <script>
-/* BilaiGhor Wishlist Page — remove rows via the shared toggle endpoint */
+/* BilaiGhor Wishlist Page â€” remove rows via the shared toggle endpoint */
 (function () {
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.bilai-wl-remove[data-remove-id]');
@@ -445,7 +441,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
             var row = btn.closest('tr[data-wishlist-row]');
             if (row) { row.remove(); }
             if (window.toastr) { toastr.success('Product removed from wishlist.'); }
-            // Last row gone → reload to show the empty state (and refresh hearts below).
+            // Last row gone â†’ reload to show the empty state (and refresh hearts below).
             if (!document.querySelector('tr[data-wishlist-row]')) {
                 window.location.reload();
             }
@@ -458,3 +454,4 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
 }());
 </script>
 @endpush
+

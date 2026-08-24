@@ -1,4 +1,4 @@
-@php
+﻿@php
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\Order;
@@ -37,14 +37,14 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
     --bilai-dash-radius-sm:    8px;
 }
 
-/* ── Page background ─────────────────────────────────────────────── */
+/* â”€â”€ Page background â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bilai-dash-page {
     background: #f5f5f0;
     min-height: 72vh;
     padding: 20px 0 52px;
 }
 
-/* ── Breadcrumb (inline, no heavy bar) ───────────────────────────── */
+/* â”€â”€ Breadcrumb (inline, no heavy bar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bilai-dash-bc {
     display: flex;
     align-items: center;
@@ -61,7 +61,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
 .bilai-dash-bc-sep    { color: #c0b0a0; font-size: 11px; }
 .bilai-dash-bc-active { color: var(--bilai-dash-primary); font-weight: 600; }
 
-/* ── Two-column layout ───────────────────────────────────────────── */
+/* â”€â”€ Two-column layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bilai-dash-layout {
     display: grid;
     grid-template-columns: 248px 1fr;
@@ -69,7 +69,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
     align-items: start;
 }
 
-/* ── Sidebar card ────────────────────────────────────────────────── */
+/* â”€â”€ Sidebar card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bilai-dash-sidebar-card {
     background: #fff;
     border: 1px solid var(--bilai-dash-border);
@@ -79,7 +79,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
     top: 90px;
 }
 
-/* ── Profile box — horizontal: avatar left, name right ───────────── */
+/* â”€â”€ Profile box â€” horizontal: avatar left, name right â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bilai-dash-profile-box {
     padding: 18px 16px 14px;
 }
@@ -166,7 +166,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
     flex-shrink: 0;
 }
 
-/* ── Sidebar nav ─────────────────────────────────────────────────── */
+/* â”€â”€ Sidebar nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bilai-dash-nav { padding: 4px 0 4px; }
 .bilai-dash-nav-item {
     display: flex;
@@ -223,7 +223,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
     color: #a93226;
 }
 
-/* ── Main content card ───────────────────────────────────────────── */
+/* â”€â”€ Main content card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bilai-dash-main-card {
     background: #fff;
     border: 1px solid var(--bilai-dash-border);
@@ -243,7 +243,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
     line-height: 1.6;
 }
 
-/* ── Stats grid — icon at TOP-RIGHT ──────────────────────────────── */
+/* â”€â”€ Stats grid â€” icon at TOP-RIGHT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bilai-dash-stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -298,7 +298,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
     line-height: 1.1;
 }
 
-/* ── Responsive ──────────────────────────────────────────────────── */
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 1199px) {
     .bilai-dash-layout { grid-template-columns: 228px 1fr; gap: 16px; }
 }
@@ -328,15 +328,15 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
         {{-- Breadcrumb (inline, lightweight) --}}
         <nav class="bilai-dash-bc" aria-label="breadcrumb">
             <a href="{{ route('home') }}">Home</a>
-            <span class="bilai-dash-bc-sep">›</span>
+            <span class="bilai-dash-bc-sep">â€º</span>
             <span>Profile</span>
-            <span class="bilai-dash-bc-sep">›</span>
+            <span class="bilai-dash-bc-sep">â€º</span>
             <span class="bilai-dash-bc-active">Dashboard</span>
         </nav>
 
         <div class="bilai-dash-layout">
 
-            {{-- ───────────── LEFT SIDEBAR ─────────────────── --}}
+            {{-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ LEFT SIDEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
             <aside>
                 <div class="bilai-dash-sidebar-card">
 
@@ -386,7 +386,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                             Profile
                         </a>
 
-                        {{-- Wishlist — replace href when implemented --}}
+                        {{-- Wishlist â€” replace href when implemented --}}
                         <a href="{{ route('customer.wishlist') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-heart-o"></i></span>
@@ -398,13 +398,6 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-map-marker"></i></span>
                             Addresses
-                        </a>
-
-                        {{-- Coupon — replace href when implemented --}}
-                        <a href="#" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-ticket"></i></span>
-                            Coupon
                         </a>
 
                         {{-- Gift Cards removed from sidebar UI per design (backend untouched) --}}
@@ -454,7 +447,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                 </div>
             </aside>
 
-            {{-- ───────────── RIGHT CONTENT ────────────────── --}}
+            {{-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ RIGHT CONTENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
             <main>
 
                 {{-- Welcome + Stats --}}
@@ -554,10 +547,10 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                     </div>
                 </div>
 
-                {{-- Recent Orders — hidden from dashboard view to match Figma.
+                {{-- Recent Orders â€” hidden from dashboard view to match Figma.
                      Backend data + routes remain fully intact. --}}
 
-                {{-- Recommended Products — hidden from dashboard view to match Figma.
+                {{-- Recommended Products â€” hidden from dashboard view to match Figma.
                      Backend data + routes remain fully intact. --}}
 
             </main>
@@ -566,3 +559,4 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
 </div>
 
 @endsection
+

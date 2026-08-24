@@ -1,4 +1,4 @@
-@php
+﻿@php
 use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 
@@ -42,7 +42,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
 /* Layout */
 .bilai-adr-layout { display: grid; grid-template-columns: 248px 1fr; gap: 20px; align-items: start; }
 
-/* ── Shared sidebar (same look as other account pages) ── */
+/* â”€â”€ Shared sidebar (same look as other account pages) â”€â”€ */
 .bilai-adr-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 14px; }
 .bilai-card { background: #fff; border: 1px solid var(--bilai-adr-border); border-radius: var(--bilai-adr-radius); overflow: hidden; }
 .bilai-dash-profile-box { padding: 18px 16px 16px; }
@@ -70,13 +70,13 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
 .bilai-dash-nav-item--logout .bilai-dash-nav-icon { opacity: 0.8; }
 .bilai-dash-nav-item--logout:hover { background: #fff5f5; color: #a93226; }
 
-/* ── Content header ── */
+/* â”€â”€ Content header â”€â”€ */
 .bilai-adr-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
 .bilai-adr-title { font-size: 19px; font-weight: 800; color: var(--bilai-adr-text); margin: 0; }
 .bilai-adr-mkdefault { background: none; border: none; padding: 0; font-size: 13.5px; font-weight: 600; color: var(--bilai-adr-primary); cursor: pointer; }
 .bilai-adr-mkdefault:hover { color: var(--bilai-adr-primary-dark); text-decoration: underline; }
 
-/* ── Cards grid ── */
+/* â”€â”€ Cards grid â”€â”€ */
 .bilai-adr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
 .bilai-adr-card { background: var(--bilai-adr-card); border: 1px solid var(--bilai-adr-border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
 .bilai-adr-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 18px; background: var(--bilai-adr-cream); border-bottom: 1px solid var(--bilai-adr-border); }
@@ -125,7 +125,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
 .bilai-adr-empty h4 { font-size: 15px; font-weight: 700; color: var(--bilai-adr-text); margin: 0 0 5px; }
 .bilai-adr-empty p { font-size: 13px; color: var(--bilai-adr-muted); margin: 0 0 18px; }
 
-/* ── Add/Edit modal ── */
+/* â”€â”€ Add/Edit modal â”€â”€ */
 .bilai-adr-overlay { display: none; position: fixed; inset: 0; z-index: 1600; background: rgba(30,18,8,0.5); align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
 .bilai-adr-overlay.open { display: flex; }
 .bilai-adr-dialog { background: var(--bilai-adr-cream); width: 100%; max-width: 560px; border-radius: 14px; overflow: hidden; }
@@ -184,15 +184,15 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
         {{-- Breadcrumb --}}
         <nav class="bilai-adr-bc" aria-label="breadcrumb">
             <a href="{{ route('home') }}">Home</a>
-            <span class="bilai-adr-bc-sep">›</span>
+            <span class="bilai-adr-bc-sep">â€º</span>
             <a href="{{ route('customer.account') }}">Account</a>
-            <span class="bilai-adr-bc-sep">›</span>
+            <span class="bilai-adr-bc-sep">â€º</span>
             <span class="bilai-adr-bc-active">Addresses</span>
         </nav>
 
         <div class="bilai-adr-layout">
 
-            {{-- ═══════════ LEFT SIDEBAR ═══════════ --}}
+            {{-- â•â•â•â•â•â•â•â•â•â•â• LEFT SIDEBAR â•â•â•â•â•â•â•â•â•â•â• --}}
             <aside class="bilai-adr-sidebar">
                 <div class="bilai-card">
                     <div class="bilai-dash-profile-box">
@@ -235,10 +235,6 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-map-marker"></i></span> Addresses
                         </a>
-                        <a href="#" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-ticket"></i></span> Coupon
-                        </a>
                         <a href="{{ route('customer.rewards') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
                             <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
@@ -267,7 +263,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                 </div>
             </aside>
 
-            {{-- ═══════════ RIGHT CONTENT ═══════════ --}}
+            {{-- â•â•â•â•â•â•â•â•â•â•â• RIGHT CONTENT â•â•â•â•â•â•â•â•â•â•â• --}}
             <main class="bilai-adr-app" id="bilai-adr-app">
 
                 <div class="bilai-adr-head">
@@ -318,7 +314,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                                 <div class="bilai-adr-card-body">
                                     <p class="bilai-adr-line name">{{ $addr->name }}</p>
                                     <p class="bilai-adr-line muted">{{ $addr->address }}</p>
-                                    {{-- Zone, District — built from live relationships; each part shown only when present --}}
+                                    {{-- Zone, District â€” built from live relationships; each part shown only when present --}}
                                     @php
                                         $addrLocation = array_filter([
                                             optional($addr->zone)->name,
@@ -401,7 +397,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
     var defaultIdInput  = document.getElementById('bilai-adr-default-id');
     var radios          = Array.prototype.slice.call(document.querySelectorAll('.bilai-adr-radio'));
 
-    // ── Default-address selection mode ──
+    // â”€â”€ Default-address selection mode â”€â”€
     function resetRadios() {
         radios.forEach(function (r) { r.checked = (r.getAttribute('data-default') === '1'); });
     }
@@ -430,3 +426,4 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
 @endpush
 
 @endsection
+

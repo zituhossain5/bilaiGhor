@@ -27,6 +27,10 @@ class OrderDetails extends Model
         'admin_commission',
         'vendor_earning',
         'vendor_paid_at',
+        'manual_variant',
+        'is_manual_item',
+        'line_discount',
+        'line_total',
     ];
 
     // ✅ অর্ডারের সাথে রিলেশন

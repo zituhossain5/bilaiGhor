@@ -1,4 +1,4 @@
-@php
+﻿@php
 use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 
@@ -31,20 +31,20 @@ $activeTab = $activeTab ?? 'all';
     --bilai-dash-radius-sm:    8px;
 }
 
-/* ── Page ── */
+/* â”€â”€ Page â”€â”€ */
 .bilai-dash-page { background: #f5f5f0; min-height: 72vh; padding: 20px 0 52px; }
 
-/* ── Breadcrumb ── */
+/* â”€â”€ Breadcrumb â”€â”€ */
 .bilai-dash-bc { display: flex; align-items: center; gap: 5px; font-size: 12.5px; margin-bottom: 18px; flex-wrap: wrap; }
 .bilai-dash-bc a { color: var(--bilai-dash-muted); text-decoration: none; }
 .bilai-dash-bc a:hover { color: var(--bilai-dash-primary); }
 .bilai-dash-bc-sep    { color: #c0b0a0; font-size: 11px; }
 .bilai-dash-bc-active { color: var(--bilai-dash-primary); font-weight: 600; }
 
-/* ── Two-column grid ── */
+/* â”€â”€ Two-column grid â”€â”€ */
 .bilai-dash-layout { display: grid; grid-template-columns: 248px 1fr; gap: 20px; align-items: start; }
 
-/* ── Sidebar column: two separate stacked cards ── */
+/* â”€â”€ Sidebar column: two separate stacked cards â”€â”€ */
 .bilai-dash-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 14px; }
 .bilai-card {
     background: #fff;
@@ -53,7 +53,7 @@ $activeTab = $activeTab ?? 'all';
     overflow: hidden;
 }
 
-/* ── Profile card ── */
+/* â”€â”€ Profile card â”€â”€ */
 .bilai-dash-profile-box { padding: 18px 16px 16px; }
 .bilai-dash-profile-row { display: flex; align-items: center; gap: 12px; }
 .bilai-dash-avatar {
@@ -90,7 +90,7 @@ $activeTab = $activeTab ?? 'all';
     color: var(--bilai-dash-muted); font-size: 10px; flex-shrink: 0;
 }
 
-/* ── Menu card ── */
+/* â”€â”€ Menu card â”€â”€ */
 .bilai-dash-nav { padding: 6px 0 8px; }
 .bilai-dash-nav-title {
     font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
@@ -122,14 +122,14 @@ $activeTab = $activeTab ?? 'all';
 .bilai-dash-nav-item--logout .bilai-dash-nav-icon { opacity: 0.8; }
 .bilai-dash-nav-item--logout:hover { background: #fff5f5; color: #a93226; }
 
-/* ── Orders content card ── */
+/* â”€â”€ Orders content card â”€â”€ */
 .bilai-ord-card { padding: 22px 22px 24px; }
 .bilai-ord-card-title {
     font-size: 17px; font-weight: 700; color: var(--bilai-dash-text);
     margin: 0 0 16px;
 }
 
-/* ── Tabs (GET links) ── */
+/* â”€â”€ Tabs (GET links) â”€â”€ */
 .bilai-ord-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
 .bilai-ord-tab {
     padding: 6px 16px; font-size: 13px; font-weight: 500;
@@ -144,7 +144,7 @@ $activeTab = $activeTab ?? 'all';
     color: #fff; font-weight: 600;
 }
 
-/* ── Table ── */
+/* â”€â”€ Table â”€â”€ */
 .bilai-ord-table-wrap { overflow-x: auto; }
 .bilai-ord-table { width: 100%; border-collapse: collapse; }
 .bilai-ord-table thead tr { border-bottom: 1px solid var(--bilai-dash-border); }
@@ -193,7 +193,7 @@ $activeTab = $activeTab ?? 'all';
 /* Product name */
 .bilai-ord-product-name { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
 
-/* Empty state — compact, aligned inside card */
+/* Empty state â€” compact, aligned inside card */
 .bilai-ord-empty { text-align: center; padding: 32px 16px; }
 .bilai-ord-empty-icon {
     width: 52px; height: 52px; border-radius: 50%;
@@ -216,7 +216,7 @@ $activeTab = $activeTab ?? 'all';
 .bilai-ord-page-btn.active { background: var(--bilai-dash-primary); border-color: var(--bilai-dash-primary); color: #fff; font-weight: 600; }
 .bilai-ord-page-btn.disabled { background: #f5f5f0; color: #ccc; pointer-events: none; }
 
-/* ── Responsive ── */
+/* â”€â”€ Responsive â”€â”€ */
 @media (max-width: 1199px) { .bilai-dash-layout { grid-template-columns: 228px 1fr; gap: 16px; } }
 @media (max-width: 991px)  { .bilai-dash-layout { grid-template-columns: 1fr; } .bilai-dash-sidebar { position: static; } }
 @media (max-width: 767px)  { .bilai-ord-card { padding: 16px 14px 18px; } }
@@ -232,15 +232,15 @@ $activeTab = $activeTab ?? 'all';
         {{-- Breadcrumb --}}
         <nav class="bilai-dash-bc" aria-label="breadcrumb">
             <a href="{{ route('home') }}">Home</a>
-            <span class="bilai-dash-bc-sep">›</span>
+            <span class="bilai-dash-bc-sep">â€º</span>
             <span>Profile</span>
-            <span class="bilai-dash-bc-sep">›</span>
+            <span class="bilai-dash-bc-sep">â€º</span>
             <span class="bilai-dash-bc-active">Orders</span>
         </nav>
 
         <div class="bilai-dash-layout">
 
-            {{-- ────────────── LEFT SIDEBAR — two separate cards ────────────── --}}
+            {{-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ LEFT SIDEBAR â€” two separate cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
             <aside class="bilai-dash-sidebar">
 
                 {{-- Card 1: Profile --}}
@@ -305,12 +305,6 @@ $activeTab = $activeTab ?? 'all';
                             Addresses
                         </a>
 
-                        <a href="#" class="bilai-dash-nav-item">
-                            {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-ticket"></i></span>
-                            Coupon
-                        </a>
-
                         {{-- Gift Cards removed from sidebar UI per design (backend untouched) --}}
 
                         <a href="{{ route('customer.rewards') }}"
@@ -357,12 +351,12 @@ $activeTab = $activeTab ?? 'all';
                 </div>
             </aside>
 
-            {{-- ────────────── RIGHT CONTENT ───────────────── --}}
+            {{-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ RIGHT CONTENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
             <main>
                 <div class="bilai-card bilai-ord-card">
                     <h2 class="bilai-ord-card-title">My Orders</h2>
 
-                    {{-- Status Tabs — server-side GET filter --}}
+                    {{-- Status Tabs â€” server-side GET filter --}}
                     <div class="bilai-ord-tabs">
                         <a href="{{ route('customer.orders') }}"
                            class="bilai-ord-tab {{ $activeTab === 'all' ? 'active' : '' }}">All</a>
@@ -391,7 +385,7 @@ $activeTab = $activeTab ?? 'all';
                                 <tbody>
                                 @foreach($orders as $value)
                                     @php
-                                        // ── Payment logic (preserved from original) ──
+                                        // â”€â”€ Payment logic (preserved from original) â”€â”€
                                         $payment_record = \App\Models\Payment::where('order_id', $value->id)->orderBy('id', 'desc')->first();
                                         $gateway_status = $payment_record ? strtolower(trim($payment_record->payment_status)) : '';
                                         $payment_method = $payment_record ? strtolower(trim($payment_record->payment_method)) : '';
@@ -424,7 +418,7 @@ $activeTab = $activeTab ?? 'all';
                                         $existingRefund   = \App\Models\Refund::where('order_id', $value->id)
                                                                 ->whereIn('status', ['pending', 'approved'])->first();
 
-                                        // ── Status badge — color by real order_status id, text from real name ──
+                                        // â”€â”€ Status badge â€” color by real order_status id, text from real name â”€â”€
                                         $os        = (string) $value->order_status;
                                         $badgeText = $value->status->name ?? 'Pending';
                                         if ($os === '11') {
@@ -439,7 +433,7 @@ $activeTab = $activeTab ?? 'all';
                                             $badgeClass = 'bilai-ord-badge--default';
                                         }
 
-                                        // ── First product name ──
+                                        // â”€â”€ First product name â”€â”€
                                         $firstDetail      = $value->orderdetails->first();
                                         $firstProductName = $firstDetail->product_name ?? ($firstDetail->product->name ?? 'N/A');
                                         $moreItems        = max(0, $value->orderdetails->count() - 1);
@@ -462,7 +456,7 @@ $activeTab = $activeTab ?? 'all';
                                             <span class="bilai-ord-badge {{ $badgeClass }}">{{ $badgeText }}</span>
                                         </td>
                                         <td style="font-weight:600; white-space:nowrap;">
-                                            ৳{{ number_format($grand_total, 0) }}
+                                            à§³{{ number_format($grand_total, 0) }}
                                         </td>
                                         <td>
                                             <div class="bilai-ord-actions">
@@ -516,7 +510,7 @@ $activeTab = $activeTab ?? 'all';
 
                                 @if($sp > 1)
                                     <a href="{{ $orders->url(1) }}" class="bilai-ord-page-btn">1</a>
-                                    @if($sp > 2)<span style="color:var(--bilai-dash-muted);padding:0 2px;">…</span>@endif
+                                    @if($sp > 2)<span style="color:var(--bilai-dash-muted);padding:0 2px;">â€¦</span>@endif
                                 @endif
 
                                 @for($pg = $sp; $pg <= $ep; $pg++)
@@ -528,7 +522,7 @@ $activeTab = $activeTab ?? 'all';
                                 @endfor
 
                                 @if($ep < $lp)
-                                    @if($ep < $lp - 1)<span style="color:var(--bilai-dash-muted);padding:0 2px;">…</span>@endif
+                                    @if($ep < $lp - 1)<span style="color:var(--bilai-dash-muted);padding:0 2px;">â€¦</span>@endif
                                     <a href="{{ $orders->url($lp) }}" class="bilai-ord-page-btn">{{ $lp }}</a>
                                 @endif
 
@@ -541,7 +535,7 @@ $activeTab = $activeTab ?? 'all';
                         @endif
 
                     @else
-                        {{-- Empty state — compact --}}
+                        {{-- Empty state â€” compact --}}
                         <div class="bilai-ord-empty">
                             <div class="bilai-ord-empty-icon">
                                 {{-- Replace SVG icon later --}}
@@ -563,3 +557,4 @@ $activeTab = $activeTab ?? 'all';
     </div>
 </div>
 @endsection
+

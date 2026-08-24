@@ -280,6 +280,8 @@
     <ul class="nav-second-level">
       @can('order-list')
       <li><a href="{{ route('admin.orders', ['slug'=>'all']) }}"><i data-feather="file-plus"></i> All Order</a></li>
+      <li><a href="{{ route('admin.manual_orders.index') }}"><i data-feather="file-text"></i> Manual Orders</a></li>
+      <li><a href="{{ route('admin.manual_orders.create') }}"><i data-feather="edit-3"></i> Create Manual Invoice</a></li>
 	        @can('order-list')
       <li>
         <a href="{{ route('admin.reseller-orders.index') }}"><i data-feather="users"></i> Reseller Orders</a>

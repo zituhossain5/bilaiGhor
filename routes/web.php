@@ -15,6 +15,7 @@ use App\Http\Controllers\Frontend\BkashController;
 // use App\Http\Controllers\Frontend\ShurjopayControllers;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ManualOrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\EmailSettingController;
@@ -78,6 +79,9 @@ use App\Http\Controllers\Frontend\BlogController;
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
 use App\Http\Controllers\Admin\PopupController;
+
+Route::get('/invoice/verify/{token}', [ManualOrderController::class, 'verify'])
+    ->name('manual.invoice.verify');
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Vendor\ProductController as VendorProductController;
 use App\Http\Controllers\Vendor\SettingsController as VendorSettingsController;
@@ -1233,6 +1237,13 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::get('order/cart/update', [OrderController::class, 'cart_update'])->name('admin.order.cart.update');
     Route::post('order/pos/apply-coupon', [OrderController::class, 'posApplyCoupon'])->name('admin.order.pos.apply_coupon');
     Route::get('order/pos/remove-coupon', [OrderController::class, 'posRemoveCoupon'])->name('admin.order.pos.remove_coupon');
+
+    Route::get('manual-orders', [ManualOrderController::class, 'index'])->name('admin.manual_orders.index');
+    Route::get('manual-orders/create', [ManualOrderController::class, 'create'])->name('admin.manual_orders.create');
+    Route::post('manual-orders', [ManualOrderController::class, 'store'])->name('admin.manual_orders.store');
+    Route::get('manual-orders/{order}/invoice', [ManualOrderController::class, 'show'])->name('admin.manual_orders.show');
+    Route::get('manual-orders/{order}/print', [ManualOrderController::class, 'print'])->name('admin.manual_orders.print');
+    Route::post('manual-orders/{order}/cancel', [ManualOrderController::class, 'cancel'])->name('admin.manual_orders.cancel');
 
     // Order route 
 	Route::get('order/{slug}/ajax', [OrderController::class, 'ajaxIndex'])->name('admin.orders.ajax');

@@ -94,8 +94,19 @@ class CustomerController extends Controller
         return redirect()->back();
     }
 
-    public function login()
+    public function login(Request $request)
     {
+        $previous = url()->previous();
+        $current = $request->fullUrl();
+
+        if ($previous
+            && $previous !== $current
+            && Str::startsWith($previous, url('/'))
+            && !Str::contains($previous, ['/customer/login', '/customer/register', '/customer/auth/'])
+        ) {
+            $request->session()->put('url.intended', $previous);
+        }
+
         return view('frontEnd.layouts.customer.login');
     }
 

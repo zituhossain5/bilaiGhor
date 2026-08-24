@@ -199,7 +199,7 @@
                 <label class="ba-label" for="name">Your Name <span class="req">*</span></label>
                 <input type="text" id="name" name="name"
                        class="ba-input no-icon @error('name') is-invalid @enderror"
-                       value="{{ old('name', session('social_name', '')) }}"
+                       value="{{ old('name') }}"
                        placeholder="Full name" required>
                 @error('name')<span class="ba-err">{{ $message }}</span>@enderror
             </div>
@@ -214,7 +214,7 @@
             </div>
 
             {{-- Hidden email field — carried over from social login pre-fill if available --}}
-            <input type="hidden" name="email" value="{{ old('email', session('social_email', '')) }}">
+            <input type="hidden" name="email" value="{{ old('email') }}">
 
             <div class="ba-field">
                 <label class="ba-label" for="password">Password <span class="req">*</span></label>

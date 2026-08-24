@@ -24,6 +24,8 @@ class Customer extends Authenticatable
         'slug',
         'phone',
         'email',
+        'google_id',
+        'facebook_id',
         'password',
         'verify',
         'status',

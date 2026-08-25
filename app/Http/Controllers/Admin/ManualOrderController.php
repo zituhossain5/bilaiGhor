@@ -15,9 +15,12 @@ use App\Models\Product;
 use App\Models\Shipping;
 use App\Services\InventoryService;
 use Brian2694\Toastr\Facades\Toastr;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class ManualOrderController extends Controller
@@ -201,7 +204,32 @@ class ManualOrderController extends Controller
     {
         $this->ensureManual($order);
 
-        return view('backEnd.manual_orders.invoice', $this->invoiceData($order, true));
+        return view('backEnd.manual_orders.print', $this->invoiceData($order, true));
+    }
+
+    public function download(Order $order)
+    {
+        $this->ensureManual($order);
+
+        $data = $this->invoiceData($order, false);
+        $data['logoUrl'] = $this->localImageDataUri($data['generalsetting']?->dark_logo) ?? $data['logoUrl'];
+        $data['qrUrl'] = $this->remoteImageDataUri($data['qrUrl']) ?? $data['qrUrl'];
+        $data['receiptFontUrl'] = $this->localImageDataUri('public/frontEnd/fonts/Potro-Sans-Bangla-Regular.ttf') ?? $data['receiptFontUrl'];
+        $data['receiptBoldFontUrl'] = $this->localImageDataUri('public/frontEnd/fonts/Potro-Sans-Bangla-Bold.ttf') ?? $data['receiptBoldFontUrl'];
+        File::ensureDirectoryExists(storage_path('fonts'));
+
+        $pdf = Pdf::loadView('backEnd.manual_orders.pdf', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOption('isRemoteEnabled', true)
+            ->setOption('defaultFont', 'DejaVu Sans');
+
+        $invoice = $order->invoice_number ?: $order->invoice_id;
+
+        return response()->streamDownload(
+            fn () => print($pdf->output()),
+            'Receipt-' . $invoice . '.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
     }
 
     public function cancel(Order $order)
@@ -307,14 +335,59 @@ class ManualOrderController extends Controller
     {
         $order->load(['orderdetails.product', 'shipping', 'payment', 'status', 'creator']);
         $verifyUrl = route('manual.invoice.verify', $order->public_token);
+        $generalsetting = GeneralSetting::where('status', 1)->first();
 
         return [
             'order' => $order,
-            'generalsetting' => GeneralSetting::where('status', 1)->first(),
+            'generalsetting' => $generalsetting,
             'contact' => Contact::where('status', 1)->first(),
             'printMode' => $printMode,
             'verifyUrl' => $verifyUrl,
+            'logoUrl' => $generalsetting?->dark_logo ? asset($generalsetting->dark_logo) : null,
             'qrUrl' => 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=2&data=' . urlencode($verifyUrl),
+            'receiptFontUrl' => asset('frontEnd/fonts/Potro-Sans-Bangla-Regular.ttf'),
+            'receiptBoldFontUrl' => asset('frontEnd/fonts/Potro-Sans-Bangla-Bold.ttf'),
         ];
+    }
+
+    private function localImageDataUri(?string $path): ?string
+    {
+        if (!$path || filter_var($path, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        $normalized = ltrim(str_replace('\\', '/', $path), '/');
+        $publicRelative = preg_replace('#^public/#', '', $normalized);
+        $candidates = array_unique([
+            base_path($normalized),
+            public_path($publicRelative),
+        ]);
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate) && is_readable($candidate)) {
+                $mime = mime_content_type($candidate) ?: 'image/png';
+
+                return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($candidate));
+            }
+        }
+
+        return null;
+    }
+
+    private function remoteImageDataUri(string $url): ?string
+    {
+        try {
+            $response = Http::timeout(10)->get($url);
+
+            if (!$response->successful() || $response->body() === '') {
+                return null;
+            }
+
+            $mime = $response->header('Content-Type') ?: 'image/png';
+
+            return 'data:' . strtok($mime, ';') . ';base64,' . base64_encode($response->body());
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

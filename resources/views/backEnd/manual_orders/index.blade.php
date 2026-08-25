@@ -101,7 +101,7 @@
                                 <td>{{ optional($order->creator)->name ?: 'Admin' }}</td>
                                 <td class="text-end">
                                     <a href="{{ route('admin.manual_orders.show', $order) }}" class="btn btn-sm btn-outline-primary">Invoice</a>
-                                    <a href="{{ route('admin.manual_orders.print', $order) }}" class="btn btn-sm btn-outline-secondary">Print</a>
+                                    <a href="{{ route('admin.manual_orders.print', $order) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">Print</a>
                                     @if((int) $order->order_status !== 11)
                                         <form action="{{ route('admin.manual_orders.cancel', $order) }}" method="POST" class="d-inline" onsubmit="return confirm('Cancel this manual order and release reserved stock?')">
                                             @csrf

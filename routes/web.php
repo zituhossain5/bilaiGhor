@@ -1243,6 +1243,7 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::post('manual-orders', [ManualOrderController::class, 'store'])->name('admin.manual_orders.store');
     Route::get('manual-orders/{order}/invoice', [ManualOrderController::class, 'show'])->name('admin.manual_orders.show');
     Route::get('manual-orders/{order}/print', [ManualOrderController::class, 'print'])->name('admin.manual_orders.print');
+    Route::get('manual-orders/{order}/download', [ManualOrderController::class, 'download'])->name('admin.manual_orders.download');
     Route::post('manual-orders/{order}/cancel', [ManualOrderController::class, 'cancel'])->name('admin.manual_orders.cancel');
 
     // Order route 

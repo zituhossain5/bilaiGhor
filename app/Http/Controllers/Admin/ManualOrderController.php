@@ -306,14 +306,15 @@ class ManualOrderController extends Controller
     private function invoiceData(Order $order, bool $printMode): array
     {
         $order->load(['orderdetails.product', 'shipping', 'payment', 'status', 'creator']);
+        $verifyUrl = route('manual.invoice.verify', $order->public_token);
 
         return [
             'order' => $order,
             'generalsetting' => GeneralSetting::where('status', 1)->first(),
             'contact' => Contact::where('status', 1)->first(),
             'printMode' => $printMode,
-            'verifyUrl' => route('manual.invoice.verify', $order->public_token),
-            'qrUrl' => 'https://api.qrserver.com/v1/create-qr-code/?size=132x132&data=' . urlencode(route('manual.invoice.verify', $order->public_token)),
+            'verifyUrl' => $verifyUrl,
+            'qrUrl' => 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=2&data=' . urlencode($verifyUrl),
         ];
     }
 }

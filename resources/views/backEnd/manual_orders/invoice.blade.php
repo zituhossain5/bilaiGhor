@@ -62,7 +62,9 @@ body { background: #f4f6f9; }
 .mi-social { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; font-size: 10px; color: #111; }
 .mi-social span { display: inline-flex; align-items: center; gap: 4px; }
 .mi-social i { width: 14px; height: 14px; border-radius: 50%; background: #111; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 8px; }
-.mi-qr img { width: 54px; height: 54px; object-fit: contain; }
+.mi-qr { text-align: right; }
+.mi-qr img { width: 82px; height: 82px; object-fit: contain; background: #fff; padding: 4px; border: 1px solid #dedede; }
+.mi-verify-url { margin-top: 3px; max-width: 100px; font-size: 7px; line-height: 1.2; color: #555; overflow-wrap: anywhere; text-align: right; }
 
 @page { size: A5 portrait; margin: 7mm; }
 @media print {
@@ -84,6 +86,8 @@ body { background: #f4f6f9; }
     .mi-customer { padding: 8px; }
     .mi-table td { padding: 5px 0; }
     .mi-thanks { margin: 10px 0 7px; }
+    .mi-qr img { width: 22mm; height: 22mm; padding: 1mm; }
+    .mi-verify-url { max-width: 30mm; font-size: 6px; }
 }
 
 @media (max-width: 575px) {
@@ -194,6 +198,7 @@ body { background: #f4f6f9; }
                 </div>
                 <div class="mi-qr">
                     <img src="{{ $qrUrl }}" alt="Invoice verification QR">
+                    <div class="mi-verify-url">{{ $verifyUrl }}</div>
                 </div>
             </footer>
         </article>

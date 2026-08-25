@@ -25,8 +25,8 @@
         <link rel="stylesheet" href="{{asset('public/backEnd/')}}/assets/css/toastr.min.css" />
 
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/wsit-menu.css')}}" />
-<link rel="stylesheet" href="{{ url('/style.css') }}?v=3">
-<link rel="stylesheet" href="{{ url('/responsive.css') }}?v=3">
+<link rel="stylesheet" href="{{ url('/style.css') }}?v=4">
+<link rel="stylesheet" href="{{ url('/responsive.css') }}?v=4">
         {{-- BilaiGhor Figma — DM Sans + Mochiy Pop One fonts --}}
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

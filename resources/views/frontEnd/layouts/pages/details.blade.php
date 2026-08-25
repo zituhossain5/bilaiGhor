@@ -374,7 +374,7 @@ input.bpd-btn { cursor: pointer; }
 /* BilaiGhor Related Products Figma Start */
 .bpd-related-section { padding: 36px 0 52px; background: var(--bilai-cream); }
 .bpd-related-hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; gap: 12px; }
-.bpd-related-title { font-size: 28px; font-weight: 800; color: var(--bilai-brown); margin: 0; line-height: 1.2; }
+.bpd-related-title { font-family: var(--bilai-font-title); font-size: 36px; font-weight: 400; color: var(--bilai-brown); margin: 0; line-height: 48px; }
 .bpd-view-all {
     color: var(--bilai-text); font-size: 13px; font-weight: 500;
     text-decoration: none; border: 1.5px solid var(--bilai-border);
@@ -1417,7 +1417,7 @@ input.bpd-btn { cursor: pointer; }
 <section class="bpd-related-section">
     <div class="container">
         <div class="bpd-related-hdr">
-            <h2 class="bpd-related-title">Related<br>Products</h2>
+            <h2 class="bpd-related-title">Related Products</h2>
             <a href="{{ url('/category/' . $details->category->slug) }}" class="bpd-view-all">View All Deals</a>
         </div>
         <div class="bilai-cat-grid-home">

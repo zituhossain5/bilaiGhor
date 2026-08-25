@@ -3973,11 +3973,11 @@ form.sort-form .form-select:focus {
     font-size: 16px;
 }
 
-.details_slider {
+{{-- .details_slider {
     position: relative;
     border: 1px solid {{$generalsetting->primary_color}};
     border-radius: 5px;
-}
+} --}}
 
 .details-page-wishlist {
     position: absolute;

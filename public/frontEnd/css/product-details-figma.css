@@ -87,7 +87,7 @@
 
 .bpd-main-img-col .dimage_item {
     min-height: 0;
-    padding: 20px 56px;
+    padding: 20px;
 }
 
 .bpd-main-img-col .block__pic {
@@ -306,8 +306,8 @@
 
 .bpd-btn-row {
     display: grid;
-    grid-template-columns: minmax(0, 209fr) minmax(0, 209fr) minmax(0, 231fr);
-    gap: 16px;
+    grid-template-columns: minmax(0, 190fr) minmax(0, 190fr) minmax(0, 255fr);
+    gap: 12px;
     margin-bottom: 20px;
 }
 
@@ -601,7 +601,8 @@
     }
 
     .bpd-main-img-col .dimage_item {
-        padding: 14px 24px;
+        /* padding: 14px 24px; */
+        padding: 50px;
     }
 
     .bpd-thumbs-col {
@@ -690,7 +691,7 @@
 
     .bpd-btn-row {
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 8px;
     }
 
     .bpd-btn-row .bpd-btn,

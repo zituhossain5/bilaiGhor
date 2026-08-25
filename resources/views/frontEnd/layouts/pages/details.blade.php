@@ -600,10 +600,10 @@ input.bpd-btn { cursor: pointer; }
     }
 
     .bpd-price-row {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        display: flex;
+        flex-wrap: nowrap;
         align-items: center;
-        gap: 8px 10px;
+        gap: 8px;
         margin-bottom: 12px;
     }
 
@@ -617,21 +617,34 @@ input.bpd-btn { cursor: pointer; }
     }
 
     .bpd-disc-pill {
-        justify-self: end;
         padding: 4px 9px;
         font-size: 11px;
         line-height: 1.2;
         white-space: nowrap;
+        flex: 0 0 auto;
     }
 
     .bpd-wishlist {
-        grid-column: 1 / -1;
-        justify-self: start;
-        min-height: 36px;
-        margin-left: 0;
-        padding: 7px 11px;
-        border: 1px solid var(--bilai-border);
-        border-radius: 999px;
+        width: 38px;
+        height: 38px;
+        min-height: 38px;
+        margin-left: auto;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        justify-content: center;
+        gap: 0;
+        flex: 0 0 38px;
+    }
+
+    .bpd-wishlist-label {
+        display: none;
+    }
+
+    .bpd-wishlist-icon {
+        width: 38px;
+        height: 38px;
+        padding: 9px;
     }
 
     .bpd-weight-row,
@@ -900,7 +913,7 @@ input.bpd-btn { cursor: pointer; }
 /* BilaiGhor Product Details Mobile Fix End */
 /* BilaiGhor Product Details End */
 </style>
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=4">
+<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=5">
 @endpush
 
 @section('content')
@@ -919,6 +932,9 @@ input.bpd-btn { cursor: pointer; }
     $soldCount    = $details->sold ?? 0;
     /* BilaiGhor Product Sold Fix End */
     $rewardPoints = \App\Services\RewardPointService::earnedPointsFor((float) $details->new_price);
+    $formatProductPrice = function ($price) {
+        return preg_replace('/\.00$/', '', number_format((float) $price, 2, '.', ''));
+    };
 @endphp
 
 {{-- ─────────────────── BREADCRUMB ─────────────────── --}}
@@ -1015,9 +1031,9 @@ input.bpd-btn { cursor: pointer; }
 
                 {{-- Price --}}
                 <div class="bpd-price-row">
-                    <span class="bpd-new-price" id="newPrice">৳{{ $details->new_price }}</span>
+                    <span class="bpd-new-price" id="newPrice">৳{{ $formatProductPrice($details->new_price) }}</span>
                     @if($details->old_price && $details->old_price > $details->new_price)
-                    <span class="bpd-old-price">৳{{ number_format($details->old_price, 0) }}</span>
+                    <span class="bpd-old-price">৳{{ $formatProductPrice($details->old_price) }}</span>
                     <span class="bpd-disc-pill">{{ $discountPct }}% OFF</span>
                     @endif
                     <a href="#" class="bpd-wishlist" data-product-id="{{ $details->id }}" aria-pressed="false">
@@ -1571,7 +1587,13 @@ input.bpd-btn { cursor: pointer; }
         if (wp !== null) basePrice = parseFloat(wp);
         highlightWholesaleTier(qty);
         @endif
-        $('#newPrice').text('৳' + basePrice.toFixed(2));
+        $('#newPrice').text('৳' + formatProductPrice(basePrice));
+    }
+
+    function formatProductPrice(price) {
+        let numericPrice = parseFloat(price);
+        if (Number.isNaN(numericPrice)) return price;
+        return numericPrice.toFixed(2).replace(/\.00$/, '');
     }
 
     {{-- Product images for color filter --}}

@@ -214,6 +214,8 @@ class ManualOrderController extends Controller
         $data = $this->invoiceData($order, false);
         $data['logoUrl'] = $this->localImageDataUri($data['generalsetting']?->dark_logo) ?? $data['logoUrl'];
         $data['qrUrl'] = $this->remoteImageDataUri($data['qrUrl']) ?? $data['qrUrl'];
+        $data['facebookIconUrl'] = $this->localImageDataUri('public/frontEnd/images/facebook-f-brands.png') ?? $data['facebookIconUrl'];
+        $data['whatsappIconUrl'] = $this->localImageDataUri('public/frontEnd/images/whatsapp-brands.png') ?? $data['whatsappIconUrl'];
         $data['receiptFontUrl'] = $this->localImageDataUri('public/frontEnd/fonts/Potro-Sans-Bangla-Regular.ttf') ?? $data['receiptFontUrl'];
         $data['receiptBoldFontUrl'] = $this->localImageDataUri('public/frontEnd/fonts/Potro-Sans-Bangla-Bold.ttf') ?? $data['receiptBoldFontUrl'];
         File::ensureDirectoryExists(storage_path('fonts'));
@@ -345,6 +347,10 @@ class ManualOrderController extends Controller
             'verifyUrl' => $verifyUrl,
             'logoUrl' => $generalsetting?->dark_logo ? asset($generalsetting->dark_logo) : null,
             'qrUrl' => 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=2&data=' . urlencode($verifyUrl),
+            'facebookIconUrl' => $this->localImageDataUri('public/frontEnd/images/facebook-f-brands.png')
+                ?? asset('public/frontEnd/images/facebook-f-brands.png'),
+            'whatsappIconUrl' => $this->localImageDataUri('public/frontEnd/images/whatsapp-brands.png')
+                ?? asset('public/frontEnd/images/whatsapp-brands.png'),
             'receiptFontUrl' => asset('frontEnd/fonts/Potro-Sans-Bangla-Regular.ttf'),
             'receiptBoldFontUrl' => asset('frontEnd/fonts/Potro-Sans-Bangla-Bold.ttf'),
         ];

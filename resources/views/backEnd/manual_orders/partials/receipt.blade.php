@@ -51,10 +51,14 @@
     </table>
 
     <table class="mi-summary" role="presentation">
-        <tr><td>Subtotal</td><td class="mi-summary-value">&#2547;{{ number_format($subtotal, 0) }}</td></tr>
-        <tr><td>Delivery Charge</td><td class="mi-summary-value">&#2547;{{ number_format($delivery, 0) }}</td></tr>
-        <tr><td>Discount</td><td class="mi-summary-value">@if($discount > 0) &#2547;{{ number_format($discount, 0) }} @else --- @endif</td></tr>
-        <tr><td class="mi-total-label">TOTAL</td><td class="mi-total-value">&#2547;{{ number_format($total, 0) }}</td></tr>
+        <colgroup>
+            <col class="mi-summary-label-col">
+            <col class="mi-summary-value-col">
+        </colgroup>
+        <tr><td class="mi-summary-label">Subtotal</td><td class="mi-summary-value">&#2547;{{ number_format($subtotal, 0) }}</td></tr>
+        <tr><td class="mi-summary-label">Delivery Charge</td><td class="mi-summary-value">&#2547;{{ number_format($delivery, 0) }}</td></tr>
+        <tr><td class="mi-summary-label">Discount</td><td class="mi-summary-value">@if($discount > 0) &#2547;{{ number_format($discount, 0) }} @else --- @endif</td></tr>
+        <tr class="mi-total-row"><td class="mi-summary-label">TOTAL</td><td class="mi-summary-value">&#2547;{{ number_format($total, 0) }}</td></tr>
     </table>
 
     @php
@@ -77,8 +81,8 @@
     <table class="mi-footer" role="presentation">
         <tr>
             <td class="mi-social">
-                <div class="mi-social-line"><i class="fa fa-facebook"></i>{{ $facebook }}</div>
-                <div class="mi-social-line"><i class="fa fa-whatsapp"></i>{{ $whatsapp }}</div>
+                <div class="mi-social-line"><span class="mi-social-icon"><img src="{{ $facebookIconUrl }}" alt="Facebook"></span><span>{{ $facebook }}</span></div>
+                <div class="mi-social-line"><span class="mi-social-icon"><img src="{{ $whatsappIconUrl }}" alt="WhatsApp"></span><span>{{ $whatsapp }}</span></div>
             </td>
             <td class="mi-qr">
                 <img src="{{ $qrUrl }}" alt="Invoice verification QR">

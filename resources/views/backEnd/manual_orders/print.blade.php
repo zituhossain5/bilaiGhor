@@ -5,7 +5,7 @@
     <title>Manual Order Receipt</title>
     @include('backEnd.manual_orders.partials.receipt-styles')
 </head>
-<body class="mi-standalone">
+<body class="mi-standalone mi-print-page">
     @php
         $invoice = $order->invoice_number ?: $order->invoice_id;
         $subtotal = $order->orderdetails->sum(fn($item) => ($item->sale_price * $item->qty));

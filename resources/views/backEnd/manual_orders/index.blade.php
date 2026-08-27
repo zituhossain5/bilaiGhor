@@ -55,6 +55,14 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-md-2">
+                    <select name="order_status" class="form-select">
+                        <option value="">Order Status</option>
+                        @foreach($statuses as $status)
+                            <option value="{{ $status->id }}" @selected((string) request('order_status') === (string) $status->id)>{{ $status->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="col-md-2 d-flex gap-2">
                     <button class="btn btn-dark flex-fill">Filter</button>
                     <a href="{{ route('admin.manual_orders.index') }}" class="btn btn-light">Reset</a>
@@ -100,9 +108,14 @@
                                 <td>{{ optional($order->status)->name ?: $order->order_status }}</td>
                                 <td>{{ optional($order->creator)->name ?: 'Admin' }}</td>
                                 <td class="text-end">
+                                    @if((int) $order->order_status !== \App\Services\InventoryService::CANCEL_STATUS)
+                                        <a href="{{ route('admin.manual_orders.edit', $order) }}" class="btn btn-sm btn-outline-dark">Edit</a>
+                                    @else
+                                        <button type="button" class="btn btn-sm btn-outline-dark" disabled title="Cancelled orders are read-only">Edit</button>
+                                    @endif
                                     <a href="{{ route('admin.manual_orders.show', $order) }}" class="btn btn-sm btn-outline-primary">Invoice</a>
                                     <a href="{{ route('admin.manual_orders.print', $order) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">Print</a>
-                                    @if((int) $order->order_status !== 11)
+                                    @if((int) $order->order_status !== \App\Services\InventoryService::CANCEL_STATUS)
                                         <form action="{{ route('admin.manual_orders.cancel', $order) }}" method="POST" class="d-inline" onsubmit="return confirm('Cancel this manual order and release reserved stock?')">
                                             @csrf
                                             <button class="btn btn-sm btn-outline-danger">Cancel</button>

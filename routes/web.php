@@ -1241,6 +1241,8 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::get('manual-orders', [ManualOrderController::class, 'index'])->name('admin.manual_orders.index');
     Route::get('manual-orders/create', [ManualOrderController::class, 'create'])->name('admin.manual_orders.create');
     Route::post('manual-orders', [ManualOrderController::class, 'store'])->name('admin.manual_orders.store');
+    Route::get('manual-orders/{order}/edit', [ManualOrderController::class, 'edit'])->name('admin.manual_orders.edit');
+    Route::put('manual-orders/{order}', [ManualOrderController::class, 'update'])->name('admin.manual_orders.update');
     Route::get('manual-orders/{order}/invoice', [ManualOrderController::class, 'show'])->name('admin.manual_orders.show');
     Route::get('manual-orders/{order}/print', [ManualOrderController::class, 'print'])->name('admin.manual_orders.print');
     Route::get('manual-orders/{order}/download', [ManualOrderController::class, 'download'])->name('admin.manual_orders.download');
@@ -1256,10 +1258,14 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::get('order/invoice/{invoice_id}', [OrderController::class,'invoice'])->name('admin.order.invoice');
     Route::get('order/process/{invoice_id}', [OrderController::class,'process'])->name('admin.order.process');
     Route::post('order/change', [OrderController::class,'order_process'])->name('admin.order_change');
-    Route::post('order/destroy', [OrderController::class,'destroy'])->name('admin.order.destroy');
+    Route::post('order/destroy', [OrderController::class,'destroy'])
+        ->middleware(\App\Http\Middleware\PreventManualOrderDeletion::class)
+        ->name('admin.order.destroy');
     Route::get('order-assign', [OrderController::class,'order_assign'])->name('admin.order.assign');
     Route::get('order-status', [OrderController::class,'order_status'])->name('admin.order.status');
-    Route::get('order-bulk-destroy', [OrderController::class,'bulk_destroy'])->name('admin.order.bulk_destroy');
+    Route::get('order-bulk-destroy', [OrderController::class,'bulk_destroy'])
+        ->middleware(\App\Http\Middleware\PreventManualOrderDeletion::class)
+        ->name('admin.order.bulk_destroy');
     Route::get('order-print', [OrderController::class,'order_print'])->name('admin.order.order_print');
     Route::get('bulk-courier/{slug}', [OrderController::class,'bulk_courier'])->name('admin.bulk_courier');
     Route::get('stock-report', [OrderController::class,'stock_report'])->name('admin.stock_report');

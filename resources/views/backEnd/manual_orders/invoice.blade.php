@@ -37,6 +37,9 @@ body { background: #f4f6f9; }
 <div class="container-fluid">
     <div class="mi-actions no-print">
         <a href="{{ route('admin.manual_orders.index') }}" class="btn btn-light">Back</a>
+        @if((int) $order->order_status !== \App\Services\InventoryService::CANCEL_STATUS)
+            <a href="{{ route('admin.manual_orders.edit', $order) }}" class="btn btn-outline-dark">Edit</a>
+        @endif
         <a href="{{ route('admin.manual_orders.download', $order) }}" class="btn btn-primary">Download PDF</a>
         @if((int) $order->order_status !== 11)
             <form action="{{ route('admin.manual_orders.cancel', $order) }}" method="POST" onsubmit="return confirm('Cancel this manual order and release reserved stock?')">

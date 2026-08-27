@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ManualOrderController extends Controller
 {
@@ -54,19 +55,21 @@ class ManualOrderController extends Controller
 
     public function create()
     {
-        $products = Product::with('weight')
-            ->where('status', 1)
-            ->orderBy('name')
-            ->get(['id', 'name', 'new_price', 'old_price', 'stock', 'purchase_price', 'weight_id']);
+        return view('backEnd.manual_orders.create', $this->formData());
+    }
 
-        $customers = Customer::orderBy('name')->limit(300)->get(['id', 'name', 'phone', 'email', 'address']);
+    public function edit(Order $order)
+    {
+        $this->ensureManual($order);
 
-        return view('backEnd.manual_orders.create', [
-            'products' => $products,
-            'customers' => $customers,
-            'sources' => $this->sources,
-            'methods' => $this->methods,
-        ]);
+        if ((int) $order->order_status === InventoryService::CANCEL_STATUS) {
+            Toastr::warning('Cancelled manual orders are read-only.', 'Cannot Edit');
+            return redirect()->route('admin.manual_orders.show', $order);
+        }
+
+        $order->load(['orderdetails', 'shipping', 'payment']);
+
+        return view('backEnd.manual_orders.edit', $this->formData($order));
     }
 
     public function store(Request $request)
@@ -101,7 +104,12 @@ class ManualOrderController extends Controller
                 $orderDiscount = min((float) ($validated['order_discount'] ?? 0), max(0, $subtotal - $itemDiscount));
                 $delivery = (float) ($validated['delivery_charge'] ?? 0);
                 $grandTotal = max(0, $subtotal - $itemDiscount - $orderDiscount + $delivery);
-                $paid = min((float) ($validated['paid_amount'] ?? 0), $grandTotal);
+                $paid = (float) ($validated['paid_amount'] ?? 0);
+                if ($paid > $grandTotal) {
+                    throw ValidationException::withMessages([
+                        'paid_amount' => 'Paid amount cannot be greater than the grand total.',
+                    ]);
+                }
                 $due = max(0, $grandTotal - $paid);
                 $paymentStatus = $this->paymentStatus($paid, $grandTotal);
 
@@ -193,6 +201,101 @@ class ManualOrderController extends Controller
         return redirect()->route('admin.manual_orders.show', $order);
     }
 
+    public function update(Request $request, Order $order)
+    {
+        $this->ensureManual($order);
+        $validated = $this->validateOrder($request, true);
+
+        try {
+            $order = DB::transaction(function () use ($order, $validated) {
+                $lockedOrder = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+                $this->ensureManual($lockedOrder);
+
+                if ((int) $lockedOrder->order_status === InventoryService::CANCEL_STATUS) {
+                    throw ValidationException::withMessages([
+                        'order_status' => 'Cancelled manual orders are read-only.',
+                    ]);
+                }
+
+                $items = $this->normalizeItems($validated['items']);
+                $totals = $this->calculateTotals($items, $validated);
+                $targetStatus = (int) $validated['order_status'];
+                $adminId = Auth::guard('admin')->id();
+
+                InventoryService::reconcileOrderStock(
+                    $lockedOrder,
+                    collect($items)->map(fn ($item) => [
+                        'product_id' => $item['product_id'],
+                        'qty' => $item['qty'],
+                        'name' => $item['name'],
+                    ]),
+                    $targetStatus,
+                    strict: true,
+                    adminId: $adminId
+                );
+
+                $customerId = $validated['customer_id'] ?? null;
+
+                OrderDetails::where('order_id', $lockedOrder->id)->delete();
+                $this->storeOrderDetails($lockedOrder, $items);
+
+                $lockedOrder->fill([
+                    'amount' => (int) round($totals['grand_total']),
+                    'discount' => (int) round($totals['item_discount'] + $totals['order_discount']),
+                    'order_discount' => $totals['order_discount'],
+                    'shipping_charge' => (int) round($totals['delivery']),
+                    'customer_id' => $customerId,
+                    'manual_customer_name' => $validated['customer_name'],
+                    'manual_customer_phone' => $validated['customer_phone'],
+                    'manual_customer_email' => $validated['customer_email'] ?? null,
+                    'manual_customer_address' => $validated['customer_address'],
+                    'order_status' => $targetStatus,
+                    'order_source' => $validated['order_source'],
+                    'payment_method' => $validated['payment_method'],
+                    'transaction_id' => $validated['transaction_id'] ?? null,
+                    'payment_status' => $totals['payment_status'],
+                    'paid_amount' => $totals['paid'],
+                    'due_amount' => $totals['due'],
+                    'note' => $validated['notes'] ?? null,
+                    'order_note' => $validated['notes'] ?? null,
+                    'updated_by' => $adminId,
+                ])->save();
+
+                Shipping::updateOrCreate(
+                    ['order_id' => $lockedOrder->id],
+                    [
+                        'customer_id' => $customerId,
+                        'name' => $validated['customer_name'],
+                        'phone' => $validated['customer_phone'],
+                        'address' => $validated['customer_address'],
+                        'area' => 'Manual Order',
+                    ]
+                );
+
+                Payment::updateOrCreate(
+                    ['order_id' => $lockedOrder->id],
+                    [
+                        'customer_id' => $customerId,
+                        'amount' => (int) round($totals['paid']),
+                        'trx_id' => $validated['transaction_id'] ?? null,
+                        'sender_number' => $validated['customer_phone'],
+                        'payment_method' => $validated['payment_method'],
+                        'payment_status' => $totals['payment_status'],
+                    ]
+                );
+
+                return $lockedOrder->refresh();
+            });
+        } catch (InsufficientStockException $e) {
+            return back()
+                ->withInput()
+                ->withErrors(['stock' => $e->validationMessage()]);
+        }
+
+        Toastr::success('Manual order updated successfully.', 'Success');
+        return redirect()->route('admin.manual_orders.show', $order);
+    }
+
     public function show(Order $order)
     {
         $this->ensureManual($order);
@@ -238,13 +341,37 @@ class ManualOrderController extends Controller
     {
         $this->ensureManual($order);
 
-        if ((int) $order->order_status === 11) {
+        $alreadyCancelled = DB::transaction(function () use ($order) {
+            $lockedOrder = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+            $this->ensureManual($lockedOrder);
+
+            if ((int) $lockedOrder->order_status === InventoryService::CANCEL_STATUS) {
+                return true;
+            }
+
+            InventoryService::reconcileOrderStock(
+                $lockedOrder,
+                $lockedOrder->orderdetails()->get(['product_id', 'qty', 'product_name'])->map(fn ($item) => [
+                    'product_id' => $item->product_id,
+                    'qty' => $item->qty,
+                    'name' => $item->product_name,
+                ]),
+                InventoryService::CANCEL_STATUS,
+                strict: true,
+                adminId: Auth::guard('admin')->id()
+            );
+
+            $lockedOrder->order_status = InventoryService::CANCEL_STATUS;
+            $lockedOrder->updated_by = Auth::guard('admin')->id();
+            $lockedOrder->save();
+
+            return false;
+        });
+
+        if ($alreadyCancelled) {
             Toastr::info('Manual order is already cancelled.', 'Info');
             return back();
         }
-
-        $order->order_status = 11;
-        $order->save();
 
         Toastr::success('Manual order cancelled and stock released safely.', 'Success');
         return back();
@@ -264,15 +391,33 @@ class ManualOrderController extends Controller
     private function normalizeItems(array $rows): array
     {
         $items = [];
+        $productIds = collect($rows)
+            ->pluck('product_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->sort()
+            ->values();
+        $products = Product::whereIn('id', $productIds)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
 
         foreach ($rows as $row) {
             $product = !empty($row['product_id'])
-                ? Product::lockForUpdate()->find((int) $row['product_id'])
+                ? $products->get((int) $row['product_id'])
                 : null;
 
             $qty = (int) $row['qty'];
             $unitPrice = (float) $row['unit_price'];
-            $discount = min((float) ($row['discount'] ?? 0), $qty * $unitPrice);
+            $gross = $qty * $unitPrice;
+            $discount = (float) ($row['discount'] ?? 0);
+            if ($discount > $gross) {
+                throw ValidationException::withMessages([
+                    'items' => 'An item discount cannot be greater than that item\'s total price.',
+                ]);
+            }
 
             $items[] = [
                 'product_id' => $product?->id,
@@ -282,12 +427,134 @@ class ManualOrderController extends Controller
                 'unit_price' => $unitPrice,
                 'purchase_price' => (int) round($product?->purchase_price ?? 0),
                 'discount' => $discount,
-                'gross' => $qty * $unitPrice,
-                'line_total' => max(0, ($qty * $unitPrice) - $discount),
+                'gross' => $gross,
+                'line_total' => max(0, $gross - $discount),
             ];
         }
 
         return $items;
+    }
+
+    private function validateOrder(Request $request, bool $updating = false): array
+    {
+        $rules = [
+            'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
+            'customer_name' => ['required', 'string', 'max:155'],
+            'customer_phone' => ['required', 'string', 'max:55'],
+            'customer_email' => ['nullable', 'email', 'max:155'],
+            'customer_address' => ['required', 'string', 'max:1000'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'order_source' => ['required', 'in:' . implode(',', $this->sources)],
+            'payment_method' => ['required', 'in:' . implode(',', $this->methods)],
+            'transaction_id' => ['nullable', 'string', 'max:100'],
+            'delivery_charge' => ['nullable', 'numeric', 'min:0'],
+            'order_discount' => ['nullable', 'numeric', 'min:0'],
+            'paid_amount' => ['nullable', 'numeric', 'min:0'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['nullable', 'integer', 'exists:products,id'],
+            'items.*.name' => ['required_without:items.*.product_id', 'nullable', 'string', 'max:255'],
+            'items.*.variant' => ['nullable', 'string', 'max:155'],
+            'items.*.qty' => ['required', 'integer', 'min:1'],
+            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
+            'items.*.discount' => ['nullable', 'numeric', 'min:0'],
+        ];
+
+        if ($updating) {
+            $rules['order_status'] = ['required', 'integer', 'exists:order_statuses,id'];
+        }
+
+        return $request->validate($rules);
+    }
+
+    private function calculateTotals(array $items, array $validated): array
+    {
+        $subtotal = (float) collect($items)->sum('gross');
+        $itemDiscount = (float) collect($items)->sum('discount');
+        $maximumOrderDiscount = max(0, $subtotal - $itemDiscount);
+        $orderDiscount = (float) ($validated['order_discount'] ?? 0);
+
+        if ($orderDiscount > $maximumOrderDiscount) {
+            throw ValidationException::withMessages([
+                'order_discount' => 'Order discount cannot be greater than the order subtotal after item discounts.',
+            ]);
+        }
+
+        $delivery = (float) ($validated['delivery_charge'] ?? 0);
+        $grandTotal = max(0, $subtotal - $itemDiscount - $orderDiscount + $delivery);
+        $paid = (float) ($validated['paid_amount'] ?? 0);
+
+        if ($paid > $grandTotal) {
+            throw ValidationException::withMessages([
+                'paid_amount' => 'Paid amount cannot be greater than the grand total.',
+            ]);
+        }
+
+        return [
+            'subtotal' => $subtotal,
+            'item_discount' => $itemDiscount,
+            'order_discount' => $orderDiscount,
+            'delivery' => $delivery,
+            'grand_total' => $grandTotal,
+            'paid' => $paid,
+            'due' => max(0, $grandTotal - $paid),
+            'payment_status' => $this->paymentStatus($paid, $grandTotal),
+        ];
+    }
+
+    private function storeOrderDetails(Order $order, array $items): void
+    {
+        foreach ($items as $item) {
+            OrderDetails::create([
+                'order_id' => $order->id,
+                'product_id' => $item['product_id'],
+                'product_name' => $item['name'],
+                'manual_variant' => $item['variant'],
+                'is_manual_item' => empty($item['product_id']),
+                'purchase_price' => $item['purchase_price'],
+                'sale_price' => (int) round($item['unit_price']),
+                'product_discount' => (int) round($item['discount']),
+                'line_discount' => $item['discount'],
+                'line_total' => $item['line_total'],
+                'qty' => $item['qty'],
+            ]);
+        }
+    }
+
+    private function formData(?Order $order = null): array
+    {
+        $products = Product::with('weight')
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get(['id', 'name', 'new_price', 'old_price', 'stock', 'purchase_price', 'weight_id']);
+
+        $existingQuantities = $order
+            ? $order->orderdetails->whereNotNull('product_id')->groupBy('product_id')->map->sum('qty')
+            : collect();
+
+        $products->each(function ($product) use ($existingQuantities) {
+            $product->editable_stock = (int) $product->stock + (int) ($existingQuantities[$product->id] ?? 0);
+        });
+
+        $initialItems = $order
+            ? $order->orderdetails->map(fn ($item) => [
+                'product_id' => $item->product_id,
+                'name' => $item->product_name,
+                'variant' => $item->manual_variant,
+                'qty' => (int) $item->qty,
+                'unit_price' => (float) $item->sale_price,
+                'discount' => (float) ($item->line_discount ?? $item->product_discount ?? 0),
+            ])->values()->all()
+            : [['qty' => 1, 'unit_price' => 0, 'discount' => 0]];
+
+        return [
+            'order' => $order,
+            'products' => $products,
+            'customers' => Customer::orderBy('name')->limit(300)->get(['id', 'name', 'phone', 'email', 'address']),
+            'statuses' => OrderStatus::where('status', 1)->orderBy('id')->get(),
+            'sources' => $this->sources,
+            'methods' => $this->methods,
+            'initialItems' => $initialItems,
+        ];
     }
 
     private function paymentStatus(float $paid, float $grandTotal): string

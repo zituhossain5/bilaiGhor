@@ -10,7 +10,13 @@
 <tbody>
                                 @foreach($show_data as $key => $value)
                                     <tr>
-                                        <td><input type="checkbox" class="checkbox form-check-input" value="{{ $value->id }}"></td>
+                                        <td>
+                                            @if($value->is_manual_order)
+                                                <input type="checkbox" class="form-check-input" disabled title="Manual invoices cannot be permanently deleted">
+                                            @else
+                                                <input type="checkbox" class="checkbox form-check-input" value="{{ $value->id }}">
+                                            @endif
+                                        </td>
                                         <td>{{ $loop->iteration }}</td>
                                         <td class="oi-actions-cell">
                                             <div class="oi-row-actions">
@@ -22,6 +28,12 @@
                                                     <i class="fas fa-eye" aria-hidden="true"></i>
                                                     <span class="oi-act-label">ভিউ</span>
                                                 </button>
+                                                @if($value->is_manual_order)
+                                                    <a href="{{ route('admin.manual_orders.edit', $value) }}" class="oi-act-btn" title="Edit manual order">
+                                                        <i class="fas fa-edit" aria-hidden="true"></i>
+                                                        <span class="oi-act-label">Edit</span>
+                                                    </a>
+                                                @else
                                                 <form method="post" action="{{ route('admin.order.destroy') }}" class="oi-act-delete-form">
                                                     @csrf
                                                     <input type="hidden" value="{{ $value->id }}" name="id">
@@ -33,6 +45,7 @@
                                                         <span class="oi-act-label">ডিলিট</span>
                                                     </button>
                                                 </form>
+                                                @endif
                                             </div>
                                         </td>
                                         <td><a href="{{ route('admin.order.process', ['invoice_id' => $value->invoice_id]) }}" class="oi-invoice-link">#{{ $value->invoice_id }}</a></td>
@@ -46,9 +59,13 @@
                                         </td>
                                         <td>
                                             @php
-                                                $tsKey = strtolower(trim((string) ($value->traffic_source ?? 'direct')));
+                                                $tsKey = $value->is_manual_order
+                                                    ? strtolower(trim((string) ($value->order_source ?: 'manual')))
+                                                    : strtolower(trim((string) ($value->traffic_source ?? 'direct')));
                                                 $trafficOpts = isset($traffic_source_options) ? $traffic_source_options : [];
-                                                $tsLabel = isset($trafficOpts[$tsKey]) ? $trafficOpts[$tsKey] : ucfirst($tsKey ?: 'direct');
+                                                $tsLabel = $value->is_manual_order
+                                                    ? ucwords(str_replace(['_', '-'], ' ', $tsKey ?: 'manual'))
+                                                    : (isset($trafficOpts[$tsKey]) ? $trafficOpts[$tsKey] : ucfirst($tsKey ?: 'direct'));
                                                 $tsBadgeClass = match ($tsKey) {
                                                     'facebook' => 'bg-primary',
                                                     'instagram' => 'bg-danger',
@@ -63,7 +80,9 @@
                                                     'other' => 'bg-warning',
                                                     default => 'bg-secondary',
                                                 };
-                                                $tsTitleTip = isset($value->traffic_referrer) ? trim((string) $value->traffic_referrer) : '';
+                                                $tsTitleTip = $value->is_manual_order
+                                                    ? 'Manual/offline order source'
+                                                    : (isset($value->traffic_referrer) ? trim((string) $value->traffic_referrer) : '');
                                             @endphp
                                             <span class="badge {{ $tsBadgeClass }}" @if($tsTitleTip !== '') title="{{ Str::limit($tsTitleTip, 240) }}" @endif>{{ Str::limit($tsLabel, 16) }}</span>
                                             @if($tsTitleTip !== '')

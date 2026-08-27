@@ -132,6 +132,11 @@ class Order extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
     // ============================
     // 🌟 DIGITAL DOWNLOAD SUPPORT
     // ============================

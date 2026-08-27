@@ -159,6 +159,8 @@ class InventoryService
             $names[$pid]  = $line['name'] ?? ('#' . $pid);
         }
 
+        ksort($wanted);
+
         foreach ($wanted as $pid => $qty) {
             $row = self::stockRow($pid, lock: true);
             $available = $row ? $row->available : 0;
@@ -303,6 +305,127 @@ class InventoryService
             self::reserveForOrder($order, strict: false);
         }
         // Any other/new status: leave inventory untouched.
+    }
+
+    /**
+     * Reconcile an order's inventory ledger to edited line quantities and status.
+     *
+     * Active orders hold reservations, delivered orders hold completed sales, and
+     * cancelled orders hold neither. Only the difference is moved, so editing an
+     * order can never reserve or deduct the full quantity a second time.
+     *
+     * @param iterable $lines each: ['product_id' => int|null, 'qty' => int, 'name' => string]
+     * @throws InsufficientStockException
+     */
+    public static function reconcileOrderStock(
+        Order $order,
+        iterable $lines,
+        int $targetStatus,
+        bool $strict = true,
+        ?int $adminId = null
+    ): void {
+        DB::transaction(function () use ($order, $lines, $targetStatus, $strict, $adminId) {
+            $desired = [];
+            $names = [];
+
+            foreach ($lines as $line) {
+                $productId = (int) ($line['product_id'] ?? 0);
+                if ($productId <= 0) {
+                    continue;
+                }
+
+                $desired[$productId] = ($desired[$productId] ?? 0) + (int) $line['qty'];
+                $names[$productId] = $line['name'] ?? ('#' . $productId);
+            }
+
+            $productIds = InventoryMovement::where('order_id', $order->id)
+                ->distinct()
+                ->pluck('product_id')
+                ->map(fn ($id) => (int) $id)
+                ->merge(array_keys($desired))
+                ->unique()
+                ->sort()
+                ->values();
+
+            foreach ($productIds as $productId) {
+                $row = self::stockRow($productId, lock: true, excludeOrderId: (int) $order->id);
+                if (!$row) {
+                    continue;
+                }
+
+                [$reserved, $sold] = self::orderLineNet((int) $order->id, $productId);
+                $wanted = max(0, (int) ($desired[$productId] ?? 0));
+                $name = $names[$productId] ?? (Product::find($productId)->name ?? ('#' . $productId));
+                $context = [
+                    'order_id' => $order->id,
+                    'reference_type' => 'order_edit',
+                    'reference_id' => $order->id,
+                    'reason' => 'Manual order edited',
+                    'created_by' => $adminId,
+                ];
+
+                if ($targetStatus === self::CANCEL_STATUS) {
+                    if ($reserved > 0) {
+                        self::apply($row, InventoryMovement::TYPE_RESERVATION_RELEASED, $reserved, 0, -$reserved, $context);
+                    }
+                    if ($sold > 0) {
+                        self::apply($row, InventoryMovement::TYPE_RETURN_RESTOCK, $sold, $sold, 0, $context);
+                    }
+                    continue;
+                }
+
+                if (in_array($targetStatus, self::RESERVE_STATUSES, true)) {
+                    // Reopening a delivered order first reverses its completed sale.
+                    if ($sold > 0) {
+                        self::apply($row, InventoryMovement::TYPE_RETURN_RESTOCK, $sold, $sold, 0, $context);
+                        $sold = 0;
+                    }
+
+                    if ($reserved > $wanted) {
+                        $release = $reserved - $wanted;
+                        self::apply($row, InventoryMovement::TYPE_RESERVATION_RELEASED, $release, 0, -$release, $context);
+                    } elseif ($wanted > $reserved) {
+                        $increase = $wanted - $reserved;
+                        $editableAvailable = $reserved + max(0, $row->available);
+                        if ($strict && $increase > $row->available) {
+                            throw new InsufficientStockException($productId, $name, $editableAvailable, $wanted);
+                        }
+                        self::apply($row, InventoryMovement::TYPE_ORDER_RESERVED, $increase, 0, $increase, $context);
+                    }
+                    continue;
+                }
+
+                if ($targetStatus === self::COMPLETE_STATUS) {
+                    $committed = $reserved + $sold;
+
+                    if ($committed > $wanted) {
+                        $reduction = $committed - $wanted;
+                        $release = min($reserved, $reduction);
+                        if ($release > 0) {
+                            self::apply($row, InventoryMovement::TYPE_RESERVATION_RELEASED, $release, 0, -$release, $context);
+                            $reserved -= $release;
+                            $reduction -= $release;
+                        }
+                        if ($reduction > 0) {
+                            self::apply($row, InventoryMovement::TYPE_RETURN_RESTOCK, $reduction, $reduction, 0, $context);
+                            $sold -= $reduction;
+                        }
+                    } elseif ($wanted > $committed) {
+                        $increase = $wanted - $committed;
+                        $editableAvailable = $committed + max(0, $row->available);
+                        if ($strict && $increase > $row->available) {
+                            throw new InsufficientStockException($productId, $name, $editableAvailable, $wanted);
+                        }
+                        self::apply($row, InventoryMovement::TYPE_ORDER_RESERVED, $increase, 0, $increase, $context);
+                        $reserved += $increase;
+                    }
+
+                    if ($reserved > 0) {
+                        self::apply($row, InventoryMovement::TYPE_SALE_COMPLETED, $reserved, -$reserved, -$reserved, $context);
+                    }
+                }
+            }
+        });
     }
 
     /**

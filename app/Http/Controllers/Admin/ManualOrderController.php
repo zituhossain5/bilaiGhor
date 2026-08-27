@@ -14,6 +14,7 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Shipping;
 use App\Services\InventoryService;
+use App\Services\OrderPaymentService;
 use Brian2694\Toastr\Facades\Toastr;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -177,15 +178,14 @@ class ManualOrderController extends Controller
                     'area' => 'Manual Order',
                 ]);
 
-                Payment::create([
-                    'order_id' => $order->id,
-                    'customer_id' => $customerId,
-                    'amount' => (int) round($paid),
-                    'trx_id' => $validated['transaction_id'] ?? null,
-                    'sender_number' => $validated['customer_phone'],
-                    'payment_method' => $validated['payment_method'],
-                    'payment_status' => $paymentStatus,
-                ]);
+                OrderPaymentService::upsertPayment(
+                    $order,
+                    $customerId,
+                    $paid,
+                    $validated['payment_method'],
+                    $validated['transaction_id'] ?? null,
+                    $validated['customer_phone']
+                );
 
                 InventoryService::reserveForOrder($order, strict: true);
 
@@ -272,16 +272,13 @@ class ManualOrderController extends Controller
                     ]
                 );
 
-                Payment::updateOrCreate(
-                    ['order_id' => $lockedOrder->id],
-                    [
-                        'customer_id' => $customerId,
-                        'amount' => (int) round($totals['paid']),
-                        'trx_id' => $validated['transaction_id'] ?? null,
-                        'sender_number' => $validated['customer_phone'],
-                        'payment_method' => $validated['payment_method'],
-                        'payment_status' => $totals['payment_status'],
-                    ]
+                OrderPaymentService::upsertPayment(
+                    $lockedOrder,
+                    $customerId,
+                    $totals['paid'],
+                    $validated['payment_method'],
+                    $validated['transaction_id'] ?? null,
+                    $validated['customer_phone']
                 );
 
                 return $lockedOrder->refresh();
@@ -381,11 +378,13 @@ class ManualOrderController extends Controller
     {
         $order = Order::where('public_token', $token)
             ->where('is_manual_order', 1)
+            ->with(['payment', 'shipping'])
             ->firstOrFail();
 
         $generalsetting = GeneralSetting::where('status', 1)->first();
+        $paymentState = OrderPaymentService::state($order);
 
-        return view('frontEnd.layouts.invoice_verify', compact('order', 'generalsetting'));
+        return view('frontEnd.layouts.invoice_verify', compact('order', 'generalsetting', 'paymentState'));
     }
 
     private function normalizeItems(array $rows): array
@@ -554,6 +553,7 @@ class ManualOrderController extends Controller
             'sources' => $this->sources,
             'methods' => $this->methods,
             'initialItems' => $initialItems,
+            'paymentState' => $order ? OrderPaymentService::state($order) : null,
         ];
     }
 
@@ -603,6 +603,8 @@ class ManualOrderController extends Controller
     private function invoiceData(Order $order, bool $printMode): array
     {
         $order->load(['orderdetails.product', 'shipping', 'payment', 'status', 'creator']);
+        OrderPaymentService::syncSnapshot($order);
+        $order->load('payment');
         $verifyUrl = route('manual.invoice.verify', $order->public_token);
         $generalsetting = GeneralSetting::where('status', 1)->first();
 

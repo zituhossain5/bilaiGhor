@@ -18,6 +18,7 @@
 @php
     $name = $order->manual_customer_name ?: optional($order->shipping)->name;
     $maskedName = $name ? mb_substr($name, 0, 1) . str_repeat('*', max(1, mb_strlen($name) - 2)) . mb_substr($name, -1) : 'Customer';
+    $paymentState = $paymentState ?? \App\Services\OrderPaymentService::state($order);
 @endphp
 <section class="verify-wrap">
     <div class="verify-card">
@@ -33,7 +34,9 @@
             <div class="verify-row"><span>Date</span><strong>{{ $order->created_at?->format('d M Y') }}</strong></div>
             <div class="verify-row"><span>Customer</span><strong>{{ $maskedName }}</strong></div>
             <div class="verify-row"><span>Grand Total</span><strong>৳{{ number_format($order->amount, 2) }}</strong></div>
-            <div class="verify-row"><span>Payment Status</span><strong>{{ ucfirst($order->payment_status) }}</strong></div>
+            <div class="verify-row"><span>Paid Amount</span><strong>৳{{ number_format($paymentState['paid'], 2) }}</strong></div>
+            <div class="verify-row"><span>Due Amount</span><strong>৳{{ number_format($paymentState['due'], 2) }}</strong></div>
+            <div class="verify-row"><span>Payment Status</span><strong>{{ ucfirst($paymentState['status']) }}</strong></div>
             <div class="verify-row"><span>Order Source</span><strong>{{ ucwords(str_replace('_', ' ', $order->order_source)) }}</strong></div>
         </div>
     </div>

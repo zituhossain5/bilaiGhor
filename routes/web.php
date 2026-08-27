@@ -15,6 +15,7 @@ use App\Http\Controllers\Frontend\BkashController;
 // use App\Http\Controllers\Frontend\ShurjopayControllers;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\OrderPaymentController;
 use App\Http\Controllers\Admin\ManualOrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PermissionController;
@@ -501,7 +502,7 @@ Route::get('customer/order-success/{id}', [CustomerController::class, 'order_suc
      ->name('customer.order_success');
 	 
 	 // ✅ Manual Payment Status Change
-Route::post('admin/order/update-payment-status', [App\Http\Controllers\Admin\OrderController::class, 'updatePaymentStatus'])
+Route::post('admin/order/update-payment-status', [OrderPaymentController::class, 'updateStatus'])
      ->middleware(['auth:admin', 'admin', 'demo_mode'])->name('admin.order.updatePaymentStatus');
 
 // ✅ Manual Order Status Change (from invoice page)

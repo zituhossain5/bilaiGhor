@@ -4,7 +4,9 @@
     $customerPhone = old('customer_phone', $isEdit ? $order->manual_customer_phone : '');
     $customerEmail = old('customer_email', $isEdit ? $order->manual_customer_email : '');
     $customerAddress = old('customer_address', $isEdit ? $order->manual_customer_address : '');
-    $paymentMethod = old('payment_method', $isEdit ? $order->payment_method : 'cash');
+    $paymentMethod = old('payment_method', $isEdit ? ($paymentState['method'] ?? $order->payment_method) : 'cash');
+    $transactionId = old('transaction_id', $isEdit ? ($paymentState['transaction_id'] ?? $order->transaction_id) : '');
+    $paidAmount = old('paid_amount', $isEdit ? ($paymentState['paid'] ?? $order->paid_amount) : 0);
 @endphp
 
 @if(isset($errors) && $errors->any())
@@ -70,7 +72,7 @@
                         </div>
                         <div class="col-md-6">
                             <label>Transaction ID / Reference</label>
-                            <input type="text" name="transaction_id" value="{{ old('transaction_id', $isEdit ? $order->transaction_id : '') }}" maxlength="100" class="form-control">
+                            <input type="text" name="transaction_id" value="{{ $transactionId }}" maxlength="100" class="form-control">
                         </div>
                         <div class="col-md-6">
                             <label>Notes</label>
@@ -129,7 +131,7 @@
                 </div>
                 <div class="mb-3">
                     <label>Paid Amount</label>
-                    <input type="number" step="0.01" min="0" name="paid_amount" id="paid_amount" value="{{ old('paid_amount', $isEdit ? $order->paid_amount : 0) }}" class="form-control calc-input">
+                    <input type="number" step="0.01" min="0" name="paid_amount" id="paid_amount" value="{{ $paidAmount }}" class="form-control calc-input">
                     <div class="invalid-feedback">Paid amount cannot exceed the grand total.</div>
                 </div>
                 <div class="mo-summary-row"><span>Subtotal</span><strong id="sum-subtotal">&#2547;0.00</strong></div>

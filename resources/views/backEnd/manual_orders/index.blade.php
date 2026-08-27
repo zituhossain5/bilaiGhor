@@ -94,6 +94,7 @@
                     </thead>
                     <tbody>
                         @forelse($orders as $order)
+                            @php($paymentState = \App\Services\OrderPaymentService::state($order))
                             <tr>
                                 <td><strong>{{ $order->invoice_number ?: $order->invoice_id }}</strong></td>
                                 <td>{{ $order->created_at?->format('d M Y') }}</td>
@@ -101,10 +102,10 @@
                                 <td>{{ $order->manual_customer_phone ?: optional($order->shipping)->phone }}</td>
                                 <td>{{ ucwords(str_replace('_', ' ', $order->order_source ?: 'manual')) }}</td>
                                 <td class="text-end">৳{{ number_format($order->amount, 2) }}</td>
-                                <td class="text-end">৳{{ number_format($order->paid_amount ?? optional($order->payment)->amount ?? 0, 2) }}</td>
-                                <td class="text-end">৳{{ number_format($order->due_amount ?? 0, 2) }}</td>
-                                <td>{{ ucwords(str_replace('_', ' ', $order->payment_method ?: optional($order->payment)->payment_method ?: 'N/A')) }}</td>
-                                <td><span class="mo-status {{ $order->payment_status }}">{{ $order->payment_status }}</span></td>
+                                <td class="text-end">৳{{ number_format($paymentState['paid'], 2) }}</td>
+                                <td class="text-end">৳{{ number_format($paymentState['due'], 2) }}</td>
+                                <td>{{ ucwords(str_replace('_', ' ', $paymentState['method'] ?: 'N/A')) }}</td>
+                                <td><span class="mo-status {{ $paymentState['status'] }}">{{ $paymentState['status'] }}</span></td>
                                 <td>{{ optional($order->status)->name ?: $order->order_status }}</td>
                                 <td>{{ optional($order->creator)->name ?: 'Admin' }}</td>
                                 <td class="text-end">

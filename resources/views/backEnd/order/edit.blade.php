@@ -507,6 +507,7 @@ function updatePaymentStatus(orderId) {
     .then(function (data) {
         if (data.status === 'success') {
             toastr.success(data.message, 'সফল');
+            setTimeout(function () { window.location.reload(); }, 500);
         } else {
             toastr.error(data.message, 'ত্রুটি');
         }

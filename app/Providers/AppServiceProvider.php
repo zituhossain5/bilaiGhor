@@ -50,6 +50,13 @@ class AppServiceProvider extends ServiceProvider
                 ),
             ]);
         });
+
+        View::composer('backEnd.order.process', function ($view) {
+            $view->with('orderstatus', $this->safeValue(
+                fn () => OrderStatus::orderBy('id')->get(),
+                collect()
+            ));
+        });
     }
 
     private function sharedViewData(): array

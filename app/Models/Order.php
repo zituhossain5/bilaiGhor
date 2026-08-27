@@ -112,7 +112,7 @@ class Order extends Model
     // পেমেন্ট ডাটা
     public function payment()
     {
-        return $this->hasOne(Payment::class, 'order_id', 'id');
+        return $this->hasOne(Payment::class, 'order_id', 'id')->latestOfMany();
     }
 
     // কাস্টমার (frontend user)

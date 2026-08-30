@@ -792,8 +792,7 @@
       <li><a href="{{ route('admin.delivery-boys.withdrawals') }}"><i data-feather="dollar-sign"></i> Rider withdrawals</a></li>
       @endcan
       @can('delivery-location-list')
-      {{-- Upazila hidden from label for now (routes/data preserved) — was "(Division → District → Upazila)" --}}
-      <li><a href="{{ route('admin.delivery.divisions.index') }}"><i data-feather="map-pin"></i> Delivery locations <span class="text-muted" style="font-size:.75rem;">(Division → District → Zone)</span></a></li>
+      <li><a href="{{ route('admin.delivery.divisions.index') }}"><i data-feather="map-pin"></i> Delivery locations <span class="text-muted" style="font-size:.75rem;">(Division → District → Thana)</span></a></li>
       @endcan
     </ul>
   </div>

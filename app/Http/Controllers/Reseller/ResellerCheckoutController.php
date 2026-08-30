@@ -106,7 +106,7 @@ class ResellerCheckoutController extends Controller
 
         if ($hasAllFreeDelivery || ! $requires_shipping) {
             Session::put('shipping', 0);
-            Session::put('shipping_district_id', null);
+            Session::put('shipping_thana_id', null);
         }
 
         // Get payment gateways
@@ -257,19 +257,19 @@ class ResellerCheckoutController extends Controller
 
         $divisionId = null;
         $districtId = null;
-        $upazilaId = null;
+        $thanaId = null;
 
         if ($requiresPhysicalShipping && ! $hasAllFreeDeliveryCalc) {
             $request->validate([
                 'division_id' => 'required|exists:divisions,id',
                 'district_id' => 'required|exists:districts,id',
-                'upazila_id'  => 'required|exists:upazilas,id',
+                'thana_id'  => 'required|exists:thanas,id',
             ]);
             $divisionId = (int) $request->division_id;
             $districtId = (int) $request->district_id;
-            $upazilaId = (int) $request->upazila_id;
-            if (! DeliveryLocation::validateChain($divisionId, $districtId, $upazilaId)) {
-                Toastr::error('বিভাগ, জেলা ও উপজেলা সঠিকভাবে নির্বাচন করুন।', 'Failed!');
+            $thanaId = (int) $request->thana_id;
+            if (! DeliveryLocation::validateChain($divisionId, $districtId, $thanaId)) {
+                Toastr::error('Please select a valid Division, District and Thana.', 'Failed!');
                 return redirect()->back()->withInput();
             }
         }
@@ -296,16 +296,16 @@ class ResellerCheckoutController extends Controller
 
         $shippingfee = 0;
         if ($requiresPhysicalShipping && ! $hasAllFreeDeliveryCalc) {
-            $shippingfee = DeliveryLocation::chargeForDistrictId($districtId);
+            $shippingfee = DeliveryLocation::chargeForThanaId($thanaId);
             Session::put('shipping', $shippingfee);
-            Session::put('shipping_district_id', $districtId);
+            Session::put('shipping_thana_id', $thanaId);
         } else {
             Session::put('shipping', 0);
-            Session::put('shipping_district_id', null);
+            Session::put('shipping_thana_id', null);
         }
 
-        $locationLabelForGateway = ($divisionId && $districtId && $upazilaId)
-            ? DeliveryLocation::shippingLabel($divisionId, $districtId, $upazilaId)
+        $locationLabelForGateway = ($districtId && $thanaId)
+            ? DeliveryLocation::shippingLabel($districtId, $thanaId)
             : 'BD';
 
         $discount = Session::get('discount', 0);
@@ -399,9 +399,10 @@ class ResellerCheckoutController extends Controller
             'address' => $request->address,
             'division_id' => $divisionId,
             'district_id' => $districtId,
-            'upazila_id' => $upazilaId,
-            'area' => ($divisionId && $districtId && $upazilaId)
-                ? DeliveryLocation::shippingLabel($divisionId, $districtId, $upazilaId)
+            'thana_id' => $thanaId,
+            'upazila_id' => $thanaId,
+            'area' => ($districtId && $thanaId)
+                ? DeliveryLocation::shippingLabel($districtId, $thanaId)
                 : 'Free Shipping',
         ]);
 
@@ -432,7 +433,7 @@ class ResellerCheckoutController extends Controller
 
         // Clear cart
         Cart::instance('shopping')->destroy();
-        Session::forget(['shipping', 'discount', 'coupon_code', 'shipping_district_id']);
+        Session::forget(['shipping', 'discount', 'coupon_code', 'shipping_thana_id']);
 
         // Payment gateway redirects - use payable amount (advance or full)
         Session::put('payable_amount', $payableAmount);

@@ -1,12 +1,11 @@
 @extends('backEnd.layouts.master')
 @php
     $editDistricts = collect($districts ?? []);
-    $editUpazilas = collect($upazilas ?? []);
     $shipLoc = $shippinginfo;
     $admEdDiv = (int) ($shipLoc->division_id ?? 0);
     $admEdDist = (int) ($shipLoc->district_id ?? 0);
     $admEdUp = (int) ($shipLoc->upazila_id ?? 0);
-    $admEdZone = (int) ($shipLoc->zone_id ?? 0);
+    $admEdThana = (int) ($shipLoc->thana_id ?? $shipLoc->upazila_id ?? 0);
     $admEdPostCode = $shipLoc->post_code ?? '';
 
     $subtotal = Cart::instance('pos_shopping')->subtotal();
@@ -422,9 +421,9 @@
                                 </div>
                             </div>
                             <div class="oe-input-group mb-3 mt-2">
-                                <label class="oe-form-label" for="adm_edit_zone">জোন <span class="text-danger">*</span></label>
-                                <select id="adm_edit_zone" class="form-select" name="zone_id" required {{ $admEdDist ? '' : 'disabled' }}>
-                                    <option value="">{{ $admEdDist ? 'জোন লোড হচ্ছে...' : 'আগে জেলা সিলেক্ট করুন' }}</option>
+                                <label class="oe-form-label" for="adm_edit_thana">থানা <span class="text-danger">*</span></label>
+                                <select id="adm_edit_thana" class="form-select" name="thana_id" required {{ $admEdDist ? '' : 'disabled' }}>
+                                    <option value="">{{ $admEdDist ? 'থানা লোড হচ্ছে...' : 'আগে জেলা সিলেক্ট করুন' }}</option>
                                 </select>
                             </div>
 
@@ -658,9 +657,8 @@ $('#order_edit_form').on('submit', function () {
 // upazila_id and internally validates the district belongs to that division —
 // both are recomputed here so that legacy validation always passes.
 var admEditAllDistricts = @json($editDistricts->values());
-var admEditAllUpazilas = @json($editUpazilas->values());
-var admEditZonesUrl = '{{ route("customer.delivery_zones") }}';
-var admEditSelectedZone = {{ $admEdZone }};
+var admEditThanasUrl = '{{ route("customer.delivery_thanas") }}';
+var admEditSelectedThana = {{ $admEdThana }};
 
 function admEditSyncLegacyHiddenFields(districtId) {
     var districtRow = admEditAllDistricts.find(function (r) { return parseInt(r.id, 10) === parseInt(districtId, 10); });
@@ -668,43 +666,34 @@ function admEditSyncLegacyHiddenFields(districtId) {
 
     // admEditAllUpazilas is pre-filtered to active rows by the controller (no status field shipped) —
     // matching on district_id alone is correct here.
-    var upazilaRow = admEditAllUpazilas.find(function (r) { return parseInt(r.district_id, 10) === parseInt(districtId, 10); });
-    $('#adm_edit_upazila_hidden').val(upazilaRow ? upazilaRow.id : '');
+    $('#adm_edit_upazila_hidden').val('');
 }
 
-function admEditLoadZones(districtId, preselectZoneId) {
-    var $zone = $('#adm_edit_zone');
-    $zone.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
+function admEditLoadThanas(districtId, preselectThanaId) {
+    var $thana = $('#adm_edit_thana');
+    $thana.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
     if (!districtId) {
-        $zone.html('<option value="">আগে জেলা সিলেক্ট করুন</option>');
+        $thana.html('<option value="">আগে জেলা সিলেক্ট করুন</option>');
         return;
     }
-    $.get(admEditZonesUrl, { district_id: districtId }, function (res) {
-        var opts = '<option value="">জোন নির্বাচন করুন</option>';
+    $.get(admEditThanasUrl, { district_id: districtId }, function (res) {
+        var opts = '<option value="">থানা নির্বাচন করুন</option>';
         (res.data || []).forEach(function (z) {
             var label = z.name + (z.name_bn ? ' — ' + z.name_bn : '');
             opts += '<option value="' + z.id + '">' + label + '</option>';
         });
-        $zone.html(opts).prop('disabled', false);
-        if (preselectZoneId) { $zone.val(String(preselectZoneId)); }
+        $thana.html(opts).prop('disabled', false);
+        if (preselectThanaId) { $thana.val(String(preselectThanaId)); }
+        $('#adm_edit_upazila_hidden').val($thana.val() || '');
     }).fail(function () {
-        $zone.html('<option value="">জোন লোড ব্যর্থ হয়েছে</option>');
+        $thana.html('<option value="">থানা লোড ব্যর্থ হয়েছে</option>');
     });
 }
 
 $('#adm_edit_district').on('change', function () {
     var id = $(this).val();
     admEditSyncLegacyHiddenFields(id);
-    admEditLoadZones(id, null); // district changed by admin -> old zone selection clears
-    if (id) {
-        $.ajax({
-            type: 'GET',
-            data: { id: id },
-            url: '{{ route("admin.order.cart_shipping") }}',
-            dataType: 'json',
-            complete: function () { refreshCart(); }
-        });
-    }
+    admEditLoadThanas(id, null);
 });
 
 // Initial page load: district is already pre-selected server-side (if the order has one).
@@ -712,8 +701,12 @@ $('#adm_edit_district').on('change', function () {
 $(function () {
     var initialDistrict = $('#adm_edit_district').val();
     if (initialDistrict) {
-        admEditLoadZones(initialDistrict, admEditSelectedZone || null);
+        admEditLoadThanas(initialDistrict, admEditSelectedThana || null);
     }
+});
+
+$('#adm_edit_thana').on('change', function () {
+    $('#adm_edit_upazila_hidden').val(this.value || '');
 });
 
 // Save Zone + Post Code (new columns the encoded order_update() cannot write) BEFORE the
@@ -727,7 +720,7 @@ $('#order_edit_form').on('submit', function (e) {
         _token: '{{ csrf_token() }}',
         order_id: {{ $order->id }},
         district_id: $('#adm_edit_district').val(),
-        zone_id: $('#adm_edit_zone').val(),
+        thana_id: $('#adm_edit_thana').val(),
         post_code: $('#adm_edit_postcode').val()
     }).fail(function (xhr) {
         var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'জোন/পোস্ট কোড সংরক্ষণ ব্যর্থ হয়েছে';

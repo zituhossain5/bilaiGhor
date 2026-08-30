@@ -4,10 +4,9 @@
     $admSelDiv = (int) ($shipRow->division_id ?? old('division_id', 0));
     $admSelDist = (int) ($shipRow->district_id ?? old('district_id', 0));
     $admSelUp = (int) ($shipRow->upazila_id ?? 0);
-    $admProcZone = (int) ($shipRow->zone_id ?? old('zone_id', 0));
+    $admProcThana = (int) ($shipRow->thana_id ?? $shipRow->upazila_id ?? old('thana_id', 0));
     $admProcPostCode = $shipRow->post_code ?? old('post_code', '');
     $processDistricts = collect($districts ?? []);
-    $processUpazilas = collect($upazilas ?? []);
     $selDelBoy = (int) ($data->delivery_boy_id ?? 0);
 
     $isResellerOrder = !empty($data->customer_payable_amount);
@@ -405,9 +404,9 @@
                                 </select>
                             </div>
                             <div class="col-12 op-input-group">
-                                <label class="op-form-label" for="adm_process_zone">জোন <span class="text-danger">*</span></label>
-                                <select name="zone_id" id="adm_process_zone" class="form-select" required {{ $admSelDist ? '' : 'disabled' }}>
-                                    <option value="">{{ $admSelDist ? 'জোন লোড হচ্ছে...' : 'আগে জেলা সিলেক্ট করুন' }}</option>
+                                <label class="op-form-label" for="adm_process_thana">থানা <span class="text-danger">*</span></label>
+                                <select name="thana_id" id="adm_process_thana" class="form-select" required {{ $admSelDist ? '' : 'disabled' }}>
+                                    <option value="">{{ $admSelDist ? 'থানা লোড হচ্ছে...' : 'আগে জেলা সিলেক্ট করুন' }}</option>
                                 </select>
                             </div>
                         </div>
@@ -531,34 +530,33 @@
     // whenever District changes. The encoded order-change controller hard-requires
     // division_id + upazila_id, so both are recomputed here from the chosen district.
     var allDistricts = @json($processDistricts->values());
-    var allUpazilas  = @json($processUpazilas->values());
-    var procZonesUrl = '{{ route("customer.delivery_zones") }}';
-    var procSelectedZone = {{ $admProcZone }};
+    var procThanasUrl = '{{ route("customer.delivery_thanas") }}';
+    var procSelectedThana = {{ $admProcThana }};
 
     function syncLegacyHiddenFields(districtId) {
         var d = allDistricts.find(function (r) { return parseInt(r.id, 10) === parseInt(districtId, 10); });
         $('#adm_process_division_hidden').val(d ? d.division_id : '');
-        var u = allUpazilas.find(function (r) { return parseInt(r.district_id, 10) === parseInt(districtId, 10); });
-        $('#adm_process_upazila_hidden').val(u ? u.id : '');
+        $('#adm_process_upazila_hidden').val('');
     }
 
-    function loadZones(districtId, preselectZoneId) {
-        var $zone = $('#adm_process_zone');
-        $zone.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
+    function loadThanas(districtId, preselectThanaId) {
+        var $thana = $('#adm_process_thana');
+        $thana.prop('disabled', true).html('<option value="">লোড হচ্ছে...</option>');
         if (!districtId) {
-            $zone.html('<option value="">আগে জেলা সিলেক্ট করুন</option>');
+            $thana.html('<option value="">আগে জেলা সিলেক্ট করুন</option>');
             return;
         }
-        $.get(procZonesUrl, { district_id: districtId }, function (res) {
-            var opts = '<option value="">জোন নির্বাচন করুন</option>';
+        $.get(procThanasUrl, { district_id: districtId }, function (res) {
+            var opts = '<option value="">থানা নির্বাচন করুন</option>';
             (res.data || []).forEach(function (z) {
                 var label = z.name + (z.name_bn ? ' — ' + z.name_bn : '');
                 opts += '<option value="' + z.id + '">' + label + '</option>';
             });
-            $zone.html(opts).prop('disabled', false);
-            if (preselectZoneId) { $zone.val(String(preselectZoneId)); }
+            $thana.html(opts).prop('disabled', false);
+            if (preselectThanaId) { $thana.val(String(preselectThanaId)); }
+            $('#adm_process_upazila_hidden').val($thana.val() || '');
         }).fail(function () {
-            $zone.html('<option value="">জোন লোড ব্যর্থ হয়েছে</option>');
+            $thana.html('<option value="">থানা লোড ব্যর্থ হয়েছে</option>');
         });
     }
 
@@ -570,14 +568,18 @@
         $('#adm_process_district').on('change', function () {
             var id = $(this).val();
             syncLegacyHiddenFields(id);
-            loadZones(id, null); // district changed by admin -> old zone selection clears
+            loadThanas(id, null);
         });
 
         var initialDistrict = $('#adm_process_district').val();
         if (initialDistrict) {
             syncLegacyHiddenFields(initialDistrict);
-            loadZones(initialDistrict, procSelectedZone || null);
+            loadThanas(initialDistrict, procSelectedThana || null);
         }
+
+        $('#adm_process_thana').on('change', function () {
+            $('#adm_process_upazila_hidden').val(this.value || '');
+        });
 
         // Save Zone + Post Code (columns the encoded order-change controller cannot write)
         // BEFORE the legacy form submits, so both saves complete without racing.
@@ -589,7 +591,7 @@
                 _token: '{{ csrf_token() }}',
                 order_id: {{ $data->id }},
                 district_id: $('#adm_process_district').val(),
-                zone_id: $('#adm_process_zone').val(),
+                thana_id: $('#adm_process_thana').val(),
                 post_code: $('#adm_process_postcode').val()
             }).fail(function (xhr) {
                 var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'জোন/পোস্ট কোড সংরক্ষণ ব্যর্থ হয়েছে';

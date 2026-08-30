@@ -34,7 +34,7 @@ class Customer extends Authenticatable
         'district',      // legacy district name (kept for old data)
         'area',          // legacy legacy_district_areas id (kept for old data)
         'district_id',   // districts.id — used by Profile Edit / addresses
-        'zone_id',       // delivery_zones.id — used by Profile Edit / addresses
+        'thana_id',      // thanas.id - used by Profile Edit / addresses
         'image',
     ];
 
@@ -68,6 +68,21 @@ class Customer extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class, 'customer_id');
+    }
+
+    public function district()
+    {
+        return $this->belongsTo(DeliveryDistrict::class, 'district_id');
+    }
+
+    public function thana()
+    {
+        return $this->belongsTo(DeliveryThana::class, 'thana_id');
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(CustomerAddress::class, 'customer_id');
     }
 
     /**

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ManualOrderController;
 use App\Http\Middleware\PreventManualOrderDeletion;
 use App\Models\InventoryMovement;
 use App\Models\InventoryStock;
+use App\Models\DeliveryThana;
 use App\Models\Order;
 use App\Models\OrderDetails;
 use App\Models\Payment;
@@ -245,12 +246,17 @@ class ManualOrderEditWorkflowTest extends TestCase
 
     private function updateRequest(Order $order, Product $product, float $paid, int $status, int $quantity = 4): Request
     {
+        $thana = DeliveryThana::active()->where('delivery_charge', 70)->firstOrFail();
+
         return Request::create('/admin/manual-orders/' . $order->id, 'PUT', [
             'customer_id' => null,
             'customer_name' => 'Corrected Customer',
             'customer_phone' => '01900000000',
             'customer_email' => 'customer@example.test',
             'customer_address' => 'Corrected delivery address',
+            'district_id' => $thana->district_id,
+            'thana_id' => $thana->id,
+            'post_code' => $thana->post_code,
             'notes' => 'Updated after customer confirmation',
             'order_source' => 'facebook',
             'payment_method' => 'bkash',

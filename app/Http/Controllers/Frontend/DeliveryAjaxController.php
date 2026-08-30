@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\DeliveryDistrict;
 use App\Models\DeliveryDivision;
-use App\Models\DeliveryUpazila;
+use App\Models\DeliveryThana;
 
 class DeliveryAjaxController extends Controller
 {
@@ -26,19 +26,19 @@ class DeliveryAjaxController extends Controller
         return response()->json(['data' => $rows]);
     }
 
-    public function upazilas(int $districtId)
+    public function thanas(int $districtId)
     {
         $district = DeliveryDistrict::query()->whereKey($districtId)->where('status', 1)->first();
         if (! $district) {
             return response()->json(['data' => []]);
         }
 
-        $rows = DeliveryUpazila::query()
+        $rows = DeliveryThana::query()
             ->where('district_id', $district->id)
             ->where('status', 1)
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'name_bn', 'post_code', 'delivery_charge']);
 
         return response()->json(['data' => $rows]);
     }

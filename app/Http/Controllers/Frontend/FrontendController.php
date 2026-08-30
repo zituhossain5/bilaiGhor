@@ -17,7 +17,7 @@ use App\Models\CreatePage;
 use App\Models\Campaign;
 use App\Models\Banner;
 use App\Models\ShippingCharge;
-use App\Models\DeliveryDistrict;
+use App\Models\DeliveryThana;
 use App\Models\Productcolor;
 use App\Models\Productsize;
 use App\Models\Customer;
@@ -1246,17 +1246,20 @@ $brands = Brand::where('status', 1)
 
         if ($hasAllFreeDelivery || $request->id == 'free_delivery') {
             Session::put('shipping', 0);
-            Session::put('shipping_district_id', null);
+            Session::put('shipping_thana_id', null);
 
             return $request->boolean('campaign')
                 ? view('frontEnd.layouts.ajax.campaign-cart-table')
                 : view('frontEnd.layouts.ajax.cart');
         }
 
-        $district = DeliveryDistrict::query()->whereKey($request->id)->where('status', 1)->first();
-        if ($district) {
-            Session::put('shipping', (int) $district->delivery_charge);
-            Session::put('shipping_district_id', $district->id);
+        $thana = DeliveryThana::query()->whereKey($request->id)->where('status', 1)->first();
+        if ($thana) {
+            Session::put('shipping', (float) $thana->delivery_charge);
+            Session::put('shipping_thana_id', $thana->id);
+        } else {
+            Session::put('shipping', 0);
+            Session::put('shipping_thana_id', null);
         }
 
         return $request->boolean('campaign')

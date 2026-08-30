@@ -51,8 +51,7 @@ class CustomerController extends Controller
     function __construct(FacebookCapiService $facebookCapiService)
     {
         $this->facebookCapiService = $facebookCapiService;
-        // 'delivery_zones' is guest-accessible: checkout (open to guests) loads zones
-        // from it. It only returns active zones of a district — no customer data.
+        // The Thana endpoint is public because guest checkout needs it.
         // 'wishlist_toggle' handles guests itself (401 JSON → login prompt in JS,
         // not a middleware redirect).
         $this->middleware('customer', ['except' => [
@@ -60,7 +59,7 @@ class CustomerController extends Controller
             'login','signin','logout','checkout','forgot_password',
             'forgot_verify','forgot_reset','forgot_store','forgot_resend',
             'order_save','order_success','order_track','order_track_result',
-            'delivery_zones','wishlist_toggle'
+            'delivery_thanas','wishlist_toggle'
         ]]);
     }
 
@@ -575,7 +574,7 @@ class CustomerController extends Controller
 
         if (! $requiresPhysicalShipping || $hasAllFreeDelivery) {
             Session::put('shipping', 0);
-            Session::put('shipping_district_id', null);
+            Session::put('shipping_thana_id', null);
         }
 
         $hasDigital = \App\Http\Controllers\Frontend\ShoppingController::hasDigitalProductInCart();
@@ -594,7 +593,7 @@ class CustomerController extends Controller
         \App\Http\Controllers\Frontend\ShoppingController::refreshCartWholesalePrices();
 
         // ── Districts for the checkout selects (same source as the Add/Edit Address popup) ──
-        $checkoutDistricts = \App\Models\DeliveryDistrict::active()->ordered()->get(['id', 'name', 'delivery_charge']);
+        $checkoutDistricts = \App\Models\DeliveryDistrict::active()->ordered()->get(['id', 'name']);
 
         // ── Checkout prefill for logged-in customers (own data only) ──
         // Priority: old() (handled in the view) → default saved address → profile → empty.
@@ -605,7 +604,7 @@ class CustomerController extends Controller
             'address'     => '',
             'post_code'   => '',
             'district_id' => '',
-            'zone_id'     => '',
+            'thana_id'    => '',
         ];
 
         $authCustomer = Auth::guard('customer')->user();
@@ -614,7 +613,7 @@ class CustomerController extends Controller
             $checkoutPrefill['mobile']      = $authCustomer->phone   ?: '';
             $checkoutPrefill['address']     = $authCustomer->address ?: '';
             $checkoutPrefill['district_id'] = $authCustomer->district_id ?: '';
-            $checkoutPrefill['zone_id']     = $authCustomer->zone_id ?: '';
+            $checkoutPrefill['thana_id']    = $authCustomer->thana_id ?: '';
         }
 
         // ── Saved addresses for the "Select Address" modal ──
@@ -634,15 +633,14 @@ class CustomerController extends Controller
                     'mobile'      => $sa->phone ?? '',
                     'email'       => $sa->email ?? '',
                     'post_code'   => $sa->post_code ?? '',
-                    'zone_id'     => $sa->zone_id ?? '',
+                    'thana_id'    => $sa->thana_id ?? '',
                     'address'     => $sa->address,
                     'division_id' => $sa->division_id ?? '',
                     'district_id' => $sa->district_id ?? '',
-                    'upazila_id'  => $sa->upazila_id ?? '',
                 ];
             }
 
-            // Default saved address wins the form prefill (name/mobile/post code/address + district/zone).
+            // Default saved address wins the form prefill, including District and Thana.
             $defaultStored = $storedAddresses->firstWhere('is_default', true);
             if ($defaultStored) {
                 $checkoutPrefill['name']      = $defaultStored->name ?: $checkoutPrefill['name'];
@@ -651,7 +649,7 @@ class CustomerController extends Controller
                 $checkoutPrefill['post_code'] = $defaultStored->post_code ?: $checkoutPrefill['post_code'];
                 if ($defaultStored->district_id) {
                     $checkoutPrefill['district_id'] = $defaultStored->district_id;
-                    $checkoutPrefill['zone_id']     = $defaultStored->zone_id ?? '';
+                    $checkoutPrefill['thana_id']    = $defaultStored->thana_id ?? '';
                 }
             }
         }
@@ -717,26 +715,24 @@ public function order_save(Request $request)
         }
         $hasAllFreeDelivery = \App\Http\Controllers\Frontend\ShoppingController::hasAllFreeDeliveryProducts();
 
-        // Checkout collects District → Zone (+ optional Post Code). Division is derived
-        // from the district; upazila is no longer part of this flow (columns kept).
+        // Checkout collects District -> Thana (+ optional Post Code). Division is derived.
         $divisionId = null;
         $districtId = null;
-        $upazilaId  = null;
-        $zoneId     = null;
+        $thanaId    = null;
         $postCode   = null;
 
         if ($requiresPhysicalShipping && ! $hasAllFreeDelivery) {
             $this->validate($request, [
                 'district_id' => 'required|integer|exists:districts,id',
-                'zone_id'     => 'required|integer|exists:delivery_zones,id',
+                'thana_id'    => 'required|integer|exists:thanas,id',
                 'post_code'   => 'nullable|string|max:20',
             ]);
             $districtId = (int) $request->district_id;
-            $zoneId     = (int) $request->zone_id;
+            $thanaId    = (int) $request->thana_id;
             $postCode   = $request->post_code;
 
-            if (! DeliveryLocation::validateDistrictZone($districtId, $zoneId)) {
-                Toastr::error('জেলা ও জোন সঠিকভাবে নির্বাচন করুন।', 'Failed!');
+            if (! DeliveryLocation::validateDistrictThana($districtId, $thanaId)) {
+                Toastr::error('Please select a valid District and Thana.', 'Failed!');
                 return redirect()->back()->withInput();
             }
 
@@ -753,17 +749,17 @@ public function order_save(Request $request)
         $discount = Session::get('discount', 0);
 
         if ($requiresPhysicalShipping && ! $hasAllFreeDelivery) {
-            $shippingfee = DeliveryLocation::chargeForDistrictId($districtId);
+            $shippingfee = DeliveryLocation::chargeForThanaId($thanaId);
             Session::put('shipping', $shippingfee);
-            Session::put('shipping_district_id', $districtId);
+            Session::put('shipping_thana_id', $thanaId);
         } else {
             $shippingfee = 0;
             Session::put('shipping', 0);
-            Session::put('shipping_district_id', null);
+            Session::put('shipping_thana_id', null);
         }
 
-        $locationLabelForGateway = ($districtId && $zoneId)
-            ? DeliveryLocation::shippingLabelForZone($districtId, $zoneId)
+        $locationLabelForGateway = ($districtId && $thanaId)
+            ? DeliveryLocation::shippingLabel($districtId, $thanaId)
             : 'BD';
 
         // ইনভয়েসে দেখানোর মোট (Grand Total)
@@ -879,10 +875,10 @@ public function order_save(Request $request)
         $shipping->post_code   = $postCode;
         $shipping->division_id = $divisionId;   // derived from the district (legacy column kept in sync)
         $shipping->district_id = $districtId;
-        $shipping->zone_id     = $zoneId;
-        $shipping->upazila_id  = $upazilaId;    // null now — column preserved for existing orders
-        $shipping->area        = ($districtId && $zoneId)
-            ? DeliveryLocation::shippingLabelForZone($districtId, $zoneId)
+        $shipping->thana_id    = $thanaId;
+        $shipping->upazila_id  = $thanaId; // ionCube OrderController compatibility
+        $shipping->area        = ($districtId && $thanaId)
+            ? DeliveryLocation::shippingLabel($districtId, $thanaId)
             : 'Digital / Free Shipping';
         $shipping->save();
 
@@ -1275,7 +1271,7 @@ public function order_save(Request $request)
 
     public function addresses()
     {
-        $addresses = \App\Models\CustomerAddress::with(['district:id,name', 'zone:id,name,name_bn'])
+        $addresses = \App\Models\CustomerAddress::with(['district:id,name', 'thana:id,name,name_bn'])
             ->where('customer_id', Auth::guard('customer')->user()->id)
             ->orderByDesc('is_default')
             ->orderBy('id')
@@ -1287,7 +1283,7 @@ public function order_save(Request $request)
     /**
      * Validate the reusable address-form-modal input (adr_* field names avoid
      * colliding with the checkout form's old() values) and map to model columns.
-     * Returns mapped data or a redirect-back response on zone/district mismatch.
+     * Returns mapped data or a redirect-back response on Thana/District mismatch.
      */
     private function validateAddressForm(Request $request): array
     {
@@ -1297,7 +1293,7 @@ public function order_save(Request $request)
             'adr_email'       => 'nullable|email|max:155',
             'adr_post_code'   => 'nullable|string|max:20',
             'adr_district_id' => 'required|integer|exists:districts,id',
-            'adr_zone_id'     => 'required|integer',
+            'adr_thana_id'    => 'required|integer|exists:thanas,id',
             'adr_address'     => 'required|string|max:1000',
         ]);
 
@@ -1307,7 +1303,7 @@ public function order_save(Request $request)
             'email'       => $request->adr_email,
             'post_code'   => $request->adr_post_code,
             'district_id' => (int) $request->adr_district_id,
-            'zone_id'     => (int) $request->adr_zone_id,
+            'thana_id'    => (int) $request->adr_thana_id,
             'address'     => $request->adr_address,
         ];
     }
@@ -1316,9 +1312,9 @@ public function order_save(Request $request)
     {
         $data = $this->validateAddressForm($request);
 
-        // Zone must belong to the selected district (never trust arbitrary zone_id).
-        if (! $this->zoneBelongsToDistrict($data['zone_id'], $data['district_id'])) {
-            return back()->withInput()->withErrors(['adr_zone_id' => 'Selected zone does not belong to the selected district.']);
+        // Validate the selected Thana against its District server-side.
+        if (! $this->thanaBelongsToDistrict($data['thana_id'], $data['district_id'])) {
+            return back()->withInput()->withErrors(['adr_thana_id' => 'Selected Thana does not belong to the selected district.']);
         }
 
         $data['division_id'] = \App\Models\DeliveryDistrict::where('id', $data['district_id'])->value('division_id');
@@ -1343,8 +1339,8 @@ public function order_save(Request $request)
 
         $data = $this->validateAddressForm($request);
 
-        if (! $this->zoneBelongsToDistrict($data['zone_id'], $data['district_id'])) {
-            return back()->withInput()->withErrors(['adr_zone_id' => 'Selected zone does not belong to the selected district.']);
+        if (! $this->thanaBelongsToDistrict($data['thana_id'], $data['district_id'])) {
+            return back()->withInput()->withErrors(['adr_thana_id' => 'Selected Thana does not belong to the selected district.']);
         }
 
         $data['division_id'] = \App\Models\DeliveryDistrict::where('id', $data['district_id'])->value('division_id');
@@ -1356,26 +1352,31 @@ public function order_save(Request $request)
         return redirect()->back();
     }
 
-    private function zoneBelongsToDistrict(int $zoneId, int $districtId): bool
+    private function thanaBelongsToDistrict(int $thanaId, int $districtId): bool
     {
-        return \App\Models\DeliveryZone::where('id', $zoneId)
-            ->where('district_id', $districtId)
-            ->where('status', 1)
-            ->exists();
+        return DeliveryLocation::validateDistrictThana($districtId, $thanaId);
     }
 
-    // Active zones of a district for the address-form-modal (AJAX).
-    public function delivery_zones(Request $request)
+    // Active Thanas of a District for the shared dependent dropdown.
+    public function delivery_thanas(Request $request)
     {
-        $request->validate(['district_id' => 'required|integer']);
+        $request->validate(['district_id' => 'required|integer|exists:districts,id']);
 
-        $zones = \App\Models\DeliveryZone::where('district_id', $request->district_id)
+        $districtIsActive = \App\Models\DeliveryDistrict::active()
+            ->whereKey($request->district_id)
+            ->exists();
+
+        if (! $districtIsActive) {
+            return response()->json(['data' => []]);
+        }
+
+        $thanas = \App\Models\DeliveryThana::where('district_id', $request->district_id)
             ->where('status', 1)
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get(['id', 'name', 'name_bn']);
+            ->get(['id', 'name', 'name_bn', 'post_code', 'delivery_charge']);
 
-        return response()->json(['data' => $zones]);
+        return response()->json(['data' => $thanas]);
     }
 
     public function address_delete($id)
@@ -1453,7 +1454,7 @@ public function order_save(Request $request)
                 'id'=>$request->id,
                 'customer_id'=>Auth::guard('customer')->user()->id
             ])
-            ->with(['orderdetails.size', 'orderdetails.color', 'payment', 'shipping.zone', 'shipping.district', 'customer'])
+            ->with(['orderdetails.size', 'orderdetails.color', 'payment', 'shipping.thana', 'shipping.district', 'customer'])
             ->firstOrFail();
 
         return view('frontEnd.layouts.customer.invoice',compact('order'));
@@ -1473,7 +1474,7 @@ public function order_save(Request $request)
     {
         $profile_edit = Customer::where(['id'=>Auth::guard('customer')->user()->id])->firstOrFail();
 
-        // District → Zone (same source as the Add/Edit Address flow).
+        // District -> Thana (same source as the Add/Edit Address flow).
         // The legacy district-name + area (legacy_district_areas) pair is no longer
         // rendered here; those columns stay untouched in the database.
         $districts = \App\Models\DeliveryDistrict::active()->ordered()->get(['id', 'name']);
@@ -1488,20 +1489,20 @@ public function order_save(Request $request)
     {
         $update_data = Customer::where(['id'=>Auth::guard('customer')->user()->id])->firstOrFail();
 
-        // Validation — District → Zone replaces the legacy district-name + area pair.
+        // Validate the canonical District -> Thana selection.
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255|unique:customers,email,'.$update_data->id,
             'address' => 'required|string|max:500',
             'district_id' => 'required|integer|exists:districts,id',
-            'zone_id' => 'required|integer|exists:delivery_zones,id',
+            'thana_id' => 'required|integer|exists:thanas,id',
             'image' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ]);
 
-        // The selected zone must actually belong to the selected district (and be active).
-        if (!$this->zoneBelongsToDistrict((int) $request->zone_id, (int) $request->district_id)) {
-            Toastr::error('Selected zone does not belong to the selected district.', 'Error!');
+        // The selected Thana must belong to the selected District and be active.
+        if (!$this->thanaBelongsToDistrict((int) $request->thana_id, (int) $request->district_id)) {
+            Toastr::error('Selected Thana does not belong to the selected district.', 'Error!');
             return redirect()->back()->withInput();
         }
 
@@ -1567,7 +1568,7 @@ public function order_save(Request $request)
         $update_data->email       = $request->email;
         $update_data->address     = $request->address;
         $update_data->district_id = (int) $request->district_id;
-        $update_data->zone_id     = (int) $request->zone_id;
+        $update_data->thana_id    = (int) $request->thana_id;
         $update_data->image       = $imageUrl;
         $update_data->save();
 

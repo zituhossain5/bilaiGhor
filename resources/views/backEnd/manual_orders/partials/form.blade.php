@@ -7,6 +7,9 @@
     $paymentMethod = old('payment_method', $isEdit ? ($paymentState['method'] ?? $order->payment_method) : 'cash');
     $transactionId = old('transaction_id', $isEdit ? ($paymentState['transaction_id'] ?? $order->transaction_id) : '');
     $paidAmount = old('paid_amount', $isEdit ? ($paymentState['paid'] ?? $order->paid_amount) : 0);
+    $selectedDistrictId = old('district_id', $isEdit ? optional($order->shipping)->district_id : null);
+    $selectedThanaId = old('thana_id', $isEdit ? optional($order->shipping)->thana_id : null);
+    $postCode = old('post_code', $isEdit ? optional($order->shipping)->post_code : '');
 @endphp
 
 @if(isset($errors) && $errors->any())
@@ -32,7 +35,7 @@
                             <select name="customer_id" id="customer_id" class="form-select">
                                 <option value="">No registered customer</option>
                                 @foreach($customers as $customer)
-                                    <option value="{{ $customer->id }}" data-name="{{ $customer->name }}" data-phone="{{ $customer->phone }}" data-email="{{ $customer->email }}" data-address="{{ $customer->address }}" @selected((string) $selectedCustomerId === (string) $customer->id)>
+                                    <option value="{{ $customer->id }}" data-name="{{ $customer->name }}" data-phone="{{ $customer->phone }}" data-email="{{ $customer->email }}" data-address="{{ $customer->address }}" data-district="{{ $customer->district_id }}" data-thana="{{ $customer->thana_id }}" @selected((string) $selectedCustomerId === (string) $customer->id)>
                                         {{ $customer->name }} {{ $customer->phone ? '- '.$customer->phone : '' }}
                                     </option>
                                 @endforeach
@@ -69,6 +72,25 @@
                         <div class="col-12">
                             <label>Delivery Address *</label>
                             <textarea name="customer_address" id="customer_address" class="form-control" rows="2" required>{{ $customerAddress }}</textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label>District *</label>
+                            <select name="district_id" id="manual_district" class="form-select" required>
+                                <option value="">Select District</option>
+                                @foreach($districts as $district)
+                                    <option value="{{ $district->id }}" @selected((string) $selectedDistrictId === (string) $district->id)>{{ $district->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Thana *</label>
+                            <select name="thana_id" id="manual_thana" class="form-select" required disabled>
+                                <option value="">Select District First</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Post Code</label>
+                            <input type="text" name="post_code" id="manual_post_code" value="{{ $postCode }}" maxlength="20" class="form-control">
                         </div>
                         <div class="col-md-6">
                             <label>Transaction ID / Reference</label>
@@ -123,7 +145,7 @@
                 <h5 class="mb-3">Totals</h5>
                 <div class="mb-3">
                     <label>Delivery Charge</label>
-                    <input type="number" step="0.01" min="0" name="delivery_charge" id="delivery_charge" value="{{ old('delivery_charge', $isEdit ? $order->shipping_charge : 0) }}" class="form-control calc-input">
+                    <input type="number" step="0.01" min="0" name="delivery_charge" id="delivery_charge" value="{{ old('delivery_charge', $isEdit ? $order->shipping_charge : 0) }}" class="form-control calc-input" readonly>
                 </div>
                 <div class="mb-3">
                     <label>Order Discount</label>

@@ -442,7 +442,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
         // ── Prefill resolution: old() input (after validation error) wins, else controller prefill ──
         $checkoutPrefill = $checkoutPrefill ?? [];
         $selDistrict = old('district_id', $checkoutPrefill['district_id'] ?? '');
-        $selZone     = old('zone_id',     $checkoutPrefill['zone_id']     ?? '');
+        $selThana    = old('thana_id',    $checkoutPrefill['thana_id']    ?? '');
         $selPostCode = old('post_code',   $checkoutPrefill['post_code']   ?? '');
 
         $__gsCheckoutOtp = \App\Models\GeneralSetting::where('status', 1)->first();
@@ -531,7 +531,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                 </div>
 
                                 @if($requires_shipping)
-                                {{-- Post Code + District + Zone (same source as the Add/Edit Address popup) --}}
+                                {{-- Post Code + District + Thana (same source as the Add/Edit Address popup) --}}
                                 <div class="col-12">
                                     <div class="row g-2 g-md-3 align-items-end checkout-location-fields">
                                         <div class="col-12 col-md-4">
@@ -547,17 +547,17 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                                 <select name="district_id" id="checkout_district" class="form-control-custom" required>
                                                     <option value="">Select District</option>
                                                     @foreach(($checkoutDistricts ?? collect()) as $d)
-                                                        <option value="{{ $d->id }}" data-charge="{{ $d->delivery_charge }}"
-                                                            @selected((string) $selDistrict === (string) $d->id)>{{ $d->name }} (৳{{ $d->delivery_charge }})</option>
+                                                        <option value="{{ $d->id }}"
+                                                            @selected((string) $selDistrict === (string) $d->id)>{{ $d->name }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-12 col-md-4">
                                             <div class="form-group mb-0 mb-md-2">
-                                                <label class="form-label-custom">Zone <span class="req">*</span></label>
-                                                <select name="zone_id" id="checkout_zone" class="form-control-custom" required disabled>
-                                                    <option value="">Select Zone</option>
+                                                <label class="form-label-custom">Thana <span class="req">*</span></label>
+                                                <select name="thana_id" id="checkout_thana" class="form-control-custom" required disabled>
+                                                    <option value="">Select Thana</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -569,12 +569,12 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                         <label class="form-label-custom">Delivery Location</label>
                                         <input type="text" class="form-control-custom" value="Free shipping — no location required" readonly disabled style="background:#f3f4f6;">
                                         <input type="hidden" name="district_id" value="">
-                                        <input type="hidden" name="zone_id" value="">
+                                        <input type="hidden" name="thana_id" value="">
                                     </div>
                                 </div>
                                 @endif
 
-                                {{-- Full Address sits below Post Code / District / Zone (matches the address popup) --}}
+                                {{-- Full Address sits below Post Code / District / Thana. --}}
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label class="form-label-custom">Full Address <span class="req">*</span></label>
@@ -916,7 +916,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                                         data-address="{{ $addr['address'] }}"
                                                         data-postcode="{{ $addr['post_code'] ?? '' }}"
                                                         data-dist="{{ $addr['district_id'] }}"
-                                                        data-zone="{{ $addr['zone_id'] ?? '' }}">
+                                                        data-thana="{{ $addr['thana_id'] ?? '' }}">
                                                     {{-- Replace check SVG icon later --}}
                                                     <i class="fa fa-check"></i> <span>Select</span>
                                                 </button>
@@ -928,7 +928,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                                             data-email="{{ $addr['email'] }}"
                                                             data-postcode="{{ $addr['post_code'] ?? '' }}"
                                                             data-district="{{ $addr['district_id'] }}"
-                                                            data-zone="{{ $addr['zone_id'] ?? '' }}"
+                                                            data-thana="{{ $addr['thana_id'] ?? '' }}"
                                                             data-address="{{ $addr['address'] }}">
                                                         {{-- Replace edit SVG icon later --}}
                                                         <i class="fa fa-pencil-square-o"></i> Edit
@@ -1013,7 +1013,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 
 @push('script')
 {{-- select2.min.js is loaded once by the shared address-form-modal partial; a second load here
-     re-registers the plugin over live instances and breaks the modal's District/Zone dropdowns --}}
+     re-registers the plugin over live instances and breaks the District/Thana dropdowns --}}
 
 @if(!empty($__showCheckoutOtpModal))
 <script>
@@ -1149,11 +1149,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return allFreeDelivery;
         }
 
-        function districtChargeFromSelect() {
-            if (!$('#checkout_district').length || !$('#checkout_district').val()) {
+        function thanaChargeFromSelect() {
+            if (!$('#checkout_thana').length || !$('#checkout_thana').val()) {
                 return 0;
             }
-            return parseFloat($('#checkout_district option:selected').attr('data-charge')) || 0;
+            return parseFloat($('#checkout_thana option:selected').attr('data-charge')) || 0;
         }
 
         // Reward discount currently applied (display only — server recomputes on submit).
@@ -1161,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function applyShippingToDomAndSession() {
             var isFreeDelivery = checkFreeDelivery();
-            var shippingCharge = isFreeDelivery ? 0 : districtChargeFromSelect();
+            var shippingCharge = isFreeDelivery ? 0 : thanaChargeFromSelect();
 
             var grandTotal = Math.max(0, baseSubtotal + shippingCharge - baseDiscount - (window.bilaiRewardDiscount || 0));
 
@@ -1175,14 +1175,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (isFreeDelivery) {
                 $.get('{{ route("shipping.charge") }}', { id: 'free_delivery' });
             } else {
-                var did = $('#checkout_district').val();
-                if (did) {
-                    $.get('{{ route("shipping.charge") }}', { id: did });
+                var thanaId = $('#checkout_thana').val();
+                if (thanaId) {
+                    $.get('{{ route("shipping.charge") }}', { id: thanaId });
                 }
             }
         }
 
-        // District → Zone. Zone options are loaded by the shared BilaiDistrictZone helper
+        // District to Thana options are loaded by the shared helper.
         // (same endpoint as the Add/Edit Address popup); this handler only refreshes the
         // shipping charge, which is still district-based — charge logic is unchanged.
         $('#checkout_district').on('change', function () {
@@ -1213,7 +1213,8 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        $('#checkout_zone').on('change', function () {
+        $('#checkout_thana').on('change', function () {
+            applyShippingToDomAndSession();
             saveIncompleteOrder();
         });
 
@@ -1233,9 +1234,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 $('#grandTotalAmount').text('৳ ' + grandTotal.toFixed(2));
 
-                var did = $('#checkout_district').val();
-                if (did) {
-                    $.get('{{ route("shipping.charge") }}', { id: did });
+                var thanaId = $('#checkout_thana').val();
+                if (thanaId) {
+                    $.get('{{ route("shipping.charge") }}', { id: thanaId });
                 }
             }
         });
@@ -1253,9 +1254,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var street = ($('input[name="address"]').val() || '').trim();
             var parts = [];
             if (requiresShipping) {
-                var zone = selectedLocationText($('#checkout_zone'));
+                var thana = selectedLocationText($('#checkout_thana'));
                 var dist = selectedLocationText($('#checkout_district'));
-                if (zone) parts.push(zone);
+                if (thana) parts.push(thana);
                 if (dist) parts.push(dist);
             }
             if (street) parts.unshift(street);
@@ -1271,14 +1272,14 @@ document.addEventListener('DOMContentLoaded', function () {
             };
             if (requiresShipping) {
                 // Incomplete-order meta: district_id is still sent; location_label carries
-                // "Zone, District" (IncompleteOrderController already falls back to it).
+                // "Thana, District" for accepting an incomplete order later.
                 meta.district_id = $('#checkout_district').val() || null;
-                meta.zone_id     = $('#checkout_zone').val() || null;
+                meta.thana_id    = $('#checkout_thana').val() || null;
                 meta.post_code   = ($('#checkout_post_code').val() || '').trim();
                 var loc = [];
-                var zone = selectedLocationText($('#checkout_zone'));
+                var thana = selectedLocationText($('#checkout_thana'));
                 var dist = selectedLocationText($('#checkout_district'));
-                if (zone) loc.push(zone);
+                if (thana) loc.push(thana);
                 if (dist) loc.push(dist);
                 meta.location_label = loc.join(', ');
             }
@@ -1467,12 +1468,12 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 @if($requires_shipping)
-{{-- ── District → Zone: shared helper (same code path as the Add/Edit Address popup) ── --}}
-@include('frontEnd.layouts.customer.partials.district-zone-js')
+{{-- District -> Thana: shared helper (same path as Add/Edit Address). --}}
+@include('frontEnd.layouts.customer.partials.district-thana-js')
 @php
     $__prefillJs = [
         'district_id' => (string) $selDistrict,
-        'zone_id'     => (string) $selZone,
+        'thana_id'    => (string) $selThana,
         'subtotal'    => (float) ($subtotal ?? 0),
         'discount'    => (float) ($discount ?? 0),
         'free'        => (bool) ($hasAllFreeDelivery ?? false),
@@ -1483,23 +1484,22 @@ $(function () {
     var PF = @json($__prefillJs);
 
     // District is rendered pre-selected server-side. initFields() makes both selects
-    // searchable, loads the district's zones, and selects the saved zone once the AJAX
-    // resolves (no setTimeout). Changing district clears the zone automatically.
-    window.BilaiDistrictZone.initFields({
+    // searchable, loads the District's Thanas, and selects the saved Thana once AJAX
+    // resolves. Changing District clears the Thana automatically.
+    window.BilaiDistrictThana.initFields({
         district:     '#checkout_district',
-        zone:         '#checkout_zone',
-        selectedZone: PF.zone_id || null,
+        thana:        '#checkout_thana',
+        selectedThana: PF.thana_id || null,
         fresh:        true
     });
 
-    // Shipping charge for the prefilled district (charge stays district-based).
-    if (PF.district_id) {
-        var $dist  = $('#checkout_district');
-        var charge = PF.free ? 0 : (parseFloat($dist.find('option:selected').attr('data-charge')) || 0);
+    // Apply the selected Thana's authoritative delivery charge.
+    $('#checkout_thana').one('thanas:loaded', function () {
+        var charge = PF.free ? 0 : (parseFloat($('#checkout_thana option:selected').attr('data-charge')) || 0);
         $('#shippingAmount').text('৳ ' + charge.toFixed(2));
         $('#grandTotalAmount').text('৳ ' + Math.max(0, PF.subtotal + charge - PF.discount - (window.bilaiRewardDiscount || 0)).toFixed(2));
-        $.get('{{ route("shipping.charge") }}', { id: PF.free ? 'free_delivery' : PF.district_id });
-    }
+        $.get('{{ route("shipping.charge") }}', { id: PF.free ? 'free_delivery' : PF.thana_id });
+    });
 });
 </script>
 @endif
@@ -1528,21 +1528,20 @@ $(function () {
     modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
-    // Apply a saved address' District → Zone. District options are already on the page,
-    // so we just select it, refresh the (district-based) charge, then let the shared
-    // helper load that district's zones and preselect the saved zone when the AJAX lands.
-    function applyLocation(distId, zoneId) {
-        var $dist = $('#checkout_district'), $zone = $('#checkout_zone');
+    // Apply a saved address' District -> Thana. District options are already on the page,
+    // so we select it and let the shared helper load its Thanas and charge.
+    // helper load that District's Thanas and preselect the saved value after AJAX.
+    function applyLocation(distId, thanaId) {
+        var $dist = $('#checkout_district'), $thana = $('#checkout_thana');
         if (!$dist.length || !distId) return;
 
-        window.BilaiDistrictZone.setVal($dist, distId);
-
-        var charge = LOC.free ? 0 : (parseFloat($dist.find('option:selected').attr('data-charge')) || 0);
-        $('#shippingAmount').text('৳ ' + charge.toFixed(2));
-        $('#grandTotalAmount').text('৳ ' + Math.max(0, LOC.subtotal + charge - LOC.discount - (window.bilaiRewardDiscount || 0)).toFixed(2));
-        $.get('{{ route("shipping.charge") }}', { id: LOC.free ? 'free_delivery' : distId });
-
-        window.BilaiDistrictZone.loadZones($zone, distId, zoneId || null);
+        window.BilaiDistrictThana.setValue($dist, distId);
+        window.BilaiDistrictThana.loadThanas($thana, distId, thanaId || null).done(function () {
+            var charge = LOC.free ? 0 : (parseFloat($thana.find('option:selected').attr('data-charge')) || 0);
+            $('#shippingAmount').text('৳ ' + charge.toFixed(2));
+            $('#grandTotalAmount').text('৳ ' + Math.max(0, LOC.subtotal + charge - LOC.discount - (window.bilaiRewardDiscount || 0)).toFixed(2));
+            $.get('{{ route("shipping.charge") }}', {id: LOC.free ? 'free_delivery' : thanaId});
+        });
     }
 
     // Select an address: fill checkout fields, mark card selected, close.
@@ -1553,7 +1552,7 @@ $(function () {
             $('input[name="phone"]').val(d.mobile || '').trigger('change');
             $('input[name="address"]').val(d.address || '').trigger('change');
             $('#checkout_post_code').val(d.postcode || '').trigger('change');
-            if (d.dist) { applyLocation(d.dist, d.zone); }
+            if (d.dist) { applyLocation(d.dist, d.thana); }
 
             modal.querySelectorAll('.bilai-addr-select').forEach(function (b) {
                 b.classList.remove('is-selected');

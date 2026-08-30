@@ -422,8 +422,8 @@
                                         </div>
                                         <div class="col-12 col-md-4">
                                             <div class="form-group mb-0 mb-md-2">
-                                                <label class="form-label-custom">উপজেলা *</label>
-                                                <select name="upazila_id" id="checkout_upazila" class="form-control-custom" required disabled>
+                                                <label class="form-label-custom">থানা *</label>
+                                                <select name="thana_id" id="checkout_thana" class="form-control-custom" required disabled>
                                                     <option value="">আগে জেলা সিলেক্ট করুন</option>
                                                 </select>
                                             </div>
@@ -437,7 +437,7 @@
                                         <input type="text" class="form-control-custom" value="ডিজিটাল / ফ্রি শিপিং" readonly disabled style="background:#f3f4f6">
                                         <input type="hidden" name="division_id" value="">
                                         <input type="hidden" name="district_id" value="">
-                                        <input type="hidden" name="upazila_id" value="">
+                                        <input type="hidden" name="thana_id" value="">
                                     </div>
                                 </div>
                                 @endif
@@ -853,7 +853,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             // If shipping is 0 or NaN from display, try from selected option
             if (isNaN(shipping) || shippingText === '' || shipping === 0) {
-                var selectedOption = $('#checkout_district option:selected');
+                var selectedOption = $('#checkout_thana option:selected');
                 if (selectedOption.length && selectedOption.val()) {
                     shipping = parseFloat(selectedOption.attr('data-charge')) || 0;
                 }
@@ -890,18 +890,18 @@ document.addEventListener('DOMContentLoaded', function () {
         updateCalculations();
     }
 
-    function resellerDistrictChargeFromSelect() {
-        if (!$('#checkout_district').length || !$('#checkout_district').val()) return 0;
-        return parseFloat($('#checkout_district option:selected').attr('data-charge')) || 0;
+    function resellerThanaChargeFromSelect() {
+        if (!$('#checkout_thana').length || !$('#checkout_thana').val()) return 0;
+        return parseFloat($('#checkout_thana option:selected').attr('data-charge')) || 0;
     }
 
     function resellerApplyShippingUi() {
         var isFd = hasAllFreeDelivery;
-        var shippingCharge = isFd ? 0 : resellerDistrictChargeFromSelect();
+        var shippingCharge = isFd ? 0 : resellerThanaChargeFromSelect();
         $('#shippingAmount').text('৳ ' + shippingCharge.toFixed(2));
         if (!isFd) {
-            var did = $('#checkout_district').val();
-            if (did) $.get('{{ route("shipping.charge") }}', { id: did }).always(function () { updateCalculations(); });
+            var thanaId = $('#checkout_thana').val();
+            if (thanaId) $.get('{{ route("shipping.charge") }}', { id: thanaId }).always(function () { updateCalculations(); });
         } else {
             $.get('{{ route("shipping.charge") }}', { id: 'free_delivery' }).always(function () { updateCalculations(); });
         }
@@ -918,12 +918,12 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#checkout_division').on('change', function () {
             var divId = $(this).val();
             $('#checkout_district').prop('disabled', !divId).html(divId ? '<option value="">লোড...</option>' : '<option value="">আগে বিভাগ...</option>');
-            $('#checkout_upazila').prop('disabled', true).html('<option value="">আগে জেলা...</option>');
+            $('#checkout_thana').prop('disabled', true).html('<option value="">আগে জেলা...</option>');
             if (!divId) { resellerApplyShippingUi(); return; }
             $.get('{{ url('/ajax/delivery/districts') }}/' + divId, function (res) {
                 var opts = '<option value="">জেলা নির্বাচন করুন</option>';
                 (res.data || []).forEach(function (r) {
-                    opts += '<option value="' + r.id + '" data-charge="' + r.delivery_charge + '">' + r.name + ' (৳' + r.delivery_charge + ')</option>';
+                    opts += '<option value="' + r.id + '">' + r.name + '</option>';
                 });
                 $('#checkout_district').html(opts).prop('disabled', false);
                 resellerApplyShippingUi();
@@ -933,16 +933,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         $('#checkout_district').on('change', function () {
             var distId = $(this).val();
-            $('#checkout_upazila').prop('disabled', !distId).html(distId ? '<option value="">লোড...</option>' : '<option value="">আগে জেলা...</option>');
+            $('#checkout_thana').prop('disabled', !distId).html(distId ? '<option value="">লোড...</option>' : '<option value="">আগে জেলা...</option>');
             if (!distId) { resellerApplyShippingUi(); updateCalculations(); return; }
             resellerApplyShippingUi();
-            $.get('{{ url('/ajax/delivery/upazilas') }}/' + distId, function (res) {
-                var opts = '<option value="">উপজেলা নির্বাচন করুন</option>';
-                (res.data || []).forEach(function (r) { opts += '<option value="' + r.id + '">' + r.name + '</option>'; });
-                $('#checkout_upazila').html(opts).prop('disabled', false);
+            $.get('{{ url('/ajax/delivery/thanas') }}/' + distId, function (res) {
+                var opts = '<option value="">থানা নির্বাচন করুন</option>';
+                (res.data || []).forEach(function (r) { opts += '<option value="' + r.id + '" data-charge="' + r.delivery_charge + '">' + (r.name_bn || r.name) + '</option>'; });
+                $('#checkout_thana').html(opts).prop('disabled', false);
                 updateCalculations();
             });
         });
+
+        $('#checkout_thana').on('change', resellerApplyShippingUi);
 
         if (hasAllFreeDelivery) {
             $.get('{{ route("shipping.charge") }}', { id: 'free_delivery' }, function () {

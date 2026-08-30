@@ -10,7 +10,7 @@ $profileImage       = $profile_edit->image ? asset($profile_edit->image) : null;
 $customerInitial    = strtoupper(substr($profile_edit->name ?? 'U', 0, 1));
 
 $selectedDistrict = old('district_id', $profile_edit->district_id);
-$selectedZone     = old('zone_id', $profile_edit->zone_id);
+$selectedThana    = old('thana_id', $profile_edit->thana_id);
 @endphp
 
 @extends('frontEnd.layouts.master')
@@ -325,14 +325,14 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
                                 @error('district_id')<p class="bilai-prof-err">{{ $message }}</p>@enderror
                             </div>
 
-                            {{-- Zone (loaded from delivery_zones for the selected district) --}}
+                            {{-- Thana (loaded for the selected district) --}}
                             <div class="bilai-prof-field">
-                                <label for="bilai-prof-zone">Zone <span class="req">*</span></label>
-                                <select name="zone_id" id="bilai-prof-zone" required disabled
-                                        class="@error('zone_id') is-invalid @enderror">
-                                    <option value="">Select Zone</option>
+                                <label for="bilai-prof-thana">Thana <span class="req">*</span></label>
+                                <select name="thana_id" id="bilai-prof-thana" required disabled
+                                        class="@error('thana_id') is-invalid @enderror">
+                                    <option value="">Select Thana</option>
                                 </select>
-                                @error('zone_id')<p class="bilai-prof-err">{{ $message }}</p>@enderror
+                                @error('thana_id')<p class="bilai-prof-err">{{ $message }}</p>@enderror
                             </div>
                         </div>
 
@@ -349,7 +349,7 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
 @endsection
 
 {{-- Shared Districtâ†’Zone helper (also loads select2 once). --}}
-@include('frontEnd.layouts.customer.partials.district-zone-js')
+@include('frontEnd.layouts.customer.partials.district-thana-js')
 
 @push('script')
 <script>
@@ -392,10 +392,10 @@ $selectedZone     = old('zone_id', $profile_edit->zone_id);
     // District is rendered pre-selected; the helper loads its zones and then selects
     // the saved zone once the AJAX response arrives (no setTimeout).
     $(function () {
-        window.BilaiDistrictZone.initFields({
+        window.BilaiDistrictThana.initFields({
             district:     '#bilai-prof-district',
-            zone:         '#bilai-prof-zone',
-            selectedZone: @json($selectedZone),
+            thana:        '#bilai-prof-thana',
+            selectedThana: @json($selectedThana),
             fresh:        true
         });
     });

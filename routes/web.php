@@ -49,8 +49,7 @@ use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\ShippingChargeController;
 use App\Http\Controllers\Admin\DeliveryDivisionController;
 use App\Http\Controllers\Admin\DeliveryDistrictController;
-use App\Http\Controllers\Admin\DeliveryUpazilaController;
-use App\Http\Controllers\Admin\DeliveryZoneController;
+use App\Http\Controllers\Admin\DeliveryThanaController;
 use App\Http\Controllers\Frontend\DeliveryAjaxController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\SizeController;
@@ -548,7 +547,7 @@ Route::post('admin/manual-duplicate-order-check', [App\Http\Controllers\Admin\Or
 
 
 Route::get('/ajax/delivery/districts/{division}', [DeliveryAjaxController::class, 'districts'])->name('ajax.delivery.districts');
-Route::get('/ajax/delivery/upazilas/{district}', [DeliveryAjaxController::class, 'upazilas'])->name('ajax.delivery.upazilas');
+Route::get('/ajax/delivery/thanas/{district}', [DeliveryAjaxController::class, 'thanas'])->name('ajax.delivery.thanas');
 
 Route::get('/controller', function() {
     Artisan::call('make:controller Admin/TagManagerController');
@@ -634,10 +633,10 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ip
     Route::post('/resend-reset-otp', [CustomerPasswordResetController::class, 'resendOtp'])->middleware('throttle:5,10')->name('customer.forgot.otp.resend');
     Route::get('/reset-password/{token?}', [CustomerPasswordResetController::class, 'showResetForm'])->name('customer.password.reset');
     Route::post('/reset-password', [CustomerPasswordResetController::class, 'resetPassword'])->middleware('throttle:10,10')->name('customer.password.update');
-    // Zones of a district (active only). Public: guests use it on checkout too.
+    // Thanas of a district (active only). Public: guests use it on checkout too.
     // Moved out of the auth-protected group — same name, so the address modal and
     // Profile Edit keep working unchanged.
-    Route::get('/delivery-zones', [CustomerController::class, 'delivery_zones'])->name('customer.delivery_zones');
+    Route::get('/delivery-thanas', [CustomerController::class, 'delivery_thanas'])->name('customer.delivery_thanas');
     // Wishlist toggle — public route; guests get a 401 JSON login prompt (handled in JS).
     Route::post('/wishlist/toggle', [CustomerController::class, 'wishlist_toggle'])->name('customer.wishlist.toggle');
     Route::get('/checkout', [CustomerController::class, 'checkout'])->name('customer.checkout');
@@ -1310,24 +1309,18 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::post('delivery/district/update', [DeliveryDistrictController::class, 'update'])->name('admin.delivery.districts.update');
     Route::post('delivery/district/destroy', [DeliveryDistrictController::class, 'destroy'])->name('admin.delivery.districts.destroy');
 
-    // Upazila routes preserved (hidden from admin UI for now — Zone replaces it visually)
-    Route::get('delivery/district/{district}/upazilas', [DeliveryUpazilaController::class, 'index'])->name('admin.delivery.upazilas.index');
-    Route::get('delivery/district/{district}/upazilas/create', [DeliveryUpazilaController::class, 'create'])->name('admin.delivery.upazilas.create');
-    Route::post('delivery/upazila/save', [DeliveryUpazilaController::class, 'store'])->name('admin.delivery.upazilas.store');
-    Route::get('delivery/upazila/{id}/edit', [DeliveryUpazilaController::class, 'edit'])->name('admin.delivery.upazilas.edit');
-    Route::post('delivery/upazila/update', [DeliveryUpazilaController::class, 'update'])->name('admin.delivery.upazilas.update');
-    Route::post('delivery/upazila/destroy', [DeliveryUpazilaController::class, 'destroy'])->name('admin.delivery.upazilas.destroy');
+    Route::get('delivery/district/{district}/thanas', [DeliveryThanaController::class, 'index'])->name('admin.delivery.thanas.index');
+    Route::get('delivery/district/{district}/thanas/create', [DeliveryThanaController::class, 'create'])->name('admin.delivery.thanas.create');
+    Route::post('delivery/thana/save', [DeliveryThanaController::class, 'store'])->name('admin.delivery.thanas.store');
+    Route::get('delivery/thana/{thana}/edit', [DeliveryThanaController::class, 'edit'])->name('admin.delivery.thanas.edit');
+    Route::post('delivery/thana/update', [DeliveryThanaController::class, 'update'])->name('admin.delivery.thanas.update');
+    Route::post('delivery/thana/destroy', [DeliveryThanaController::class, 'destroy'])->name('admin.delivery.thanas.destroy');
 
-    // Delivery Zones (Division → District → Zone)
-    Route::get('delivery/district/{district}/zones', [DeliveryZoneController::class, 'index'])->name('admin.delivery.zones.index');
-    Route::get('delivery/district/{district}/zones/create', [DeliveryZoneController::class, 'create'])->name('admin.delivery.zones.create');
-    Route::post('delivery/zone/save', [DeliveryZoneController::class, 'store'])->name('admin.delivery.zones.store');
-    Route::get('delivery/zone/{id}/edit', [DeliveryZoneController::class, 'edit'])->name('admin.delivery.zones.edit');
-    Route::post('delivery/zone/update', [DeliveryZoneController::class, 'update'])->name('admin.delivery.zones.update');
-    Route::post('delivery/zone/destroy', [DeliveryZoneController::class, 'destroy'])->name('admin.delivery.zones.destroy');
-    // Order Edit page: persist Zone + Post Code (OrderController::order_update is IonCube-encoded and
+    // Delivery Thanas (Division -> District -> Thana)
+    // Order Edit page: persist Thana + Post Code (OrderController::order_update is IonCube-encoded and
     // has no knowledge of these columns — see updateOrderShipping() docblock).
-    Route::post('order/update-shipping-location', [DeliveryZoneController::class, 'updateOrderShipping'])->name('admin.order.update_shipping_location');
+    Route::post('order/update-shipping-location', [DeliveryThanaController::class, 'updateOrderShipping'])->name('admin.order.update_shipping_location');
+    Route::get('order/cart-thana-shipping', [DeliveryThanaController::class, 'cartShipping'])->name('admin.order.cart_thana_shipping');
     
     // backend customer route 
     Route::get('customer', [CustomerManageController::class,'index'])->name('customers.index');

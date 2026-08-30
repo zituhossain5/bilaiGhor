@@ -6,6 +6,7 @@ use App\Exceptions\InsufficientStockException;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\Customer;
+use App\Models\DeliveryDistrict;
 use App\Models\GeneralSetting;
 use App\Models\Order;
 use App\Models\OrderDetails;
@@ -15,6 +16,7 @@ use App\Models\Product;
 use App\Models\Shipping;
 use App\Services\InventoryService;
 use App\Services\OrderPaymentService;
+use App\Support\DeliveryLocation;
 use Brian2694\Toastr\Facades\Toastr;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -81,6 +83,9 @@ class ManualOrderController extends Controller
             'customer_phone' => ['required', 'string', 'max:55'],
             'customer_email' => ['nullable', 'email', 'max:155'],
             'customer_address' => ['required', 'string', 'max:1000'],
+            'district_id' => ['required', 'integer', 'exists:districts,id'],
+            'thana_id' => ['required', 'integer', 'exists:thanas,id'],
+            'post_code' => ['nullable', 'string', 'max:20'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'order_source' => ['required', 'in:' . implode(',', $this->sources)],
             'payment_method' => ['required', 'in:' . implode(',', $this->methods)],
@@ -97,13 +102,15 @@ class ManualOrderController extends Controller
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
+        $this->validateThana($validated);
+
         try {
             $order = DB::transaction(function () use ($validated) {
                 $items = $this->normalizeItems($validated['items']);
                 $subtotal = collect($items)->sum('gross');
                 $itemDiscount = collect($items)->sum('discount');
                 $orderDiscount = min((float) ($validated['order_discount'] ?? 0), max(0, $subtotal - $itemDiscount));
-                $delivery = (float) ($validated['delivery_charge'] ?? 0);
+                $delivery = DeliveryLocation::chargeForThanaId((int) $validated['thana_id']);
                 $grandTotal = max(0, $subtotal - $itemDiscount - $orderDiscount + $delivery);
                 $paid = (float) ($validated['paid_amount'] ?? 0);
                 if ($paid > $grandTotal) {
@@ -175,7 +182,12 @@ class ManualOrderController extends Controller
                     'name' => $validated['customer_name'],
                     'phone' => $validated['customer_phone'],
                     'address' => $validated['customer_address'],
-                    'area' => 'Manual Order',
+                    'division_id' => DeliveryLocation::divisionIdForDistrict((int) $validated['district_id']),
+                    'district_id' => (int) $validated['district_id'],
+                    'thana_id' => (int) $validated['thana_id'],
+                    'upazila_id' => (int) $validated['thana_id'],
+                    'post_code' => $validated['post_code'] ?? null,
+                    'area' => DeliveryLocation::shippingLabel((int) $validated['district_id'], (int) $validated['thana_id']),
                 ]);
 
                 OrderPaymentService::upsertPayment(
@@ -205,6 +217,7 @@ class ManualOrderController extends Controller
     {
         $this->ensureManual($order);
         $validated = $this->validateOrder($request, true);
+        $this->validateThana($validated);
 
         try {
             $order = DB::transaction(function () use ($order, $validated) {
@@ -268,7 +281,12 @@ class ManualOrderController extends Controller
                         'name' => $validated['customer_name'],
                         'phone' => $validated['customer_phone'],
                         'address' => $validated['customer_address'],
-                        'area' => 'Manual Order',
+                        'division_id' => DeliveryLocation::divisionIdForDistrict((int) $validated['district_id']),
+                        'district_id' => (int) $validated['district_id'],
+                        'thana_id' => (int) $validated['thana_id'],
+                        'upazila_id' => (int) $validated['thana_id'],
+                        'post_code' => $validated['post_code'] ?? null,
+                        'area' => DeliveryLocation::shippingLabel((int) $validated['district_id'], (int) $validated['thana_id']),
                     ]
                 );
 
@@ -442,6 +460,9 @@ class ManualOrderController extends Controller
             'customer_phone' => ['required', 'string', 'max:55'],
             'customer_email' => ['nullable', 'email', 'max:155'],
             'customer_address' => ['required', 'string', 'max:1000'],
+            'district_id' => ['required', 'integer', 'exists:districts,id'],
+            'thana_id' => ['required', 'integer', 'exists:thanas,id'],
+            'post_code' => ['nullable', 'string', 'max:20'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'order_source' => ['required', 'in:' . implode(',', $this->sources)],
             'payment_method' => ['required', 'in:' . implode(',', $this->methods)],
@@ -478,7 +499,7 @@ class ManualOrderController extends Controller
             ]);
         }
 
-        $delivery = (float) ($validated['delivery_charge'] ?? 0);
+        $delivery = DeliveryLocation::chargeForThanaId((int) $validated['thana_id']);
         $grandTotal = max(0, $subtotal - $itemDiscount - $orderDiscount + $delivery);
         $paid = (float) ($validated['paid_amount'] ?? 0);
 
@@ -548,13 +569,23 @@ class ManualOrderController extends Controller
         return [
             'order' => $order,
             'products' => $products,
-            'customers' => Customer::orderBy('name')->limit(300)->get(['id', 'name', 'phone', 'email', 'address']),
+            'customers' => Customer::orderBy('name')->limit(300)->get(['id', 'name', 'phone', 'email', 'address', 'district_id', 'thana_id']),
+            'districts' => DeliveryDistrict::active()->ordered()->get(['id', 'name']),
             'statuses' => OrderStatus::where('status', 1)->orderBy('id')->get(),
             'sources' => $this->sources,
             'methods' => $this->methods,
             'initialItems' => $initialItems,
             'paymentState' => $order ? OrderPaymentService::state($order) : null,
         ];
+    }
+
+    private function validateThana(array $validated): void
+    {
+        if (! DeliveryLocation::validateDistrictThana((int) $validated['district_id'], (int) $validated['thana_id'])) {
+            throw ValidationException::withMessages([
+                'thana_id' => 'The selected Thana does not belong to the selected district.',
+            ]);
+        }
     }
 
     private function paymentStatus(float $paid, float $grandTotal): string

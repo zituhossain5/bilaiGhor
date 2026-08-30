@@ -27,14 +27,9 @@ class DeliveryDistrict extends Model
         return $this->belongsTo(DeliveryDivision::class, 'division_id');
     }
 
-    public function upazilas(): HasMany
+    public function thanas(): HasMany
     {
-        return $this->hasMany(DeliveryUpazila::class, 'district_id')->orderBy('sort_order')->orderBy('name');
-    }
-
-    public function zones(): HasMany
-    {
-        return $this->hasMany(DeliveryZone::class, 'district_id')->orderBy('sort_order')->orderBy('name');
+        return $this->hasMany(DeliveryThana::class, 'district_id')->ordered();
     }
 
     public function scopeActive($query)

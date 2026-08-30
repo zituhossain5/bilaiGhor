@@ -1,8 +1,8 @@
 {{-- ═══════════════════════════════════════════════════════════════
-     Reusable Add/Edit Address popup (District → Zone)
+     Reusable Add/Edit Address popup (District -> Thana)
      Open with:  class="bilai-afm-add-open"  (add mode)
              or  class="bilai-afm-edit-open" + data-id/name/mobile/email/
-                 postcode/district/zone/address  (edit mode)
+                 postcode/district/thana/address  (edit mode)
      Used on: customer Addresses page + checkout Select Address modal.
 ════════════════════════════════════════════════════════════════ --}}
 @php
@@ -17,7 +17,7 @@
         'email'       => old('adr_email'),
         'post_code'   => old('adr_post_code'),
         'district_id' => old('adr_district_id'),
-        'zone_id'     => old('adr_zone_id'),
+        'thana_id'    => old('adr_thana_id'),
         'address'     => old('adr_address'),
     ] : null;
 @endphp
@@ -141,9 +141,9 @@
                 </div>
 
                 <div class="bilai-afm-field bilai-afm-half">
-                    <label>Zone <span class="req">*</span></label>
-                    <select name="adr_zone_id" id="bilai-afm-zone" required disabled>
-                        <option value="">Select Zone</option>
+                    <label>Thana <span class="req">*</span></label>
+                    <select name="adr_thana_id" id="bilai-afm-thana" required disabled>
+                        <option value="">Select Thana</option>
                     </select>
                 </div>
 
@@ -160,8 +160,8 @@
     </div>
 </div>
 
-{{-- Shared District→Zone logic + the single select2 load for the page. --}}
-@include('frontEnd.layouts.customer.partials.district-zone-js')
+{{-- Shared District -> Thana logic and the single select2 load for the page. --}}
+@include('frontEnd.layouts.customer.partials.district-thana-js')
 
 @once
 @push('script')
@@ -179,30 +179,28 @@
     var submitEl = document.getElementById('bilai-afm-submit');
     var storeUrl  = '{{ route('customer.addresses.store') }}';
     var updateUrlBase = '{{ url('/customer/addresses') }}'; // + /{id}/update
-    var zonesUrl  = '{{ route('customer.delivery_zones') }}';
-
     var $district = $('#bilai-afm-district');
-    var $zone     = $('#bilai-afm-zone');
+    var $thana    = $('#bilai-afm-thana');
 
-    var DZ = window.BilaiDistrictZone;
+    var DT = window.BilaiDistrictThana;
 
     // Select2 init via the shared helper. fresh=true destroys and rebuilds the widgets —
     // done on every modal open so they are always bound to the live plugin registration
     // (dropdownParent must be the dialog, or the dropdown renders behind the overlay).
     function ensureSelect2(fresh) {
-        if (!DZ) { console.error('BilaiAFM: BilaiDistrictZone helper missing'); return false; }
+        if (!DT) { console.error('BilaiAFM: BilaiDistrictThana helper missing'); return false; }
         var $parent = $('#bilai-afm-modal .bilai-afm-dialog');
-        DZ.select2On($district, 'Select District', $parent, fresh);
-        DZ.select2On($zone, 'Select Zone', $parent, fresh);
+        DT.select2On($district, {placeholder: 'Select District', dropdownParent: $parent});
+        DT.select2On($thana, {placeholder: 'Select Thana', dropdownParent: $parent});
         return true;
     }
     ensureSelect2(false);
 
-    function setVal($el, v) { DZ.setVal($el, v); }
+    function setVal($el, v) { DT.setValue($el, v); }
 
     // Load active zones for a district; then optionally preselect one (edit mode).
-    function loadZones(districtId, selectedZoneId) {
-        DZ.loadZones($zone, districtId, selectedZoneId);
+    function loadThanas(districtId, selectedThanaId) {
+        DT.loadThanas($thana, districtId, selectedThanaId);
     }
 
     // District change clears/reloads zones — delegated + namespaced so it survives
@@ -210,7 +208,7 @@
     $(document)
         .off('change.bilaiAfmDistrict', '#bilai-afm-district')
         .on('change.bilaiAfmDistrict', '#bilai-afm-district', function () {
-            loadZones(this.value, null);
+            loadThanas(this.value, null);
         });
 
     // Modal stacking (checkout): while this form is open, hide the underlying
@@ -240,11 +238,11 @@
         document.getElementById('bilai-afm-postcode').value = d.post_code || '';
         document.getElementById('bilai-afm-address').value  = d.address || '';
         setVal($district, d.district_id || '');
-        // Zone depends on district: load zones first, THEN preselect the saved zone.
+        // Thana depends on District: load options before selecting the saved Thana.
         if (d.district_id) {
-            loadZones(d.district_id, d.zone_id || null);
+            loadThanas(d.district_id, d.thana_id || null);
         } else {
-            loadZones(null, null);
+            loadThanas(null, null);
         }
     }
 
@@ -256,7 +254,7 @@
         document.getElementById('bilai-afm-mode').value = 'add';
         document.getElementById('bilai-afm-id').value = '';
         form.reset();
-        setVal($district, ''); loadZones(null, null);
+        setVal($district, ''); loadThanas(null, null);
         openModal();
     }
 
@@ -282,7 +280,7 @@
             var ds = editBtn.dataset;
             openEdit({
                 id: ds.id, name: ds.name, mobile: ds.mobile, email: ds.email,
-                post_code: ds.postcode, district_id: ds.district, zone_id: ds.zone,
+                post_code: ds.postcode, district_id: ds.district, thana_id: ds.thana,
                 address: ds.address
             });
         }

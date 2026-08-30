@@ -297,7 +297,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                                                 data-email="{{ $addr->email }}"
                                                 data-postcode="{{ $addr->post_code }}"
                                                 data-district="{{ $addr->district_id }}"
-                                                data-zone="{{ $addr->zone_id }}"
+                                                data-thana="{{ $addr->thana_id }}"
                                                 data-address="{{ $addr->address }}">
                                             {{-- Replace edit SVG icon later --}}
                                             <i class="fa fa-pencil-square-o"></i> Edit
@@ -314,10 +314,10 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                                 <div class="bilai-adr-card-body">
                                     <p class="bilai-adr-line name">{{ $addr->name }}</p>
                                     <p class="bilai-adr-line muted">{{ $addr->address }}</p>
-                                    {{-- Zone, District â€” built from live relationships; each part shown only when present --}}
+                                    {{-- Thana and District from live relationships. --}}
                                     @php
                                         $addrLocation = array_filter([
-                                            optional($addr->zone)->name,
+                                            optional($addr->thana)->name,
                                             optional($addr->district)->name,
                                         ]);
                                     @endphp

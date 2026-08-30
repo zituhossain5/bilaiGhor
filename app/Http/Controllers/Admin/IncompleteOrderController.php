@@ -55,18 +55,18 @@ class IncompleteOrderController extends Controller
             $subtotal = IncompleteOrderPayload::subtotalFromLineItems($items);
             $discount = (float) ($meta['discount'] ?? 0);
 
-            $divisionId = ! empty($meta['division_id']) ? (int) $meta['division_id'] : null;
             $districtId = ! empty($meta['district_id']) ? (int) $meta['district_id'] : null;
-            $upazilaId  = ! empty($meta['upazila_id']) ? (int) $meta['upazila_id'] : null;
+            $thanaId = ! empty($meta['thana_id']) ? (int) $meta['thana_id'] : null;
+            $divisionId = DeliveryLocation::divisionIdForDistrict($districtId);
 
-            if ($divisionId && $districtId && $upazilaId
-                && ! DeliveryLocation::validateChain($divisionId, $districtId, $upazilaId)) {
-                $divisionId = $districtId = $upazilaId = null;
+            if ($districtId && $thanaId
+                && ! DeliveryLocation::validateDistrictThana($districtId, $thanaId)) {
+                $divisionId = $districtId = $thanaId = null;
             }
 
             $shippingAmount = isset($meta['shipping_charge'])
                 ? (float) $meta['shipping_charge']
-                : ($districtId ? DeliveryLocation::chargeForDistrictId($districtId) : 0);
+                : ($thanaId ? DeliveryLocation::chargeForThanaId($thanaId) : 0);
 
             $grandTotal = $incomplete->total_amount > 0
                 ? (float) $incomplete->total_amount
@@ -121,9 +121,10 @@ class IncompleteOrderController extends Controller
             $shipping->address     = $incomplete->address;
             $shipping->division_id = $divisionId;
             $shipping->district_id = $districtId;
-            $shipping->upazila_id  = $upazilaId;
-            $shipping->area        = ($divisionId && $districtId && $upazilaId)
-                ? DeliveryLocation::shippingLabel($divisionId, $districtId, $upazilaId)
+            $shipping->thana_id    = $thanaId;
+            $shipping->upazila_id  = $thanaId;
+            $shipping->area        = ($districtId && $thanaId)
+                ? DeliveryLocation::shippingLabel($districtId, $thanaId)
                 : ($meta['location_label'] ?? 'N/A');
             $shipping->save();
 

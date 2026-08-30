@@ -94,7 +94,7 @@ class OrderController extends Controller
             'order_note' => 'nullable|string|max:500',
             'division_id' => 'nullable|integer|exists:divisions,id',
             'district_id' => 'nullable|integer|exists:districts,id',
-            'upazila_id' => 'nullable|integer|exists:upazilas,id',
+            'thana_id' => 'nullable|integer|exists:thanas,id',
         ]);
 
         if ($validator->fails()) {
@@ -153,14 +153,14 @@ class OrderController extends Controller
 
         $divisionId = null;
         $districtId = null;
-        $upazilaId = null;
+        $thanaId = null;
         $shippingfee = 0;
 
         if ($requiresPhysical && ! $hasAllFreeDelivery) {
             $locVal = Validator::make($request->all(), [
                 'division_id' => 'required|integer|exists:divisions,id',
                 'district_id' => 'required|integer|exists:districts,id',
-                'upazila_id'  => 'required|integer|exists:upazilas,id',
+                'thana_id'  => 'required|integer|exists:thanas,id',
             ]);
 
             if ($locVal->fails()) {
@@ -173,16 +173,16 @@ class OrderController extends Controller
 
             $divisionId = (int) $request->division_id;
             $districtId = (int) $request->district_id;
-            $upazilaId = (int) $request->upazila_id;
+            $thanaId = (int) $request->thana_id;
 
-            if (! DeliveryLocation::validateChain($divisionId, $districtId, $upazilaId)) {
+            if (! DeliveryLocation::validateChain($divisionId, $districtId, $thanaId)) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Invalid delivery location.',
                 ], 400);
             }
 
-            $shippingfee = DeliveryLocation::chargeForDistrictId($districtId);
+            $shippingfee = DeliveryLocation::chargeForThanaId($thanaId);
         }
 
         // Discount (if coupon applied - can be added later)
@@ -216,9 +216,10 @@ class OrderController extends Controller
                 'address' => $request->address,
                 'division_id' => $divisionId,
                 'district_id' => $districtId,
-                'upazila_id' => $upazilaId,
-                'area' => ($divisionId && $districtId && $upazilaId)
-                    ? DeliveryLocation::shippingLabel($divisionId, $districtId, $upazilaId)
+                'thana_id' => $thanaId,
+                'upazila_id' => $thanaId,
+                'area' => ($districtId && $thanaId)
+                    ? DeliveryLocation::shippingLabel($districtId, $thanaId)
                     : 'Digital / Free Shipping',
             ]);
 

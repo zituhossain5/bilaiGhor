@@ -8,6 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Shipping extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::saving(function (Shipping $shipping) {
+            if ($shipping->thana_id) {
+                $shipping->upazila_id = $shipping->thana_id;
+            } elseif ($shipping->upazila_id) {
+                $shipping->thana_id = $shipping->upazila_id;
+            }
+        });
+    }
     
     protected $fillable = [
         'order_id',
@@ -18,14 +29,14 @@ class Shipping extends Model
         'area',
         'division_id',
         'district_id',
-        'upazila_id',
-        'zone_id',
+        'thana_id',
+        'upazila_id', // ionCube OrderController compatibility alias
         'post_code',
     ];
 
-    public function zone()
+    public function thana()
     {
-        return $this->belongsTo(DeliveryZone::class, 'zone_id');
+        return $this->belongsTo(DeliveryThana::class, 'thana_id');
     }
     
     public function division()
@@ -38,8 +49,4 @@ class Shipping extends Model
         return $this->belongsTo(DeliveryDistrict::class, 'district_id');
     }
 
-    public function upazila()
-    {
-        return $this->belongsTo(DeliveryUpazila::class, 'upazila_id');
-    }
 }

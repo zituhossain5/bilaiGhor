@@ -143,7 +143,7 @@
                             <span class="info-value">{{$profile->district}}</span>
                         </div>
                         <div class="info-list-item">
-                            <span class="info-label">Upazila/Area</span>
+                            <span class="info-label">Thana/Area</span>
                             <span class="info-value">{{$profile->area}}</span>
                         </div>
                     </div>

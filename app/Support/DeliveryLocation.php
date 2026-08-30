@@ -3,20 +3,13 @@
 namespace App\Support;
 
 use App\Models\DeliveryDistrict;
-use App\Models\DeliveryDivision;
-use App\Models\DeliveryUpazila;
-use App\Models\DeliveryZone;
+use App\Models\DeliveryThana;
 
 class DeliveryLocation
 {
-    /**
-     * District → Zone (checkout / customer addresses).
-     * The Division → District → Upazila helpers below are kept for the admin panel
-     * and older data; they are simply no longer used by the checkout frontend.
-     */
-    public static function validateDistrictZone(?int $districtId, ?int $zoneId): bool
+    public static function validateDistrictThana(?int $districtId, ?int $thanaId): bool
     {
-        if (! $districtId || ! $zoneId) {
+        if (! $districtId || ! $thanaId) {
             return false;
         }
 
@@ -24,38 +17,16 @@ class DeliveryLocation
             return false;
         }
 
-        return DeliveryZone::query()
-            ->whereKey($zoneId)
+        return DeliveryThana::query()
+            ->whereKey($thanaId)
             ->where('district_id', $districtId)
             ->where('status', 1)
             ->exists();
     }
 
-    /** "Zone, District" label — used for shippings.area and payment-gateway city. */
-    public static function shippingLabelForZone(?int $districtId, ?int $zoneId): string
+    public static function validateChain(?int $divisionId, ?int $districtId, ?int $thanaId): bool
     {
-        $zone     = $zoneId ? DeliveryZone::find($zoneId) : null;
-        $district = $districtId ? DeliveryDistrict::find($districtId) : null;
-
-        $parts = array_filter([$zone?->name, $district?->name]);
-
-        return $parts ? implode(', ', $parts) : '';
-    }
-
-    /** The division a district belongs to — keeps shippings.division_id populated. */
-    public static function divisionIdForDistrict(?int $districtId): ?int
-    {
-        if (! $districtId) {
-            return null;
-        }
-        $district = DeliveryDistrict::find($districtId);
-
-        return $district ? (int) $district->division_id : null;
-    }
-
-    public static function validateChain(?int $divisionId, ?int $districtId, ?int $upazilaId): bool
-    {
-        if (! $divisionId || ! $districtId || ! $upazilaId) {
+        if (! $divisionId || ! $districtId || ! $thanaId) {
             return false;
         }
 
@@ -65,39 +36,43 @@ class DeliveryLocation
             ->where('status', 1)
             ->first();
 
-        if (! $district) {
-            return false;
-        }
-
-        return DeliveryUpazila::query()
-            ->whereKey($upazilaId)
-            ->where('district_id', $districtId)
-            ->where('status', 1)
-            ->exists();
+        return $district && self::validateDistrictThana($districtId, $thanaId);
     }
 
-    public static function shippingLabel(?int $divisionId, ?int $districtId, ?int $upazilaId): string
+    public static function shippingLabel(?int $districtId, ?int $thanaId): string
     {
-        $upazila  = $upazilaId ? DeliveryUpazila::find($upazilaId) : null;
-        $district = $districtId ? DeliveryDistrict::find($districtId) : null;
-        $division = $divisionId ? DeliveryDivision::find($divisionId) : null;
+        $thana = $thanaId ? DeliveryThana::find($thanaId) : null;
+        $district = $districtId ? DeliveryDistrict::with('division')->find($districtId) : null;
 
         $parts = array_filter([
-            $upazila?->name,
+            $thana?->name,
             $district?->name,
-            $division?->name,
+            $district?->division?->name,
         ]);
 
         return $parts ? implode(', ', $parts) : '';
     }
 
-    public static function chargeForDistrictId(?int $districtId): int
+    public static function divisionIdForDistrict(?int $districtId): ?int
     {
         if (! $districtId) {
+            return null;
+        }
+
+        $divisionId = DeliveryDistrict::query()->whereKey($districtId)->value('division_id');
+
+        return $divisionId ? (int) $divisionId : null;
+    }
+
+    public static function chargeForThanaId(?int $thanaId): float
+    {
+        if (! $thanaId) {
             return 0;
         }
-        $district = DeliveryDistrict::query()->whereKey($districtId)->where('status', 1)->first();
 
-        return $district ? (int) $district->delivery_charge : 0;
+        return (float) (DeliveryThana::query()
+            ->whereKey($thanaId)
+            ->where('status', 1)
+            ->value('delivery_charge') ?? 0);
     }
 }

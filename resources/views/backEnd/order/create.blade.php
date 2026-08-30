@@ -316,13 +316,14 @@
                             @error('district_id')<span class="invalid-feedback"><strong>{{ $message }}</strong></span>@enderror
                         </div>
                         <div class="mb-2">
-                            <label class="small text-muted d-block mb-1">উপজেলা</label>
-                            <select id="adm_pos_upazila"
-                                    class="form-control form-control-sm @error('upazila_id') is-invalid @enderror"
-                                    name="upazila_id" required disabled>
+                            <label class="small text-muted d-block mb-1">থানা</label>
+                            <select id="adm_pos_thana"
+                                    class="form-control form-control-sm @error('thana_id') is-invalid @enderror"
+                                    name="thana_id" required disabled>
                                 <option value="">আগে জেলা সিলেক্ট করুন</option>
                             </select>
-                            @error('upazila_id')<span class="invalid-feedback"><strong>{{ $message }}</strong></span>@enderror
+                            <input type="hidden" name="upazila_id" id="adm_pos_upazila_compat" value="{{ old('thana_id') }}">
+                            @error('thana_id')<span class="invalid-feedback"><strong>{{ $message }}</strong></span>@enderror
                         </div>
                     </div>
 
@@ -573,7 +574,7 @@
     // -------- SHIPPING (বিভাগ / জেলা / উপজেলা) ----------
     function admPosFillDistricts(divId, preselect, cb) {
         var $d = $('#adm_pos_district');
-        var $u = $('#adm_pos_upazila');
+        var $u = $('#adm_pos_thana');
         $d.prop('disabled', !divId).html(divId ? '<option value="">লোড...</option>' : '<option value="">আগে বিভাগ...</option>');
         $u.html('<option value="">আগে জেলা...</option>').prop('disabled', true);
         if (!divId) { if (cb) cb(); return; }
@@ -587,13 +588,13 @@
             if (cb) cb();
         });
     }
-    function admPosFillUpazilas(distId, preselect, cb) {
-        var $u = $('#adm_pos_upazila');
+    function admPosFillThanas(distId, preselect, cb) {
+        var $u = $('#adm_pos_thana');
         $u.prop('disabled', !distId).html(distId ? '<option value="">লোড...</option>' : '<option value="">আগে জেলা...</option>');
         if (!distId) { if (cb) cb(); return; }
-        $.get('{{ url('/ajax/delivery/upazilas') }}/' + distId, function (res) {
-            var opts = '<option value="">উপজেলা নির্বাচন...</option>';
-            (res.data || []).forEach(function (r) { opts += '<option value="' + r.id + '">' + r.name + '</option>'; });
+        $.get('{{ url('/ajax/delivery/thanas') }}/' + distId, function (res) {
+            var opts = '<option value="">থানা নির্বাচন...</option>';
+            (res.data || []).forEach(function (r) { opts += '<option value="' + r.id + '" data-charge="' + r.delivery_charge + '">' + (r.name_bn || r.name) + '</option>'; });
             $u.html(opts).prop('disabled', false);
             if (preselect) $u.val(String(preselect));
             if (cb) cb();
@@ -606,26 +607,25 @@
     });
     $(document).on("change", "#adm_pos_district", function () {
         var id = $(this).val();
-        if (id) {
-            $.ajax({
-                type: "GET", data: { id: id }, url: "{{route('admin.order.cart_shipping')}}", dataType: "json",
-                complete: function () { cart_content(); cart_details(); }
-            });
-        }
-        admPosFillUpazilas(id, null, function () {
+        admPosFillThanas(id, null, function () {
             cart_content(); cart_details();
         });
+    });
+    $(document).on('change', '#adm_pos_thana', function () {
+        $('#adm_pos_upazila_compat').val(this.value || '');
+        if (!this.value) return;
+        $.get('{{ route('admin.order.cart_thana_shipping') }}', {thana_id: this.value})
+            .always(function () { cart_content(); cart_details(); });
     });
 
     @if((int)old('division_id',0))
     $(function () {
         var odiv = {{ (int) old('division_id', 0) }};
         var odist = {{ (int) old('district_id', 0) }};
-        var oup = {{ (int) old('upazila_id', 0) }};
+        var oup = {{ (int) old('thana_id', old('upazila_id', 0)) }};
         admPosFillDistricts(odiv, odist || null, function () {
             if (odist) {
-                $.ajax({ type: 'GET', data: { id: odist }, url: "{{ route('admin.order.cart_shipping') }}", dataType: 'json', complete: function() {} });
-                admPosFillUpazilas(odist, oup || null, null);
+                admPosFillThanas(odist, oup || null, function () { $('#adm_pos_upazila_compat').val(oup || ''); });
             }
         });
     });

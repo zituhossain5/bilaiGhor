@@ -5,6 +5,45 @@
     var tpl = document.getElementById('item-row-template').innerHTML;
     var money = function (n) { return '\u09F3' + Number(n || 0).toFixed(2); };
     var initialItems = {{ Illuminate\Support\Js::from(old('items', $initialItems)) }};
+    var initialThanaId = @json((string) $selectedThanaId);
+
+    function loadManualThanas(districtId, selectedThanaId) {
+        var thana = document.getElementById('manual_thana');
+        thana.disabled = true;
+        thana.innerHTML = '<option value="">Loading Thanas...</option>';
+        if (!districtId) {
+            thana.innerHTML = '<option value="">Select District First</option>';
+            return;
+        }
+
+        fetch(@json(url('/ajax/delivery/thanas')) + '/' + districtId)
+            .then(function (response) { return response.json(); })
+            .then(function (response) {
+                thana.innerHTML = '<option value="">Select Thana</option>';
+                (response.data || []).forEach(function (row) {
+                    var option = document.createElement('option');
+                    option.value = row.id;
+                    option.textContent = row.name_bn || row.name;
+                    option.dataset.charge = row.delivery_charge || 0;
+                    option.dataset.postCode = row.post_code || '';
+                    if (String(row.id) === String(selectedThanaId || '')) option.selected = true;
+                    thana.appendChild(option);
+                });
+                thana.disabled = false;
+                syncManualThana();
+            });
+    }
+
+    function syncManualThana() {
+        var thana = document.getElementById('manual_thana');
+        var option = thana.options[thana.selectedIndex];
+        if (!option || !option.value) return;
+        document.getElementById('delivery_charge').value = option.dataset.charge || 0;
+        if (!document.getElementById('manual_post_code').value) {
+            document.getElementById('manual_post_code').value = option.dataset.postCode || '';
+        }
+        recalc();
+    }
 
     function selectedProduct(row) {
         var select = row.querySelector('.product-select');
@@ -101,7 +140,16 @@
         document.getElementById('customer_phone').value = opt.dataset.phone || '';
         document.getElementById('customer_email').value = opt.dataset.email || '';
         document.getElementById('customer_address').value = opt.dataset.address || '';
+        if (opt.dataset.district) {
+            document.getElementById('manual_district').value = opt.dataset.district;
+            loadManualThanas(opt.dataset.district, opt.dataset.thana || null);
+        }
     });
+
+    document.getElementById('manual_district').addEventListener('change', function () {
+        loadManualThanas(this.value, null);
+    });
+    document.getElementById('manual_thana').addEventListener('change', syncManualThana);
 
     document.getElementById('add-row').addEventListener('click', function () { addRow(); });
     document.addEventListener('input', function (event) {
@@ -133,5 +181,7 @@
     } else {
         addRow();
     }
+
+    loadManualThanas(document.getElementById('manual_district').value, initialThanaId || null);
 }());
 </script>

@@ -19,8 +19,7 @@ class CustomerAddress extends Model
         'address',
         'division_id',
         'district_id',
-        'zone_id',
-        'upazila_id',
+        'thana_id',
         'is_default',
     ];
 
@@ -41,8 +40,13 @@ class CustomerAddress extends Model
         return $this->belongsTo(DeliveryDistrict::class, 'district_id');
     }
 
-    public function zone()
+    public function division()
     {
-        return $this->belongsTo(DeliveryZone::class, 'zone_id');
+        return $this->belongsTo(DeliveryDivision::class, 'division_id');
+    }
+
+    public function thana()
+    {
+        return $this->belongsTo(DeliveryThana::class, 'thana_id');
     }
 }

@@ -40,7 +40,7 @@
     $custPhone     = $ship->phone ?? ($order->customer->phone ?? null);
     $custEmail     = $order->customer->email ?? null;
     $addressLine   = implode(', ', array_filter([$ship->address ?? null, $ship->area ?? null]));
-    $locationLine  = implode(', ', array_filter([optional($ship?->zone)->name, optional($ship?->district)->name]));
+    $locationLine  = implode(', ', array_filter([optional($ship?->thana)->name, optional($ship?->district)->name]));
     if (!empty($ship?->post_code)) { $locationLine = trim($locationLine . ' ' . $ship->post_code); }
 
     $money = fn ($v) => '৳' . number_format((float) $v, 0);

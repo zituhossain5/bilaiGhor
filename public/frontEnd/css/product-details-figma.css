@@ -2,6 +2,15 @@
 .bpd-breadcrumb-wrap,
 .bpd-product-section,
 .bpd-delivery-section,
+.bpd-tabs-section,
+.bpd-related-section {
+    background-color: var(--bilai-page-bg, #FDFCF8);
+    color: var(--bilai-text, #4F4F4F);
+}
+
+.bpd-breadcrumb-wrap,
+.bpd-product-section,
+.bpd-delivery-section,
 .bpd-tabs-section {
     font-family: "DM Sans", sans-serif;
 }
@@ -58,7 +67,7 @@
     padding: 21px;
     border: 1px solid #dccab2;
     border-radius: 20px;
-    background: #fdfcf8;
+    background: var(--bilai-page-bg, #FDFCF8);
 }
 
 .bpd-thumbs-col .indicator-item img {
@@ -74,7 +83,7 @@
     aspect-ratio: 480 / 587;
     border: 1px solid #edd9a6;
     border-radius: 30px;
-    background: #fdfcf8;
+    background: var(--bilai-page-bg, #FDFCF8);
 }
 
 .bpd-main-img-col .details_slider,
@@ -122,7 +131,7 @@
     margin: 0 0 30px;
     padding: 0 0 20px;
     border-bottom: 1px solid #edd9a6;
-    color: #4f4f4f;
+    color: var(--bilai-text, #4F4F4F);
     font-size: 16px;
     line-height: 24px;
 }
@@ -170,7 +179,7 @@
 }
 
 .bpd-old-price {
-    color: #4f4f4f;
+    color: var(--bilai-text, #4F4F4F);
     font-size: 24px;
     font-weight: 400;
     line-height: 36px;
@@ -191,7 +200,7 @@
 .bpd-wishlist {
     gap: 21px;
     margin-left: auto;
-    color: #4f4f4f;
+    color: var(--bilai-text, #4F4F4F);
     font-size: 16px;
     line-height: 24px;
 }
@@ -216,14 +225,14 @@
 .bpd-qty-row {
     gap: 20px;
     margin-bottom: 30px;
-    color: #4f4f4f;
+    color: var(--bilai-text, #4F4F4F);
     font-size: 20px;
     line-height: 30px;
 }
 
 .bpd-weight-label,
 .bpd-qty-label {
-    color: #4f4f4f;
+    color: var(--bilai-text, #4F4F4F);
     font-size: 20px;
     font-weight: 400;
 }
@@ -291,8 +300,8 @@
     border-top: 1px solid #f0e6d8 !important;
     border-bottom: 1px solid #f0e6d8 !important;
     outline: 0;
-    background: #fdfcf8;
-    color: #4f4f4f;
+    background: var(--bilai-page-bg, #FDFCF8);
+    color: var(--bilai-text, #4F4F4F);
     font-size: 20px;
     font-weight: 400;
     text-align: center;
@@ -382,7 +391,7 @@
 .bpd-card-label,
 .bpd-card-value {
     margin: 0;
-    color: #4f4f4f;
+    color: var(--bilai-text, #4F4F4F);
     font-size: 16px;
     font-weight: 400;
     line-height: 24px;
@@ -407,7 +416,7 @@
 .bpd-accordion {
     border: 1px solid #dccab2;
     border-radius: 20px;
-    background: #fdfcf8;
+    background: var(--bilai-page-bg, #FDFCF8);
 }
 
 .bpd-accordion-btn {
@@ -451,7 +460,7 @@
 
 .bpd-accordion-body {
     padding: 0 20px 30px;
-    color: #4f4f4f;
+    color: var(--bilai-text, #4F4F4F);
     font-size: 16px;
     line-height: 24px;
 }
@@ -471,7 +480,7 @@
     padding: 20px;
     margin: 0;
     border-bottom: 0;
-    background: #fdfcf8;
+    background: var(--bilai-page-bg, #FDFCF8);
     color: #3c2a1e;
     font-size: 20px;
     font-weight: 400;
@@ -486,9 +495,75 @@
 
 .bpd-description-content {
     max-width: none;
-    color: #4f4f4f;
+    color: var(--bilai-text, #4F4F4F);
     font-size: 16px;
     line-height: 24px;
+}
+
+.bpd-description-content,
+.bpd-description-content p,
+.bpd-description-content span,
+.bpd-description-content div,
+.bpd-description-content li,
+.bpd-description-content td,
+.bpd-description-content th {
+    background-color: transparent !important;
+    color: var(--bilai-text, #4F4F4F) !important;
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 400;
+    line-height: 24px !important;
+    white-space: normal !important;
+}
+
+.bpd-description-content p,
+.bpd-description-content div {
+    margin-top: 0 !important;
+    margin-bottom: 16px !important;
+}
+
+.bpd-description-content ul,
+.bpd-description-content ol {
+    margin-top: 6px !important;
+    margin-bottom: 18px !important;
+    padding-left: 28px !important;
+}
+
+.bpd-description-content li {
+    margin-bottom: 6px !important;
+    padding-left: 2px !important;
+}
+
+.bpd-description-content strong,
+.bpd-description-content b {
+    background-color: transparent !important;
+    color: var(--bilai-text, #4F4F4F) !important;
+    font-family: "DM Sans", sans-serif !important;
+    font-size: inherit !important;
+    font-weight: 600 !important;
+    line-height: inherit !important;
+}
+
+.bpd-description-content em,
+.bpd-description-content i:not(.fa):not(.fas):not(.far):not(.fab) {
+    color: inherit !important;
+    font-family: "DM Sans", sans-serif !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+}
+
+.bpd-description-content h1,
+.bpd-description-content h2,
+.bpd-description-content h3,
+.bpd-description-content h4,
+.bpd-description-content h5,
+.bpd-description-content h6 {
+    background-color: transparent !important;
+    color: var(--bilai-heading, #2A1505) !important;
+    font-family: "DM Sans", sans-serif !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    margin: 0 0 14px !important;
 }
 
 @media (max-width: 1199px) {

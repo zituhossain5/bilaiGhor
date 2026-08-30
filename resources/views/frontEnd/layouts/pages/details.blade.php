@@ -31,16 +31,24 @@
 :root {
     --bilai-primary:   #F28C00;
     --bilai-brown:     #3A1F0F;
+    --bilai-page-bg:   #FDFCF8;
     --bilai-cream:     #FFF8EC;
     --bilai-border:    #E8CDA5;
-    --bilai-text:      #2B1A10;
-    --bilai-muted:     #77706A;
+    --bilai-text:      #4F4F4F;
+    --bilai-heading:   #2A1505;
+    --bilai-muted:     #4F4F4F;
     --bilai-radius-md: 8px;
     --bilai-radius-lg: 14px;
 }
 
+html,
+body.gotop {
+    background: var(--bilai-page-bg);
+    color: var(--bilai-text);
+}
+
 /* Breadcrumb */
-.bpd-breadcrumb-wrap { background: #fff; padding: 10px 0; border-bottom: 1px solid var(--bilai-border); }
+.bpd-breadcrumb-wrap { background: var(--bilai-page-bg); padding: 10px 0; border-bottom: 1px solid var(--bilai-border); }
 .bpd-breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; font-size: 13px; color: var(--bilai-muted); }
 .bpd-breadcrumb a { color: var(--bilai-text); text-decoration: none; }
 .bpd-breadcrumb a:hover { color: var(--bilai-primary); }
@@ -48,7 +56,7 @@
 .bpd-breadcrumb .bpd-bc-current { color: var(--bilai-primary); font-weight: 500; }
 
 /* Product Section */
-.bpd-product-section { background: #fff; padding: 28px 0 36px; }
+.bpd-product-section { background: var(--bilai-page-bg); padding: 28px 0 36px; }
 .bpd-product-layout {
     display: grid;
     grid-template-columns: 90px 1fr 1.2fr;
@@ -104,7 +112,7 @@
 
 /* Product Info Column */
 .bpd-info-col { }
-.bpd-title { font-size: 21px; font-weight: 700; color: var(--bilai-text); line-height: 1.4; margin: 0 0 10px; }
+.bpd-title { font-size: 21px; font-weight: 700; color: var(--bilai-heading); line-height: 1.4; margin: 0 0 10px; }
 
 .bpd-meta-line {
     display: flex; flex-wrap: wrap; align-items: center;
@@ -199,7 +207,7 @@ input.bpd-btn { cursor: pointer; }
 .bpd-card-value { font-size: 13px; color: var(--bilai-text); font-weight: 500; line-height: 1.4; }
 
 /* BilaiGhor Product Accordions Start */
-.bpd-delivery-section { padding: 0 0 24px; background: #fff; }
+.bpd-delivery-section { padding: 0 0 24px; background: var(--bilai-page-bg); }
 .bpd-delivery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 @media (max-width: 768px) { .bpd-delivery-grid { grid-template-columns: 1fr; } }
 .bpd-accordion {
@@ -224,7 +232,7 @@ input.bpd-btn { cursor: pointer; }
 /* BilaiGhor Product Accordions End */
 
 /* BilaiGhor Product Tabs Figma Start */
-.bpd-tabs-section { padding: 24px 0 36px; background: #fff; }
+.bpd-tabs-section { padding: 24px 0 36px; background: var(--bilai-page-bg); }
 .bpd-tab-nav {
     display: flex;
     border-bottom: 2px solid var(--bilai-border);
@@ -235,7 +243,7 @@ input.bpd-btn { cursor: pointer; }
     padding: 14px 20px;
     border: none;
     border-bottom: 3px solid transparent;
-    background: #fff;
+    background: var(--bilai-page-bg);
     color: var(--bilai-muted);
     font-size: 15px;
     font-weight: 600;
@@ -307,7 +315,7 @@ input.bpd-btn { cursor: pointer; }
 .bpd-rcard-date { font-size: 12px; color: var(--bilai-muted); }
 .bpd-rcard-stars { margin-left: auto; }
 .bpd-rcard-stars i { color: #F8B400; font-size: 14px; }
-.bpd-rcard-body { font-size: 14px; color: #555; line-height: 1.6; }
+.bpd-rcard-body { font-size: 14px; color: var(--bilai-text); line-height: 1.6; }
 .bpd-review-empty {
     background: var(--bilai-cream); border: 1px dashed var(--bilai-border);
     border-radius: 10px; padding: 32px; text-align: center; color: var(--bilai-muted);
@@ -913,7 +921,7 @@ input.bpd-btn { cursor: pointer; }
 /* BilaiGhor Product Details Mobile Fix End */
 /* BilaiGhor Product Details End */
 </style>
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=5">
+<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=6">
 @endpush
 
 @section('content')

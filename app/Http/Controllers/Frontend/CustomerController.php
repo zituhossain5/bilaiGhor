@@ -593,7 +593,7 @@ class CustomerController extends Controller
         \App\Http\Controllers\Frontend\ShoppingController::refreshCartWholesalePrices();
 
         // ── Districts for the checkout selects (same source as the Add/Edit Address popup) ──
-        $checkoutDistricts = \App\Models\DeliveryDistrict::active()->ordered()->get(['id', 'name']);
+        $checkoutDistricts = \App\Models\DeliveryDistrict::active()->ordered()->get(['id', 'name', 'division_id']);
 
         // ── Checkout prefill for logged-in customers (own data only) ──
         // Priority: old() (handled in the view) → default saved address → profile → empty.

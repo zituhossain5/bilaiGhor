@@ -270,13 +270,402 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 /* BilaiGhor Checkout Summary Fix Start */
 /* BilaiGhor Checkout Summary Fix End */
 
+/* BilaiGhor Checkout Figma Refresh Start */
+.checkout-section {
+    --co-page: #FDFCF8;
+    --co-card: #FFF8EC;
+    --co-card-soft: #FFFDF8;
+    --co-border: #E8CDA5;
+    --co-text: #4F4F4F;
+    --co-heading: #2A1505;
+    --co-primary: #F28C00;
+    --co-brown: #3A1F0F;
+    background: var(--co-page);
+    padding: 24px 0 72px;
+    color: var(--co-text);
+    font-family: "DM Sans", sans-serif;
+}
+
+.checkout-section > .container {
+    width: 100%;
+    max-width: 1200px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.bilai-co-bc {
+    margin-bottom: 26px;
+    color: var(--co-text);
+    font-size: 13px;
+    line-height: 20px;
+}
+
+.bilai-co-bc a,
+.bilai-co-bc span:not(.bilai-co-bc-active) {
+    color: var(--co-text);
+}
+
+.bilai-co-bc-active {
+    color: var(--co-primary);
+    font-weight: 500;
+}
+
+.checkout-layout-grid {
+    --bs-gutter-x: 32px;
+    --bs-gutter-y: 22px;
+    align-items: flex-start;
+}
+
+.checkout-card {
+    background: var(--co-card);
+    border: 1px solid var(--co-border);
+    border-radius: 16px;
+    box-shadow: none;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.checkout-header {
+    min-height: 68px;
+    padding: 20px 24px 16px;
+    gap: 12px;
+    border-bottom: 1px solid rgba(232, 205, 165, 0.75);
+}
+
+.checkout-card-icon,
+.pay-logo-wrap {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 36px;
+    border-radius: 50%;
+    background: #F0E6D8;
+}
+
+.checkout-card-icon img,
+.pay-logo-wrap img,
+.bilai-co-earn-ic img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.checkout-header h6 {
+    color: var(--co-heading);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 30px;
+}
+
+.card-body-custom {
+    padding: 22px 24px 24px;
+}
+
+.checkout-card:first-child .card-body-custom > .row > .col-md-6 {
+    order: 1;
+}
+
+.checkout-address-field {
+    order: 2;
+}
+
+.checkout-location-row {
+    order: 3;
+}
+
+.checkout-card:first-child .card-body-custom > .row > .col-12:not(.checkout-address-field):not(.checkout-location-row) {
+    order: 4;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-label-custom {
+    color: var(--co-heading);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 21px;
+    margin-bottom: 8px;
+}
+
+.form-control-custom,
+select.form-control-custom {
+    height: 52px;
+    border: 1px solid var(--co-border);
+    border-radius: 10px;
+    background-color: #FFFDF8;
+    color: var(--co-text);
+    font-size: 15px;
+    line-height: 22px;
+    padding-left: 16px;
+    padding-right: 38px;
+}
+
+textarea.form-control-custom {
+    min-height: 104px;
+    padding-top: 14px;
+    resize: vertical;
+}
+
+.bilai-addr-btn {
+    height: 42px;
+    margin-top: 12px;
+    padding: 0 18px;
+    border-radius: 10px;
+    background: var(--co-brown);
+    color: #fff;
+    font-size: 14px;
+}
+
+.bilai-addr-btn-ic {
+    width: 17px;
+    height: 17px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
+.payment-options-list {
+    display: grid;
+    gap: 14px;
+}
+
+.payment-option-label {
+    min-height: 70px;
+    margin: 0;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: #FFFDF8;
+}
+
+.payment-option-label:has(input:checked) {
+    background: #FFF4DF;
+    box-shadow: inset 0 0 0 1px var(--co-primary);
+}
+
+.payment-content {
+    gap: 14px;
+}
+
+.pay-logo {
+    width: 22px;
+    height: 22px;
+}
+
+.pay-info strong {
+    color: var(--co-heading);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+}
+
+.pay-info small {
+    color: var(--co-text);
+    font-size: 13px;
+    line-height: 19px;
+}
+
+#manual-payment-fields {
+    background: #FFFDF8 !important;
+    border-color: var(--co-border) !important;
+}
+
+.sticky-sidebar {
+    top: 98px;
+}
+
+.cart-items-scroll {
+    max-height: 380px;
+}
+
+.checkout-item {
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(232, 205, 165, 0.75);
+}
+
+.checkout-pro-img {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    object-fit: contain;
+    background: #FFFDF8;
+}
+
+.checkout-pro-info h6 {
+    color: var(--co-heading);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 21px;
+}
+
+.checkout-pro-info .meta,
+.co-price-line {
+    color: var(--co-text);
+    font-size: 13px;
+    line-height: 19px;
+}
+
+.co-line-total {
+    color: var(--co-heading);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.bilai-co-edit {
+    margin-left: auto;
+    color: var(--co-primary);
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.coupon-wrapper {
+    padding: 18px 24px 22px;
+}
+
+.coupon-group-modern {
+    height: 52px;
+    border-radius: 10px;
+    background: #FFFDF8;
+}
+
+.coupon-btn-modern {
+    background: var(--co-primary);
+    border-radius: 0 9px 9px 0;
+    min-width: 104px;
+}
+
+.bilai-co-earn {
+    margin: 0 24px 24px;
+    background: #FFFDF8;
+    border-radius: 12px;
+}
+
+.bilai-co-earn-ic {
+    background: #F0E6D8;
+}
+
+.bilai-co-reward-row {
+    align-items: flex-start;
+}
+
+.bilai-co-reward-pill {
+    background: #FFFDF8;
+    border: 1px solid var(--co-border);
+    color: var(--co-heading);
+    border-radius: 12px;
+}
+
+.bilai-co-reward-pill .dot {
+    background: var(--co-primary);
+}
+
+.bilai-co-toggle .track {
+    cursor: pointer;
+}
+
+.summary-totals {
+    padding: 18px 24px 4px;
+}
+
+.total-row {
+    margin-bottom: 14px;
+    color: var(--co-heading);
+    font-size: 15px;
+    line-height: 22px;
+}
+
+.total-row span:first-child {
+    color: var(--co-text);
+}
+
+.total-row.final {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--co-border);
+    color: var(--co-heading);
+    font-size: 20px;
+    line-height: 30px;
+}
+
+.total-row.final span:last-child {
+    color: var(--co-primary);
+}
+
+.btn-place-order {
+    height: 54px;
+    border-radius: 12px;
+    background: var(--co-primary);
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.desktop-submit-btn {
+    padding: 10px 24px 24px !important;
+}
+
+@media (max-width: 991px) {
+    .checkout-section {
+        padding-bottom: 96px;
+    }
+
+    .checkout-layout-grid {
+        --bs-gutter-x: 0;
+    }
+}
+
+@media (max-width: 575px) {
+    .checkout-section > .container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .checkout-header,
+    .card-body-custom,
+    .coupon-wrapper,
+    .summary-totals {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .checkout-header h6 {
+        font-size: 17px;
+        line-height: 25px;
+    }
+
+    .checkout-card-icon,
+    .pay-logo-wrap {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+    }
+
+    .payment-option-label {
+        padding: 14px;
+    }
+
+    .checkout-pro-img {
+        width: 62px;
+        height: 62px;
+    }
+
+    .coupon-btn-modern {
+        min-width: 86px;
+        padding: 0 14px;
+    }
+}
+/* BilaiGhor Checkout Figma Refresh End */
+
 /* BilaiGhor Checkout Address Modal Start */
 .bilai-addr-btn {
     display: inline-flex; align-items: center; gap: 8px;
-    margin-top: 12px; padding: 10px 20px 10px 16px;
+    height: 42px;
+    margin-top: 12px; padding: 0 18px;
     background: #241307; color: #fff;
-    border: none; border-radius: 100px;
-    font-size: 13px; font-weight: 600;
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 600;
     line-height: 1; cursor: pointer; transition: 0.15s;
 }
 .bilai-addr-btn:hover { background: var(--co-brown); }
@@ -444,6 +833,10 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
         $selDistrict = old('district_id', $checkoutPrefill['district_id'] ?? '');
         $selThana    = old('thana_id',    $checkoutPrefill['thana_id']    ?? '');
         $selPostCode = old('post_code',   $checkoutPrefill['post_code']   ?? '');
+        $selDivision = old('division_id', '');
+        if (! $selDivision && $selDistrict) {
+            $selDivision = optional(($checkoutDistricts ?? collect())->firstWhere('id', (int) $selDistrict))->division_id ?? '';
+        }
 
         $__gsCheckoutOtp = \App\Models\GeneralSetting::where('status', 1)->first();
         $__custCheckoutOtpPending = session('chkotp_customer_pending');
@@ -479,6 +872,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
         <form id="checkout-form" action="{{ route('customer.ordersave') }}" method="POST" data-parsley-validate="">
             @csrf
             <input type="hidden" name="checkout_otp" id="checkout_otp_hidden" value="{{ old('checkout_otp') }}">
+            <input type="hidden" name="post_code" id="checkout_post_code" value="{{ $selPostCode }}">
             {{-- Traffic: সার্ভার সেশন (referrer/fbclid) + ব্রাউজার sessionStorage --}}
             <input type="hidden" name="traffic_source" id="inp_ts" value="{{ old('traffic_source', session('order_traffic_source', 'direct')) }}">
             <input type="hidden" name="traffic_referrer" id="inp_tsr" value="{{ old('traffic_referrer', session('order_traffic_referrer', '')) }}">
@@ -501,7 +895,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
             } catch (e) {}
             </script>
 
-            <div class="row">
+            <div class="row checkout-layout-grid">
 
                 {{-- LEFT COLUMN: Shipping & Payment --}}
                 <div class="col-lg-7 col-md-12 cus-order-2">
@@ -509,8 +903,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                     {{-- 1. SHIPPING INFO CARD --}}
                     <div class="checkout-card">
                         <div class="checkout-header">
-                            {{-- Replace SVG icon later --}}
-                            <i class="fa fa-truck"></i>
+                            <span class="checkout-card-icon"><img src="{{ asset('public/uploads/location.svg') }}" alt="" aria-hidden="true"></span>
                             <h6>Shipping Information</h6>
                         </div>
                         <div class="card-body-custom">
@@ -531,14 +924,18 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                 </div>
 
                                 @if($requires_shipping)
-                                {{-- Post Code + District + Thana (same source as the Add/Edit Address popup) --}}
-                                <div class="col-12">
+                                {{-- Division + District + Thana (same source as the Add/Edit Address popup) --}}
+                                <div class="col-12 checkout-location-row">
                                     <div class="row g-2 g-md-3 align-items-end checkout-location-fields">
                                         <div class="col-12 col-md-4">
                                             <div class="form-group mb-0 mb-md-2">
-                                                <label class="form-label-custom">Post Code</label>
-                                                <input type="text" name="post_code" id="checkout_post_code" class="form-control-custom"
-                                                    maxlength="20" value="{{ $selPostCode }}" placeholder="1xxxx">
+                                                <label class="form-label-custom">Division <span class="req">*</span></label>
+                                                <select name="division_id" id="checkout_division" class="form-control-custom" required>
+                                                    <option value="">Select Division</option>
+                                                    @foreach(($divisions ?? collect()) as $division)
+                                                        <option value="{{ $division->id }}" @selected((string) $selDivision === (string) $division->id)>{{ $division->name }}</option>
+                                                    @endforeach
+                                                </select>
                                             </div>
                                         </div>
                                         <div class="col-12 col-md-4">
@@ -548,6 +945,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                                     <option value="">Select District</option>
                                                     @foreach(($checkoutDistricts ?? collect()) as $d)
                                                         <option value="{{ $d->id }}"
+                                                            data-division="{{ $d->division_id ?? '' }}"
                                                             @selected((string) $selDistrict === (string) $d->id)>{{ $d->name }}</option>
                                                     @endforeach
                                                 </select>
@@ -555,7 +953,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                         </div>
                                         <div class="col-12 col-md-4">
                                             <div class="form-group mb-0 mb-md-2">
-                                                <label class="form-label-custom">Thana <span class="req">*</span></label>
+                                                <label class="form-label-custom">Thana/Upazila <span class="req">*</span></label>
                                                 <select name="thana_id" id="checkout_thana" class="form-control-custom" required disabled>
                                                     <option value="">Select Thana</option>
                                                 </select>
@@ -574,8 +972,8 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                 </div>
                                 @endif
 
-                                {{-- Full Address sits below Post Code / District / Thana. --}}
-                                <div class="col-12">
+                                {{-- Full Address is shown before the location selectors by the checkout layout CSS. --}}
+                                <div class="col-12 checkout-address-field">
                                     <div class="form-group">
                                         <label class="form-label-custom">Full Address <span class="req">*</span></label>
                                         <input type="text" name="address" class="form-control-custom"
@@ -604,8 +1002,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                     {{-- 2. PAYMENT METHOD CARD --}}
                     <div class="checkout-card">
                         <div class="checkout-header">
-                            {{-- Replace SVG icon later (kept .fa-wallet as JS scroll target) --}}
-                            <i class="fa fa-credit-card fa-wallet"></i>
+                            <span class="checkout-card-icon fa-wallet"><img src="{{ asset('public/uploads/wallet.svg') }}" alt="" aria-hidden="true"></span>
                             <h6>Select Payment Method</h6>
                         </div>
                         <div class="card-body-custom">
@@ -618,8 +1015,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                     <label class="payment-option-label">
                                         <input type="radio" name="payment_method" value="cod" checked required>
                                         <div class="payment-content">
-                                            {{-- Replace SVG icon later --}}
-                                            <div class="text-center" style="width: 36px;"><i class="fa fa-truck" style="color:#2e9e4f; font-size:24px;"></i></div>
+                                            <span class="pay-logo-wrap"><img src="{{ asset('public/uploads/car.svg') }}" class="pay-logo" alt="" aria-hidden="true"></span>
                                             <div class="pay-info">
                                                 <strong>Cash on Delivery</strong>
                                                 <small>Pay when you receive the product</small>
@@ -697,10 +1093,9 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                         <input type="radio" name="payment_method" value="manual_{{ $mg->id }}" required>
                                         <div class="payment-content">
                                             @if($mg->logo_asset_url)
-                                                <img src="{{ $mg->logo_asset_url }}" class="pay-logo" alt="{{ $mg->title }}">
+                                                <span class="pay-logo-wrap"><img src="{{ $mg->logo_asset_url }}" class="pay-logo" alt="{{ $mg->title }}"></span>
                                             @else
-                                                {{-- Replace SVG icon later --}}
-                                                <div class="text-center" style="width: 36px;"><i class="fa fa-money" style="color:var(--co-primary); font-size:20px;"></i></div>
+                                                <span class="pay-logo-wrap"><img src="{{ asset('public/uploads/wallet.svg') }}" class="pay-logo" alt="" aria-hidden="true"></span>
                                             @endif
                                             <div class="pay-info">
                                                 <strong>{{ $mg->title }}</strong>
@@ -758,9 +1153,8 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                         {{-- CARD 1: Order Summary (items + coupon + reward earn) --}}
                         <div class="checkout-card">
                             <div class="checkout-header">
-                                {{-- Replace SVG icon later --}}
-                                <i class="fa fa-shopping-bag"></i>
-                                <h6>Order Items ({{ Cart::instance('shopping')->count() }})</h6>
+                                <span class="checkout-card-icon"><img src="{{ asset('public/uploads/orderItems.svg') }}" alt="" aria-hidden="true"></span>
+                                <h6>Order Items</h6>
                                 <a href="{{ route('cart.index') }}" class="bilai-co-edit">Edit Cart</a>
                             </div>
 
@@ -825,10 +1219,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                             {{-- Reward earn info (dynamic: floor(eligible/100), credited on delivery) --}}
                             @php $__rwEarnPreview = \App\Services\RewardPointService::earnedPointsFor(max(0, $subtotal - $discount)); @endphp
                             <div class="bilai-co-earn">
-                                <div class="bilai-co-earn-ic">
-                                    {{-- Replace SVG icon later --}}
-                                    <i class="fa fa-star"></i>
-                                </div>
+                                <div class="bilai-co-earn-ic"><img src="{{ asset('public/uploads/reedemStar.svg') }}" alt="" aria-hidden="true"></div>
                                 <div>
                                     <p>You will earn <strong id="bilai-rw-earn">{{ $__rwEarnPreview }}</strong> reward points for this order — points are credited once your order has been delivered.</p>
                                     <a href="{{ route('customer.rewards') }}">Reward Points Policy</a>
@@ -841,8 +1232,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                         @php $__rwBalance = Auth::guard('customer')->user()->rewardBalance(); @endphp
                         <div class="checkout-card">
                             <div class="checkout-header">
-                                {{-- Replace SVG icon later --}}
-                                <i class="fa fa-star"></i>
+                                <span class="checkout-card-icon"><img src="{{ asset('public/uploads/reedemStar.svg') }}" alt="" aria-hidden="true"></span>
                                 <h6>Use Your Reward Point</h6>
                             </div>
                             <div class="card-body-custom">
@@ -865,8 +1255,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                         {{-- CARD 3: Order Summary (totals) + Place Order --}}
                         <div class="checkout-card">
                             <div class="checkout-header">
-                                {{-- Replace SVG icon later --}}
-                                <i class="fa fa-list-alt"></i>
+                                <span class="checkout-card-icon"><img src="{{ asset('public/uploads/wallet.svg') }}" alt="" aria-hidden="true"></span>
                                 <h6>Order Summary</h6>
                             </div>
                             <div class="summary-totals" style="padding-top:16px;">
@@ -915,6 +1304,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
                                                         data-mobile="{{ $addr['mobile'] }}"
                                                         data-address="{{ $addr['address'] }}"
                                                         data-postcode="{{ $addr['post_code'] ?? '' }}"
+                                                        data-division="{{ $addr['division_id'] ?? '' }}"
                                                         data-dist="{{ $addr['district_id'] }}"
                                                         data-thana="{{ $addr['thana_id'] ?? '' }}">
                                                     {{-- Replace check SVG icon later --}}
@@ -1156,6 +1546,34 @@ document.addEventListener('DOMContentLoaded', function () {
             return parseFloat($('#checkout_thana option:selected').attr('data-charge')) || 0;
         }
 
+        function syncCheckoutDistrictOptions(clearDistrict) {
+            var $division = $('#checkout_division');
+            var $district = $('#checkout_district');
+            if (!$division.length || !$district.length) {
+                return;
+            }
+
+            var divisionId = String($division.val() || '');
+            var currentDistrictVisible = true;
+            $district.find('option').each(function () {
+                var $opt = $(this);
+                if (!$opt.val()) {
+                    $opt.prop('disabled', false).show();
+                    return;
+                }
+                var matches = !divisionId || String($opt.data('division') || '') === divisionId;
+                $opt.prop('disabled', !matches).toggle(matches);
+                if ($opt.is(':selected') && !matches) {
+                    currentDistrictVisible = false;
+                }
+            });
+
+            if (clearDistrict || !currentDistrictVisible) {
+                $district.val('');
+                $('#checkout_thana').html('<option value="">Select Thana</option>').prop('disabled', true);
+            }
+        }
+
         // Reward discount currently applied (display only — server recomputes on submit).
         window.bilaiRewardDiscount = 0;
 
@@ -1184,7 +1602,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // District to Thana options are loaded by the shared helper.
         // (same endpoint as the Add/Edit Address popup); this handler only refreshes the
-        // shipping charge, which is still district-based — charge logic is unchanged.
+        // shipping charge, which comes from the selected Thana.
+        $('#checkout_division').on('change', function () {
+            syncCheckoutDistrictOptions(true);
+            applyShippingToDomAndSession();
+            saveIncompleteOrder();
+        });
+
+        syncCheckoutDistrictOptions(false);
+
         $('#checkout_district').on('change', function () {
             applyShippingToDomAndSession();
             saveIncompleteOrder();
@@ -1304,7 +1730,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 var isFreeDelivery = checkFreeDelivery();
-                var shippingCharge = isFreeDelivery ? 0 : districtChargeFromSelect();
+                var shippingCharge = isFreeDelivery ? 0 : thanaChargeFromSelect();
                 var total = (baseSubtotal + shippingCharge - baseDiscount).toFixed(2);
                 var meta = buildCheckoutMeta(shippingCharge);
 
@@ -1535,6 +1961,10 @@ $(function () {
         var $dist = $('#checkout_district'), $thana = $('#checkout_thana');
         if (!$dist.length || !distId) return;
 
+        var divisionId = String($dist.find('option[value="' + distId + '"]').data('division') || '');
+        if (divisionId && $('#checkout_division').length) {
+            $('#checkout_division').val(divisionId).trigger('change');
+        }
         window.BilaiDistrictThana.setValue($dist, distId);
         window.BilaiDistrictThana.loadThanas($thana, distId, thanaId || null).done(function () {
             var charge = LOC.free ? 0 : (parseFloat($thana.find('option:selected').attr('data-charge')) || 0);

@@ -33,7 +33,7 @@ class FrontendController extends Controller
     }
     
     public function categorymenu(){
-        $data = Category::where(['status'=>1])->select('id','slug','name','image')->with('menusubcategories','menusubcategories.menuchildcategories')->get();
+        $data = Category::where(['status'=>1])->select('id','slug','name','image')->with('menusubcategories','menusubcategories.menuchildcategories')->displayOrdered()->get();
         return response()->json(['status' => 'success','message'=>'Data fatch successfully','data'=>$data]);
    }
    
@@ -43,7 +43,7 @@ class FrontendController extends Controller
    }
    
    public function homepageproduct(){
-        $data = Category::where(['status'=>1])->select('id','slug','name')->with('products','products.image')->get();
+        $data = Category::where(['status'=>1])->select('id','slug','name')->with('products','products.image')->displayOrdered()->get();
         return response()->json(['status' => 'success','message'=>'Data fatch successfully','data'=>$data]);
    }
    

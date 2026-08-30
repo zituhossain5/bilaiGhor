@@ -8,6 +8,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use Intervention\Image\Facades\Image;
 use App\Models\Category;
 use App\Models\Subcategory;
+use Illuminate\Support\Facades\Cache;
 use File;
 use DB;
 
@@ -30,12 +31,12 @@ class SubcategoryController extends Controller
 
     public function index(Request $request)
     {
-        $data = Subcategory::orderBy('id','DESC')->with('category')->get();
+        $data = Subcategory::displayOrdered()->with('category')->get();
         return view('backEnd.subcategory.index',compact('data'));
     }
     public function create()
     {
-        $categories = Category::get();
+        $categories = Category::displayOrdered()->get();
         return view('backEnd.subcategory.create', compact('categories'));
     }
     public function store(Request $request)
@@ -44,6 +45,7 @@ class SubcategoryController extends Controller
             'category_id' => 'required',
             'subcategoryName' => 'required',
             'status' => 'required',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
         // image with intervention 
         $image = $request->file('image');
@@ -73,7 +75,9 @@ class SubcategoryController extends Controller
         $input['slug'] = str_replace('/', '', $input['slug']);
 
         $input['image'] = $imageUrl;
+        $input['sort_order'] = $request->filled('sort_order') ? (int) $request->sort_order : 0;
         Subcategory::create($input);
+        $this->clearFrontendCategoryCache();
         Toastr::success('Success','Data insert successfully');
         return redirect()->route('subcategories.index');
     }
@@ -81,7 +85,7 @@ class SubcategoryController extends Controller
     public function edit($id)
     {
         $edit_data = Subcategory::find($id);
-        $categories = Category::select('id','name')->get();
+        $categories = Category::displayOrdered()->select('id','name')->get();
         return view('backEnd.subcategory.edit',compact('edit_data','categories'));
     }
     
@@ -91,6 +95,7 @@ class SubcategoryController extends Controller
             'category_id' => 'required',
             'subcategoryName' => 'required',
             'status' => 'required',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
         $update_data = Subcategory::find($request->id);
         $input = $request->all();
@@ -123,8 +128,10 @@ class SubcategoryController extends Controller
         $input['slug'] = strtolower(preg_replace('/\s+/', '-', $request->subcategoryName));
         $input['slug'] = str_replace('/', '', $input['slug']);
         $input['status'] = $request->status?1:0;
+        $input['sort_order'] = $request->filled('sort_order') ? (int) $request->sort_order : 0;
         
         $update_data->update($input);
+        $this->clearFrontendCategoryCache();
 
         Toastr::success('Success','Data update successfully');
         return redirect()->route('subcategories.index');
@@ -135,6 +142,7 @@ class SubcategoryController extends Controller
         $inactive = Subcategory::find($request->hidden_id);
         $inactive->status = 0;
         $inactive->save();
+        $this->clearFrontendCategoryCache();
         Toastr::success('Success','Data inactive successfully');
         return redirect()->back();
     }
@@ -143,6 +151,7 @@ class SubcategoryController extends Controller
         $active = Subcategory::find($request->hidden_id);
         $active->status = 1;
         $active->save();
+        $this->clearFrontendCategoryCache();
         Toastr::success('Success','Data active successfully');
         return redirect()->back();
     }
@@ -168,6 +177,7 @@ class SubcategoryController extends Controller
         }
 
         $subcategory->delete();
+        $this->clearFrontendCategoryCache();
         Toastr::success('Success', 'Subcategory deleted successfully');
         return redirect()->back();
 
@@ -176,5 +186,15 @@ class SubcategoryController extends Controller
         return redirect()->back();
     }
 }
-} // ✅ ← এই ব্রেস দিয়ে ক্লাস শেষ করো
+
+    private function clearFrontendCategoryCache(): void
+    {
+        Cache::forget('frontend_homepage_v1');
+        Cache::forget('frontend_homepage_v2');
+        Cache::forget('frontend_homepage_v3');
+        Cache::forget('side_categories');
+        Cache::forget('menu_categories');
+        Cache::forget('common_menu');
+    }
+}
 

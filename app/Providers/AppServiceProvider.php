@@ -70,7 +70,7 @@ class AppServiceProvider extends ServiceProvider
             'menucategories' => $this->safeValue(fn () => Category::where('status', 1)
                 ->where('parent_id', 0)
                 ->with(['subcategories.childcategories'])
-                ->orderBy('id')
+                ->displayOrdered()
                 ->get(), collect()),
         ];
     }

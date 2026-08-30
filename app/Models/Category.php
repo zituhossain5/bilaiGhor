@@ -8,6 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Category extends Model
 {
     protected $guarded = [];
+
+    public function scopeDisplayOrdered($query)
+    {
+        return $query
+            ->orderByRaw('CASE WHEN sort_order IS NULL OR sort_order = 0 THEN 1 ELSE 0 END')
+            ->orderBy('sort_order', 'ASC')
+            ->orderBy('id', 'ASC');
+    }
     
     public function getRouteKeyName() {
         return 'slug';
@@ -22,11 +30,11 @@ class Category extends Model
     }
 
     public function subcategories() {
-        return $this->hasMany(Subcategory::class, 'category_id')->where('status', 1);
+        return $this->hasMany(Subcategory::class, 'category_id')->where('status', 1)->displayOrdered();
     }
     
     public function menusubcategories() {
-        return $this->hasMany(Subcategory::class, 'category_id')->select('id','slug','subcategoryName','category_id')->where('status', 1);
+        return $this->hasMany(Subcategory::class, 'category_id')->select('id','slug','subcategoryName','category_id')->where('status', 1)->displayOrdered();
     }
 
     public function childrenCategories()

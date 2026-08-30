@@ -124,9 +124,12 @@
         </div>
         <div class="bilai-cat-grid-home">
             @foreach ($homeSubcategories as $value)
+            @php
+                $subcategoryImage = $value->image ?: 'public/uploads/default/no-image.png';
+            @endphp
             <a href="{{ route('subcategory', $value->slug) }}" class="bilai-cat-card">
                 <div class="bilai-cat-img">
-                    <img src="{{ asset($value->image ?: 'public/no-image.png') }}"
+                    <img src="{{ asset($subcategoryImage) }}"
                          alt="{{ $value->subcategoryName }}"
                          loading="lazy" />
                 </div>

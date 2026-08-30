@@ -93,6 +93,7 @@ class ProductCatalogController extends Controller
         $categories = Category::where('parent_id', 0)
             ->where('status', 1)
             ->select('id', 'name')
+            ->displayOrdered()
             ->get();
 
         $brands = Brand::where('status', 1)

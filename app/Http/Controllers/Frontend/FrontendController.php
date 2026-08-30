@@ -53,7 +53,7 @@ class FrontendController extends Controller
     public function index()
     {
         // ✅ Homepage cache (5 min) - reduces DB load on high traffic
-        $cacheKey = 'frontend_homepage_v2';
+        $cacheKey = 'frontend_homepage_v3';
         $cacheMinutes = 5;
         $data = Cache::remember($cacheKey, $cacheMinutes * 60, function () {
             return $this->getHomepageData();
@@ -77,18 +77,19 @@ class FrontendController extends Controller
             ->where('parent_id', 0)
             ->select('id', 'name', 'slug', 'icon', 'image')
             ->with(['subcategories.childcategories'])
-            ->orderBy('id', 'ASC')
+            ->displayOrdered()
             ->get();
 
         // Front categories (যদি অন্য কোথাও ব্যবহার হয়)
         $frontcategory = Category::where(['status' => 1])
             ->select('id', 'name', 'image', 'icon', 'slug', 'status')
+            ->displayOrdered()
             ->get();
 
         $homeSubcategories = Subcategory::where('status', 1)
             ->select('id', 'subcategoryName', 'slug', 'image', 'category_id')
             ->with(['category:id,name,slug,status'])
-            ->orderBy('id', 'ASC')
+            ->displayOrdered()
             ->get();
 
         // Banners
@@ -177,7 +178,7 @@ $brands = Brand::where('status', 1)
         // Category wise home products – products এর image + reviews eager load
         if ($generalsetting && $generalsetting->show_category_wise_products) {
             $homeproducts = Category::where(['front_view' => 1, 'status' => 1])
-                ->orderBy('id', 'ASC')
+                ->displayOrdered()
                 ->with([
                     'products' => function ($q) {
                         $q->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id')
@@ -935,7 +936,7 @@ $brands = Brand::where('status', 1)
         $soldShow = $request->sold == 'show' ? true : false;
         $category = Category::where(['slug' => $slug, 'status' => 1])->first();
 
-        $subcategories = Subcategory::where('category_id', $category->id)->get();
+        $subcategories = Subcategory::where('category_id', $category->id)->displayOrdered()->get();
 
         // Attribute counts for sidebar (all from current category, before other filters)
         $catBase = ['status' => 1, 'approval_status' => 'approved', 'category_id' => $category->id];
@@ -1027,6 +1028,7 @@ $brands = Brand::where('status', 1)
         // Sibling subcategories (same parent, excluding current) for top cards
         $siblings = Subcategory::where('category_id', $subcategory->category_id)
             ->where('status', 1)
+            ->displayOrdered()
             ->get();
 
         // Base scope: products in this subcategory only
@@ -1480,7 +1482,7 @@ $brands = Brand::where('status', 1)
         }
 
         $products = $query->paginate(24);
-        $categories = Category::where('status', 1)->where('parent_id', 0)->get();
+        $categories = Category::where('status', 1)->where('parent_id', 0)->displayOrdered()->get();
 
         return view('frontEnd.layouts.pages.wholesale_products', compact('products', 'categories'));
     }

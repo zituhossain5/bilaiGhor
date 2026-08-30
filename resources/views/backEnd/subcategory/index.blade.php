@@ -90,6 +90,7 @@
                                 <th style="width: 50px;">SL</th>
                                 <th>Parent Category</th>
                                 <th>Subcategory Name</th>
+                                <th>Order</th>
                                 <th>Status</th>
                                 <th class="text-end" style="width: 150px;">Action</th>
                             </tr>
@@ -112,6 +113,8 @@
                                 <td>
                                     <span class="subcat-name">{{$value->subcategoryName}}</span>
                                 </td>
+
+                                <td>{{ $value->sort_order ?? 0 }}</td>
                                 
                                 <td>
                                     @if($value->status==1)

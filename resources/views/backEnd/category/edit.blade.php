@@ -143,6 +143,15 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="form-group mb-0">
+                            <label for="sort_order" class="form-label">Display Order</label>
+                            <input type="number" min="0" step="1" class="form-control @error('sort_order') is-invalid @enderror"
+                                   name="sort_order" value="{{ old('sort_order', $edit_data->sort_order ?? 0) }}" id="sort_order">
+                            <small class="text-muted">Lower numbers appear first. Duplicate values are allowed.</small>
+                            @error('sort_order')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 

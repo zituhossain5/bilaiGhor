@@ -9,6 +9,7 @@ use Toastr;
 use Image;
 use File;
 use Str;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
@@ -22,13 +23,13 @@ class CategoryController extends Controller
 
     public function index(Request $request)
     {
-        $data = Category::orderBy('id','DESC')->with('category')->get();
+        $data = Category::displayOrdered()->with('category')->get();
         return view('backEnd.category.index',compact('data'));
     }
 
     public function create()
     {
-        $categories = Category::orderBy('id','DESC')->select('id','name')->get();
+        $categories = Category::displayOrdered()->select('id','name')->get();
         return view('backEnd.category.create',compact('categories'));
     }
 
@@ -37,6 +38,7 @@ class CategoryController extends Controller
         $this->validate($request, [
             'name'   => 'required',
             'status' => 'required',
+            'sort_order' => 'nullable|integer|min:0',
             // icon optional
             // 'icon'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
@@ -103,10 +105,12 @@ class CategoryController extends Controller
 
         $input['parent_id']  = $request->parent_id ? $request->parent_id : 0;
         $input['front_view'] = $request->front_view ? 1 : 0;
+        $input['sort_order'] = $request->filled('sort_order') ? (int) $request->sort_order : 0;
         $input['image']      = $imageUrl;
         $input['icon']       = $iconUrl; // নতুন icon কলাম
 
         Category::create($input);
+        $this->clearFrontendCategoryCache();
 
         Toastr::success('Success','Data insert successfully');
         return redirect()->route('categories.index');
@@ -115,7 +119,7 @@ class CategoryController extends Controller
     public function edit($id)
     {
         $edit_data  = Category::find($id);
-        $categories = Category::select('id','name')->get();
+        $categories = Category::displayOrdered()->select('id','name')->get();
         return view('backEnd.category.edit',compact('edit_data','categories'));
     }
 
@@ -123,6 +127,7 @@ class CategoryController extends Controller
     {
         $this->validate($request, [
             'name' => 'required',
+            'sort_order' => 'nullable|integer|min:0',
             // 'icon' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
@@ -207,9 +212,11 @@ class CategoryController extends Controller
 
         $input['parent_id']  = $request->parent_id ? $request->parent_id : 0;
         $input['front_view'] = $request->front_view ? 1 : 0;
+        $input['sort_order'] = $request->filled('sort_order') ? (int) $request->sort_order : 0;
         $input['status']     = $request->status ? 1 : 0;
 
         $update_data->update($input);
+        $this->clearFrontendCategoryCache();
 
         Toastr::success('Success','Data update successfully');
         return redirect()->route('categories.index');
@@ -224,6 +231,7 @@ class CategoryController extends Controller
         }
         $inactive->status = 0;
         $inactive->save();
+        $this->clearFrontendCategoryCache();
 
         Toastr::success('Success','Data inactive successfully');
         return redirect()->back();
@@ -238,6 +246,7 @@ class CategoryController extends Controller
         }
         $active->status = 1;
         $active->save();
+        $this->clearFrontendCategoryCache();
 
         Toastr::success('Success','Data active successfully');
         return redirect()->back();
@@ -268,8 +277,19 @@ class CategoryController extends Controller
             File::delete($delete_data->icon);
         }
         $delete_data->delete();
+        $this->clearFrontendCategoryCache();
 
         Toastr::success('Success', 'Category deleted successfully.');
         return redirect()->back();
+    }
+
+    private function clearFrontendCategoryCache(): void
+    {
+        Cache::forget('frontend_homepage_v1');
+        Cache::forget('frontend_homepage_v2');
+        Cache::forget('frontend_homepage_v3');
+        Cache::forget('side_categories');
+        Cache::forget('menu_categories');
+        Cache::forget('common_menu');
     }
 }

@@ -65,7 +65,7 @@ class PublicLandingController extends Controller
                 ->get();
         }
 
-        $categories = Category::where('status', 1)->where('parent_id', 0)->with('subcategories')->orderBy('name')->get();
+        $categories = Category::where('status', 1)->where('parent_id', 0)->with('subcategories')->displayOrdered()->get();
         $customPrices = $this->customPricesMap($landing);
 
         return view('reseller.landing.public', compact('landing', 'products', 'categories', 'customPrices'));
@@ -84,7 +84,7 @@ class PublicLandingController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        $categories = Category::where('status', 1)->where('parent_id', 0)->with('subcategories')->orderBy('name')->get();
+        $categories = Category::where('status', 1)->where('parent_id', 0)->with('subcategories')->displayOrdered()->get();
         $customPrices = $this->customPricesMap($landing);
 
         return view('reseller.landing.category', compact('landing', 'category', 'products', 'categories', 'customPrices'));
@@ -103,7 +103,7 @@ class PublicLandingController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        $categories = Category::where('status', 1)->where('parent_id', 0)->with('subcategories')->orderBy('name')->get();
+        $categories = Category::where('status', 1)->where('parent_id', 0)->with('subcategories')->displayOrdered()->get();
         $customPrices = $this->customPricesMap($landing);
 
         return view('reseller.landing.subcategory', compact('landing', 'subcategory', 'products', 'categories', 'customPrices'));
@@ -137,7 +137,7 @@ class PublicLandingController extends Controller
             ->limit(8)
             ->get();
 
-        $categories = Category::where('status', 1)->where('parent_id', 0)->with('subcategories')->orderBy('name')->get();
+        $categories = Category::where('status', 1)->where('parent_id', 0)->with('subcategories')->displayOrdered()->get();
         $customPrices = $this->customPricesMap($landing);
 
         return view('reseller.landing.product', compact('landing', 'product', 'relatedProducts', 'categories', 'customPrices'));

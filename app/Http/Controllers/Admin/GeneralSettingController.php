@@ -119,6 +119,8 @@ class GeneralSettingController extends Controller
 
         Cache::forget('general_setting');
         Cache::forget('frontend_homepage_v1');
+        Cache::forget('frontend_homepage_v2');
+        Cache::forget('frontend_homepage_v3');
         Cache::forget('side_categories');
         Cache::forget('menu_categories');
         Cache::forget('brands_list');

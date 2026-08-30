@@ -121,17 +121,16 @@
     <div class="container">
         <div class="bilai-cat-header">
             <h2 class="bilai-cat-title">Shop by Category</h2>
-            <a href="#" class="bilai-cat-more">See More</a>
         </div>
         <div class="bilai-cat-grid-home">
-            @foreach ($menucategories as $value)
-            <a href="{{ route('category', $value->slug) }}" class="bilai-cat-card">
+            @foreach ($homeSubcategories as $value)
+            <a href="{{ route('subcategory', $value->slug) }}" class="bilai-cat-card">
                 <div class="bilai-cat-img">
-                    <img src="{{ asset($value->image) }}"
-                         alt="{{ $value->name }}"
+                    <img src="{{ asset($value->image ?: 'public/no-image.png') }}"
+                         alt="{{ $value->subcategoryName }}"
                          loading="lazy" />
                 </div>
-                <span class="bilai-cat-name">{{ $value->name }}</span>
+                <span class="bilai-cat-name">{{ $value->subcategoryName }}</span>
             </a>
             @endforeach
         </div>

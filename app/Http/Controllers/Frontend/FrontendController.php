@@ -85,6 +85,12 @@ class FrontendController extends Controller
             ->select('id', 'name', 'image', 'icon', 'slug', 'status')
             ->get();
 
+        $homeSubcategories = Subcategory::where('status', 1)
+            ->select('id', 'subcategoryName', 'slug', 'image', 'category_id')
+            ->with(['category:id,name,slug,status'])
+            ->orderBy('id', 'ASC')
+            ->get();
+
         // Banners
         $sliders = Banner::where(['status' => 1, 'category_id' => 1])
             ->select('id', 'image', 'link', 'title', 'highlight_text', 'description', 'button_text', 'button_link', 'sort_order', 'image_alt')
@@ -253,6 +259,7 @@ $brands = Brand::where('status', 1)
             'brands',
             'blogs',
             'frontcategory',
+            'homeSubcategories',
             'hotdeal_top',
             'hotdeal_bottom',
             'best_seller_top',

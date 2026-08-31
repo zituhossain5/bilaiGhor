@@ -2499,18 +2499,21 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     display: flex;
     align-items: center;
     justify-content: center;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: auto;
     overflow: hidden;
     border-radius: 8px;
     padding-bottom: 10px;
 }
 
 .bilai-product-image img {
-    width: 60% !important;
+    width: auto !important;
+    max-width: 170px;
+    max-height: 156px;
     margin: 0 auto;
-    height: 100%;
+    height: auto;
     object-fit: contain;
     display: block;
+    object-position: center center;
 }
 
 .bilai-product-meta {
@@ -2809,9 +2812,12 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     }
 
     .bilai-product-image img {
+        width: auto !important;
         max-width: 100%;
+        height: auto;
         max-height: 100%;
         object-fit: contain;
+        object-position: center center;
     }
 
     .bilai-product-meta {
@@ -5446,3 +5452,547 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 /* ============================================================
    BilaiGhor SEO Accordion Fix End
    ============================================================ */
+
+/* ============================================================
+   BilaiGhor Shared Product Card Final Geometry
+   ============================================================ */
+
+.bilai-product-card {
+    --bilai-card-width: 327px;
+    --bilai-card-height: 525px;
+    --bilai-card-top-height: 252px;
+    --bilai-card-bg-top: #fdf9f4;
+    --bilai-card-bg-body: #fbf5e6;
+    --bilai-card-border: #c4a881;
+    --bilai-card-text: #4f4f4f;
+    --bilai-card-title: #3c2a1e;
+    --bilai-card-accent: #e8861a;
+    --bilai-card-danger: #c4552a;
+    --bilai-card-brown: #2a1505;
+
+    position: relative;
+    width: 100%;
+    max-width: var(--bilai-card-width);
+    height: var(--bilai-card-height);
+    min-height: var(--bilai-card-height);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--bilai-card-border);
+    border-radius: 20px;
+    background: var(--bilai-card-bg-body);
+    box-sizing: border-box;
+}
+
+.bilai-product-top {
+    position: relative;
+    height: var(--bilai-card-top-height);
+    min-height: var(--bilai-card-top-height);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px;
+    border: 0;
+    border-radius: 0;
+    background: var(--bilai-card-bg-top);
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.bilai-card-badge,
+.bilai-stock-badge {
+    max-width: 190px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 8px 12px;
+    border-radius: 16px;
+    background: var(--bilai-card-accent);
+    color: #fff;
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.bilai-product-top > span:empty {
+    width: 1px;
+    min-height: 36px;
+}
+
+.bilai-wishlist-btn {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #f0e6d8;
+    color: var(--bilai-card-text);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bilai-wishlist-btn:hover,
+.bilai-wishlist-btn.active {
+    color: var(--bilai-card-accent);
+    background: #f0e6d8;
+}
+
+.bilai-product-image {
+    position: absolute;
+    top: 76px;
+    right: 20px;
+    left: 20px;
+    height: 156px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.bilai-product-image a {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    text-align: center;
+}
+
+.bilai-product-image img {
+    width: auto !important;
+    max-width: 170px;
+    height: auto;
+    max-height: 156px;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+    object-position: center center;
+}
+
+.bilai-product-meta {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+    padding: 20px 20px 0;
+    border: 0;
+    background: var(--bilai-card-bg-body);
+    box-sizing: border-box;
+}
+
+.bilai-product-meta:not(:has(.bilai-cat-sold-pill))::before {
+    content: "";
+    display: block;
+    width: 1px;
+    height: 30px;
+    flex: 0 0 30px;
+}
+
+.bilai-cat-sold-pill {
+    position: static;
+    transform: none;
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    flex: 0 0 30px;
+    min-height: 30px;
+    padding: 2px 10px;
+    margin: 0;
+    border: 1px solid #aa8453;
+    border-radius: 16px;
+    background: #fffdf8;
+    color: var(--bilai-card-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+.bilai-product-title {
+    height: 48px;
+    min-height: 48px;
+    margin: 0;
+    color: var(--bilai-card-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.bilai-product-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.bilai-product-cat-rating {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 24px;
+}
+
+.bilai-product-category {
+    min-width: 0;
+    width: auto;
+    max-width: 120px;
+    margin: 0;
+    color: #aa8453;
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bilai-product-rating {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    flex: 0 0 auto;
+    color: #f5a845;
+    font-size: 18px;
+    line-height: 20px;
+    letter-spacing: 0;
+}
+
+.bilai-product-rating i {
+    width: 16px;
+    text-align: center;
+}
+
+.bilai-product-price {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 30px;
+    margin: 0;
+}
+
+.bilai-price-row {
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    color: var(--bilai-card-title);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    white-space: nowrap;
+}
+
+.bilai-price-new {
+    color: var(--bilai-card-title);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 30px;
+}
+
+.bilai-price-old {
+    color: var(--bilai-card-title);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 30px;
+    text-decoration: line-through;
+    opacity: 0.75;
+}
+
+.bilai-discount-badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 29px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--bilai-card-danger);
+    color: #fbf5e6;
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 21px;
+    white-space: nowrap;
+}
+
+.bilai-product-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    margin-top: auto;
+    padding: 20px;
+    border: 0;
+    border-radius: 0;
+    background: var(--bilai-card-bg-body);
+    box-sizing: border-box;
+}
+
+.bilai-product-actions form {
+    display: contents;
+}
+
+.bilai-cart-btn {
+    width: 50px;
+    min-width: 50px;
+    height: 47px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: var(--bilai-card-accent);
+    color: #fff;
+    font-size: 18px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.bilai-buy-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 47px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--bilai-card-brown);
+    color: #edf4f0;
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 27px;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.bilai-cart-btn:hover,
+.bilai-buy-btn:hover {
+    color: #fff;
+    text-decoration: none;
+    filter: brightness(0.96);
+}
+
+.product_slider .bilai-product-card,
+.bilai-cat-grid-home .bilai-product-card,
+.bilai-cart-rec-grid .bilai-product-card {
+    margin-inline: auto;
+}
+
+body .bilai-product-card .bilai-product-image {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: auto !important;
+    max-width: none !important;
+    aspect-ratio: auto !important;
+    text-align: center;
+}
+
+body .bilai-product-card .bilai-product-image > a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    text-align: center;
+}
+
+body .bilai-product-card .bilai-product-image img {
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: 170px !important;
+    max-height: 156px !important;
+    margin: auto !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+}
+
+@media (max-width: 575px) {
+    .bilai-product-card {
+        --bilai-card-height: 420px;
+        --bilai-card-top-height: 190px;
+        border-radius: 16px;
+    }
+
+    .bilai-product-top {
+        padding: 12px;
+    }
+
+    .bilai-card-badge,
+    .bilai-stock-badge {
+        min-height: 30px;
+        max-width: 128px;
+        padding: 6px 9px;
+        border-radius: 14px;
+        font-size: 12px;
+        line-height: 16px;
+    }
+
+    .bilai-product-top > span:empty {
+        min-height: 30px;
+    }
+
+    .bilai-wishlist-btn {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+        font-size: 15px;
+    }
+
+    .bilai-product-image {
+        top: 56px;
+        right: 12px;
+        left: 12px;
+        height: 120px;
+    }
+
+    .bilai-product-image a,
+    .bilai-product-image img {
+        width: auto !important;
+        height: auto;
+    }
+
+    .bilai-product-image img {
+        max-width: 124px;
+        max-height: 120px;
+    }
+
+    body .bilai-product-card .bilai-product-image img {
+        max-width: 124px !important;
+        max-height: 120px !important;
+    }
+
+    .bilai-product-meta {
+        gap: 8px;
+        padding: 12px 12px 0;
+    }
+
+    .bilai-product-meta:not(:has(.bilai-cat-sold-pill))::before {
+        height: 24px;
+        flex-basis: 24px;
+    }
+
+    .bilai-cat-sold-pill {
+        flex-basis: 24px;
+        min-height: 24px;
+        padding: 2px 8px;
+        font-size: 12px;
+        line-height: 18px;
+    }
+
+    .bilai-product-title {
+        height: 40px;
+        min-height: 40px;
+        font-size: 13px;
+        line-height: 20px;
+    }
+
+    .bilai-product-cat-rating {
+        min-height: 20px;
+        gap: 8px;
+    }
+
+    .bilai-product-category {
+        max-width: 72px;
+        font-size: 12px;
+        line-height: 18px;
+    }
+
+    .bilai-product-rating {
+        gap: 1px;
+        font-size: 12px;
+        line-height: 14px;
+    }
+
+    .bilai-product-rating i {
+        width: 11px;
+    }
+
+    .bilai-product-price {
+        min-height: 24px;
+        gap: 6px;
+    }
+
+    .bilai-price-row {
+        gap: 5px;
+        overflow: hidden;
+    }
+
+    .bilai-price-new,
+    .bilai-price-old {
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .bilai-discount-badge {
+        min-height: 22px;
+        padding: 3px 6px;
+        font-size: 10px;
+        line-height: 14px;
+    }
+
+    .bilai-product-actions {
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .bilai-cart-btn {
+        width: 42px;
+        min-width: 42px;
+        height: 38px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .bilai-buy-btn {
+        height: 38px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 13px;
+        line-height: 18px;
+    }
+}

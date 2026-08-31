@@ -488,7 +488,7 @@
     position: absolute;
     inset: 76px 20px 20px;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
     aspect-ratio: auto;
     padding: 0;
@@ -501,16 +501,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 170px;
-    height: 156px;
+    width: 100%;
+    height: 100%;
     pointer-events: auto;
+    text-align: center;
 }
 
 .bilai-product-image img {
-    /* width: 170px !important; */
-    width: 100% !important;
-    max-width: 100%;
-    height: 156px;
+    width: auto !important;
+    max-width: 170px;
+    height: auto;
+    max-height: 156px;
     margin: 0;
     object-fit: contain;
     display: block;
@@ -956,8 +957,14 @@
 
     .bilai-product-image a,
     .bilai-product-image img {
-        width: 112px !important;
-        height: 104px;
+        width: auto !important;
+        height: auto;
+    }
+
+    .bilai-product-image img {
+        max-width: 112px;
+        max-height: 104px;
+        object-position: center center;
     }
 
     .bilai-product-meta {
@@ -1068,5 +1075,42 @@
 
     .bilai-product-rating i {
         width: 10px;
+    }
+}
+
+body .bilai-product-card .bilai-product-image {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: auto !important;
+    max-width: none !important;
+    aspect-ratio: auto !important;
+    text-align: center;
+}
+
+body .bilai-product-card .bilai-product-image > a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    text-align: center;
+}
+
+body .bilai-product-card .bilai-product-image img {
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: 170px !important;
+    max-height: 156px !important;
+    margin: auto !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+}
+
+@media (max-width: 575px) {
+    body .bilai-product-card .bilai-product-image img {
+        max-width: 112px !important;
+        max-height: 104px !important;
     }
 }

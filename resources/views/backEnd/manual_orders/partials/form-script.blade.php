@@ -4,8 +4,9 @@
     var tbody = document.querySelector('#items-table tbody');
     var tpl = document.getElementById('item-row-template').innerHTML;
     var money = function (n) { return '\u09F3' + Number(n || 0).toFixed(2); };
-    var initialItems = {{ Illuminate\Support\Js::from(old('items', $initialItems)) }};
-    var initialThanaId = @json((string) $selectedThanaId);
+    var initialItems = {{ Illuminate\Support\Js::from(old('items', $initialItems ?? [['qty' => 1, 'unit_price' => 0, 'discount' => 0]])) }};
+    var initialDistrictId = @json((string) old('district_id', $selectedDistrictId ?? ''));
+    var initialThanaId = @json((string) old('thana_id', $selectedThanaId ?? ''));
 
     function loadManualThanas(districtId, selectedThanaId) {
         var thana = document.getElementById('manual_thana');
@@ -182,6 +183,6 @@
         addRow();
     }
 
-    loadManualThanas(document.getElementById('manual_district').value, initialThanaId || null);
+    loadManualThanas(document.getElementById('manual_district').value || initialDistrictId || '', initialThanaId || null);
 }());
 </script>

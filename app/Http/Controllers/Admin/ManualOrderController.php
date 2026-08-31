@@ -566,6 +566,9 @@ class ManualOrderController extends Controller
             ])->values()->all()
             : [['qty' => 1, 'unit_price' => 0, 'discount' => 0]];
 
+        $selectedDistrictId = $order ? optional($order->shipping)->district_id : null;
+        $selectedThanaId = $order ? optional($order->shipping)->thana_id : null;
+
         return [
             'order' => $order,
             'products' => $products,
@@ -575,6 +578,8 @@ class ManualOrderController extends Controller
             'sources' => $this->sources,
             'methods' => $this->methods,
             'initialItems' => $initialItems,
+            'selectedDistrictId' => $selectedDistrictId,
+            'selectedThanaId' => $selectedThanaId,
             'paymentState' => $order ? OrderPaymentService::state($order) : null,
         ];
     }

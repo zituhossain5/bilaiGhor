@@ -242,8 +242,8 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 
 /* ── Responsive ── */
 @media (max-width: 991px) {
-    .cus-order-2 { order: 2; }
-    .cust-order-1 { order: 1; margin-bottom: 26px; }
+    .cus-order-2 { order: 1; }
+    .cust-order-1 { order: 2; margin-bottom: 26px; }
     .sticky-sidebar { position: static; }
     .mobile-submit-btn { display: block !important; margin-top: 22px; }
     .desktop-submit-btn { display: none !important; }
@@ -273,24 +273,36 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 /* BilaiGhor Checkout Figma Refresh Start */
 .checkout-section {
     --co-page: #FDFCF8;
-    --co-card: #FFF8EC;
-    --co-card-soft: #FFFDF8;
-    --co-border: #E8CDA5;
+    --co-card: #FBF5E6;
+    --co-card-soft: #FDFCF8;
+    --co-selected: #EDD9A6;
+    --co-border: #DCCAB2;
     --co-text: #4F4F4F;
-    --co-heading: #2A1505;
-    --co-primary: #F28C00;
-    --co-brown: #3A1F0F;
+    --co-heading: #503311;
+    --co-strong: #3C2A1E;
+    --co-primary: #E8861A;
+    --co-brown: #2A1505;
+    --co-disabled: #DCCAB2;
     background: var(--co-page);
     padding: 24px 0 72px;
     color: var(--co-text);
     font-family: "DM Sans", sans-serif;
 }
 
-.checkout-section > .container {
+/* The global floating actions obscure checkout controls and are not part of this screen. */
+.floating-cart-widget,
+.chat-widget {
+    display: none !important;
+}
+
+.checkout-container {
     width: 100%;
     max-width: 1200px;
+    margin-right: auto;
+    margin-left: auto;
     padding-left: 20px;
     padding-right: 20px;
+    box-sizing: border-box;
 }
 
 .bilai-co-bc {
@@ -311,56 +323,72 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 }
 
 .checkout-layout-grid {
-    --bs-gutter-x: 32px;
-    --bs-gutter-y: 22px;
+    --bs-gutter-x: 0;
+    --bs-gutter-y: 0;
+    display: grid !important;
+    grid-template-columns: minmax(0, 7fr) minmax(360px, 5fr);
+    gap: 40px;
     align-items: flex-start;
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.checkout-layout-grid > * {
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+    padding-right: 0;
+    padding-left: 0;
 }
 
 .checkout-card {
     background: var(--co-card);
     border: 1px solid var(--co-border);
-    border-radius: 16px;
+    border-radius: 30px;
     box-shadow: none;
     overflow: hidden;
-    margin-bottom: 24px;
+    margin-bottom: 60px;
+    padding: 30px;
 }
 
 .checkout-header {
-    min-height: 68px;
-    padding: 20px 24px 16px;
-    gap: 12px;
-    border-bottom: 1px solid rgba(232, 205, 165, 0.75);
+    min-height: 40px;
+    padding: 0 0 30px;
+    gap: 10px;
+    border-bottom: 1px solid var(--co-border);
 }
 
 .checkout-card-icon,
 .pay-logo-wrap {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 36px;
-    border-radius: 50%;
-    background: #F0E6D8;
+    flex: 0 0 40px;
+    border-radius: 0;
+    background: transparent;
 }
 
-.checkout-card-icon img,
-.pay-logo-wrap img,
-.bilai-co-earn-ic img {
-    width: 20px;
-    height: 20px;
+.checkout-card-icon img {
+    width: 40px;
+    height: 40px;
     object-fit: contain;
 }
 
 .checkout-header h6 {
     color: var(--co-heading);
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 600;
-    line-height: 30px;
+    line-height: 36px;
 }
 
 .card-body-custom {
-    padding: 22px 24px 24px;
+    padding: 30px 0 0;
+}
+
+.cus-order-2 > .checkout-card:first-child .card-body-custom > .row {
+    --bs-gutter-x: 30px;
 }
 
 .checkout-card:first-child .card-body-custom > .row > .col-md-6 {
@@ -375,96 +403,115 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
     order: 3;
 }
 
+.checkout-location-fields .form-group {
+    margin-bottom: 30px !important;
+}
+
 .checkout-card:first-child .card-body-custom > .row > .col-12:not(.checkout-address-field):not(.checkout-location-row) {
     order: 4;
 }
 
 .form-group {
-    margin-bottom: 18px;
+    margin-bottom: 30px;
 }
 
 .form-label-custom {
-    color: var(--co-heading);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 21px;
-    margin-bottom: 8px;
+    color: var(--co-text);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 24px;
+    margin-bottom: 10px;
 }
 
 .form-control-custom,
 select.form-control-custom {
-    height: 52px;
+    height: 64px;
     border: 1px solid var(--co-border);
     border-radius: 10px;
-    background-color: #FFFDF8;
+    background-color: var(--co-page);
     color: var(--co-text);
-    font-size: 15px;
-    line-height: 22px;
-    padding-left: 16px;
-    padding-right: 38px;
+    font-size: 16px;
+    line-height: 24px;
+    padding-left: 20px;
+    padding-right: 44px;
+}
+
+select.form-control-custom {
+    background-image: url("{{ asset('public/uploads/checkout-arrow-figma.svg') }}");
+    background-repeat: no-repeat;
+    background-position: right 20px center;
+    background-size: 24px 24px;
+}
+
+.form-control-custom::placeholder {
+    color: var(--co-disabled);
 }
 
 textarea.form-control-custom {
-    min-height: 104px;
-    padding-top: 14px;
+    min-height: 160px;
+    padding-top: 20px;
     resize: vertical;
 }
 
 .bilai-addr-btn {
-    height: 42px;
-    margin-top: 12px;
-    padding: 0 18px;
-    border-radius: 10px;
+    height: 44px;
+    margin-top: 20px;
+    padding: 0 20px;
+    border-radius: 30px;
     background: var(--co-brown);
     color: #fff;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .bilai-addr-btn-ic {
-    width: 17px;
-    height: 17px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
     filter: brightness(0) invert(1);
 }
 
 .payment-options-list {
     display: grid;
-    gap: 14px;
+    gap: 30px;
 }
 
 .payment-option-label {
     min-height: 70px;
     margin: 0;
-    padding: 16px 18px;
-    border-radius: 12px;
-    background: #FFFDF8;
+    padding: 20px;
+    border-radius: 10px;
+    background: var(--co-page);
 }
 
 .payment-option-label:has(input:checked) {
-    background: #FFF4DF;
-    box-shadow: inset 0 0 0 1px var(--co-primary);
+    background: var(--co-selected);
+    box-shadow: none;
 }
 
 .payment-content {
-    gap: 14px;
+    gap: 10px;
+}
+
+.pay-logo-wrap {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
 }
 
 .pay-logo {
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
 }
 
 .pay-info strong {
-    color: var(--co-heading);
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 22px;
+    color: var(--co-strong);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 30px;
 }
 
 .pay-info small {
-    color: var(--co-text);
-    font-size: 13px;
-    line-height: 19px;
+    display: none;
 }
 
 #manual-payment-fields {
@@ -481,70 +528,100 @@ textarea.form-control-custom {
 }
 
 .checkout-item {
-    gap: 14px;
-    padding: 16px 0;
-    border-bottom: 1px solid rgba(232, 205, 165, 0.75);
+    gap: 20px;
+    padding: 30px 0 0;
+    border-bottom: 0;
 }
 
 .checkout-pro-img {
-    width: 72px;
-    height: 72px;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
     object-fit: contain;
     background: #FFFDF8;
 }
 
 .checkout-pro-info h6 {
-    color: var(--co-heading);
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 21px;
+    color: var(--co-text);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 24px;
 }
 
 .checkout-pro-info .meta,
 .co-price-line {
     color: var(--co-text);
-    font-size: 13px;
-    line-height: 19px;
+    font-size: 16px;
+    line-height: 24px;
 }
 
 .co-line-total {
-    color: var(--co-heading);
-    font-size: 15px;
+    color: var(--co-primary);
+    font-size: 16px;
     font-weight: 600;
 }
 
 .bilai-co-edit {
     margin-left: auto;
     color: var(--co-primary);
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 16px;
+    line-height: 24px;
 }
 
 .coupon-wrapper {
-    padding: 18px 24px 22px;
+    padding: 30px 0 0;
+    border-top: 0;
 }
 
 .coupon-group-modern {
-    height: 52px;
+    height: 64px;
     border-radius: 10px;
-    background: #FFFDF8;
+    background: var(--co-page);
 }
 
 .coupon-btn-modern {
-    background: var(--co-primary);
+    background: var(--co-brown);
     border-radius: 0 9px 9px 0;
-    min-width: 104px;
+    min-width: 110px;
+    color: #EDF4F0;
+    font-size: 18px;
+    font-weight: 400;
 }
 
 .bilai-co-earn {
-    margin: 0 24px 24px;
-    background: #FFFDF8;
-    border-radius: 12px;
+    margin: 30px 0 0;
+    padding: 20px;
+    gap: 20px;
+    background: var(--co-page);
+    border-radius: 20px;
 }
 
 .bilai-co-earn-ic {
-    background: #F0E6D8;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    background: transparent;
+}
+
+.bilai-co-earn-ic img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+}
+
+.bilai-co-earn p {
+    color: var(--co-strong);
+    font-size: 18px;
+    line-height: 27px;
+}
+
+.bilai-co-earn a,
+.bilai-co-policy {
+    color: var(--co-primary);
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+    text-decoration: underline;
 }
 
 .bilai-co-reward-row {
@@ -552,10 +629,15 @@ textarea.form-control-custom {
 }
 
 .bilai-co-reward-pill {
-    background: #FFFDF8;
-    border: 1px solid var(--co-border);
-    color: var(--co-heading);
-    border-radius: 12px;
+    min-width: 225px;
+    background: var(--co-brown);
+    border: 0;
+    color: #F0E6D8;
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-size: 20px;
+    line-height: 30px;
+    font-weight: 400;
 }
 
 .bilai-co-reward-pill .dot {
@@ -564,17 +646,31 @@ textarea.form-control-custom {
 
 .bilai-co-toggle .track {
     cursor: pointer;
+    background: transparent url("{{ asset('public/uploads/checkout-toggle-off-figma.svg') }}") center / 100% 100% no-repeat;
+}
+
+.bilai-co-toggle {
+    width: 78px;
+    height: 40px;
+}
+
+.bilai-co-toggle .track::before {
+    display: none;
+}
+
+.bilai-co-toggle input:checked + .track {
+    background: transparent url("{{ asset('public/uploads/checkout-toggle-on-figma.svg') }}") center / 100% 100% no-repeat;
 }
 
 .summary-totals {
-    padding: 18px 24px 4px;
+    padding: 30px 0 0 !important;
 }
 
 .total-row {
-    margin-bottom: 14px;
-    color: var(--co-heading);
-    font-size: 15px;
-    line-height: 22px;
+    margin-bottom: 20px;
+    color: var(--co-text);
+    font-size: 18px;
+    line-height: 27px;
 }
 
 .total-row span:first-child {
@@ -582,12 +678,12 @@ textarea.form-control-custom {
 }
 
 .total-row.final {
-    margin-top: 18px;
-    padding-top: 18px;
+    margin-top: 0;
+    padding-top: 20px;
     border-top: 1px solid var(--co-border);
     color: var(--co-heading);
-    font-size: 20px;
-    line-height: 30px;
+    font-size: 24px;
+    line-height: 36px;
 }
 
 .total-row.final span:last-child {
@@ -595,15 +691,36 @@ textarea.form-control-custom {
 }
 
 .btn-place-order {
-    height: 54px;
-    border-radius: 12px;
+    min-height: 67px;
+    border-radius: 16px;
     background: var(--co-primary);
-    font-size: 17px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 400;
 }
 
 .desktop-submit-btn {
-    padding: 10px 24px 24px !important;
+    padding: 10px 0 0 !important;
+}
+
+.desktop-submit-btn .text-center,
+.mobile-submit-btn .text-center {
+    display: none;
+}
+
+.check-circle {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    background: url("{{ asset('public/uploads/checkout-radio-off-figma.svg') }}") center / 24px 24px no-repeat;
+}
+
+.payment-option-label input:checked ~ .check-circle {
+    border: 0;
+    background-image: url("{{ asset('public/uploads/checkout-radio-on-figma.svg') }}");
+}
+
+.payment-option-label input:checked ~ .check-circle::after {
+    display: none;
 }
 
 @media (max-width: 991px) {
@@ -611,23 +728,64 @@ textarea.form-control-custom {
         padding-bottom: 96px;
     }
 
+    .checkout-container {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
     .checkout-layout-grid {
         --bs-gutter-x: 0;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+        width: 100%;
+        max-width: 100%;
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .checkout-layout-grid > * {
+        width: 100%;
+        max-width: 100%;
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .checkout-card,
+    .sticky-sidebar,
+    .coupon-group-modern {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .coupon-input-modern {
+        min-width: 0;
     }
 }
 
 @media (max-width: 575px) {
-    .checkout-section > .container {
-        padding-left: 12px;
-        padding-right: 12px;
+    .checkout-container {
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
-    .checkout-header,
+    .checkout-card {
+        padding: 20px;
+        border-radius: 20px;
+        margin-bottom: 24px;
+    }
+
+    .checkout-header {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
     .card-body-custom,
     .coupon-wrapper,
     .summary-totals {
-        padding-left: 16px;
-        padding-right: 16px;
+        padding-right: 0 !important;
+        padding-left: 0 !important;
     }
 
     .checkout-header h6 {
@@ -640,6 +798,11 @@ textarea.form-control-custom {
         width: 32px;
         height: 32px;
         flex-basis: 32px;
+    }
+
+    .checkout-card-icon img {
+        width: 32px;
+        height: 32px;
     }
 
     .payment-option-label {
@@ -656,20 +819,27 @@ textarea.form-control-custom {
         padding: 0 14px;
     }
 }
+
+@media (max-width: 360px) {
+    .checkout-container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
 /* BilaiGhor Checkout Figma Refresh End */
 
 /* BilaiGhor Checkout Address Modal Start */
 .bilai-addr-btn {
     display: inline-flex; align-items: center; gap: 8px;
-    height: 42px;
-    margin-top: 12px; padding: 0 18px;
-    background: #241307; color: #fff;
-    border: none; border-radius: 10px;
-    font-size: 14px; font-weight: 600;
+    height: 44px;
+    margin-top: 20px; padding: 0 20px;
+    background: var(--co-brown); color: #fff;
+    border: none; border-radius: 30px;
+    font-size: 16px; font-weight: 600;
     line-height: 1; cursor: pointer; transition: 0.15s;
 }
 .bilai-addr-btn:hover { background: var(--co-brown); }
-.bilai-addr-btn-ic { width: 16px; height: 16px; flex-shrink: 0; display: block; }
+.bilai-addr-btn-ic { width: 20px; height: 20px; flex-shrink: 0; display: block; object-fit: contain; }
 
 /* Overlay */
 .bilai-addr-overlay {
@@ -850,7 +1020,7 @@ textarea.form-control-custom {
         $__bcName      = $__bcProduct ? $__bcProduct->name : null;
     @endphp
 
-    <div class="container">
+    <div class="checkout-container">
 
         {{-- Breadcrumb --}}
         <nav class="bilai-co-bc" aria-label="breadcrumb">
@@ -895,15 +1065,15 @@ textarea.form-control-custom {
             } catch (e) {}
             </script>
 
-            <div class="row checkout-layout-grid">
+            <div class="checkout-layout-grid">
 
                 {{-- LEFT COLUMN: Shipping & Payment --}}
-                <div class="col-lg-7 col-md-12 cus-order-2">
+                <div class="checkout-main-column cus-order-2">
 
                     {{-- 1. SHIPPING INFO CARD --}}
                     <div class="checkout-card">
                         <div class="checkout-header">
-                            <span class="checkout-card-icon"><img src="{{ asset('public/uploads/location.svg') }}" alt="" aria-hidden="true"></span>
+                            <span class="checkout-card-icon"><img src="{{ asset('public/uploads/checkout-delivery-figma.svg') }}" alt="" aria-hidden="true"></span>
                             <h6>Shipping Information</h6>
                         </div>
                         <div class="card-body-custom">
@@ -979,11 +1149,7 @@ textarea.form-control-custom {
                                         <input type="text" name="address" class="form-control-custom"
                                             value="{{ old('address', $checkoutPrefill['address'] ?? '') }}" placeholder="100 Rasulpur Rd" required>
                                         <button type="button" id="bilai-addr-open" class="bilai-addr-btn">
-                                            {{-- Replace address icon SVG later --}}
-                                            <svg class="bilai-addr-btn-ic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                                                <circle cx="12" cy="10" r="3"/>
-                                            </svg>
+                                            <img class="bilai-addr-btn-ic" src="{{ asset('public/uploads/checkout-address-figma.svg') }}" alt="" aria-hidden="true">
                                             <span>Select Address</span>
                                         </button>
                                     </div>
@@ -1002,7 +1168,7 @@ textarea.form-control-custom {
                     {{-- 2. PAYMENT METHOD CARD --}}
                     <div class="checkout-card">
                         <div class="checkout-header">
-                            <span class="checkout-card-icon fa-wallet"><img src="{{ asset('public/uploads/wallet.svg') }}" alt="" aria-hidden="true"></span>
+                            <span class="checkout-card-icon"><img src="{{ asset('public/uploads/checkout-wallet-figma.svg') }}" alt="" aria-hidden="true"></span>
                             <h6>Select Payment Method</h6>
                         </div>
                         <div class="card-body-custom">
@@ -1015,7 +1181,7 @@ textarea.form-control-custom {
                                     <label class="payment-option-label">
                                         <input type="radio" name="payment_method" value="cod" checked required>
                                         <div class="payment-content">
-                                            <span class="pay-logo-wrap"><img src="{{ asset('public/uploads/car.svg') }}" class="pay-logo" alt="" aria-hidden="true"></span>
+                                            <span class="pay-logo-wrap"><img src="{{ asset('public/uploads/checkout-cod-figma.svg') }}" class="pay-logo" alt="" aria-hidden="true"></span>
                                             <div class="pay-info">
                                                 <strong>Cash on Delivery</strong>
                                                 <small>Pay when you receive the product</small>
@@ -1030,7 +1196,7 @@ textarea.form-control-custom {
                                     <label class="payment-option-label">
                                         <input type="radio" name="payment_method" value="bkash" required>
                                         <div class="payment-content">
-                                            <img src="{{ asset('public/frontEnd/images/bkash.svg') }}" class="pay-logo" alt="bKash">
+                                            <span class="pay-logo-wrap"><img src="{{ asset('public/uploads/checkout-bkash-figma.svg') }}" class="pay-logo" alt="bKash"></span>
                                             <div class="pay-info">
                                                 <strong>bKash Payment</strong>
                                                 <small>Pay via bKash app or gateway</small>
@@ -1089,14 +1255,20 @@ textarea.form-control-custom {
                                 @endif
 
                                 @foreach($manual_gateways ?? [] as $mg)
+                                    @php
+                                        $__gatewayTitle = strtolower((string) $mg->title);
+                                        $__gatewayIcon = str_contains($__gatewayTitle, 'bkash')
+                                            ? asset('public/uploads/checkout-bkash-figma.svg')
+                                            : (str_contains($__gatewayTitle, 'nagad')
+                                                ? asset('public/uploads/checkout-nagad-figma.svg')
+                                                : (str_contains($__gatewayTitle, 'rocket')
+                                                    ? asset('public/frontEnd/images/rocket.png')
+                                                    : ($mg->logo_asset_url ?: asset('public/uploads/checkout-wallet-figma.svg'))));
+                                    @endphp
                                     <label class="payment-option-label">
                                         <input type="radio" name="payment_method" value="manual_{{ $mg->id }}" required>
                                         <div class="payment-content">
-                                            @if($mg->logo_asset_url)
-                                                <span class="pay-logo-wrap"><img src="{{ $mg->logo_asset_url }}" class="pay-logo" alt="{{ $mg->title }}"></span>
-                                            @else
-                                                <span class="pay-logo-wrap"><img src="{{ asset('public/uploads/wallet.svg') }}" class="pay-logo" alt="" aria-hidden="true"></span>
-                                            @endif
+                                            <span class="pay-logo-wrap"><img src="{{ $__gatewayIcon }}" class="pay-logo" alt="{{ $mg->title }}"></span>
                                             <div class="pay-info">
                                                 <strong>{{ $mg->title }}</strong>
                                                 <small>Manual payment — send money and enter the transaction ID</small>
@@ -1137,7 +1309,7 @@ textarea.form-control-custom {
                     {{-- MOBILE SUBMIT BUTTON (Only Visible on Mobile) --}}
                     <div class="mobile-submit-btn">
                         <button type="submit" class="btn-place-order">
-                            Place Order <i class="fa fa-arrow-right"></i>
+                            Place Order
                         </button>
                         <div class="text-center small mt-3" style="color:var(--co-muted);">
                             <i class="fa fa-shield"></i> 100% safe &amp; secure checkout
@@ -1147,13 +1319,13 @@ textarea.form-control-custom {
                 </div>
 
                 {{-- RIGHT COLUMN: Order Summary --}}
-                <div class="col-lg-5 col-md-12 cust-order-1">
+                <div class="checkout-side-column cust-order-1">
                     <div class="sticky-sidebar">
 
                         {{-- CARD 1: Order Summary (items + coupon + reward earn) --}}
                         <div class="checkout-card">
                             <div class="checkout-header">
-                                <span class="checkout-card-icon"><img src="{{ asset('public/uploads/orderItems.svg') }}" alt="" aria-hidden="true"></span>
+                                <span class="checkout-card-icon"><img src="{{ asset('public/uploads/checkout-order-figma.svg') }}" alt="" aria-hidden="true"></span>
                                 <h6>Order Items</h6>
                                 <a href="{{ route('cart.index') }}" class="bilai-co-edit">Edit Cart</a>
                             </div>
@@ -1219,7 +1391,7 @@ textarea.form-control-custom {
                             {{-- Reward earn info (dynamic: floor(eligible/100), credited on delivery) --}}
                             @php $__rwEarnPreview = \App\Services\RewardPointService::earnedPointsFor(max(0, $subtotal - $discount)); @endphp
                             <div class="bilai-co-earn">
-                                <div class="bilai-co-earn-ic"><img src="{{ asset('public/uploads/reedemStar.svg') }}" alt="" aria-hidden="true"></div>
+                                <div class="bilai-co-earn-ic"><img src="{{ asset('public/uploads/checkout-reward-figma.svg') }}" alt="" aria-hidden="true"></div>
                                 <div>
                                     <p>You will earn <strong id="bilai-rw-earn">{{ $__rwEarnPreview }}</strong> reward points for this order — points are credited once your order has been delivered.</p>
                                     <a href="{{ route('customer.rewards') }}">Reward Points Policy</a>
@@ -1232,7 +1404,7 @@ textarea.form-control-custom {
                         @php $__rwBalance = Auth::guard('customer')->user()->rewardBalance(); @endphp
                         <div class="checkout-card">
                             <div class="checkout-header">
-                                <span class="checkout-card-icon"><img src="{{ asset('public/uploads/reedemStar.svg') }}" alt="" aria-hidden="true"></span>
+                                <span class="checkout-card-icon"><img src="{{ asset('public/uploads/checkout-reward-figma.svg') }}" alt="" aria-hidden="true"></span>
                                 <h6>Use Your Reward Point</h6>
                             </div>
                             <div class="card-body-custom">
@@ -1255,7 +1427,7 @@ textarea.form-control-custom {
                         {{-- CARD 3: Order Summary (totals) + Place Order --}}
                         <div class="checkout-card">
                             <div class="checkout-header">
-                                <span class="checkout-card-icon"><img src="{{ asset('public/uploads/wallet.svg') }}" alt="" aria-hidden="true"></span>
+                                <span class="checkout-card-icon"><img src="{{ asset('public/uploads/checkout-reward-figma.svg') }}" alt="" aria-hidden="true"></span>
                                 <h6>Order Summary</h6>
                             </div>
                             <div class="summary-totals" style="padding-top:16px;">
@@ -1269,7 +1441,7 @@ textarea.form-control-custom {
                             {{-- DESKTOP SUBMIT BUTTON (Only Visible on Desktop) --}}
                             <div class="desktop-submit-btn" style="padding:8px 22px 22px;">
                                 <button type="submit" class="btn-place-order">
-                                    Place Order <i class="fa fa-check-circle"></i>
+                                    Place Order
                                 </button>
                                 <div class="text-center small mt-3" style="color:var(--co-muted);">
                                     <i class="fa fa-lock"></i> 100% safe checkout process

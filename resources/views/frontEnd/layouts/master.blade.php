@@ -34,6 +34,8 @@
         {{-- BilaiGhor Figma — header & footer CSS --}}
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=38">
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/main.css')}}" />
+        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-container-system.css')}}?v=1" />
+        @stack('css_after')
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
         <style>

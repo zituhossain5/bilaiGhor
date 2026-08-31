@@ -8,6 +8,16 @@
     $discount    = ($value->old_price && $value->old_price > $value->new_price)
                    ? round((($value->old_price - $value->new_price) * 100) / $value->old_price)
                    : 0;
+    $formatPrice = function ($price) {
+        if ($price === null || $price === '') {
+            return '';
+        }
+        $price = (float) $price;
+        return fmod($price, 1.0) === 0.0
+            ? number_format($price, 0)
+            : rtrim(rtrim(number_format($price, 2, '.', ','), '0'), '.');
+    };
+    $cardCategoryName = optional($value->subcategory)->subcategoryName ?: optional($value->category)->name;
 @endphp
 <div class="bilai-product-card">
     <div class="bilai-product-top">
@@ -35,8 +45,8 @@
             <a href="{{ route('product', $value->slug) }}">{{ Str::limit($value->name, 55) }}</a>
         </h3>
         <div class="bilai-product-cat-rating">
-            @if($value->category)
-            <p class="bilai-product-category">{{ $value->category->name }}</p>
+            @if($cardCategoryName)
+            <p class="bilai-product-category">{{ $cardCategoryName }}</p>
             @endif
             <div class="bilai-product-rating">
                 @for($i = 0; $i < $filledStars; $i++)<i class="fas fa-star"></i>@endfor
@@ -46,9 +56,9 @@
         </div>
         <div class="bilai-product-price">
             <div class="bilai-price-row">
-                <span class="bilai-price-new">&#2547; {{ $value->new_price }}</span>
+                <span class="bilai-price-new">&#2547;{{ $formatPrice($value->new_price) }}</span>
                 @if($value->old_price)
-                <del class="bilai-price-old">&#2547; {{ $value->old_price }}</del>
+                <del class="bilai-price-old">&#2547;{{ $formatPrice($value->old_price) }}</del>
                 @endif
             </div>
             @if($discount > 0)

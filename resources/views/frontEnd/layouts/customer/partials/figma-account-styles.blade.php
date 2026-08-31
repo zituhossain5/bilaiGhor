@@ -17,8 +17,8 @@
 }
 
 .bilai-account-container {
-    width: calc(100% - 30px);
-    max-width: 1140px;
+    width: min(var(--bilai-container-max, 1440px), calc(100% - (var(--bilai-container-gutter, 24px) * 2)));
+    max-width: var(--bilai-container-max, 1440px);
     margin: 0 auto;
 }
 
@@ -166,22 +166,16 @@
 }
 
 @media (max-width: 1199px) {
-    .bilai-account-container { max-width: 960px; }
     .bilai-account-layout { grid-template-columns: 228px minmax(0, 1fr); gap: 16px; }
 }
 
 @media (max-width: 991px) {
-    .bilai-account-container { max-width: 720px; }
     .bilai-account-layout { grid-template-columns: 1fr; }
     .bilai-account-sidebar { position: static; }
 }
 
-@media (max-width: 767px) {
-    .bilai-account-container { max-width: 540px; }
-}
-
 @media (max-width: 575px) {
-    .bilai-account-container { width: calc(100% - 24px); }
+    .bilai-account-container { width: calc(100% - (var(--bilai-container-gutter, 16px) * 2)); }
     .bilai-account-main { padding: 16px 14px 18px; }
 }
 </style>

@@ -2506,7 +2506,8 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 
 .bilai-product-image img {
-    width: 100%;
+    width: 66% !important;
+    margin: 0 auto;
     height: 100%;
     object-fit: contain;
     display: block;

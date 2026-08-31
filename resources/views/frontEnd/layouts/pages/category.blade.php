@@ -3,6 +3,9 @@
 @push('css')
     <link rel="stylesheet" href="{{ asset('public/frontEnd/css/jquery-ui.css') }}" />
 @endpush
+@push('css_after')
+    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-listing-figma.css') }}?v=2" />
+@endpush
 @push('seo')
     <meta name="app-url" content="{{ route('category', $category->slug) }}" />
     <meta name="robots" content="index, follow" />
@@ -25,7 +28,7 @@
 
 @section('content')
 <div class="bilai-cat-page">
-    <div class="container">
+    <div class="container bilai-listing-container">
 
         {{-- BREADCRUMB --}}
         <nav class="bilai-cat-breadcrumb" aria-label="breadcrumb">
@@ -103,7 +106,7 @@
 
 {{-- BOTTOM DESCRIPTION ACCORDION --}}
 @if($category->full_description)
-<div class="container">
+<div class="container bilai-listing-container">
 <div class="bilai-seo-accordion">
         <button class="bilai-seo-toggle" id="bilaiSeoToggle" type="button" aria-expanded="false">
             <span>View Full Description</span>

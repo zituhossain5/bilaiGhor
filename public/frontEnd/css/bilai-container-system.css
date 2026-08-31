@@ -1,0 +1,142 @@
+/* BilaiGhor shared frontend container system */
+:root {
+    --bilai-container-max: 1440px;
+    --bilai-container-gutter: 24px;
+}
+
+@media (max-width: 1439px) {
+    :root {
+        --bilai-container-gutter: 20px;
+    }
+}
+
+@media (max-width: 575px) {
+    :root {
+        --bilai-container-gutter: 16px;
+    }
+}
+
+@media (max-width: 360px) {
+    :root {
+        --bilai-container-gutter: 12px;
+    }
+}
+
+.bilai-container,
+.container,
+.container_97,
+.bilai-topbar__inner,
+.bilai-main-header__inner,
+.bilai-nav__inner,
+.bilai-footer__grid,
+.bilai-footer__bottom-inner,
+.bilai-account-container,
+.checkout-container {
+    width: min(var(--bilai-container-max), calc(100% - (var(--bilai-container-gutter) * 2)));
+    max-width: var(--bilai-container-max);
+    margin-right: auto;
+    margin-left: auto;
+    box-sizing: border-box;
+}
+
+.container,
+.container_97,
+.bilai-topbar__inner,
+.bilai-main-header__inner,
+.bilai-nav__inner,
+.bilai-footer__grid,
+.bilai-footer__bottom-inner,
+.bilai-account-container,
+.checkout-container {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.bilai-topbar,
+.bilai-main-header,
+.bilai-nav,
+.bilai-footer,
+.bilai-footer__main,
+.bilai-footer__bottom {
+    width: 100%;
+}
+
+.bilai-main-header__inner {
+    gap: clamp(28px, 3.2vw, 60px);
+}
+
+.bilai-main-header__search form {
+    width: min(600px, 100%);
+}
+
+.bilai-mega-panel > .container {
+    width: min(var(--bilai-container-max), calc(100% - (var(--bilai-container-gutter) * 2)));
+    max-width: var(--bilai-container-max);
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.bilai-footer__main,
+.bilai-footer__bottom {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.checkout-section > .container,
+.checkout-container,
+.bpd-breadcrumb-wrap > .container,
+.bpd-product-section > .container,
+.bpd-delivery-section > .container,
+.bpd-tabs-section > .container,
+.bpd-related-section > .container,
+.bilai-listing-container.container {
+    width: min(var(--bilai-container-max), calc(100% - (var(--bilai-container-gutter) * 2)));
+    max-width: var(--bilai-container-max);
+    padding-right: 0;
+    padding-left: 0;
+}
+
+#content .container,
+#content .container_97,
+#content > section > .container,
+#content .bilai-cat-section .container,
+#content .bilai-weekly-deals .container,
+#content .bilai-best-sellers .container,
+#content .bilai-new-arrivals-section .container,
+#content .bilai-cat-situation-section .container,
+#content .bilai-category-products .container,
+#content .bilai-why-section .container,
+#content .brand-section .container,
+#content .bilai-blog-section .container,
+#content .bilai-testimonial-section .container {
+    width: min(var(--bilai-container-max), calc(100% - (var(--bilai-container-gutter) * 2)));
+    max-width: var(--bilai-container-max);
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: 0;
+    padding-left: 0;
+    box-sizing: border-box;
+}
+
+@media (max-width: 991px) {
+    .bilai-main-header__inner,
+    .bilai-nav__inner {
+        width: min(var(--bilai-container-max), calc(100% - (var(--bilai-container-gutter) * 2)));
+    }
+}
+
+@media (max-width: 575px) {
+    .container,
+    .container_97,
+    .checkout-section > .container,
+    .checkout-container,
+    .bpd-breadcrumb-wrap > .container,
+    .bpd-product-section > .container,
+    .bpd-delivery-section > .container,
+    .bpd-tabs-section > .container,
+    .bpd-related-section > .container,
+    .bilai-listing-container.container,
+    .bilai-account-container {
+        width: calc(100% - (var(--bilai-container-gutter) * 2));
+    }
+}

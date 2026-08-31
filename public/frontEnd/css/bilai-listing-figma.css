@@ -1,0 +1,1054 @@
+/* BilaiGhor category/subcategory listing - Figma node 564:8399 */
+.bilai-cat-page {
+    --bl-page: #fbf5e6;
+    --bl-surface: #fdf9f4;
+    --bl-surface-strong: #fdfcf8;
+    --bl-border: #dccab2;
+    --bl-border-medium: #c4a881;
+    --bl-border-strong: #aa8453;
+    --bl-border-subtle: #edd9a6;
+    --bl-primary: #e8861a;
+    --bl-danger: #c4552a;
+    --bl-brown: #2a1505;
+    --bl-brown-soft: #3c2a1e;
+    --bl-text: #4f4f4f;
+    --bl-caption: #aa8453;
+    --bl-heading: #3c2a1e;
+    --bl-muted-bg: #f0e6d8;
+    --bl-card-radius: 20px;
+    --bl-panel-radius: 30px;
+    background: var(--bl-page);
+    color: var(--bl-text);
+    padding: 0 0 60px;
+    overflow-x: clip;
+}
+
+.bilai-listing-container.container {
+    width: min(var(--bilai-container-max, 1440px), calc(100% - (var(--bilai-container-gutter, 24px) * 2)));
+    max-width: var(--bilai-container-max, 1440px);
+    padding-right: 0;
+    padding-left: 0;
+    margin-right: auto;
+    margin-left: auto;
+    box-sizing: border-box;
+}
+
+.bilai-cat-breadcrumb {
+    min-height: 84px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: var(--bl-text);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.bilai-cat-breadcrumb a,
+.bilai-cat-breadcrumb-current {
+    color: var(--bl-text);
+    text-decoration: none;
+}
+
+.bilai-cat-breadcrumb-current,
+.bilai-cat-breadcrumb a:hover {
+    color: var(--bl-primary);
+}
+
+.bilai-cat-breadcrumb-sep {
+    color: var(--bl-text);
+    font-size: 12px;
+    line-height: 1;
+}
+
+.bilai-cat-sub-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    padding: 30px 0 0;
+    margin: 0 0 60px;
+    scrollbar-width: none;
+}
+
+.bilai-cat-sub-row::-webkit-scrollbar {
+    display: none;
+}
+
+.bilai-cat-sub-card {
+    width: 120px;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    text-decoration: none;
+}
+
+.bilai-cat-sub-card:hover,
+.bilai-cat-sub-card.active {
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.bilai-cat-sub-img-box {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 26px;
+    background: var(--bl-page);
+    border: 1px solid var(--bl-border);
+    border-radius: var(--bl-card-radius);
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.bilai-cat-sub-card:hover .bilai-cat-sub-img-box,
+.bilai-cat-sub-card.active .bilai-cat-sub-img-box {
+    border-color: var(--bl-primary);
+    box-shadow: 0 8px 24px rgba(196, 168, 129, .24);
+}
+
+.bilai-cat-sub-img-box img {
+    width: 80px;
+    height: 74px;
+    display: block;
+    object-fit: contain;
+}
+
+.bilai-cat-sub-img-box .fas.fa-tag {
+    color: var(--bl-primary);
+    font-size: 30px;
+}
+
+.bilai-cat-sub-card span {
+    width: 100%;
+    color: #6e4a1f;
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 27px;
+    text-align: center;
+    white-space: normal;
+}
+
+.bilai-cat-layout {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1020px);
+    gap: 60px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.bilai-cat-sidebar {
+    width: 360px;
+    flex: none;
+    position: sticky;
+    top: 96px;
+    padding: 30px;
+    background: var(--bl-surface);
+    border: 1px solid var(--bl-border-subtle);
+    border-radius: var(--bl-panel-radius);
+    box-sizing: border-box;
+}
+
+.bilai-cat-filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.bilai-cat-filter-block {
+    margin: 0;
+    padding: 0 0 30px;
+    border-bottom: 1px solid var(--bl-muted-bg);
+}
+
+.bilai-cat-filter-block:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.bilai-cat-filter-title {
+    margin: 0 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--bl-heading);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 30px;
+}
+
+.bilai-cat-toggle-icon {
+    color: var(--bl-heading);
+    font-size: 12px;
+}
+
+.bilai-price-slider {
+    height: 2px;
+    margin: 29px 2px 26px;
+    background: var(--bl-primary);
+    border: 0;
+    border-radius: 0;
+}
+
+.bilai-price-slider .ui-slider-range {
+    background: var(--bl-primary);
+}
+
+.bilai-price-slider .ui-slider-handle {
+    width: 3px;
+    height: 20px;
+    top: -9px;
+    margin-left: -1px;
+    border: 0;
+    border-radius: 0;
+    background: var(--bl-primary);
+    cursor: grab;
+}
+
+.bilai-cat-price-display {
+    margin: 0;
+    color: var(--bl-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+}
+
+.bilai-cat-price-display strong {
+    color: #222;
+    font-weight: 600;
+}
+
+.bilai-cat-filter-body {
+    width: 100%;
+}
+
+.bilai-cat-filter-search {
+    position: relative;
+    margin: 0 0 20px;
+}
+
+.bilai-brand-search-input {
+    width: 100%;
+    height: 46px;
+    padding: 10px 48px 10px 16px;
+    background: var(--bl-surface);
+    border: 1px solid var(--bl-muted-bg);
+    border-radius: 16px;
+    color: var(--bl-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    line-height: 24px;
+    outline: 0;
+}
+
+.bilai-brand-search-input::placeholder {
+    color: var(--bl-text);
+}
+
+.bilai-cat-filter-search .fa-search {
+    right: 16px;
+    color: var(--bl-text);
+    font-size: 18px;
+}
+
+.bilai-cat-attr-link-list,
+.bilai-cat-check-list {
+    max-height: 172px;
+    padding: 0 8px 0 0;
+    margin: 0;
+    list-style: none;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bl-border-medium) transparent;
+}
+
+.bilai-cat-attr-link-list::-webkit-scrollbar,
+.bilai-cat-check-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.bilai-cat-attr-link-list::-webkit-scrollbar-thumb,
+.bilai-cat-check-list::-webkit-scrollbar-thumb {
+    background: var(--bl-border-medium);
+    border-radius: 999px;
+}
+
+.bilai-cat-attr-link,
+.bilai-cat-check-label {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 5px 0;
+    margin: 0;
+    color: var(--bl-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.bilai-cat-attr-link:hover,
+.bilai-cat-attr-link.active {
+    color: var(--bl-primary);
+}
+
+.bilai-cat-check-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0 6px 0 0;
+    flex: 0 0 20px;
+    accent-color: var(--bl-primary);
+}
+
+.bilai-cat-check-name,
+.bilai-cat-attr-name {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.bilai-cat-count-badge {
+    min-width: 36px;
+    padding: 2px 10px;
+    flex: 0 0 auto;
+    border: 1px solid var(--bl-muted-bg);
+    border-radius: 16px;
+    background: var(--bl-surface);
+    color: var(--bl-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    text-align: center;
+}
+
+.bilai-cat-main {
+    width: 100%;
+    min-width: 0;
+}
+
+.bilai-cat-topbar {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0 0 40px;
+}
+
+.bilai-cat-count {
+    margin: 0;
+    color: var(--bl-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 27px;
+    white-space: nowrap;
+}
+
+#bilaiSortForm {
+    flex: 0 0 300px;
+}
+
+.bilai-cat-sort-select {
+    width: 300px;
+    height: 44px;
+    padding: 10px 44px 10px 16px;
+    border: 1px solid var(--bl-muted-bg);
+    border-radius: 16px;
+    background-color: var(--bl-surface);
+    color: var(--bl-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    outline: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--bl-text) 50%), linear-gradient(135deg, var(--bl-text) 50%, transparent 50%);
+    background-position: calc(100% - 25px) 19px, calc(100% - 17px) 19px;
+    background-size: 8px 8px, 8px 8px;
+    background-repeat: no-repeat;
+}
+
+.bilai-cat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 327px));
+    gap: 20px;
+    align-items: start;
+}
+
+.bilai-product-card {
+    position: relative;
+    width: 100%;
+    min-height: 525px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: var(--bl-card-radius);
+    overflow: hidden;
+}
+
+.bilai-product-top {
+    height: 252px;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 20px;
+    background: var(--bl-surface);
+    border: 1px solid var(--bl-border-medium);
+    border-bottom: 0;
+    border-radius: var(--bl-card-radius) var(--bl-card-radius) 0 0;
+    box-sizing: border-box;
+}
+
+.bilai-card-badge {
+    max-width: 190px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 16px;
+    background: var(--bl-primary);
+    color: var(--bl-page);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 16px;
+    white-space: nowrap;
+}
+
+.bilai-product-top > span:empty {
+    width: 1px;
+}
+
+.bilai-wishlist-btn {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: var(--bl-muted-bg);
+    color: var(--bl-text);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bilai-wishlist-btn:hover,
+.bilai-wishlist-btn.active {
+    color: var(--bl-primary);
+    background: var(--bl-muted-bg);
+}
+
+.bilai-product-image {
+    position: absolute;
+    inset: 76px 20px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    aspect-ratio: auto;
+    padding: 0;
+    overflow: visible;
+    border-radius: 0;
+    pointer-events: none;
+}
+
+.bilai-product-image a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 170px;
+    height: 156px;
+    pointer-events: auto;
+}
+
+.bilai-product-image img {
+    width: 170px !important;
+    max-width: 100%;
+    height: 156px;
+    margin: 0;
+    object-fit: contain;
+    display: block;
+}
+
+.bilai-cat-sold-pill {
+    position: static;
+    transform: none;
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: 30px;
+    padding: 2px 10px;
+    margin: 0 0 0;
+    border: 1px solid var(--bl-border-strong);
+    border-radius: 16px;
+    background: transparent;
+    color: var(--bl-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.bilai-product-meta {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 20px 0;
+    background: var(--bl-page);
+    border-right: 1px solid var(--bl-border-medium);
+    border-left: 1px solid var(--bl-border-medium);
+}
+
+.bilai-product-title {
+    min-height: 48px;
+    margin: 0;
+    color: var(--bl-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.bilai-product-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.bilai-product-cat-rating {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.bilai-product-category {
+    width: 90px;
+    min-width: 0;
+    margin: 0;
+    color: var(--bl-caption);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bilai-product-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+    color: #f5a845;
+    font-size: 18px;
+    line-height: 20px;
+    letter-spacing: 0;
+}
+
+.bilai-product-rating i {
+    width: 16px;
+    text-align: center;
+}
+
+.bilai-product-price {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    margin: 0;
+}
+
+.bilai-price-row {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--bl-brown-soft);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 20px;
+    line-height: 30px;
+    white-space: nowrap;
+}
+
+.bilai-price-new {
+    color: var(--bl-brown-soft);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 30px;
+}
+
+.bilai-price-old {
+    color: var(--bl-brown-soft);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 30px;
+    text-decoration: line-through;
+}
+
+.bilai-discount-badge {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--bl-danger);
+    color: var(--bl-page);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 21px;
+    white-space: nowrap;
+}
+
+.bilai-product-actions {
+    display: flex;
+    align-items: stretch;
+    gap: 20px;
+    width: 100%;
+    padding: 20px;
+    background: var(--bl-page);
+    border: 1px solid var(--bl-border-medium);
+    border-top: 0;
+    border-radius: 0 0 var(--bl-card-radius) var(--bl-card-radius);
+    box-sizing: border-box;
+}
+
+.bilai-product-actions form {
+    display: contents;
+}
+
+.bilai-cart-btn {
+    width: 50px;
+    min-width: 50px;
+    height: 47px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--bl-primary);
+    color: #fef6e8;
+    font-size: 18px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.bilai-buy-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 47px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--bl-brown);
+    color: #edf4f0;
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 27px;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.bilai-cart-btn:hover,
+.bilai-buy-btn:hover {
+    color: #fff;
+    text-decoration: none;
+    filter: brightness(.96);
+}
+
+.bilai-cat-pagination {
+    margin-top: 40px;
+}
+
+.bilai-cat-pagination .pagination {
+    gap: 10px;
+}
+
+.bilai-cat-pagination .page-item .page-link {
+    min-width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 20px;
+    background: var(--bl-surface-strong);
+    color: var(--bl-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.bilai-cat-pagination .page-item.active .page-link {
+    background: var(--bl-primary);
+    color: var(--bl-muted-bg);
+}
+
+.bilai-seo-accordion {
+    max-width: 1440px;
+    margin: 60px auto 0;
+}
+
+@media (max-width: 1499px) {
+    .bilai-listing-container.container,
+    .bilai-seo-accordion {
+        width: min(var(--bilai-container-max, 1440px), calc(100% - (var(--bilai-container-gutter, 24px) * 2)));
+        max-width: var(--bilai-container-max, 1440px);
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .bilai-cat-layout {
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 32px;
+    }
+
+    .bilai-cat-sidebar {
+        width: 320px;
+    }
+
+    .bilai-cat-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1199px) {
+    .bilai-cat-layout {
+        grid-template-columns: 290px minmax(0, 1fr);
+        gap: 24px;
+    }
+
+    .bilai-cat-sidebar {
+        width: 290px;
+        padding: 24px;
+    }
+
+    .bilai-cat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 991px) {
+    .bilai-listing-container.container,
+    .bilai-seo-accordion {
+        width: min(var(--bilai-container-max, 1440px), calc(100% - (var(--bilai-container-gutter, 20px) * 2)));
+        max-width: var(--bilai-container-max, 1440px);
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .bilai-cat-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 30px;
+    }
+
+    .bilai-cat-sidebar {
+        position: static;
+        width: 100%;
+    }
+
+    .bilai-cat-topbar {
+        margin-bottom: 24px;
+    }
+}
+
+@media (max-width: 575px) {
+    .bilai-cat-page {
+        padding-bottom: 88px;
+    }
+
+    .bilai-listing-container.container,
+    .bilai-seo-accordion {
+        width: calc(100% - (var(--bilai-container-gutter, 16px) * 2));
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .bilai-cat-breadcrumb {
+        min-height: auto;
+        padding: 24px 0;
+        gap: 10px;
+        font-size: 13px;
+        line-height: 20px;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .bilai-cat-breadcrumb::-webkit-scrollbar {
+        display: none;
+    }
+
+    .bilai-cat-sub-row {
+        gap: 16px;
+        padding-top: 0;
+        margin-bottom: 28px;
+    }
+
+    .bilai-cat-sub-card {
+        width: 92px;
+        min-width: 92px;
+    }
+
+    .bilai-cat-sub-img-box {
+        width: 92px;
+        height: 92px;
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .bilai-cat-sub-img-box img {
+        width: 62px;
+        height: 58px;
+    }
+
+    .bilai-cat-sub-card span {
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .bilai-cat-sidebar {
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .bilai-cat-filter-form {
+        gap: 22px;
+    }
+
+    .bilai-cat-filter-block {
+        padding-bottom: 22px;
+    }
+
+    .bilai-cat-filter-title {
+        font-size: 17px;
+        line-height: 25px;
+    }
+
+    .bilai-cat-attr-link,
+    .bilai-cat-check-label,
+    .bilai-cat-count-badge,
+    .bilai-cat-price-display,
+    .bilai-brand-search-input {
+        font-size: 14px;
+        line-height: 21px;
+    }
+
+    .bilai-cat-topbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .bilai-cat-count {
+        white-space: normal;
+        font-size: 15px;
+        line-height: 22px;
+    }
+
+    #bilaiSortForm,
+    .bilai-cat-sort-select {
+        width: 100%;
+        flex-basis: auto;
+    }
+
+    .bilai-cat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .bilai-product-card {
+        min-height: 0;
+    }
+
+    .bilai-product-top {
+        height: 170px;
+        padding: 10px;
+    }
+
+    .bilai-card-badge {
+        max-width: 108px;
+        padding: 6px 8px;
+        font-size: 10px;
+        line-height: 14px;
+    }
+
+    .bilai-wishlist-btn {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+        font-size: 15px;
+    }
+
+    .bilai-product-image {
+        inset: 52px 10px 12px;
+        align-items: center;
+    }
+
+    .bilai-product-image a,
+    .bilai-product-image img {
+        width: 112px !important;
+        height: 104px;
+    }
+
+    .bilai-product-meta {
+        gap: 10px;
+        padding: 12px 10px 0;
+    }
+
+    .bilai-cat-sold-pill,
+    .bilai-product-title,
+    .bilai-product-category {
+        font-size: 12px;
+        line-height: 18px;
+    }
+
+    .bilai-cat-sold-pill {
+        min-height: 22px;
+        padding: 1px 7px;
+    }
+
+    .bilai-product-title {
+        min-height: 36px;
+    }
+
+    .bilai-product-cat-rating {
+        gap: 6px;
+    }
+
+    .bilai-product-category {
+        width: 62px;
+    }
+
+    .bilai-product-rating {
+        gap: 1px;
+        font-size: 12px;
+        line-height: 14px;
+    }
+
+    .bilai-product-rating i {
+        width: 11px;
+    }
+
+    .bilai-product-price {
+        gap: 6px;
+        align-items: flex-start;
+    }
+
+    .bilai-price-row {
+        flex-wrap: wrap;
+        gap: 2px 6px;
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .bilai-price-new,
+    .bilai-price-old {
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .bilai-discount-badge {
+        padding: 3px 6px;
+        font-size: 10px;
+        line-height: 14px;
+    }
+
+    .bilai-product-actions {
+        gap: 8px;
+        padding: 12px 10px;
+    }
+
+    .bilai-cart-btn {
+        width: 38px;
+        min-width: 38px;
+        height: 36px;
+        padding: 8px;
+        font-size: 13px;
+        border-radius: 9px;
+    }
+
+    .bilai-buy-btn {
+        height: 36px;
+        padding: 8px 10px;
+        border-radius: 9px;
+        font-size: 12px;
+        line-height: 18px;
+    }
+}
+
+@media (max-width: 360px) {
+    .bilai-listing-container.container,
+    .bilai-seo-accordion {
+        width: calc(100% - (var(--bilai-container-gutter, 12px) * 2));
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .bilai-cat-grid {
+        gap: 10px;
+    }
+
+    .bilai-product-category {
+        width: 52px;
+    }
+
+    .bilai-product-rating {
+        font-size: 11px;
+    }
+
+    .bilai-product-rating i {
+        width: 10px;
+    }
+}

@@ -936,7 +936,10 @@ $brands = Brand::where('status', 1)
         $soldShow = $request->sold == 'show' ? true : false;
         $category = Category::where(['slug' => $slug, 'status' => 1])->first();
 
-        $subcategories = Subcategory::where('category_id', $category->id)->displayOrdered()->get();
+        $subcategories = Subcategory::where('category_id', $category->id)
+            ->where('status', 1)
+            ->displayOrdered()
+            ->get();
 
         // Attribute counts for sidebar (all from current category, before other filters)
         $catBase = ['status' => 1, 'approval_status' => 'approved', 'category_id' => $category->id];
@@ -958,8 +961,8 @@ $brands = Brand::where('status', 1)
         $flavors = ProductFlavor::whereIn('id', $flavorCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
 
         $products = Product::where($catBase)
-            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
-            ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'brand']);
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id', 'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
+            ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'subcategory', 'brand']);
 
         if ($request->sort == 1) {
             $products = $products->orderBy('created_at', 'desc');
@@ -1055,7 +1058,7 @@ $brands = Brand::where('status', 1)
         $products = Product::where($subBase)
             ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id',
                      'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
-            ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'brand']);
+            ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'subcategory', 'brand']);
 
         // Sort
         if ($request->sort == 2) {

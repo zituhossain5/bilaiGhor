@@ -268,11 +268,10 @@
                     </a>
                 </div>
 
-                @if($value->best_seller_sold_count > 0)
-                <div class="bilai-sold-count">{{ $value->best_seller_sold_count }} Sold</div>
-                @endif
-
                 <div class="bilai-product-meta">
+                    @if($value->best_seller_sold_count > 0)
+                    <span class="bilai-cat-sold-pill">{{ $value->best_seller_sold_count }} Sold</span>
+                    @endif
                     <h3 class="bilai-product-title">
                         <a href="{{ route('product', $value->slug) }}">{{ Str::limit($value->name, 55) }}</a>
                     </h3>

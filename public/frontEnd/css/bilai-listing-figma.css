@@ -24,7 +24,10 @@
 }
 
 .bilai-listing-container.container {
-    width: min(var(--bilai-container-max, 1440px), calc(100% - (var(--bilai-container-gutter, 24px) * 2)));
+    width: min(
+        var(--bilai-container-max, 1440px),
+        calc(100% - (var(--bilai-container-gutter, 24px) * 2))
+    );
     max-width: var(--bilai-container-max, 1440px);
     padding-right: 0;
     padding-left: 0;
@@ -114,13 +117,15 @@
     border-radius: var(--bl-card-radius);
     overflow: hidden;
     box-sizing: border-box;
-    transition: border-color .15s ease, box-shadow .15s ease;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
 .bilai-cat-sub-card:hover .bilai-cat-sub-img-box,
 .bilai-cat-sub-card.active .bilai-cat-sub-img-box {
     border-color: var(--bl-primary);
-    box-shadow: 0 8px 24px rgba(196, 168, 129, .24);
+    box-shadow: 0 8px 24px rgba(196, 168, 129, 0.24);
 }
 
 .bilai-cat-sub-img-box img {
@@ -388,9 +393,15 @@
     outline: 0;
     appearance: none;
     -webkit-appearance: none;
-    background-image: linear-gradient(45deg, transparent 50%, var(--bl-text) 50%), linear-gradient(135deg, var(--bl-text) 50%, transparent 50%);
-    background-position: calc(100% - 25px) 19px, calc(100% - 17px) 19px;
-    background-size: 8px 8px, 8px 8px;
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--bl-text) 50%),
+        linear-gradient(135deg, var(--bl-text) 50%, transparent 50%);
+    background-position:
+        calc(100% - 25px) 19px,
+        calc(100% - 17px) 19px;
+    background-size:
+        8px 8px,
+        8px 8px;
     background-repeat: no-repeat;
 }
 
@@ -496,7 +507,8 @@
 }
 
 .bilai-product-image img {
-    width: 170px !important;
+    /* width: 170px !important; */
+    width: 100% !important;
     max-width: 100%;
     height: 156px;
     margin: 0;
@@ -515,7 +527,7 @@
     margin: 0 0 0;
     border: 1px solid var(--bl-border-strong);
     border-radius: 16px;
-    background: transparent;
+    background: #fffdf8;
     color: var(--bl-text);
     font-family: var(--bilai-font-main, "DM Sans", sans-serif);
     font-size: 16px;
@@ -704,7 +716,7 @@
 .bilai-buy-btn:hover {
     color: #fff;
     text-decoration: none;
-    filter: brightness(.96);
+    filter: brightness(0.96);
 }
 
 .bilai-cat-pagination {
@@ -744,7 +756,10 @@
 @media (max-width: 1499px) {
     .bilai-listing-container.container,
     .bilai-seo-accordion {
-        width: min(var(--bilai-container-max, 1440px), calc(100% - (var(--bilai-container-gutter, 24px) * 2)));
+        width: min(
+            var(--bilai-container-max, 1440px),
+            calc(100% - (var(--bilai-container-gutter, 24px) * 2))
+        );
         max-width: var(--bilai-container-max, 1440px);
         padding-right: 0;
         padding-left: 0;
@@ -783,7 +798,10 @@
 @media (max-width: 991px) {
     .bilai-listing-container.container,
     .bilai-seo-accordion {
-        width: min(var(--bilai-container-max, 1440px), calc(100% - (var(--bilai-container-gutter, 20px) * 2)));
+        width: min(
+            var(--bilai-container-max, 1440px),
+            calc(100% - (var(--bilai-container-gutter, 20px) * 2))
+        );
         max-width: var(--bilai-container-max, 1440px);
         padding-right: 0;
         padding-left: 0;

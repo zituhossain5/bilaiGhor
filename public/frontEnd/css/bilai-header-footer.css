@@ -2506,7 +2506,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 
 .bilai-product-image img {
-    width: 66% !important;
+    width: 60% !important;
     margin: 0 auto;
     height: 100%;
     object-fit: contain;
@@ -4602,7 +4602,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
    ============================================================ */
 
 .bilai-cat-page {
-    background: var(--bilai-cream, #fdfcf8);
+    background: var(--bilai-cream, #fdfcf8) !important;
     padding: 20px 0 60px;
     min-height: 60vh;
 }
@@ -4862,22 +4862,24 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     gap: 16px;
 }
 .bilai-cat-sold-pill {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(42, 21, 5, 0.75);
-    color: #fff;
-    font-family: var(--bilai-font-main);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 20px;
+    position: static;
+    transform: none;
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: 30px;
+    padding: 2px 10px;
+    margin: 0;
+    border: 1px solid #aa8453;
+    border-radius: 16px;
+    background: #fffdf8;
+    color: #4f4f4f;
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
     white-space: nowrap;
     pointer-events: none;
-}
-.bilai-product-image {
-    position: relative;
 }
 .bilai-cat-empty {
     text-align: center;

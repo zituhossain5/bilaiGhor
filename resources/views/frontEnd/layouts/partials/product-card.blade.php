@@ -36,11 +36,11 @@
                  alt="{{ $value->name }}"
                  loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
         </a>
+    </div>
+    <div class="bilai-product-meta">
         @if($value->sold && $value->sold > 0)
         <span class="bilai-cat-sold-pill">{{ $value->sold }} Sold</span>
         @endif
-    </div>
-    <div class="bilai-product-meta">
         <h3 class="bilai-product-title">
             <a href="{{ route('product', $value->slug) }}">{{ Str::limit($value->name, 55) }}</a>
         </h3>

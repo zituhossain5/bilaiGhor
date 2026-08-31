@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="{{ asset('public/frontEnd/css/jquery-ui.css') }}" />
 @endpush
 @push('css_after')
-    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-listing-figma.css') }}?v=2" />
+    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-listing-figma.css') }}?v=3" />
 @endpush
 @push('seo')
     <meta name="app-url" content="{{ route('subcategory', $subcategory->slug) }}" />

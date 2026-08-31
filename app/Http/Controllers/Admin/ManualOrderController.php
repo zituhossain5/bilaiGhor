@@ -336,20 +336,20 @@ class ManualOrderController extends Controller
         $data['whatsappIconUrl'] = $this->localImageDataUri('public/frontEnd/images/whatsapp-brands.png') ?? $data['whatsappIconUrl'];
         $data['receiptFontUrl'] = $this->localImageDataUri('public/frontEnd/fonts/Potro-Sans-Bangla-Regular.ttf') ?? $data['receiptFontUrl'];
         $data['receiptBoldFontUrl'] = $this->localImageDataUri('public/frontEnd/fonts/Potro-Sans-Bangla-Bold.ttf') ?? $data['receiptBoldFontUrl'];
+        File::ensureDirectoryExists(storage_path('app/dompdf'));
         File::ensureDirectoryExists(storage_path('fonts'));
 
         $pdf = Pdf::loadView('backEnd.manual_orders.pdf', $data)
             ->setPaper('a4', 'portrait')
             ->setOption('isRemoteEnabled', true)
+            ->setOption('tempDir', storage_path('app/dompdf'))
+            ->setOption('fontDir', storage_path('fonts'))
+            ->setOption('fontCache', storage_path('fonts'))
             ->setOption('defaultFont', 'DejaVu Sans');
 
         $invoice = $order->invoice_number ?: $order->invoice_id;
 
-        return response()->streamDownload(
-            fn () => print($pdf->output()),
-            'Receipt-' . $invoice . '.pdf',
-            ['Content-Type' => 'application/pdf']
-        );
+        return $pdf->download('Receipt-' . $invoice . '.pdf');
     }
 
     public function cancel(Order $order)

@@ -32,9 +32,9 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         {{-- BilaiGhor Figma — header & footer CSS --}}
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=44">
+        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=45">
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/main.css')}}" />
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-container-system.css')}}?v=1" />
+        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-container-system.css')}}?v=2" />
         @stack('css_after')
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
@@ -567,7 +567,7 @@
         @include('frontEnd.layouts.partials.ecom-tracking-lib')
         @include('frontEnd.layouts.partials.traffic-attribution')
     </head>
-    <body class="gotop">
+    <body class="gotop {{ Route::is('home') ? 'bilai-home' : '' }}">
         @foreach($gtm_code ?? [] as $gtm)
         @php $gtm_noscript_id = preg_match('/^GTM-/i', trim($gtm->code)) ? trim($gtm->code) : 'GTM-'.trim($gtm->code); @endphp
         <!-- Google Tag Manager (noscript) -->

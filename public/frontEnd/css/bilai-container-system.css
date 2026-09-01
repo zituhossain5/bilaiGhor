@@ -140,3 +140,158 @@
         width: calc(100% - (var(--bilai-container-gutter) * 2));
     }
 }
+
+/* Homepage mobile grid: one outer gutter, with no nested section gutters. */
+.bilai-home-banner__inner {
+    width: min(var(--bilai-container-max), calc(100% - (var(--bilai-container-gutter) * 2)));
+    max-width: var(--bilai-container-max);
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.bilai-home-banner__items,
+.bilai-home-banner__item,
+.bilai-home-banner__item > a,
+.bilai-home-banner__item img {
+    display: block;
+    width: 100%;
+}
+
+@media (max-width: 575px) {
+    .bilai-home {
+        overflow-x: hidden;
+    }
+
+    .bilai-home #content > section > .container,
+    .bilai-home #content .bilai-testimonial-bg > .container,
+    .bilai-home #content .bilai-testimonial-section > .container,
+    .bilai-home .bilai-home-banner__inner,
+    .bilai-home .bilai-footer__grid,
+    .bilai-home .bilai-footer__bottom-inner {
+        width: calc(100% - (var(--bilai-container-gutter) * 2)) !important;
+        max-width: none !important;
+        margin-right: auto !important;
+        margin-left: auto !important;
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+        box-sizing: border-box;
+    }
+
+    .bilai-home .bilai-hero-section {
+        width: calc(100% - (var(--bilai-container-gutter) * 2));
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .bilai-home .bilai-hero-section,
+    .bilai-home .bilai-home-banner,
+    .bilai-home .bilai-promo-strip,
+    .bilai-home .bilai-cat-section,
+    .bilai-home .bilai-weekly-deals,
+    .bilai-home .bilai-best-sellers,
+    .bilai-home .bilai-new-arrivals-section,
+    .bilai-home .bilai-cat-situation-section,
+    .bilai-home .bilai-category-products,
+    .bilai-home .bilai-why-section,
+    .bilai-home .bilai-testimonial-section {
+        max-width: 100%;
+        overflow-x: clip;
+    }
+
+    .bilai-home .bilai-cat-section .container,
+    .bilai-home .bilai-weekly-deals .container,
+    .bilai-home .bilai-new-arrivals-section .container {
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+    }
+
+    .bilai-home .bilai-cat-grid-home {
+        width: 100%;
+        margin-right: 0;
+        padding-right: 0;
+    }
+
+    .bilai-home .product_slider,
+    .bilai-home .product_slider .owl-stage-outer {
+        width: 100%;
+        max-width: none;
+        margin-right: 0;
+        margin-left: 0;
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .bilai-home .product_slider .owl-item {
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+    }
+
+    .bilai-home .product_slider .owl-item > .bilai-product-card {
+        width: 100% !important;
+        max-width: none !important;
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+    }
+
+    .bilai-home .bilai-na-grid,
+    .bilai-home .bilai-na-card,
+    .bilai-home .bilai-cat-situation-grid,
+    .bilai-home .bilai-why-card,
+    .bilai-home .bilai-why-photos,
+    .bilai-home .bilai-testimonial-grid,
+    .bilai-home .bilai-testimonial-cta {
+        width: 100%;
+        max-width: none;
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .bilai-home .bilai-footer__main,
+    .bilai-home .bilai-footer__bottom {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .bilai-home .bilai-footer__bottom {
+        padding-bottom: calc(84px + env(safe-area-inset-bottom));
+    }
+}
+
+@media (max-width: 360px) {
+    .bilai-home .bilai-deal-header {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .bilai-home .bilai-deal-view-all {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        padding-right: 10px;
+        padding-left: 10px;
+        font-size: 11px;
+    }
+
+    .bilai-home .bilai-deal-timer {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 768px) {
+    .bilai-home #content > section > .container,
+    .bilai-home #content .bilai-testimonial-bg > .container,
+    .bilai-home #content .bilai-testimonial-section > .container,
+    .bilai-home .bilai-home-banner__inner,
+    .bilai-home .bilai-footer__grid,
+    .bilai-home .bilai-footer__bottom-inner {
+        width: calc(100% - (var(--bilai-container-gutter) * 2));
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .bilai-home .bilai-footer__main,
+    .bilai-home .bilai-footer__bottom {
+        padding-right: 0;
+        padding-left: 0;
+    }
+}

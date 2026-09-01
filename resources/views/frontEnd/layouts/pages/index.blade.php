@@ -345,11 +345,11 @@
 @endif
 
 {{-- HOMEPAGE ADS --}}
-<section>
-    <div class="">
-        <div class="row">
+<section class="bilai-home-banner">
+    <div class="bilai-home-banner__inner">
+        <div class="bilai-home-banner__items">
             @foreach($homepageads as $homeads)
-            <div class="col-md-12">
+            <div class="bilai-home-banner__item">
                 <a href="{{ $homeads->link }}?sold=show">
                     <img class="img-fluid w-100"
                          src="{{ asset($homeads->image) }}"
@@ -677,11 +677,11 @@
 </section>
 
 {{-- HOMEPAGE ADS 2 --}}
-<section>
-    <div class="">
-        <div class="row">
+<section class="bilai-home-banner">
+    <div class="bilai-home-banner__inner">
+        <div class="bilai-home-banner__items">
             @foreach($homepageads2 as $homeads2)
-            <div class="col-md-12">
+            <div class="bilai-home-banner__item">
                 <a href="{{ $homeads2->link }}?sold=show">
                     <img class="img-fluid w-100"
                          src="{{ asset($homeads2->image) }}"

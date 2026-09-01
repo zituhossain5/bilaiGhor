@@ -48,12 +48,47 @@ body.gotop {
 }
 
 /* Breadcrumb */
-.bpd-breadcrumb-wrap { background: var(--bilai-page-bg); padding: 10px 0; border-bottom: 1px solid var(--bilai-border); }
-.bpd-breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; font-size: 13px; color: var(--bilai-muted); }
-.bpd-breadcrumb a { color: var(--bilai-text); text-decoration: none; }
-.bpd-breadcrumb a:hover { color: var(--bilai-primary); }
-.bpd-breadcrumb .bpd-bc-sep { color: var(--bilai-border); }
-.bpd-breadcrumb .bpd-bc-current { color: var(--bilai-primary); font-weight: 500; }
+.bpd-breadcrumb-wrap {
+    background: var(--bilai-page-bg);
+    padding: 30px 0;
+    border: 0;
+    box-shadow: none;
+}
+.bpd-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 20px;
+    margin: 0;
+    font-family: "DM Sans", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: var(--bilai-text);
+}
+.bpd-breadcrumb a,
+.bpd-breadcrumb span:not(.bpd-bc-sep):not(.bpd-bc-current) {
+    color: var(--bilai-text);
+    text-decoration: none;
+}
+.bpd-breadcrumb a:hover,
+.bpd-breadcrumb .bpd-bc-current {
+    color: #e8861a;
+}
+.bpd-breadcrumb .bpd-bc-sep {
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 18px;
+    color: var(--bilai-text);
+    font-size: 16px;
+    line-height: 18px;
+}
+.bpd-breadcrumb .bpd-bc-current {
+    font-weight: 400;
+}
 
 /* Product Section */
 .bpd-product-section { background: var(--bilai-page-bg); padding: 28px 0 36px; }
@@ -473,7 +508,6 @@ input.bpd-btn { cursor: pointer; }
         overflow-x: hidden;
     }
 
-    .bpd-breadcrumb-wrap .container,
     .bpd-product-section .container,
     .bpd-delivery-section .container,
     .bpd-tabs-section .container,
@@ -483,17 +517,21 @@ input.bpd-btn { cursor: pointer; }
         padding-right: 12px;
     }
 
-    .bpd-breadcrumb-wrap {
-        padding: 10px 0 6px;
-    }
-
     .bpd-breadcrumb {
-        gap: 5px;
-        font-size: 11px;
-        line-height: 1.4;
+        gap: 10px;
+        font-size: 12px;
+        line-height: 18px;
         overflow-x: auto;
         white-space: nowrap;
         scrollbar-width: none;
+    }
+
+    .bpd-breadcrumb .bpd-bc-sep {
+        width: 14px;
+        height: 14px;
+        flex-basis: 14px;
+        font-size: 12px;
+        line-height: 14px;
     }
 
     .bpd-breadcrumb::-webkit-scrollbar {
@@ -921,7 +959,7 @@ input.bpd-btn { cursor: pointer; }
 /* BilaiGhor Product Details Mobile Fix End */
 /* BilaiGhor Product Details End */
 </style>
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=6">
+<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=7">
 @endpush
 
 @section('content')

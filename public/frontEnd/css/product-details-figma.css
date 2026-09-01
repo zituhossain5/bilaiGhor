@@ -4,8 +4,8 @@
 .bpd-delivery-section,
 .bpd-tabs-section,
 .bpd-related-section {
-    background-color: var(--bilai-page-bg, #FDFCF8);
-    color: var(--bilai-text, #4F4F4F);
+    background-color: var(--bilai-page-bg, #fdfcf8);
+    color: var(--bilai-text, #4f4f4f);
 }
 
 .bpd-breadcrumb-wrap,
@@ -13,6 +13,59 @@
 .bpd-delivery-section,
 .bpd-tabs-section {
     font-family: "DM Sans", sans-serif;
+}
+
+.bpd-breadcrumb-wrap {
+    padding: 30px 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.bpd-breadcrumb-wrap::before,
+.bpd-breadcrumb-wrap::after {
+    display: none !important;
+    content: none !important;
+}
+
+.bpd-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 20px;
+    margin: 0;
+    font-family: "DM Sans", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: var(--bilai-text, #4f4f4f);
+}
+
+.bpd-breadcrumb a,
+.bpd-breadcrumb span:not(.bpd-bc-sep):not(.bpd-bc-current) {
+    color: var(--bilai-text, #4f4f4f);
+    text-decoration: none;
+}
+
+.bpd-breadcrumb a:hover,
+.bpd-breadcrumb .bpd-bc-current {
+    color: #e8861a;
+}
+
+.bpd-breadcrumb .bpd-bc-sep {
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 18px;
+    color: var(--bilai-text, #4f4f4f);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 18px;
+}
+
+.bpd-breadcrumb .bpd-bc-current {
+    font-weight: 400;
 }
 
 .bpd-breadcrumb-wrap > .container,
@@ -67,7 +120,7 @@
     padding: 21px;
     border: 1px solid #dccab2;
     border-radius: 20px;
-    background: var(--bilai-page-bg, #FDFCF8);
+    background: var(--bilai-page-bg, #fdfcf8);
 }
 
 .bpd-thumbs-col .indicator-item img {
@@ -83,7 +136,7 @@
     aspect-ratio: 480 / 587;
     border: 1px solid #edd9a6;
     border-radius: 30px;
-    background: var(--bilai-page-bg, #FDFCF8);
+    background: var(--bilai-page-bg, #fdfcf8);
 }
 
 .bpd-main-img-col .details_slider,
@@ -131,7 +184,7 @@
     margin: 0 0 30px;
     padding: 0 0 20px;
     border-bottom: 1px solid #edd9a6;
-    color: var(--bilai-text, #4F4F4F);
+    color: var(--bilai-text, #4f4f4f);
     font-size: 16px;
     line-height: 24px;
 }
@@ -179,7 +232,7 @@
 }
 
 .bpd-old-price {
-    color: var(--bilai-text, #4F4F4F);
+    color: var(--bilai-text, #4f4f4f);
     font-size: 24px;
     font-weight: 400;
     line-height: 36px;
@@ -200,7 +253,7 @@
 .bpd-wishlist {
     gap: 21px;
     margin-left: auto;
-    color: var(--bilai-text, #4F4F4F);
+    color: var(--bilai-text, #4f4f4f);
     font-size: 16px;
     line-height: 24px;
 }
@@ -225,14 +278,14 @@
 .bpd-qty-row {
     gap: 20px;
     margin-bottom: 30px;
-    color: var(--bilai-text, #4F4F4F);
+    color: var(--bilai-text, #4f4f4f);
     font-size: 20px;
     line-height: 30px;
 }
 
 .bpd-weight-label,
 .bpd-qty-label {
-    color: var(--bilai-text, #4F4F4F);
+    color: var(--bilai-text, #4f4f4f);
     font-size: 20px;
     font-weight: 400;
 }
@@ -300,8 +353,8 @@
     border-top: 1px solid #f0e6d8 !important;
     border-bottom: 1px solid #f0e6d8 !important;
     outline: 0;
-    background: var(--bilai-page-bg, #FDFCF8);
-    color: var(--bilai-text, #4F4F4F);
+    background: var(--bilai-page-bg, #fdfcf8);
+    color: var(--bilai-text, #4f4f4f);
     font-size: 20px;
     font-weight: 400;
     text-align: center;
@@ -391,7 +444,7 @@
 .bpd-card-label,
 .bpd-card-value {
     margin: 0;
-    color: var(--bilai-text, #4F4F4F);
+    color: var(--bilai-text, #4f4f4f);
     font-size: 16px;
     font-weight: 400;
     line-height: 24px;
@@ -416,14 +469,14 @@
 .bpd-accordion {
     border: 1px solid #dccab2;
     border-radius: 20px;
-    background: var(--bilai-page-bg, #FDFCF8);
+    background: var(--bilai-page-bg, #fdfcf8);
 }
 
 .bpd-accordion-btn {
-    min-height: 104px;
-    padding: 30px 20px;
+    /* min-height: 104px; */
+    padding: 15px;
     color: #3c2a1e;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 400;
     line-height: 30px;
 }
@@ -460,7 +513,7 @@
 
 .bpd-accordion-body {
     padding: 0 20px 30px;
-    color: var(--bilai-text, #4F4F4F);
+    color: var(--bilai-text, #4f4f4f);
     font-size: 16px;
     line-height: 24px;
 }
@@ -480,7 +533,7 @@
     padding: 20px;
     margin: 0;
     border-bottom: 0;
-    background: var(--bilai-page-bg, #FDFCF8);
+    background: var(--bilai-page-bg, #fdfcf8);
     color: #3c2a1e;
     font-size: 20px;
     font-weight: 400;
@@ -495,7 +548,7 @@
 
 .bpd-description-content {
     max-width: none;
-    color: var(--bilai-text, #4F4F4F);
+    color: var(--bilai-text, #4f4f4f);
     font-size: 16px;
     line-height: 24px;
 }
@@ -508,7 +561,7 @@
 .bpd-description-content td,
 .bpd-description-content th {
     background-color: transparent !important;
-    color: var(--bilai-text, #4F4F4F) !important;
+    color: var(--bilai-text, #4f4f4f) !important;
     font-family: "DM Sans", sans-serif !important;
     font-size: 16px !important;
     font-weight: 400;
@@ -537,7 +590,7 @@
 .bpd-description-content strong,
 .bpd-description-content b {
     background-color: transparent !important;
-    color: var(--bilai-text, #4F4F4F) !important;
+    color: var(--bilai-text, #4f4f4f) !important;
     font-family: "DM Sans", sans-serif !important;
     font-size: inherit !important;
     font-weight: 600 !important;
@@ -559,7 +612,7 @@
 .bpd-description-content h5,
 .bpd-description-content h6 {
     background-color: transparent !important;
-    color: var(--bilai-heading, #2A1505) !important;
+    color: var(--bilai-heading, #2a1505) !important;
     font-family: "DM Sans", sans-serif !important;
     font-weight: 600 !important;
     line-height: 1.35 !important;
@@ -622,6 +675,33 @@
 @media (max-width: 768px) {
     .bpd-delivery-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 575px) {
+    .bpd-breadcrumb-wrap {
+        padding: 18px 0 !important;
+    }
+
+    .bpd-breadcrumb {
+        gap: 10px;
+        overflow-x: auto;
+        white-space: nowrap;
+        font-size: 12px;
+        line-height: 18px;
+        scrollbar-width: none;
+    }
+
+    .bpd-breadcrumb::-webkit-scrollbar {
+        display: none;
+    }
+
+    .bpd-breadcrumb .bpd-bc-sep {
+        width: 14px;
+        height: 14px;
+        flex-basis: 14px;
+        font-size: 12px;
+        line-height: 14px;
     }
 }
 

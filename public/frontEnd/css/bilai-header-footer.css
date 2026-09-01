@@ -4281,7 +4281,13 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 
 @media (max-width: 420px) {
     .bilai-new-arrivals-section .bilai-na-card {
-        grid-template-columns: 38% minmax(0, 62%);
+        grid-template-columns: minmax(104px, 36%) minmax(0, 64%);
+        min-height: 248px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-left,
+    .bilai-new-arrivals-section .bilai-na-info {
+        min-height: 248px;
     }
 
     .bilai-new-arrivals-section .bilai-na-info {
@@ -4295,6 +4301,8 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     }
 
     .bilai-new-arrivals-section .bilai-na-name {
+        flex: 0 0 auto;
+        min-height: 0;
         font-size: 14px;
         line-height: 20px;
     }
@@ -4352,6 +4360,106 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
         font-size: 14px;
         line-height: 20px;
         padding: 10px 8px;
+    }
+}
+
+@media (max-width: 575px) {
+    .bilai-new-arrivals-section .bilai-na-grid {
+        gap: 24px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-card {
+        grid-template-columns: minmax(108px, 36%) minmax(0, 64%);
+        height: auto;
+        min-height: 260px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-left,
+    .bilai-new-arrivals-section .bilai-na-info {
+        height: auto;
+        min-height: 260px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-left {
+        border-radius: 18px 0 0 18px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-info {
+        justify-content: flex-start;
+        padding: 18px 14px 16px;
+        border-radius: 0 18px 18px 0;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-badge {
+        top: -24px;
+        left: 8px;
+        width: 58px;
+        height: 58px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-wishlist {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-img-wrap {
+        top: 78px;
+        right: 12px;
+        bottom: 24px;
+        left: 12px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-sold {
+        margin-bottom: 8px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-name {
+        flex: 0 0 auto;
+        min-height: 0;
+        margin-bottom: 12px;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-cat-rating {
+        margin: 0 0 12px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-price-row {
+        margin-bottom: 14px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-actions {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 420px) {
+    .bilai-new-arrivals-section .bilai-na-card {
+        grid-template-columns: minmax(104px, 36%) minmax(0, 64%);
+        min-height: 248px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-left,
+    .bilai-new-arrivals-section .bilai-na-info {
+        min-height: 248px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-info {
+        padding: 12px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-name {
+        margin-bottom: 10px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-cat-rating {
+        margin-bottom: 10px;
+    }
+
+    .bilai-new-arrivals-section .bilai-na-price-row {
+        margin-bottom: 12px;
     }
 }
 /* ============================================================

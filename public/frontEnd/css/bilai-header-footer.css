@@ -603,10 +603,10 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     gap: 14px 56px;
 }
 .bilai-mega-link {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--bilai-text);
     font-family: var(--bilai-font-main, inherit);
-    font-weight: 400;
+    font-weight: 600;
     text-decoration: none;
     white-space: nowrap;
     transition: color 0.15s;

@@ -959,7 +959,10 @@ input.bpd-btn { cursor: pointer; }
 /* BilaiGhor Product Details Mobile Fix End */
 /* BilaiGhor Product Details End */
 </style>
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=7">
+@endpush
+
+@push('css_after')
+<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=9">
 @endpush
 
 @section('content')
@@ -1294,12 +1297,12 @@ input.bpd-btn { cursor: pointer; }
                     <p><strong>Estimated Delivery Time</strong></p>
                     <ul>
                         <li>Inside Dhaka City: Up to 3 working days. (Mostly within 48 hours.)</li>
-                        <li>Outside Dhaka City: Up to 3 working days.</li>
+                        <li>Outside Dhaka City: Up to 3-5 working days.</li>
                     </ul>
                     <p style="margin-top:10px;"><strong>Note:</strong></p>
                     <ol>
-                        <li>Order placed after 11 am will be processed the next business day. Delivery may be delayed due to issues with the delivery services.</li>
-                        <li>Inside the following Dhaka's sub area there will be same day delivery if you order before 5 pm. The areas are: Postogola, Gandaria, Wari, Jurain, Donia, Soni Akhra, K.B Road, Sutrapur, Luxmibazar, Sadarghat, Gulistan.</li>
+                        <li>1. Orders placed after 4 pm will be processed the next business day. Delivery may be delayed due to issues with the delivery services.</li>
+                        <li>2. Within the following Dhaka’s sub area there will be same-day delivery if you order before 5 pm. The areas are: Gandaria, Sutrapur, Dhupkhola, Wari, Jurain, Arsin Gate, Laxmibazar, Tati Bazar, Dholaipar, Soni Akhra</li>
                     </ol>
                 </div>
             </div>
@@ -1318,9 +1321,9 @@ input.bpd-btn { cursor: pointer; }
                 </button>
                 <div class="bpd-accordion-body" style="display:none;">
                     <ul>
-                        <li>Inside Dhaka Metro: BDT 70</li>
-                        <li>Outside Dhaka Metro: BDT 100</li>
-                        <li>Outside Dhaka: BDT 150</li>
+                        <li>Inside Dhaka Metro: BDT 70 - Up to 1kg</li>
+                        <li>Outside Dhaka Metro: BDT 100 - Up to 1kg</li>
+                        <li>Outside Dhaka: BDT 150 - Up to 1kg</li>
                     </ul>
                     <p style="margin-top:10px;"><strong>Note:</strong></p>
                     <ul>

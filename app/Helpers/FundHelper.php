@@ -5,6 +5,8 @@ namespace App\Helpers;
 use App\Models\FundTransaction;
 use App\Models\Order;
 use App\Services\AccountingSummaryService;
+use Illuminate\Support\Facades\DB;
+use LogicException;
 
 class FundHelper
 {
@@ -16,17 +18,28 @@ class FundHelper
     /** Credit an order once, even if more than one status-update path handles it. */
     public static function creditSale(Order $order, string $note, ?int $createdBy = null): FundTransaction
     {
-        return FundTransaction::firstOrCreate(
-            [
-                'direction' => 'in',
-                'source' => 'sale',
-                'source_id' => $order->id,
-            ],
-            [
-                'amount' => $order->amount,
-                'note' => $note,
-                'created_by' => $createdBy,
-            ]
-        );
+        return DB::transaction(function () use ($order, $note, $createdBy) {
+            $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->getKey());
+
+            if (
+                (int) $lockedOrder->order_status !== \App\Services\InventoryService::COMPLETE_STATUS ||
+                strtolower((string) $lockedOrder->payment_status) !== 'paid'
+            ) {
+                throw new LogicException('A sale can enter the fund only after the order is complete and paid.');
+            }
+
+            return FundTransaction::firstOrCreate(
+                [
+                    'direction' => 'in',
+                    'source' => 'sale',
+                    'source_id' => $lockedOrder->id,
+                ],
+                [
+                    'amount' => $lockedOrder->amount,
+                    'note' => $note,
+                    'created_by' => $createdBy,
+                ]
+            );
+        });
     }
 }

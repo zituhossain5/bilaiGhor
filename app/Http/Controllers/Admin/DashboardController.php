@@ -10,11 +10,11 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\Customer;
 use App\Models\OrderDetails;
-use App\Models\FundTransaction;
 use App\Models\Expense;
 use App\Models\Category;
 use Carbon\Carbon;
 use App\Support\AdminOrderNotification;
+use App\Services\AccountingSummaryService;
 use Session;
 use Toastr;
 use Auth;
@@ -81,7 +81,7 @@ class DashboardController extends Controller
         $categories      = Category::withCount('products')->orderBy('products_count', 'desc')->limit(8)->get();
 
         // ── Fund & expenses ──
-        $fund_balance     = FundTransaction::where('direction', 'in')->sum('amount') - FundTransaction::where('direction', 'out')->sum('amount');
+        $fund_balance     = AccountingSummaryService::fundBalance();
         $total_expenses   = Expense::sum('amount');
         $today_expenses   = Expense::whereDate('created_at', Carbon::today())->sum('amount');
         $monthly_expenses = Expense::whereYear('created_at', Carbon::now()->year)->whereMonth('created_at', Carbon::now()->month)->sum('amount');

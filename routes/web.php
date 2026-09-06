@@ -474,6 +474,7 @@ Route::prefix('admin')->middleware(['auth:admin', 'admin', 'admin_license', 'dem
     // Expense Routes
     Route::get('/expenses', [ExpenseController::class,'index'])->name('admin.expenses.index');
     Route::post('/expenses/store', [ExpenseController::class,'store'])->name('admin.expenses.store');
+    Route::post('/expenses/reconcile', [ExpenseController::class,'reconcile'])->name('admin.expenses.reconcile');
     Route::get('/expenses/logs', [ExpenseController::class,'logs'])->name('admin.expenses.logs');
     Route::get('/expenses/{id}/edit', [ExpenseController::class,'edit'])->name('admin.expenses.edit');
     Route::post('/expenses/{id}/update', [ExpenseController::class,'update'])->name('admin.expenses.update');

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FundTransaction extends Model
 {
+    private const MANUALLY_EDITABLE_SOURCES = ['manual_add', 'withdraw'];
+
     protected $fillable = [
         'direction', 'source', 'source_id', 'amount', 'note', 'created_by', 'updated_by',
     ];
@@ -19,12 +21,26 @@ class FundTransaction extends Model
                 return null;
             }
 
+            $order = Order::query()->find($transaction->source_id);
+            if (
+                !$order ||
+                (int) $order->order_status !== \App\Services\InventoryService::COMPLETE_STATUS ||
+                strtolower((string) $order->payment_status) !== 'paid'
+            ) {
+                return false;
+            }
+
             return !self::query()
                 ->where('direction', 'in')
                 ->where('source', 'sale')
                 ->where('source_id', $transaction->source_id)
                 ->exists();
         });
+    }
+
+    public function isManuallyEditable(): bool
+    {
+        return in_array($this->source, self::MANUALLY_EDITABLE_SOURCES, true);
     }
 
     /**

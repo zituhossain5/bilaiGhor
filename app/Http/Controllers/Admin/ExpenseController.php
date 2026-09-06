@@ -133,6 +133,35 @@ class ExpenseController extends Controller
                          ->with('success', 'Expense saved successfully!');
     }
 
+    public function reconcile(Request $request)
+    {
+        if (!$this->isAdmin()) {
+            abort(403, 'Only Admin can reconcile the fund balance.');
+        }
+
+        $validated = $request->validate([
+            'cash_balance' => 'required|numeric|min:0|max:9999999999.99',
+            'bank_balance' => 'required|numeric|min:0|max:9999999999.99',
+            'mobile_wallet_balance' => 'required|numeric|min:0|max:9999999999.99',
+            'other_balance' => 'required|numeric|min:0|max:9999999999.99',
+            'note' => 'required|string|max:1000',
+            'confirmed' => 'accepted',
+        ]);
+
+        $reconciliation = AccountingSummaryService::reconcile([
+            'cash_balance' => round((float) $validated['cash_balance'], 2),
+            'bank_balance' => round((float) $validated['bank_balance'], 2),
+            'mobile_wallet_balance' => round((float) $validated['mobile_wallet_balance'], 2),
+            'other_balance' => round((float) $validated['other_balance'], 2),
+        ], $validated['note'], Auth::guard('admin')->id());
+
+        return redirect()->route('admin.expenses.index')->with(
+            'success',
+            'Fund reconciled to the verified real-world balance of ' .
+                number_format((float) $reconciliation->actual_balance, 2) . ' BDT.'
+        );
+    }
+
     // ✅ Edit ফর্ম
     public function edit($id)
     {
@@ -185,7 +214,7 @@ class ExpenseController extends Controller
         ]);
 
         return DB::transaction(function () use ($validated, $id) {
-            $expense = Expense::findOrFail($id);
+            $expense = Expense::query()->lockForUpdate()->findOrFail($id);
 
             // Save old values for logging
             $old_title = $expense->title;
@@ -195,7 +224,23 @@ class ExpenseController extends Controller
             $old_note = $expense->note;
 
             // Calculate fund balance before update
-            $fund_balance_before = $this->calculateFundBalance();
+            $fund_balance_before = AccountingSummaryService::lockedFundBalance();
+            $fund = $expense->fund_transaction_id
+                ? FundTransaction::query()->lockForUpdate()->find($expense->fund_transaction_id)
+                : null;
+            $validLinkedFund = $fund
+                && $fund->direction === 'out'
+                && $fund->source === 'expense'
+                && (int) $fund->source_id === (int) $expense->id;
+            $currentlyDeducted = $validLinkedFund ? (float) $fund->amount : 0.0;
+            $additionalDeduction = max(0, (float) $validated['amount'] - $currentlyDeducted);
+
+            if ($additionalDeduction > $fund_balance_before) {
+                throw ValidationException::withMessages([
+                    'amount' => 'Not enough balance for this change. Additional funds required: ' .
+                        number_format($additionalDeduction, 2),
+                ]);
+            }
 
             // Update expense
             $expense->update([
@@ -208,19 +253,23 @@ class ExpenseController extends Controller
             ]);
 
             // Update linked fund transaction
-            if ($expense->fund_transaction_id) {
-                $fund = FundTransaction::find($expense->fund_transaction_id);
+            if ($validLinkedFund) {
+                $fund->update([
+                    'amount' => $expense->amount,
+                    'note' => 'Expense: ' . $expense->title . ($expense->note ? ' - ' . $expense->note : ''),
+                    'updated_by' => Auth::id(),
+                ]);
+            } else {
+                $replacementFund = FundTransaction::create([
+                    'direction' => 'out',
+                    'source' => 'expense',
+                    'source_id' => $expense->id,
+                    'amount' => $expense->amount,
+                    'note' => 'Expense: ' . $expense->title . ($expense->note ? ' - ' . $expense->note : ''),
+                    'created_by' => Auth::id(),
+                ]);
 
-                if ($fund) {
-                    // Calculate balance difference
-                    $amount_diff = $expense->amount - $old_amount;
-                    
-                    // Update fund transaction
-                    $fund->amount = $expense->amount;
-                    $fund->note   = 'Expense: ' . $expense->title . ($expense->note ? ' - ' . $expense->note : '');
-                    $fund->updated_by = Auth::id();
-                    $fund->save();
-                }
+                $expense->update(['fund_transaction_id' => $replacementFund->id]);
             }
 
             // Calculate fund balance after update
@@ -298,7 +347,7 @@ class ExpenseController extends Controller
         }
 
         return DB::transaction(function () use ($id) {
-            $expense = Expense::findOrFail($id);
+            $expense = Expense::query()->lockForUpdate()->findOrFail($id);
 
             // Save expense data for logging
             $old_title = $expense->title;
@@ -309,12 +358,19 @@ class ExpenseController extends Controller
             $fund_transaction_id = $expense->fund_transaction_id;
 
             // Calculate fund balance before delete
-            $fund_balance_before = $this->calculateFundBalance();
+            $fund_balance_before = AccountingSummaryService::lockedFundBalance();
+            $fund = $fund_transaction_id
+                ? FundTransaction::query()->lockForUpdate()->find($fund_transaction_id)
+                : null;
+            $validLinkedFund = $fund
+                && $fund->direction === 'out'
+                && $fund->source === 'expense'
+                && (int) $fund->source_id === (int) $expense->id;
 
             // Calculate expected balance after delete
             // When expense is deleted, the linked fund transaction (OUT) should also be removed
             // So balance will increase by the expense amount
-            $expected_balance_after = $fund_balance_before + $old_amount;
+            $expected_balance_after = $fund_balance_before + ($validLinkedFund ? (float) $fund->amount : 0.0);
 
             // Create log entry BEFORE deleting
             $balance_diff = $expected_balance_after - $fund_balance_before;
@@ -341,11 +397,8 @@ class ExpenseController extends Controller
             ]);
 
             // Delete linked fund transaction first (if exists)
-            if ($fund_transaction_id) {
-                $fund = FundTransaction::find($fund_transaction_id);
-                if ($fund) {
-                    $fund->delete();
-                }
+            if ($validLinkedFund) {
+                $fund->delete();
             }
 
             // Now delete the expense

@@ -19,7 +19,10 @@ class Order extends Model
         // boy app, refunds) without touching each controller. The service methods
         // are idempotent, so repeated flips can never double-award or double-restore.
         static::updated(function (self $order) {
-            if (!$order->wasChanged('order_status')) {
+            $statusChanged = $order->wasChanged('order_status');
+            $paymentChanged = $order->wasChanged('payment_status');
+
+            if (!$statusChanged && !$paymentChanged) {
                 return;
             }
             try {
@@ -44,10 +47,13 @@ class Order extends Model
             }
 
             try {
-                if ((int) $order->order_status === \App\Services\InventoryService::COMPLETE_STATUS) {
+                if (
+                    (int) $order->order_status === \App\Services\InventoryService::COMPLETE_STATUS &&
+                    strtolower((string) $order->payment_status) === 'paid'
+                ) {
                     \App\Helpers\FundHelper::creditSale(
                         $order,
-                        'Order complete (#'.($order->invoice_id ?? $order->id).')',
+                        'Paid order complete (#'.($order->invoice_id ?? $order->id).')',
                         auth('admin')->id() ?? 1
                     );
                 }

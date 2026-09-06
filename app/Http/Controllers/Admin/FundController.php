@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Services\AccountingSummaryService;
+use Illuminate\Validation\ValidationException;
 
 class FundController extends Controller
 {
@@ -30,9 +32,10 @@ class FundController extends Controller
         $transactions = $query->with('logs')->paginate(20)->withQueryString();
 
         // Compute totals more efficiently with a single query each (or you can combine into one)
-        $total_in  = FundTransaction::where('direction', 'in')->sum('amount');
-        $total_out = FundTransaction::where('direction', 'out')->sum('amount');
-        $balance   = $total_in - $total_out;
+        $fundTotals = AccountingSummaryService::fundTotals();
+        $total_in = $fundTotals['in'];
+        $total_out = $fundTotals['out'];
+        $balance = $fundTotals['balance'];
 
         $now = Carbon::now();
         $currentYear  = $now->year;
@@ -98,15 +101,15 @@ class FundController extends Controller
         // calculate balance inside transaction and lock rows if concurrent operations possible
         // simple approach: compute current balance, then create out tx
         return DB::transaction(function () use ($validated) {
-            $total_in  = FundTransaction::where('direction', 'in')->sum('amount');
-            $total_out = FundTransaction::where('direction', 'out')->sum('amount');
-            $balance   = $total_in - $total_out;
+            $balance = AccountingSummaryService::lockedFundBalance();
 
             $amount = round((float)$validated['amount'], 2);
 
             if ($amount > $balance) {
                 // throw ValidationException to redirect back with error
-                return redirect()->back()->with('error', 'Not enough balance!');
+                throw ValidationException::withMessages([
+                    'amount' => 'Not enough balance. Available: ' . number_format($balance, 2),
+                ]);
             }
 
             FundTransaction::create([
@@ -227,6 +230,7 @@ class FundController extends Controller
         }
 
         $transaction = FundTransaction::findOrFail($id);
+        abort_unless($transaction->isManuallyEditable(), 422, 'System-generated transactions cannot be edited. Use reconciliation for corrections.');
         return view('backEnd.fund.edit', compact('transaction'));
     }
 
@@ -235,9 +239,7 @@ class FundController extends Controller
      */
     private function calculateBalance()
     {
-        $total_in  = FundTransaction::where('direction', 'in')->sum('amount');
-        $total_out = FundTransaction::where('direction', 'out')->sum('amount');
-        return $total_in - $total_out;
+        return AccountingSummaryService::fundBalance();
     }
 
     /**
@@ -256,7 +258,8 @@ class FundController extends Controller
         ]);
 
         return DB::transaction(function () use ($validated, $id) {
-            $transaction = FundTransaction::findOrFail($id);
+            $transaction = FundTransaction::query()->lockForUpdate()->findOrFail($id);
+            abort_unless($transaction->isManuallyEditable(), 422, 'System-generated transactions cannot be edited. Use reconciliation for corrections.');
 
             // Save old values for logging
             $old_amount = $transaction->amount;
@@ -342,7 +345,8 @@ class FundController extends Controller
         }
 
         return DB::transaction(function () use ($id) {
-            $transaction = FundTransaction::findOrFail($id);
+            $transaction = FundTransaction::query()->lockForUpdate()->findOrFail($id);
+            abort_unless($transaction->isManuallyEditable(), 422, 'System-generated transactions cannot be deleted. Use reconciliation for corrections.');
 
             // Save transaction data for logging
             $old_amount = $transaction->amount;

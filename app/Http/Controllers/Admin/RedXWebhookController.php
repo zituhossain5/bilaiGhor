@@ -8,7 +8,6 @@ use App\Models\Order;
 use App\Models\OrderDetails;
 use App\Models\OrderStatus;
 use App\Models\Courierapi;
-use App\Models\FundTransaction;
 use App\Models\VendorWallet;
 use App\Models\VendorWalletTransaction;
 use App\Models\SmsGateway;
@@ -84,6 +83,9 @@ class RedXWebhookController extends Controller
 
                 // If order is delivered/completed (status = 6)
                 if ($newOrderStatus == 6 && $oldStatus != 6) {
+                    $paymentState = \App\Services\OrderPaymentService::updateFromAdminStatus($order, 'paid');
+                    $order = $paymentState['order'];
+
                     // Add money to fund
                     \App\Helpers\FundHelper::creditSale(
                         $order,
@@ -209,17 +211,6 @@ class RedXWebhookController extends Controller
                 'note'        => 'Order #' . $order->invoice_id . ' item earning (RedX)',
             ]);
 
-            // Add admin commission to fund transaction
-            if ($adminCommission > 0) {
-                FundTransaction::create([
-                    'direction'  => 'in',
-                    'source'     => 'vendor_commission',
-                    'source_id'  => $order->id,
-                    'amount'     => $adminCommission,
-                    'note'       => 'Vendor commission from Order #' . $order->invoice_id . ' - Product: ' . $item->product_name . ' (RedX)',
-                    'created_by' => 1, // System user
-                ]);
-            }
         }
     }
 

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\FundTransaction;
 use App\Models\GeneralSetting;
 use App\Models\Order;
 use App\Models\OrderDetails;
@@ -139,16 +138,6 @@ class CourierWebhookOrderService
                 'note'        => 'Order #'.$order->invoice_id.' item earning ('.$sourceLabel.')',
             ]);
 
-            if ($adminCommission > 0) {
-                FundTransaction::create([
-                    'direction'  => 'in',
-                    'source'     => 'vendor_commission',
-                    'source_id'  => $order->id,
-                    'amount'     => $adminCommission,
-                    'note'       => 'Vendor commission Order #'.$order->invoice_id.' ('.$sourceLabel.')',
-                    'created_by' => 1,
-                ]);
-            }
         }
     }
 

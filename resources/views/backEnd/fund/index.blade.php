@@ -229,7 +229,7 @@
                                 @endif
                             </td>
                             <td>{{ $t->created_at->format('d M Y, h:i A') }}</td>
-                            @if($isAdmin)
+                            @if($isAdmin && $t->isManuallyEditable())
                             <td>
                                 <div class="d-flex gap-2">
                                     <a href="{{ route('admin.fund.edit', $t->id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
@@ -244,6 +244,8 @@
                                     </form>
                                 </div>
                             </td>
+                            @elseif($isAdmin)
+                            <td><span class="badge bg-secondary">System entry</span></td>
                             @endif
                         </tr>
                     @empty

@@ -124,6 +124,9 @@ class ResellerOrderController extends Controller
 
         // If order is delivered/completed (status = 6)
         if ($newStatus == 6 && $oldStatus != 6) {
+            $paymentState = \App\Services\OrderPaymentService::updateFromAdminStatus($order, 'paid');
+            $order = $paymentState['order'];
+
             // Add money to fund
             \App\Helpers\FundHelper::creditSale(
                 $order,
@@ -185,6 +188,9 @@ class ResellerOrderController extends Controller
 
             // If order is delivered/completed (status = 6)
             if ($targetStatus == 6 && $oldStatus != 6) {
+                $paymentState = \App\Services\OrderPaymentService::updateFromAdminStatus($order, 'paid');
+                $order = $paymentState['order'];
+
                 // Add money to fund
                 \App\Helpers\FundHelper::creditSale(
                     $order,

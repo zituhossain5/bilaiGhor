@@ -160,4 +160,33 @@ class AccountingIntegrityTest extends TestCase
             'summary->cleanup_mode' => 'delete',
         ]);
     }
+
+    public function test_cleanup_command_rebuilds_missing_completed_paid_order_sale_credits(): void
+    {
+        Storage::fake('local');
+
+        $order = Order::create([
+            'invoice_id' => 'ACCOUNTING-'.Str::upper(Str::random(10)),
+            'amount' => 835,
+            'discount' => 0,
+            'shipping_charge' => 0,
+            'order_status' => 6,
+            'payment_status' => 'paid',
+        ]);
+
+        $this->artisan('accounting:cleanup-legacy', [
+            '--force' => true,
+            '--keep-expenses' => true,
+        ])->assertExitCode(0);
+
+        $this->assertDatabaseHas('fund_transactions', [
+            'direction' => 'in',
+            'source' => 'sale',
+            'source_id' => $order->id,
+            'amount' => 835,
+        ]);
+        $this->assertDatabaseHas('accounting_cleanup_runs', [
+            'summary->sale_entries_created' => 1,
+        ]);
+    }
 }

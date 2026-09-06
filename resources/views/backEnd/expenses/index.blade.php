@@ -282,6 +282,7 @@
 
             @if(
                 $accounting['duplicate_sale_groups'] > 0 ||
+                $accounting['missing_sale_credit_orders'] > 0 ||
                 $accounting['unlinked_sale_transactions'] > 0 ||
                 $accounting['invalid_linked_sales'] > 0 ||
                 $accounting['orphan_refund_transactions'] > 0 ||
@@ -291,6 +292,7 @@
             )
                 <div class="alert alert-warning mb-0 mt-3">
                     <strong>Historical data needs review:</strong>
+                    {{ $accounting['missing_sale_credit_orders'] }} completed/paid order(s) totaling &#2547;{{ number_format($accounting['missing_sale_credit_total'], 2) }} are missing sale fund credits,
                     {{ $accounting['duplicate_sale_groups'] }} duplicate sale-credit group(s),
                     {{ $accounting['unlinked_sale_transactions'] }} sale credit(s) totaling &#2547;{{ number_format($accounting['unlinked_sale_total'], 2) }} no longer linked to an order, and
                     {{ $accounting['invalid_linked_sales'] }} sale credit(s) linked to an unpaid/incomplete order or with an incorrect amount,

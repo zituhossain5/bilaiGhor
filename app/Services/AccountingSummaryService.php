@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\FundReconciliation;
 use App\Models\FundTransaction;
 use App\Models\InventoryStock;
+use App\Models\Order;
 use App\Models\Purchase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -82,6 +83,27 @@ final class AccountingSummaryService
             })
             ->count();
 
+        $authoritativeOrderSales = Order::query()
+            ->where('order_status', InventoryService::COMPLETE_STATUS)
+            ->whereRaw('LOWER(COALESCE(payment_status, ?)) = ?', ['', 'paid'])
+            ->selectRaw('COUNT(*) as order_count, COALESCE(SUM(amount), 0) as total')
+            ->first();
+
+        $missingSaleCredits = Order::query()
+            ->where('order_status', InventoryService::COMPLETE_STATUS)
+            ->whereRaw('LOWER(COALESCE(payment_status, ?)) = ?', ['', 'paid'])
+            ->whereNotExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('fund_transactions')
+                    ->whereNull('fund_transactions.excluded_from_accounting_at')
+                    ->where('fund_transactions.direction', 'in')
+                    ->where('fund_transactions.source', 'sale')
+                    ->whereColumn('fund_transactions.source_id', 'orders.id')
+                    ->whereColumn('fund_transactions.amount', 'orders.amount');
+            })
+            ->selectRaw('COUNT(*) as order_count, COALESCE(SUM(amount), 0) as total')
+            ->first();
+
         $orphanRefundTransactions = FundTransaction::query()
             ->leftJoin('refunds', 'refunds.id', '=', 'fund_transactions.source_id')
             ->includedInAccounting()
@@ -135,6 +157,10 @@ final class AccountingSummaryService
             'supplier_due' => $supplierDue,
             'tracked_net_assets' => $fundBalance + $inventoryOnHandCost - $supplierDue,
             'duplicate_sale_groups' => $duplicateSaleGroups,
+            'authoritative_order_sales_count' => (int) ($authoritativeOrderSales->order_count ?? 0),
+            'authoritative_order_sales_total' => (float) ($authoritativeOrderSales->total ?? 0),
+            'missing_sale_credit_orders' => (int) ($missingSaleCredits->order_count ?? 0),
+            'missing_sale_credit_total' => (float) ($missingSaleCredits->total ?? 0),
             'unlinked_sale_transactions' => (int) ($unlinkedSales->transaction_count ?? 0),
             'unlinked_sale_total' => (float) ($unlinkedSales->total ?? 0),
             'invalid_linked_sales' => $invalidLinkedSales,

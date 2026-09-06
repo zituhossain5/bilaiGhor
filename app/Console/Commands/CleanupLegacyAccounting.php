@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\FundHelper;
 use App\Models\AccountingCleanupRun;
 use App\Models\Expense;
 use App\Models\FundTransaction;
@@ -73,7 +74,11 @@ class CleanupLegacyAccounting extends Command
             return self::SUCCESS;
         }
 
-        if ($plan['fund_candidates'] === [] && $plan['expense_candidates'] === [] && $plan['fund_adjustments'] === []) {
+        if ($plan['fund_candidates'] === []
+            && $plan['expense_candidates'] === []
+            && $plan['fund_adjustments'] === []
+            && $plan['sale_rebuilds'] === []
+        ) {
             $this->info('Nothing needs cleanup.');
 
             return self::SUCCESS;
@@ -154,6 +159,13 @@ class CleanupLegacyAccounting extends Command
                         ]);
                 }
 
+                foreach ($plan['sale_rebuilds'] as $sale) {
+                    FundHelper::creditSale(
+                        Order::query()->findOrFail($sale['order_id']),
+                        'Rebuilt from delivered/paid order during accounting cleanup'
+                    );
+                }
+
                 AccountingCleanupRun::create([
                     'id' => $runId,
                     'cutoff_at' => $cutoff,
@@ -169,6 +181,9 @@ class CleanupLegacyAccounting extends Command
                         'expense_amount_removed' => array_sum(array_column($plan['expense_candidates'], 'amount')),
                         'fund_entries_corrected' => count($plan['fund_adjustments']),
                         'fund_net_correction' => array_sum(array_column($plan['fund_adjustments'], 'balance_effect')),
+                        'sale_entries_created' => count($plan['sale_rebuilds']),
+                        'sales_amount_created' => array_sum(array_column($plan['sale_rebuilds'], 'amount')),
+                        'expected_fund_balance_after_cleanup' => $plan['summary']['expected_fund_balance_after_cleanup'],
                     ],
                     'executed_at' => now(),
                 ]);
@@ -208,6 +223,7 @@ class CleanupLegacyAccounting extends Command
         $fundCandidates = [];
         $expenseCandidates = [];
         $fundAdjustments = [];
+        $saleRebuilds = [];
 
         $fundRows = FundTransaction::query()
             ->whereNull('excluded_from_accounting_at')
@@ -365,8 +381,48 @@ class CleanupLegacyAccounting extends Command
             ];
         }
 
+        $candidateIds = collect($fundCandidates)->keys();
+        $retainedValidSalesByOrder = $validSales
+            ->reject(fn (FundTransaction $sale) => $candidateIds->contains($sale->id))
+            ->keyBy('source_id');
+        $authoritativeOrders = Order::query()
+            ->where('order_status', InventoryService::COMPLETE_STATUS)
+            ->whereRaw('LOWER(COALESCE(payment_status, ?)) = ?', ['', 'paid'])
+            ->orderBy('id')
+            ->get(['id', 'invoice_id', 'amount', 'order_status', 'payment_status', 'created_at', 'updated_at']);
+
+        foreach ($authoritativeOrders as $order) {
+            if ($retainedValidSalesByOrder->has($order->id)) {
+                continue;
+            }
+
+            $saleRebuilds[] = [
+                'order_id' => (int) $order->id,
+                'invoice_id' => $order->invoice_id,
+                'amount' => (float) $order->amount,
+                'order_status' => (int) $order->order_status,
+                'payment_status' => $order->payment_status,
+                'created_at' => optional($order->created_at)->toIso8601String(),
+                'updated_at' => optional($order->updated_at)->toIso8601String(),
+                'reason' => 'Completed/paid order is missing its sale fund credit',
+            ];
+        }
+
         $fundCandidates = array_values($fundCandidates);
         usort($fundCandidates, fn ($a, $b) => $a['id'] <=> $b['id']);
+
+        $currentFundBalance = $this->fundBalanceFromRows($fundRows);
+        $fundCandidateBalanceEffect = collect($fundCandidates)->sum(function ($candidate) {
+            return $candidate['direction'] === 'in'
+                ? -1 * (float) $candidate['amount']
+                : (float) $candidate['amount'];
+        });
+        $salesRebuildEffect = array_sum(array_column($saleRebuilds, 'amount'));
+        $adjustmentEffect = array_sum(array_column($fundAdjustments, 'balance_effect'));
+        $expectedFundBalance = $currentFundBalance
+            + $fundCandidateBalanceEffect
+            + $adjustmentEffect
+            + $salesRebuildEffect;
 
         $reviewWithdrawals = $fundRows
             ->where('source', 'withdraw')
@@ -387,17 +443,26 @@ class CleanupLegacyAccounting extends Command
             'fund_candidates' => $fundCandidates,
             'expense_candidates' => array_values($expenseCandidates),
             'fund_adjustments' => $fundAdjustments,
+            'sale_rebuilds' => $saleRebuilds,
             'review_only_withdrawals' => $reviewWithdrawals,
             'review_only_owner_funding' => $reviewOwnerFunding,
             'summary' => [
+                'current_fund_balance' => $currentFundBalance,
                 'fund_entries' => count($fundCandidates),
                 'fund_amount' => array_sum(array_column($fundCandidates, 'amount')),
                 'expenses' => count($expenseCandidates),
                 'expense_amount' => array_sum(array_column($expenseCandidates, 'amount')),
                 'fund_adjustments' => count($fundAdjustments),
                 'fund_net_correction' => array_sum(array_column($fundAdjustments, 'balance_effect')),
+                'authoritative_order_sales' => $authoritativeOrders->count(),
+                'authoritative_order_sales_amount' => (float) $authoritativeOrders->sum('amount'),
+                'retained_sale_entries' => $retainedValidSalesByOrder->count(),
+                'retained_sale_amount' => (float) $retainedValidSalesByOrder->sum('amount'),
+                'sale_rebuilds' => count($saleRebuilds),
+                'sale_rebuild_amount' => $salesRebuildEffect,
                 'review_withdrawals' => count($reviewWithdrawals),
                 'review_owner_funding' => count($reviewOwnerFunding),
+                'expected_fund_balance_after_cleanup' => $expectedFundBalance,
             ],
         ];
     }
@@ -448,6 +513,15 @@ class CleanupLegacyAccounting extends Command
         ];
     }
 
+    private function fundBalanceFromRows($fundRows): float
+    {
+        return (float) $fundRows->sum(function (FundTransaction $transaction) {
+            return $transaction->direction === 'in'
+                ? (float) $transaction->amount
+                : -1 * (float) $transaction->amount;
+        });
+    }
+
     private function renderPlan(array $plan, CarbonImmutable $cutoff): void
     {
         $this->newLine();
@@ -494,8 +568,31 @@ class CleanupLegacyAccounting extends Command
             );
         }
 
+        if ($plan['sale_rebuilds'] !== []) {
+            $this->warn('Missing sale fund credits proposed for rebuild');
+            $this->table(
+                ['Order ID', 'Invoice', 'Amount', 'Order status', 'Payment status', 'Reason'],
+                array_map(fn ($row) => [
+                    $row['order_id'],
+                    $row['invoice_id'] ?: '-',
+                    number_format($row['amount'], 2),
+                    $row['order_status'],
+                    $row['payment_status'],
+                    $row['reason'],
+                ], $plan['sale_rebuilds'])
+            );
+        }
+
         $this->renderReviewTable('Manual withdrawals requiring evidence (not excluded)', $plan['review_only_withdrawals']);
         $this->renderReviewTable('Owner funding requiring cash/bank evidence (not excluded)', $plan['review_only_owner_funding']);
+
+        $this->newLine();
+        $this->info('Recalculated totals');
+        $this->line('Current ledger balance: BDT '.number_format($plan['summary']['current_fund_balance'], 2));
+        $this->line('Completed/paid order sales: '.$plan['summary']['authoritative_order_sales'].' order(s), BDT '.number_format($plan['summary']['authoritative_order_sales_amount'], 2));
+        $this->line('Sale ledger retained: '.$plan['summary']['retained_sale_entries'].' entr'.($plan['summary']['retained_sale_entries'] === 1 ? 'y' : 'ies').', BDT '.number_format($plan['summary']['retained_sale_amount'], 2));
+        $this->line('Missing sales to rebuild: '.$plan['summary']['sale_rebuilds'].' entr'.($plan['summary']['sale_rebuilds'] === 1 ? 'y' : 'ies').', BDT '.number_format($plan['summary']['sale_rebuild_amount'], 2));
+        $this->line('Expected fund balance after cleanup/rebuild: BDT '.number_format($plan['summary']['expected_fund_balance_after_cleanup'], 2));
     }
 
     private function renderReviewTable(string $title, array $rows): void

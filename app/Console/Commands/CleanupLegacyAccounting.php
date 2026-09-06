@@ -26,9 +26,10 @@ class CleanupLegacyAccounting extends Command
         {--keep-expenses : Keep historical expenses instead of starting expense tracking fresh}
         {--exclude-withdrawal=* : Explicit fund transaction ID(s) for verified fake/manual withdrawals}
         {--exclude-manual-add=* : Explicit fund transaction ID(s) for verified fake owner-funding entries}
+        {--delete : Permanently delete cleanup candidates after writing the JSON snapshot}
         {--force : Execute without the interactive production confirmation}';
 
-    protected $description = 'Audit and reversibly exclude verified legacy accounting entries';
+    protected $description = 'Audit and exclude or delete verified legacy accounting entries';
 
     public function handle(): int
     {
@@ -61,10 +62,12 @@ class CleanupLegacyAccounting extends Command
             return self::SUCCESS;
         }
 
-        if (! $this->option('force') && ! $this->confirm(
-            'Create a JSON snapshot and exclude exactly the candidates listed above from accounting?',
-            false
-        )) {
+        $deleteMode = (bool) $this->option('delete');
+        $confirmation = $deleteMode
+            ? 'Create a JSON snapshot and permanently DELETE exactly the candidates listed above?'
+            : 'Create a JSON snapshot and exclude exactly the candidates listed above from accounting?';
+
+        if (! $this->option('force') && ! $this->confirm($confirmation, false)) {
             $this->warn('Cleanup cancelled. No database records were changed.');
 
             return self::SUCCESS;
@@ -98,29 +101,45 @@ class CleanupLegacyAccounting extends Command
         }
 
         try {
-            DB::transaction(function () use ($plan, $runId, $snapshotPath, $cutoff) {
-                foreach ($plan['fund_candidates'] as $candidate) {
-                    FundTransaction::query()
-                        ->whereKey($candidate['id'])
-                        ->whereNull('excluded_from_accounting_at')
-                        ->update([
-                            'excluded_from_accounting_at' => now(),
-                            'accounting_exclusion_reason' => Str::limit($candidate['reason'], 255, ''),
-                            'accounting_cleanup_run_id' => $runId,
-                            'updated_at' => now(),
-                        ]);
-                }
+            DB::transaction(function () use ($plan, $runId, $snapshotPath, $cutoff, $deleteMode) {
+                if ($deleteMode) {
+                    foreach ($plan['expense_candidates'] as $candidate) {
+                        Expense::query()
+                            ->whereKey($candidate['id'])
+                            ->whereNull('excluded_from_accounting_at')
+                            ->delete();
+                    }
 
-                foreach ($plan['expense_candidates'] as $candidate) {
-                    Expense::query()
-                        ->whereKey($candidate['id'])
-                        ->whereNull('excluded_from_accounting_at')
-                        ->update([
-                            'excluded_from_accounting_at' => now(),
-                            'accounting_exclusion_reason' => Str::limit($candidate['reason'], 255, ''),
-                            'accounting_cleanup_run_id' => $runId,
-                            'updated_at' => now(),
-                        ]);
+                    foreach ($plan['fund_candidates'] as $candidate) {
+                        FundTransaction::query()
+                            ->whereKey($candidate['id'])
+                            ->whereNull('excluded_from_accounting_at')
+                            ->delete();
+                    }
+                } else {
+                    foreach ($plan['fund_candidates'] as $candidate) {
+                        FundTransaction::query()
+                            ->whereKey($candidate['id'])
+                            ->whereNull('excluded_from_accounting_at')
+                            ->update([
+                                'excluded_from_accounting_at' => now(),
+                                'accounting_exclusion_reason' => Str::limit($candidate['reason'], 255, ''),
+                                'accounting_cleanup_run_id' => $runId,
+                                'updated_at' => now(),
+                            ]);
+                    }
+
+                    foreach ($plan['expense_candidates'] as $candidate) {
+                        Expense::query()
+                            ->whereKey($candidate['id'])
+                            ->whereNull('excluded_from_accounting_at')
+                            ->update([
+                                'excluded_from_accounting_at' => now(),
+                                'accounting_exclusion_reason' => Str::limit($candidate['reason'], 255, ''),
+                                'accounting_cleanup_run_id' => $runId,
+                                'updated_at' => now(),
+                            ]);
+                    }
                 }
 
                 foreach ($plan['fund_adjustments'] as $adjustment) {
@@ -141,10 +160,13 @@ class CleanupLegacyAccounting extends Command
                     'snapshot_path' => $snapshotPath,
                     'options' => $this->snapshotOptions(),
                     'summary' => [
-                        'fund_entries_excluded' => count($plan['fund_candidates']),
-                        'fund_amount_excluded' => array_sum(array_column($plan['fund_candidates'], 'amount')),
-                        'expenses_excluded' => count($plan['expense_candidates']),
-                        'expense_amount_excluded' => array_sum(array_column($plan['expense_candidates'], 'amount')),
+                        'cleanup_mode' => $deleteMode ? 'delete' : 'exclude',
+                        'fund_entries_excluded' => $deleteMode ? 0 : count($plan['fund_candidates']),
+                        'fund_entries_deleted' => $deleteMode ? count($plan['fund_candidates']) : 0,
+                        'fund_amount_removed' => array_sum(array_column($plan['fund_candidates'], 'amount')),
+                        'expenses_excluded' => $deleteMode ? 0 : count($plan['expense_candidates']),
+                        'expenses_deleted' => $deleteMode ? count($plan['expense_candidates']) : 0,
+                        'expense_amount_removed' => array_sum(array_column($plan['expense_candidates'], 'amount')),
                         'fund_entries_corrected' => count($plan['fund_adjustments']),
                         'fund_net_correction' => array_sum(array_column($plan['fund_adjustments'], 'balance_effect')),
                     ],
@@ -170,7 +192,10 @@ class CleanupLegacyAccounting extends Command
             'balance_after' => $totals,
         ]);
 
-        $this->info('Cleanup completed. Original rows were retained and marked as excluded.');
+        $this->info($deleteMode
+            ? 'Cleanup completed. Candidate rows were permanently deleted after the snapshot was written.'
+            : 'Cleanup completed. Original rows were retained and marked as excluded.'
+        );
         $this->line('Run ID: '.$runId);
         $this->line('Snapshot: storage/app/'.$snapshotPath);
         $this->line('Active fund balance: BDT '.number_format($totals['balance'], 2));
@@ -504,6 +529,7 @@ class CleanupLegacyAccounting extends Command
             'keep_expenses' => (bool) $this->option('keep-expenses'),
             'exclude_withdrawal' => array_values((array) $this->option('exclude-withdrawal')),
             'exclude_manual_add' => array_values((array) $this->option('exclude-manual-add')),
+            'delete' => (bool) $this->option('delete'),
         ];
     }
 

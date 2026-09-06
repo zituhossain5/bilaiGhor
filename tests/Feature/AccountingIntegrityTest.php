@@ -7,6 +7,7 @@ use App\Models\FundTransaction;
 use App\Models\Order;
 use App\Services\AccountingSummaryService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -119,5 +120,44 @@ class AccountingIntegrityTest extends TestCase
             ->where('source', 'sale')
             ->where('source_id', $order->id)
             ->count());
+    }
+
+    public function test_cleanup_command_can_delete_legacy_candidates_without_deleting_owner_funding(): void
+    {
+        Storage::fake('local');
+
+        $legacySale = FundTransaction::withoutEvents(fn () => FundTransaction::create([
+            'direction' => 'in',
+            'source' => 'sale',
+            'source_id' => 999999,
+            'amount' => 425,
+            'note' => 'Orphan sale cleanup test',
+        ]));
+        $legacyCommission = FundTransaction::create([
+            'direction' => 'in',
+            'source' => 'vendor_commission',
+            'source_id' => 999999,
+            'amount' => 75,
+            'note' => 'Legacy commission cleanup test',
+        ]);
+        $ownerFunding = FundTransaction::create([
+            'direction' => 'in',
+            'source' => 'manual_add',
+            'amount' => 1000,
+            'note' => 'Real owner funding should require evidence',
+        ]);
+
+        $this->artisan('accounting:cleanup-legacy', [
+            '--delete' => true,
+            '--force' => true,
+            '--keep-expenses' => true,
+        ])->assertExitCode(0);
+
+        $this->assertDatabaseMissing('fund_transactions', ['id' => $legacySale->id]);
+        $this->assertDatabaseMissing('fund_transactions', ['id' => $legacyCommission->id]);
+        $this->assertDatabaseHas('fund_transactions', ['id' => $ownerFunding->id]);
+        $this->assertDatabaseHas('accounting_cleanup_runs', [
+            'summary->cleanup_mode' => 'delete',
+        ]);
     }
 }

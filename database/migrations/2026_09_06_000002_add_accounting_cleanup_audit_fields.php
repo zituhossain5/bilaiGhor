@@ -8,27 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('fund_transactions', function (Blueprint $table) {
-            $table->timestamp('excluded_from_accounting_at')->nullable()->after('updated_by')->index();
-            $table->string('accounting_exclusion_reason', 255)->nullable()->after('excluded_from_accounting_at');
-            $table->uuid('accounting_cleanup_run_id')->nullable()->after('accounting_exclusion_reason')->index();
-        });
+        $this->addAccountingAuditColumns('fund_transactions');
+        $this->addAccountingAuditColumns('expenses');
 
-        Schema::table('expenses', function (Blueprint $table) {
-            $table->timestamp('excluded_from_accounting_at')->nullable()->after('updated_by')->index();
-            $table->string('accounting_exclusion_reason', 255)->nullable()->after('excluded_from_accounting_at');
-            $table->uuid('accounting_cleanup_run_id')->nullable()->after('accounting_exclusion_reason')->index();
-        });
-
-        Schema::create('accounting_cleanup_runs', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->timestamp('cutoff_at');
-            $table->string('snapshot_path');
-            $table->json('options');
-            $table->json('summary');
-            $table->timestamp('executed_at');
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('accounting_cleanup_runs')) {
+            Schema::create('accounting_cleanup_runs', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->dateTime('cutoff_at');
+                $table->string('snapshot_path');
+                $table->json('options');
+                $table->json('summary');
+                $table->dateTime('executed_at');
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void
@@ -53,6 +46,31 @@ return new class extends Migration
                 'accounting_exclusion_reason',
                 'accounting_cleanup_run_id',
             ]);
+        });
+    }
+
+    private function addAccountingAuditColumns(string $tableName): void
+    {
+        $addExcludedAt = ! Schema::hasColumn($tableName, 'excluded_from_accounting_at');
+        $addExclusionReason = ! Schema::hasColumn($tableName, 'accounting_exclusion_reason');
+        $addCleanupRunId = ! Schema::hasColumn($tableName, 'accounting_cleanup_run_id');
+
+        if (! $addExcludedAt && ! $addExclusionReason && ! $addCleanupRunId) {
+            return;
+        }
+
+        Schema::table($tableName, function (Blueprint $table) use ($addExcludedAt, $addExclusionReason, $addCleanupRunId) {
+            if ($addExcludedAt) {
+                $table->dateTime('excluded_from_accounting_at')->nullable()->after('updated_by')->index();
+            }
+
+            if ($addExclusionReason) {
+                $table->string('accounting_exclusion_reason', 255)->nullable()->after('excluded_from_accounting_at');
+            }
+
+            if ($addCleanupRunId) {
+                $table->uuid('accounting_cleanup_run_id')->nullable()->after('accounting_exclusion_reason')->index();
+            }
         });
     }
 };

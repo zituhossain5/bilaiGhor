@@ -125,14 +125,11 @@ class ResellerOrderController extends Controller
         // If order is delivered/completed (status = 6)
         if ($newStatus == 6 && $oldStatus != 6) {
             // Add money to fund
-            FundTransaction::create([
-                'direction'  => 'in',
-                'source'     => 'sale',
-                'source_id'  => $order->id,
-                'amount'     => $order->amount,
-                'note'       => 'Reseller order complete (#' . $order->invoice_id . ')',
-                'created_by' => Auth::id(),
-            ]);
+            \App\Helpers\FundHelper::creditSale(
+                $order,
+                'Reseller order complete (#' . $order->invoice_id . ')',
+                Auth::id()
+            );
 
             // Credit reseller wallet
             $this->creditResellerWallet($order);
@@ -189,14 +186,11 @@ class ResellerOrderController extends Controller
             // If order is delivered/completed (status = 6)
             if ($targetStatus == 6 && $oldStatus != 6) {
                 // Add money to fund
-                FundTransaction::create([
-                    'direction'  => 'in',
-                    'source'     => 'sale',
-                    'source_id'  => $order->id,
-                    'amount'     => $order->amount,
-                    'note'       => 'Reseller order complete (#' . $order->invoice_id . ')',
-                    'created_by' => Auth::id(),
-                ]);
+                \App\Helpers\FundHelper::creditSale(
+                    $order,
+                    'Reseller order complete (#' . $order->invoice_id . ')',
+                    Auth::id()
+                );
 
                 // Credit reseller wallet
                 $this->creditResellerWallet($order);

@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Services\AccountingSummaryService;
+use Illuminate\Validation\ValidationException;
 
 class ExpenseController extends Controller
 {
@@ -41,17 +43,14 @@ class ExpenseController extends Controller
      */
     private function calculateFundBalance()
     {
-        $total_in  = FundTransaction::where('direction', 'in')->sum('amount');
-        $total_out = FundTransaction::where('direction', 'out')->sum('amount');
-        return $total_in - $total_out;
+        return AccountingSummaryService::fundBalance();
     }
     // ✅ List + Summary
     public function index()
     {
         // ফান্ড ব্যালেন্স
-        $total_in  = FundTransaction::where('direction', 'in')->sum('amount');
-        $total_out = FundTransaction::where('direction', 'out')->sum('amount');
-        $balance   = $total_in - $total_out;
+        $accounting = AccountingSummaryService::snapshot();
+        $balance = $accounting['fund_balance'];
 
         $today        = Carbon::today();
         $currentYear  = $today->year;
@@ -80,7 +79,8 @@ class ExpenseController extends Controller
             'yearlyExpense',
             'monthlyExpense',
             'todayExpense',
-            'expenses'
+            'expenses',
+            'accounting'
         ));
     }
 
@@ -95,40 +95,39 @@ class ExpenseController extends Controller
             'note'         => 'nullable|string',
         ]);
 
-        // ব্যালেন্স চেক
-        $total_in  = FundTransaction::where('direction', 'in')->sum('amount');
-        $total_out = FundTransaction::where('direction', 'out')->sum('amount');
-        $balance   = $total_in - $total_out;
-
-        if ($validated['amount'] > $balance) {
-            return back()->with('error', 'Not enough balance in fund!')
-                         ->withInput();
-        }
-
         // আগে expense এন্ট্রি
-        $expense = Expense::create([
-            'title'        => $validated['title'],
-            'amount'       => $validated['amount'],
-            'expense_date' => $validated['expense_date'],
-            'category'     => $validated['category'] ?? null,
-            'note'         => $validated['note'] ?? null,
-            'created_by'   => Auth::id(),
-        ]);
+        DB::transaction(function () use ($validated) {
+            $balance = AccountingSummaryService::lockedFundBalance();
+            if ($validated['amount'] > $balance) {
+                throw ValidationException::withMessages([
+                    'amount' => 'Not enough balance in fund. Available: ' . number_format($balance, 2),
+                ]);
+            }
+
+            $expense = Expense::create([
+                'title'        => $validated['title'],
+                'amount'       => $validated['amount'],
+                'expense_date' => $validated['expense_date'],
+                'category'     => $validated['category'] ?? null,
+                'note'         => $validated['note'] ?? null,
+                'created_by'   => Auth::id(),
+            ]);
 
         // তারপর ফান্ড থেকে out ট্রানজ্যাকশন
-        $fund = FundTransaction::create([
-            'direction' => 'out',
-            'source'    => 'expense',
-            'source_id' => $expense->id,
-            'amount'    => $expense->amount,
-            'note'      => 'Expense: ' . $expense->title . ($expense->note ? ' - ' . $expense->note : ''),
-            'created_by'=> Auth::id(),
-        ]);
+            $fund = FundTransaction::create([
+                'direction' => 'out',
+                'source'    => 'expense',
+                'source_id' => $expense->id,
+                'amount'    => $expense->amount,
+                'note'      => 'Expense: ' . $expense->title . ($expense->note ? ' - ' . $expense->note : ''),
+                'created_by'=> Auth::id(),
+            ]);
 
         // লিঙ্ক আপডেট
-        $expense->update([
-            'fund_transaction_id' => $fund->id,
-        ]);
+            $expense->update([
+                'fund_transaction_id' => $fund->id,
+            ]);
+        });
 
         return redirect()->route('admin.expenses.index')
                          ->with('success', 'Expense saved successfully!');
@@ -140,9 +139,8 @@ class ExpenseController extends Controller
         $expense = Expense::findOrFail($id);
 
         // উপরে summary একই থাকবে
-        $total_in  = FundTransaction::where('direction', 'in')->sum('amount');
-        $total_out = FundTransaction::where('direction', 'out')->sum('amount');
-        $balance   = $total_in - $total_out;
+        $accounting = AccountingSummaryService::snapshot();
+        $balance = $accounting['fund_balance'];
 
         $today        = Carbon::today();
         $currentYear  = $today->year;
@@ -166,7 +164,8 @@ class ExpenseController extends Controller
             'yearlyExpense',
             'monthlyExpense',
             'todayExpense',
-            'expenses'
+            'expenses',
+            'accounting'
         ));
     }
 

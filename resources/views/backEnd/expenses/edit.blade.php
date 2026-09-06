@@ -31,7 +31,7 @@
             <div class="card border-0 shadow-sm bg-success" style="color:white; border-radius: 12px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h6 class="mb-0" style="color:white;">Available Balance</h6>
+                        <h6 class="mb-0" style="color:white;">Available Fund Balance</h6>
                         <i data-feather="wallet" style="width:18px;height:18px;"></i>
                     </div>
                     <h2 class="mb-0 fw-bold" style="color:white;">

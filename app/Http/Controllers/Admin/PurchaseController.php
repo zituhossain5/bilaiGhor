@@ -14,6 +14,8 @@ use App\Models\FundTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\AccountingSummaryService;
+use Illuminate\Validation\ValidationException;
 
 class PurchaseController extends Controller
 {
@@ -45,9 +47,7 @@ class PurchaseController extends Controller
      */
     private function calculateFundBalance()
     {
-        $total_in  = FundTransaction::where('direction', 'in')->sum('amount');
-        $total_out = FundTransaction::where('direction', 'out')->sum('amount');
-        return $total_in - $total_out;
+        return AccountingSummaryService::fundBalance();
     }
     /**
      * ==============================
@@ -129,6 +129,8 @@ class PurchaseController extends Controller
             'paid_amount'   => 'nullable|numeric|min:0',
         ]);
 
+        return DB::transaction(function () use ($request) {
+
         $discount      = $request->discount ?? 0;
         $shipping_cost = $request->shipping_cost ?? 0;
 
@@ -139,6 +141,13 @@ class PurchaseController extends Controller
 
         $paid = min($grandTotal, (float) ($request->paid_amount ?? 0));
         $due  = $grandTotal - $paid;
+
+        $fundBalance = AccountingSummaryService::lockedFundBalance();
+        if ($paid > $fundBalance) {
+            throw ValidationException::withMessages([
+                'paid_amount' => 'Not enough balance in fund. Available: ' . number_format($fundBalance, 2),
+            ]);
+        }
 
         // CREATE PURCHASE
         $purchase = Purchase::create([
@@ -216,6 +225,7 @@ class PurchaseController extends Controller
         }
 
         return back()->with('success','Purchase created & stock updated!');
+        });
     }
 
     /**

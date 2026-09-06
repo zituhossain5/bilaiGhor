@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\Expense;
+use App\Services\AccountingSummaryService;
 
 class ReportController extends Controller
 {
@@ -418,11 +419,9 @@ $totalExpense = $expenses->sum('amount');
                    ->paginate(20)
                    ->withQueryString();
 
-        $totalStockQty   = $products->sum('stock');
-        $totalStockValue = $products->sum(function ($p) {
-            $purchasePrice = $p->purchase_price ?? 0;
-            return $purchasePrice * ($p->stock ?? 0);
-        });
+        $accounting = AccountingSummaryService::snapshot();
+        $totalStockQty = (int) Product::sum('stock');
+        $totalStockValue = $accounting['inventory_available_cost'];
 
         if ($request->get('export') === 'csv') {
             $fileName = 'stock-report-' . now()->format('Ymd_His') . '.csv';
@@ -463,7 +462,8 @@ $totalExpense = $expenses->sum('amount');
         return view('backEnd.reports.stock', compact(
             'products',
             'totalStockQty',
-            'totalStockValue'
+            'totalStockValue',
+            'accounting'
         ));
     }
 

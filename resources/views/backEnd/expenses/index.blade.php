@@ -32,7 +32,7 @@
 <div class="col-md-3 mb-3">
     <div class="card bg-success text-white" style="color:#fff !important;">
         <div class="card-body" style="color:#fff !important;">
-            <h5 class="mb-1" style="color:#fff !important;">Available Balance</h5>
+            <h5 class="mb-1" style="color:#fff !important;">Available Fund Balance</h5>
             <h2 class="mb-0" style="color:#fff !important;">{{ number_format($balance, 2) }} ৳</h2>
             <small class="opacity-75 d-block mt-1" style="color:#fff !important;">
                 বর্তমানে তহবিলে অবশিষ্ট ব্যালেন্স
@@ -83,6 +83,80 @@
 </div>
 
 
+    </div>
+
+    <div class="card shadow-sm mb-4 border-start border-4 border-warning">
+        <div class="card-header bg-white">
+            <h5 class="mb-1">Account Reconciliation</h5>
+            <small class="text-muted">Cash, stock cost, and retail value are separate measures. Inventory is not included in the fund balance.</small>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-xl-3 col-md-6">
+                    <div class="text-muted small">Cash / Fund Balance</div>
+                    <div class="h4 mb-0">&#2547;{{ number_format($accounting['fund_balance'], 2) }}</div>
+                    <small>Fund in &#8722; fund out</small>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="text-muted small">Physical Inventory at Cost</div>
+                    <div class="h4 mb-0">&#2547;{{ number_format($accounting['inventory_on_hand_cost'], 2) }}</div>
+                    <small>Available cost + reserved cost</small>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="text-muted small">Supplier Due</div>
+                    <div class="h4 mb-0">&#2547;{{ number_format($accounting['supplier_due'], 2) }}</div>
+                    <small>Outstanding purchase liability</small>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="text-muted small">Tracked Net Assets</div>
+                    <div class="h4 mb-0">&#2547;{{ number_format($accounting['tracked_net_assets'], 2) }}</div>
+                    <small>Cash + inventory cost &#8722; supplier due</small>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered mb-2">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Stock measure</th>
+                            <th class="text-end">Amount</th>
+                            <th>Meaning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Available stock at cost</td>
+                            <td class="text-end">&#2547;{{ number_format($accounting['inventory_available_cost'], 2) }}</td>
+                            <td>Available quantity x latest purchase cost</td>
+                        </tr>
+                        <tr>
+                            <td>Reserved stock at cost</td>
+                            <td class="text-end">&#2547;{{ number_format($accounting['inventory_reserved_cost'], 2) }}</td>
+                            <td>Stock committed to active orders</td>
+                        </tr>
+                        <tr>
+                            <td>Available stock retail value</td>
+                            <td class="text-end">&#2547;{{ number_format($accounting['available_retail_value'], 2) }}</td>
+                            <td>Available quantity x selling price; this is not cost or cash</td>
+                        </tr>
+                        <tr>
+                            <td>Potential gross margin</td>
+                            <td class="text-end">&#2547;{{ number_format($accounting['potential_gross_margin'], 2) }}</td>
+                            <td>Retail value &#8722; available stock cost; not yet realized profit</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            @if($accounting['duplicate_sale_groups'] > 0 || $accounting['purchases_missing_items'] > 0)
+                <div class="alert alert-warning mb-0 mt-3">
+                    Historical reconciliation needs review:
+                    {{ $accounting['duplicate_sale_groups'] }} order(s) have duplicate sale credits and
+                    {{ $accounting['purchases_missing_items'] }} purchase(s) have no item rows.
+                    Existing financial records were not changed automatically.
+                </div>
+            @endif
+        </div>
     </div>
 
     {{-- ======= FORM & EXPORT ROW ======= --}}

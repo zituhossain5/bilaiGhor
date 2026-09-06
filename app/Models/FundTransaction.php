@@ -11,6 +11,22 @@ class FundTransaction extends Model
         'direction', 'source', 'source_id', 'amount', 'note', 'created_by', 'updated_by',
     ];
 
+    protected static function booted(): void
+    {
+        // Status updates arrive through overlapping admin and courier paths.
+        static::creating(function (self $transaction) {
+            if ($transaction->direction !== 'in' || $transaction->source !== 'sale' || !$transaction->source_id) {
+                return null;
+            }
+
+            return !self::query()
+                ->where('direction', 'in')
+                ->where('source', 'sale')
+                ->where('source_id', $transaction->source_id)
+                ->exists();
+        });
+    }
+
     /**
      * Get all logs for this transaction
      */

@@ -85,14 +85,11 @@ class RedXWebhookController extends Controller
                 // If order is delivered/completed (status = 6)
                 if ($newOrderStatus == 6 && $oldStatus != 6) {
                     // Add money to fund
-                    FundTransaction::create([
-                        'direction'  => 'in',
-                        'source'     => 'sale',
-                        'source_id'  => $order->id,
-                        'amount'     => $order->amount,
-                        'note'       => 'Order complete via RedX webhook (#' . $order->invoice_id . ')',
-                        'created_by' => 1, // System user
-                    ]);
+                    \App\Helpers\FundHelper::creditSale(
+                        $order,
+                        'Order complete via RedX webhook (#' . $order->invoice_id . ')',
+                        1
+                    );
 
                     // Credit vendors for their items
                     $this->distributeVendorEarnings($order);

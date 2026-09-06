@@ -42,6 +42,18 @@ class Order extends Model
             } catch (\Throwable $e) {
                 \Log::error('Inventory status hook failed for order '.$order->id.': '.$e->getMessage());
             }
+
+            try {
+                if ((int) $order->order_status === \App\Services\InventoryService::COMPLETE_STATUS) {
+                    \App\Helpers\FundHelper::creditSale(
+                        $order,
+                        'Order complete (#'.($order->invoice_id ?? $order->id).')',
+                        auth('admin')->id() ?? 1
+                    );
+                }
+            } catch (\Throwable $e) {
+                \Log::error('Fund sale hook failed for order '.$order->id.': '.$e->getMessage());
+            }
         });
     }
 

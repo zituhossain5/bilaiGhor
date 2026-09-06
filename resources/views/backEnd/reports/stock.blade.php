@@ -102,8 +102,10 @@
         <div class="col-md-4">
             <div class="stat-card">
                 <div>
-                    <div class="stat-title">Inventory Value</div>
+                    <div class="stat-title">Available Stock Cost</div>
                     <h3 class="stat-value">৳{{ number_format($totalStockValue, 2) }}</h3>
+                    <small class="text-muted d-block">Physical stock cost: &#2547;{{ number_format($accounting['inventory_on_hand_cost'], 2) }}</small>
+                    <small class="text-muted d-block">Available retail value: &#2547;{{ number_format($accounting['available_retail_value'], 2) }}</small>
                 </div>
                 <div class="stat-icon-box bg-light-success">
                     <span class="fw-bold">৳</span>
@@ -128,7 +130,7 @@
                             <th width="15%" class="text-end">In Stock</th>
                             <th width="15%" class="text-end">Purchase Cost</th>
                             <th width="15%" class="text-end">Selling Price</th>
-                            <th width="15%" class="text-end">Total Value</th>
+                            <th width="15%" class="text-end">Cost Value</th>
                         </tr>
                     </thead>
                     <tbody>

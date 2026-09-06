@@ -98,7 +98,14 @@
                     <div>
                         <div class="stats-label text-primary">Inventory Value</div>
                         <div class="stats-value">৳ {{ number_format($inventoryValue, 2) }}</div>
-                        <div class="stats-sub">on-hand quantity × latest purchase cost</div>
+                        <div class="stats-sub">physical on-hand quantity x latest purchase cost</div>
+                        <div class="stats-sub mt-1">
+                            Available: &#2547;{{ number_format($accounting['inventory_available_cost'], 2) }}
+                            + Reserved: &#2547;{{ number_format($accounting['inventory_reserved_cost'], 2) }}
+                        </div>
+                        <div class="stats-sub mt-1">
+                            Available retail value: &#2547;{{ number_format($accounting['available_retail_value'], 2) }} (not cost)
+                        </div>
                     </div>
                 </div>
             </div>

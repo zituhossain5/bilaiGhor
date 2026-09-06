@@ -14,6 +14,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\AccountingSummaryService;
 
 class InventoryController extends Controller
 {
@@ -33,9 +34,8 @@ class InventoryController extends Controller
             ->whereRaw('(on_hand - reserved) <= low_stock_threshold')->count();
         $outOfStockCount = InventoryStock::whereRaw('(on_hand - reserved) <= 0')->count();
 
-        $inventoryValue = (float) InventoryStock::join('products', 'products.id', '=', 'inventory_stocks.product_id')
-            ->selectRaw('COALESCE(SUM(inventory_stocks.on_hand * COALESCE(products.purchase_price, 0)), 0) as v')
-            ->value('v');
+        $accounting = AccountingSummaryService::snapshot();
+        $inventoryValue = $accounting['inventory_on_hand_cost'];
 
         $recentRestocks = InventoryStock::with('product:id,name,slug')
             ->whereNotNull('last_restocked_at')
@@ -46,7 +46,7 @@ class InventoryController extends Controller
             ->latest('id')->take(10)->get();
 
         return view('backEnd.inventory.dashboard', compact(
-            'totals', 'lowStockCount', 'outOfStockCount', 'inventoryValue', 'recentRestocks', 'recentMovements'
+            'totals', 'lowStockCount', 'outOfStockCount', 'inventoryValue', 'recentRestocks', 'recentMovements', 'accounting'
         ));
     }
 

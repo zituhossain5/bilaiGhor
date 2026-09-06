@@ -49,14 +49,11 @@ class CourierWebhookOrderService
         }
 
         if (SteadfastWebhookStatus::isCompleted($newOrderStatus) && $oldStatus !== $newOrderStatus) {
-            FundTransaction::create([
-                'direction'  => 'in',
-                'source'     => 'sale',
-                'source_id'  => $order->id,
-                'amount'     => $order->amount,
-                'note'       => "Order complete via {$sourceLabel} webhook (#{$order->invoice_id})",
-                'created_by' => 1,
-            ]);
+            \App\Helpers\FundHelper::creditSale(
+                $order,
+                "Order complete via {$sourceLabel} webhook (#{$order->invoice_id})",
+                1
+            );
 
             $this->distributeVendorEarnings($order, $sourceLabel);
             $this->creditResellerWallet($order, $sourceLabel);

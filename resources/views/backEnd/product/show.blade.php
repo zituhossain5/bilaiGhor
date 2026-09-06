@@ -158,6 +158,7 @@
                             </p>
                         </div>
                     </div>
+                    @if(config('business.vendor_enabled'))
                     <hr>
                     <div class="d-flex align-items-center mb-3">
                         <div class="flex-grow-1">
@@ -171,6 +172,7 @@
                             </p>
                         </div>
                     </div>
+                    @endif
                     <hr>
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">

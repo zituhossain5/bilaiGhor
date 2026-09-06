@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\FundTransaction;
 use App\Models\FundReconciliation;
+use App\Models\FundTransaction;
 use App\Models\InventoryStock;
 use App\Models\Purchase;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +33,7 @@ final class AccountingSummaryService
         $supplierDue = (float) Purchase::sum('due_amount');
 
         $duplicateSaleGroups = FundTransaction::query()
+            ->includedInAccounting()
             ->where('direction', 'in')
             ->where('source', 'sale')
             ->whereNotNull('source_id')
@@ -43,6 +44,7 @@ final class AccountingSummaryService
             ->count();
 
         $fundSources = FundTransaction::query()
+            ->includedInAccounting()
             ->select(['source', 'direction'])
             ->selectRaw('SUM(amount) as total')
             ->selectRaw('COUNT(*) as transaction_count')
@@ -60,6 +62,7 @@ final class AccountingSummaryService
 
         $unlinkedSales = FundTransaction::query()
             ->leftJoin('orders', 'orders.id', '=', 'fund_transactions.source_id')
+            ->includedInAccounting()
             ->where('fund_transactions.direction', 'in')
             ->where('fund_transactions.source', 'sale')
             ->whereNotNull('fund_transactions.source_id')
@@ -67,10 +70,36 @@ final class AccountingSummaryService
             ->selectRaw('COUNT(*) as transaction_count, COALESCE(SUM(fund_transactions.amount), 0) as total')
             ->first();
 
+        $invalidLinkedSales = FundTransaction::query()
+            ->join('orders', 'orders.id', '=', 'fund_transactions.source_id')
+            ->includedInAccounting()
+            ->where('fund_transactions.direction', 'in')
+            ->where('fund_transactions.source', 'sale')
+            ->where(function ($query) {
+                $query->where('orders.order_status', '!=', InventoryService::COMPLETE_STATUS)
+                    ->orWhereRaw('LOWER(COALESCE(orders.payment_status, ?)) != ?', ['', 'paid'])
+                    ->orWhereColumn('fund_transactions.amount', '!=', 'orders.amount');
+            })
+            ->count();
+
+        $orphanRefundTransactions = FundTransaction::query()
+            ->leftJoin('refunds', 'refunds.id', '=', 'fund_transactions.source_id')
+            ->includedInAccounting()
+            ->where('fund_transactions.direction', 'out')
+            ->where('fund_transactions.source', 'refund')
+            ->where(function ($query) {
+                $query->whereNull('refunds.id')
+                    ->orWhere('refunds.status', '!=', 'processed');
+            })
+            ->count();
+
         $expenseFundMismatches = DB::table('expenses as expenses')
             ->leftJoin('fund_transactions as fund', 'fund.id', '=', 'expenses.fund_transaction_id')
+            ->whereNull('expenses.excluded_from_accounting_at')
             ->where(function ($query) {
                 $query->whereNull('fund.id')
+                    ->orWhereNotNull('fund.excluded_from_accounting_at')
+                    ->orWhereIn('fund.source', FundTransaction::LEGACY_BUSINESS_SOURCES)
                     ->orWhere('fund.direction', '!=', 'out')
                     ->orWhere('fund.source', '!=', 'expense')
                     ->orWhereColumn('fund.amount', '!=', 'expenses.amount');
@@ -81,6 +110,8 @@ final class AccountingSummaryService
             ->leftJoin('fund_transactions as fund', 'fund.id', '=', 'payments.fund_transaction_id')
             ->where(function ($query) {
                 $query->whereNull('fund.id')
+                    ->orWhereNotNull('fund.excluded_from_accounting_at')
+                    ->orWhereIn('fund.source', FundTransaction::LEGACY_BUSINESS_SOURCES)
                     ->orWhere('fund.direction', '!=', 'out')
                     ->orWhere('fund.source', '!=', 'supplier_payment')
                     ->orWhereColumn('fund.amount', '!=', 'payments.amount');
@@ -93,7 +124,6 @@ final class AccountingSummaryService
             'fund_balance' => $fundBalance,
             'owner_funding' => self::sourceTotal($fundSources, 'manual_add', 'in'),
             'sales_inflow' => self::sourceTotal($fundSources, 'sale', 'in'),
-            'legacy_vendor_commission_inflow' => self::sourceTotal($fundSources, 'vendor_commission', 'in'),
             'reconciliation_net' => self::sourceTotal($fundSources, 'reconciliation', 'in')
                 - self::sourceTotal($fundSources, 'reconciliation', 'out'),
             'fund_sources' => $fundSources,
@@ -107,6 +137,8 @@ final class AccountingSummaryService
             'duplicate_sale_groups' => $duplicateSaleGroups,
             'unlinked_sale_transactions' => (int) ($unlinkedSales->transaction_count ?? 0),
             'unlinked_sale_total' => (float) ($unlinkedSales->total ?? 0),
+            'invalid_linked_sales' => $invalidLinkedSales,
+            'orphan_refund_transactions' => $orphanRefundTransactions,
             'expense_fund_mismatches' => $expenseFundMismatches,
             'supplier_payment_fund_mismatches' => $supplierPaymentFundMismatches,
             'purchases_missing_items' => Purchase::query()->doesntHave('items')->count(),
@@ -125,6 +157,7 @@ final class AccountingSummaryService
     public static function fundTotals(): array
     {
         $totals = FundTransaction::query()
+            ->includedInAccounting()
             ->selectRaw("COALESCE(SUM(CASE WHEN direction = 'in' THEN amount ELSE 0 END), 0) as total_in")
             ->selectRaw("COALESCE(SUM(CASE WHEN direction = 'out' THEN amount ELSE 0 END), 0) as total_out")
             ->first();
@@ -142,6 +175,7 @@ final class AccountingSummaryService
     public static function lockedFundBalance(): float
     {
         $transactions = FundTransaction::query()
+            ->includedInAccounting()
             ->lockForUpdate()
             ->get(['direction', 'amount']);
 

@@ -1,25 +1,25 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
 use App\Models\GeneralSetting;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Cache;
+use File;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Toastr;
 use Image;
-use File;
-use DB;
+use Toastr;
+
 class GeneralSettingController extends Controller
 {
-    function __construct()
+    public function __construct()
     {
-        $this->middleware('permission:setting-list|setting-create|setting-edit|setting-delete', ['only' => ['index','store']]);
-        $this->middleware('permission:setting-create', ['only' => ['create','store']]);
-        $this->middleware('permission:setting-edit', ['only' => ['edit','update']]);
+        $this->middleware('permission:setting-list|setting-create|setting-edit|setting-delete', ['only' => ['index', 'store']]);
+        $this->middleware('permission:setting-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:setting-edit', ['only' => ['edit', 'update']]);
         $this->middleware('permission:setting-delete', ['only' => ['destroy']]);
     }
 
@@ -34,10 +34,12 @@ class GeneralSettingController extends Controller
 
         return redirect()->route('settings.create');
     }
+
     public function create()
     {
         return view('backEnd.settings.create');
     }
+
     public function store(Request $request)
     {
         $this->validate($request, [
@@ -60,28 +62,30 @@ class GeneralSettingController extends Controller
         $input['dark_logo'] = $this->storeSettingImage($request->file('dark_logo'), 'dark_logo');
         $input['og_baner'] = $this->storeSettingImage($request->file('og_baner'), 'og_baner');
         $input['favicon'] = $this->storeSettingImage($request->file('favicon'), 'favicon', 'png', 32, 32);
-        
-        $input['vendor_enabled'] = $request->has('vendor_enabled') ? 1 : 0;
-        $input['reseller_enabled'] = $request->has('reseller_enabled') ? 1 : 0;
+
+        $input['vendor_enabled'] = 0;
+        $input['reseller_enabled'] = 0;
         $input['checkout_otp_enabled'] = $request->has('checkout_otp_enabled') ? 1 : 0;
 
         GeneralSetting::create($input);
 
         // APP_NAME sync
-        if (!empty($input['name'])) {
+        if (! empty($input['name'])) {
             $this->updateEnvAppName($input['name']);
         }
 
-        Toastr::success('Success','Data insert successfully');
+        Toastr::success('Success', 'Data insert successfully');
+
         return redirect()->route('settings.index');
     }
-    
+
     public function edit($id)
     {
         $edit_data = GeneralSetting::find($id);
-        return view('backEnd.settings.edit',compact('edit_data'));
+
+        return view('backEnd.settings.edit', compact('edit_data'));
     }
-    
+
     public function update(Request $request)
     {
         $this->validate($request, [
@@ -104,16 +108,15 @@ class GeneralSettingController extends Controller
             ? $this->storeSettingImage($request->file('favicon'), 'favicon', 'webp', 32, 32)
             : $update_data->favicon;
         $input['status'] = 1;
-        
-        // Handle vendor_enabled and reseller_enabled (checkbox returns '1' if checked, null if unchecked)
-        $input['vendor_enabled'] = $request->has('vendor_enabled') ? 1 : 0;
-        $input['reseller_enabled'] = $request->has('reseller_enabled') ? 1 : 0;
+
+        $input['vendor_enabled'] = 0;
+        $input['reseller_enabled'] = 0;
         $input['checkout_otp_enabled'] = $request->has('checkout_otp_enabled') ? 1 : 0;
 
         $update_data->update($input);
 
         // APP_NAME sync: site title পরিবর্তন হলে .env আপডেট করো
-        if (!empty($input['name'])) {
+        if (! empty($input['name'])) {
             $this->updateEnvAppName($input['name']);
         }
 
@@ -129,31 +132,37 @@ class GeneralSettingController extends Controller
         Cache::forget('common_menu');
 
         Toastr::success('Settings updated successfully!', 'Success');
+
         return redirect()->route('settings.edit', ['id' => $update_data->id]);
     }
- 
+
     public function inactive(Request $request)
     {
         $inactive = GeneralSetting::find($request->hidden_id);
         $inactive->status = 0;
         $inactive->save();
-        Toastr::success('Success','Data inactive successfully');
+        Toastr::success('Success', 'Data inactive successfully');
+
         return redirect()->back();
     }
+
     public function active(Request $request)
     {
         $active = GeneralSetting::find($request->hidden_id);
         $active->status = 1;
         $active->save();
-        Toastr::success('Success','Data active successfully');
+        Toastr::success('Success', 'Data active successfully');
+
         return redirect()->back();
     }
+
     public function destroy(Request $request)
     {
         $delete_data = GeneralSetting::find($request->hidden_id);
         File::delete($delete_data->image);
         $delete_data->delete();
-        Toastr::success('Success','Data delete successfully');
+        Toastr::success('Success', 'Data delete successfully');
+
         return redirect()->back();
     }
 
@@ -167,7 +176,7 @@ class GeneralSettingController extends Controller
         $directory = public_path('uploads/settings');
 
         try {
-            if (!File::isDirectory($directory)) {
+            if (! File::isDirectory($directory)) {
                 File::makeDirectory($directory, 0755, true, true);
             }
         } catch (\Throwable $exception) {
@@ -178,7 +187,7 @@ class GeneralSettingController extends Controller
             ]);
         }
 
-        if (!is_writable($directory)) {
+        if (! is_writable($directory)) {
             throw ValidationException::withMessages([
                 $field => 'The settings upload directory is not writable.',
             ]);
@@ -211,17 +220,17 @@ class GeneralSettingController extends Controller
     private function updateEnvAppName(string $name): void
     {
         $envPath = base_path('.env');
-        if (!is_file($envPath) || !is_writable($envPath)) {
+        if (! is_file($envPath) || ! is_writable($envPath)) {
             return;
         }
 
-        $content    = file_get_contents($envPath);
-        $escapedName = str_contains($name, ' ') ? '"' . addslashes($name) . '"' : $name;
+        $content = file_get_contents($envPath);
+        $escapedName = str_contains($name, ' ') ? '"'.addslashes($name).'"' : $name;
 
         if (preg_match('/^APP_NAME=.*/m', $content)) {
-            $content = preg_replace('/^APP_NAME=.*/m', 'APP_NAME=' . $escapedName, $content);
+            $content = preg_replace('/^APP_NAME=.*/m', 'APP_NAME='.$escapedName, $content);
         } else {
-            $content .= "\nAPP_NAME=" . $escapedName;
+            $content .= "\nAPP_NAME=".$escapedName;
         }
 
         file_put_contents($envPath, $content);

@@ -2,17 +2,21 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\Reseller\LandingOrderController;
+use App\Http\Controllers\Reseller\PublicLandingController;
+use App\Models\ResellerLandingPage;
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\ResellerLandingPage;
-use App\Http\Controllers\Reseller\PublicLandingController;
-use App\Http\Controllers\Reseller\LandingOrderController;
 use Symfony\Component\HttpFoundation\Response;
 
 class ResellerCustomDomain
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if (! config('business.reseller_enabled')) {
+            return $next($request);
+        }
+
         $host = strtolower($request->getHost());
 
         // Skip if this is main app domain (e.g. from APP_URL)
@@ -25,7 +29,7 @@ class ResellerCustomDomain
             ->where('is_active', 1)
             ->first();
 
-        if (!$landing) {
+        if (! $landing) {
             return $next($request);
         }
 
@@ -33,7 +37,7 @@ class ResellerCustomDomain
         $slug = $landing->slug;
 
         // Map custom domain paths to controllers (without /r/slug prefix)
-        if ($path === '' || $path === 'r' || $path === 'r/' . $slug) {
+        if ($path === '' || $path === 'r' || $path === 'r/'.$slug) {
             return app(PublicLandingController::class)->show($slug);
         }
 

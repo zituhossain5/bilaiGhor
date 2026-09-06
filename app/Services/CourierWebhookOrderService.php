@@ -4,14 +4,13 @@ namespace App\Services;
 
 use App\Models\GeneralSetting;
 use App\Models\Order;
-use App\Models\OrderDetails;
 use App\Models\OrderStatus;
 use App\Models\Payment;
 use App\Models\SmsGateway;
 use App\Models\User;
-use App\Support\SteadfastWebhookStatus;
 use App\Models\VendorWallet;
 use App\Models\VendorWalletTransaction;
+use App\Support\SteadfastWebhookStatus;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -94,6 +93,10 @@ class CourierWebhookOrderService
 
     private function distributeVendorEarnings(Order $order, string $sourceLabel): void
     {
+        if (! config('business.vendor_enabled')) {
+            return;
+        }
+
         $details = $order->orderdetails()
             ->with(['product:id,vendor_id,name', 'product.vendor:id,commission_rate'])
             ->get();
@@ -105,22 +108,22 @@ class CourierWebhookOrderService
             }
 
             $vendorId = $product->vendor_id;
-            $vendor   = $product->vendor;
+            $vendor = $product->vendor;
             if (! $vendor) {
                 continue;
             }
 
-            $commissionRate  = $vendor->commission_rate ?? config('app.vendor_commission', 10);
-            $lineTotal       = (float) ($item->sale_price ?? 0) * (float) ($item->qty ?? 0);
+            $commissionRate = $vendor->commission_rate ?? config('app.vendor_commission', 10);
+            $lineTotal = (float) ($item->sale_price ?? 0) * (float) ($item->qty ?? 0);
             $adminCommission = round($lineTotal * ($commissionRate / 100), 2);
-            $vendorEarning   = max(0, round($lineTotal - $adminCommission, 2));
+            $vendorEarning = max(0, round($lineTotal - $adminCommission, 2));
 
             $item->update([
-                'vendor_id'        => $vendorId,
-                'commission_rate'  => $commissionRate,
+                'vendor_id' => $vendorId,
+                'commission_rate' => $commissionRate,
                 'admin_commission' => $adminCommission,
-                'vendor_earning'   => $vendorEarning,
-                'vendor_paid_at'   => now(),
+                'vendor_earning' => $vendorEarning,
+                'vendor_paid_at' => now(),
             ]);
 
             $wallet = VendorWallet::firstOrCreate(['vendor_id' => $vendorId]);
@@ -129,13 +132,13 @@ class CourierWebhookOrderService
             $wallet->save();
 
             VendorWalletTransaction::create([
-                'vendor_id'   => $vendorId,
-                'type'        => 'earning',
-                'status'      => 'completed',
-                'amount'      => $vendorEarning,
+                'vendor_id' => $vendorId,
+                'type' => 'earning',
+                'status' => 'completed',
+                'amount' => $vendorEarning,
                 'source_type' => 'order',
-                'source_id'   => $item->id,
-                'note'        => 'Order #'.$order->invoice_id.' item earning ('.$sourceLabel.')',
+                'source_id' => $item->id,
+                'note' => 'Order #'.$order->invoice_id.' item earning ('.$sourceLabel.')',
             ]);
 
         }
@@ -143,6 +146,10 @@ class CourierWebhookOrderService
 
     private function creditResellerWallet(Order $order, string $sourceLabel): void
     {
+        if (! config('business.reseller_enabled')) {
+            return;
+        }
+
         if (! $order->reseller_profit || $order->reseller_profit <= 0 || $order->reseller_wallet_credited) {
             return;
         }
@@ -183,7 +190,7 @@ class CourierWebhookOrderService
         $order->save();
 
         Log::info("Reseller wallet credited via {$sourceLabel} webhook", [
-            'order_id'    => $order->id,
+            'order_id' => $order->id,
             'reseller_id' => $resellerUser->id,
         ]);
     }
@@ -191,20 +198,20 @@ class CourierWebhookOrderService
     private function sendStatusUpdateSMS(Order $order, int $newStatus, string $sourceLabel): void
     {
         try {
-            $sms_gateway  = SmsGateway::where('status', 1)->first();
+            $sms_gateway = SmsGateway::where('status', 1)->first();
             $site_setting = GeneralSetting::first();
-            $orderStatus  = OrderStatus::find($newStatus);
+            $orderStatus = OrderStatus::find($newStatus);
 
             if (! $sms_gateway || ! $order->customer || ! $orderStatus) {
                 return;
             }
 
             $data = [
-                'api_key'  => $sms_gateway->api_key,
-                'number'   => $order->customer->phone,
-                'type'     => 'text',
+                'api_key' => $sms_gateway->api_key,
+                'number' => $order->customer->phone,
+                'type' => 'text',
                 'senderid' => $sms_gateway->serderid,
-                'message'  => "Dear {$order->customer->name},\r\n"
+                'message' => "Dear {$order->customer->name},\r\n"
                     ."Your order (Order ID: {$order->invoice_id}) status: {$orderStatus->name} via {$sourceLabel}.\r\n"
                     ."Thank you — {$site_setting->name}!",
             ];

@@ -337,8 +337,6 @@
     <ul class="nav-second-level">
       @can('product-list')
       <li><a href="{{ route('inhouse.products.index') }}"><i data-feather="package"></i> All Inhouse Products</a></li>
-      <li><a href="{{ route('products.index') }}"><i data-feather="shopping-bag"></i> All Vendor Products</a></li>
-      <li><a href="{{ route('products.pending') }}"><i data-feather="clock"></i> Pending Products</a></li>
       <li><a href="{{ route('admin.products.wholesale') }}"><i data-feather="layers"></i> Wholesale Products</a></li>
       @endcan
       @can('product-create')
@@ -654,7 +652,7 @@
 
 {{-- Vendors --}}
 @php
-  $vendorEnabled = (isset($generalsetting) && $generalsetting) ? (isset($generalsetting->vendor_enabled) ? $generalsetting->vendor_enabled : 1) : 1;
+  $vendorEnabled = config('business.vendor_enabled') ? 1 : 0;
 @endphp
 @if($vendorEnabled == 1)
 @canany(['vendor-list', 'vendor-create', 'vendor-edit', 'vendor-verification', 'vendor-withdrawal'])
@@ -693,7 +691,7 @@
 
 {{-- Resellers --}}
 @php
-  $resellerEnabled = (isset($generalsetting) && $generalsetting) ? (isset($generalsetting->reseller_enabled) ? $generalsetting->reseller_enabled : 1) : 1;
+  $resellerEnabled = config('business.reseller_enabled') ? 1 : 0;
 @endphp
 @if($resellerEnabled == 1)
 @canany(['reseller-list', 'reseller-create', 'reseller-edit', 'reseller-verification', 'reseller-withdrawal'])

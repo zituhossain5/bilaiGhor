@@ -28,18 +28,20 @@ class FundHelper
                 throw new LogicException('A sale can enter the fund only after the order is complete and paid.');
             }
 
-            return FundTransaction::firstOrCreate(
-                [
-                    'direction' => 'in',
-                    'source' => 'sale',
-                    'source_id' => $lockedOrder->id,
-                ],
-                [
-                    'amount' => $lockedOrder->amount,
-                    'note' => $note,
-                    'created_by' => $createdBy,
-                ]
-            );
+            $existing = FundTransaction::includedInAccounting()
+                ->where('direction', 'in')
+                ->where('source', 'sale')
+                ->where('source_id', $lockedOrder->id)
+                ->first();
+
+            return $existing ?: FundTransaction::create([
+                'direction' => 'in',
+                'source' => 'sale',
+                'source_id' => $lockedOrder->id,
+                'amount' => $lockedOrder->amount,
+                'note' => $note,
+                'created_by' => $createdBy,
+            ]);
         });
     }
 }

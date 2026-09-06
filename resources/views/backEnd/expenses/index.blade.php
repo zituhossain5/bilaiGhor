@@ -32,10 +32,16 @@
 <div class="col-md-3 mb-3">
     <div class="card bg-success text-white" style="color:#fff !important;">
         <div class="card-body" style="color:#fff !important;">
-            <h5 class="mb-1" style="color:#fff !important;">Available Fund Balance</h5>
+            <h5 class="mb-1" style="color:#fff !important;">
+                {{ $accounting['latest_reconciliation'] ? 'Available Fund Balance' : 'Unverified Ledger Balance' }}
+            </h5>
             <h2 class="mb-0" style="color:#fff !important;">{{ number_format($balance, 2) }} ৳</h2>
             <small class="opacity-75 d-block mt-1" style="color:#fff !important;">
-                বর্তমানে তহবিলে অবশিষ্ট ব্যালেন্স
+                @if($accounting['latest_reconciliation'])
+                    Ledger updated from the last verified real-world balance
+                @else
+                    Do not treat this as available cash until it is reconciled below
+                @endif
             </small>
         </div>
     </div>
@@ -115,8 +121,10 @@
             </div>
 
             <div class="alert alert-light border py-2">
-                <strong>Formula:</strong> all recorded inflows &#8722; all recorded outflows =
+                <strong>Formula:</strong> valid owner funding + completed/paid sales + reconciliation adjustments
+                &#8722; valid expenses, processed refunds, withdrawals, supplier and payroll payments =
                 &#2547;{{ number_format($accounting['fund_balance'], 2) }}.
+                Vendor and reseller entries are excluded.
                 Stock worth &#2547;{{ number_format($accounting['inventory_on_hand_cost'], 2) }} at cost is an asset, not available cash.
             </div>
 
@@ -275,20 +283,22 @@
             @if(
                 $accounting['duplicate_sale_groups'] > 0 ||
                 $accounting['unlinked_sale_transactions'] > 0 ||
+                $accounting['invalid_linked_sales'] > 0 ||
+                $accounting['orphan_refund_transactions'] > 0 ||
                 $accounting['purchases_missing_items'] > 0 ||
                 $accounting['expense_fund_mismatches'] > 0 ||
-                $accounting['supplier_payment_fund_mismatches'] > 0 ||
-                $accounting['legacy_vendor_commission_inflow'] > 0
+                $accounting['supplier_payment_fund_mismatches'] > 0
             )
                 <div class="alert alert-warning mb-0 mt-3">
                     <strong>Historical data needs review:</strong>
                     {{ $accounting['duplicate_sale_groups'] }} duplicate sale-credit group(s),
                     {{ $accounting['unlinked_sale_transactions'] }} sale credit(s) totaling &#2547;{{ number_format($accounting['unlinked_sale_total'], 2) }} no longer linked to an order, and
+                    {{ $accounting['invalid_linked_sales'] }} sale credit(s) linked to an unpaid/incomplete order or with an incorrect amount,
+                    {{ $accounting['orphan_refund_transactions'] }} refund debit(s) without a processed refund,
                     {{ $accounting['purchases_missing_items'] }} purchase(s) without item rows,
                     {{ $accounting['expense_fund_mismatches'] }} expense/fund mismatch(es), and
                     {{ $accounting['supplier_payment_fund_mismatches'] }} supplier-payment/fund mismatch(es).
-                    Legacy vendor commissions added &#2547;{{ number_format($accounting['legacy_vendor_commission_inflow'], 2) }} on top of full sale credits; new transactions no longer do this.
-                    These records are disclosed here but not silently deleted because their original business evidence is unavailable.
+                    Run <code>php artisan accounting:cleanup-legacy --dry-run</code> to inspect exact candidate records.
                 </div>
             @endif
         </div>

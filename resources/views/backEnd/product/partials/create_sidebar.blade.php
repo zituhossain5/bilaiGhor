@@ -16,10 +16,6 @@
                     <input type="number" name="new_price" class="form-control font-weight-bold" placeholder="0">
                 </div>
                 <div class="col-6">
-                    <label class="form-label">Reseller</label>
-                    <input type="number" step="0.01" name="reseller_price" class="form-control" placeholder="Optional" title="Special price for resellers">
-                </div>
-                <div class="col-6">
                     <label class="form-label">Stock <small class="text-muted">(Opt.)</small></label>
                     <input type="number" name="stock" class="form-control" placeholder="0">
                 </div>

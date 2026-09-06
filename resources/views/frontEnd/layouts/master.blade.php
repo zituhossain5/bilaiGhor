@@ -702,11 +702,11 @@
                             <i class="far fa-user"></i>
                             <span>{{Str::limit(Auth::guard('customer')->user()->name, 12)}}</span>
                         </a>
-                        @elseif(($generalsetting?->vendor_enabled ?? 1) == 1 && Auth::guard('admin')->check() && Auth::guard('admin')->user()->hasRole('vendor'))
+                        @elseif(config('business.vendor_enabled') && ($generalsetting?->vendor_enabled ?? 1) == 1 && Auth::guard('admin')->check() && Auth::guard('admin')->user()->hasRole('vendor'))
                         <a href="{{route('vendor.dashboard')}}" class="bilai-h-btn bilai-h-btn--user">
                             <i class="fa-solid fa-store"></i><span>Vendor Panel</span>
                         </a>
-                        @elseif(($generalsetting?->reseller_enabled ?? 1) == 1 && Auth::guard('admin')->check() && (Auth::guard('admin')->user()->hasRole('reseller') || (isset(Auth::guard('admin')->user()->role) && strtolower(Auth::guard('admin')->user()->role) === 'reseller')))
+                        @elseif(config('business.reseller_enabled') && ($generalsetting?->reseller_enabled ?? 1) == 1 && Auth::guard('admin')->check() && (Auth::guard('admin')->user()->hasRole('reseller') || (isset(Auth::guard('admin')->user()->role) && strtolower(Auth::guard('admin')->user()->role) === 'reseller')))
                         <a href="{{route('reseller.dashboard')}}" class="bilai-h-btn bilai-h-btn--user">
                             <i class="fa-solid fa-handshake"></i><span>Dashboard</span>
                         </a>
@@ -748,7 +748,7 @@
                     <div class="bilai-nav__right">
                         <ul class="bilai-nav__right-links">
                             <li><a href="{{ route('home') }}" class="{{ Route::is('home') ? 'active' : '' }}">Home</a></li>
-                            @if(($generalsetting?->vendor_enabled ?? 1) == 1)
+                            @if(config('business.vendor_enabled') && ($generalsetting?->vendor_enabled ?? 1) == 1)
                             <li><a href="{{ route('sellers') }}" class="{{ Route::is('sellers') ? 'active' : '' }}">Sellers</a></li>
                             @endif
                             <li><a href="{{ route('contact') }}" class="{{ Route::is('contact') ? 'active' : '' }}">Contact</a></li>
@@ -1000,14 +1000,14 @@
                 </div>
                 <span class="nav_text">Account</span>
             </a>
-        @elseif(($generalsetting?->vendor_enabled ?? 1) == 1 && Auth::guard('admin')->check() && Auth::guard('admin')->user()->hasRole('vendor'))
+        @elseif(config('business.vendor_enabled') && ($generalsetting?->vendor_enabled ?? 1) == 1 && Auth::guard('admin')->check() && Auth::guard('admin')->user()->hasRole('vendor'))
             <a href="{{route('vendor.dashboard')}}" class="nav_item">
                 <div class="icon_box">
                     <i class="fa-solid fa-store"></i>
                 </div>
                 <span class="nav_text">Vendor</span>
             </a>
-        @elseif(($generalsetting?->reseller_enabled ?? 1) == 1 && Auth::guard('admin')->check() && (Auth::guard('admin')->user()->hasRole('reseller') || (isset(Auth::guard('admin')->user()->role) && strtolower(Auth::guard('admin')->user()->role) === 'reseller')))
+        @elseif(config('business.reseller_enabled') && ($generalsetting?->reseller_enabled ?? 1) == 1 && Auth::guard('admin')->check() && (Auth::guard('admin')->user()->hasRole('reseller') || (isset(Auth::guard('admin')->user()->role) && strtolower(Auth::guard('admin')->user()->role) === 'reseller')))
             <a href="{{route('reseller.dashboard')}}" class="nav_item">
                 <div class="icon_box">
                     <i class="fa-solid fa-handshake"></i>

@@ -20,7 +20,7 @@ class FundController extends Controller
      */
     public function index(Request $request)
     {
-        $query = FundTransaction::orderBy('created_at', 'desc');
+        $query = FundTransaction::includedInAccounting()->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
             $query->whereDate('created_at', '>=', $request->from_date);
@@ -41,11 +41,11 @@ class FundController extends Controller
         $currentYear  = $now->year;
         $currentMonth = $now->month;
 
-        $yearlyAdded = FundTransaction::where('direction', 'in')
+        $yearlyAdded = FundTransaction::includedInAccounting()->where('direction', 'in')
             ->whereYear('created_at', $currentYear)
             ->sum('amount');
 
-        $monthlyAdded = FundTransaction::where('direction', 'in')
+        $monthlyAdded = FundTransaction::includedInAccounting()->where('direction', 'in')
             ->whereYear('created_at', $currentYear)
             ->whereMonth('created_at', $currentMonth)
             ->sum('amount');
@@ -133,7 +133,7 @@ class FundController extends Controller
     {
         $filter = $request->input('filter');
 
-        $query = FundTransaction::orderBy('created_at', 'asc');
+        $query = FundTransaction::includedInAccounting()->orderBy('created_at', 'asc');
 
         if ($filter === 'year') {
             $year = (int) $request->input('year', now()->year);
@@ -229,7 +229,7 @@ class FundController extends Controller
             abort(403, 'Only Admin can edit fund transactions.');
         }
 
-        $transaction = FundTransaction::findOrFail($id);
+        $transaction = FundTransaction::includedInAccounting()->findOrFail($id);
         abort_unless($transaction->isManuallyEditable(), 422, 'System-generated transactions cannot be edited. Use reconciliation for corrections.');
         return view('backEnd.fund.edit', compact('transaction'));
     }
@@ -258,7 +258,7 @@ class FundController extends Controller
         ]);
 
         return DB::transaction(function () use ($validated, $id) {
-            $transaction = FundTransaction::query()->lockForUpdate()->findOrFail($id);
+            $transaction = FundTransaction::includedInAccounting()->lockForUpdate()->findOrFail($id);
             abort_unless($transaction->isManuallyEditable(), 422, 'System-generated transactions cannot be edited. Use reconciliation for corrections.');
 
             // Save old values for logging
@@ -345,7 +345,7 @@ class FundController extends Controller
         }
 
         return DB::transaction(function () use ($id) {
-            $transaction = FundTransaction::query()->lockForUpdate()->findOrFail($id);
+            $transaction = FundTransaction::includedInAccounting()->lockForUpdate()->findOrFail($id);
             abort_unless($transaction->isManuallyEditable(), 422, 'System-generated transactions cannot be deleted. Use reconciliation for corrections.');
 
             // Save transaction data for logging

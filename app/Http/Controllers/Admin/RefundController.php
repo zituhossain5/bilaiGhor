@@ -3,39 +3,33 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Refund;
-use App\Models\Order;
-use App\Models\OrderDetails;
 use App\Models\FundTransaction;
-use App\Models\Product;
+use App\Models\Refund;
+use App\Services\AccountingSummaryService;
+use App\Services\InventoryService;
+use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Validation\ValidationException;
 
 class RefundController extends Controller
 {
-    /**
-     * Display all refunds
-     */
     public function index(Request $request)
     {
         $query = Refund::with(['order', 'customer', 'processedBy']);
 
-        // Filter by status
-        if ($request->has('status') && $request->status != '') {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by order invoice
-        if ($request->has('order_invoice') && $request->order_invoice != '') {
-            $query->whereHas('order', function($q) use ($request) {
-                $q->where('invoice_id', 'like', '%' . $request->order_invoice . '%');
+        if ($request->filled('order_invoice')) {
+            $query->whereHas('order', function ($orderQuery) use ($request) {
+                $orderQuery->where('invoice_id', 'like', '%'.$request->order_invoice.'%');
             });
         }
 
         $data = $query->latest()->paginate(15)->withQueryString();
-
         $statuses = ['pending', 'approved', 'rejected', 'processed'];
         $statusCounts = Refund::selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
@@ -44,9 +38,6 @@ class RefundController extends Controller
         return view('backEnd.refunds.index', compact('data', 'statuses', 'statusCounts'));
     }
 
-    /**
-     * Show refund details
-     */
     public function show($id)
     {
         $refund = Refund::with([
@@ -55,151 +46,164 @@ class RefundController extends Controller
             'customer',
             'processedBy',
         ])->findOrFail($id);
-        
+
         return view('backEnd.refunds.show', compact('refund'));
     }
 
-    /**
-     * Approve refund request
-     */
+    /** Approval is authorization only; cash leaves the fund when payment is processed. */
     public function approve(Request $request, $id)
-    {
-        $refund = Refund::with(['order', 'customer'])->findOrFail($id);
-
-        if ($refund->status !== 'pending') {
-            Toastr::error('This refund has already been processed.', 'Error');
-            return back();
-        }
-
-        // Check admin fund balance
-        $adminFundBalance = \App\Helpers\FundHelper::balance();
-        $totalRefundAmount = $refund->amount + $refund->shipping_charge;
-        
-        if ($adminFundBalance < $totalRefundAmount) {
-            Toastr::error('Insufficient fund balance. Current balance: ৳' . number_format($adminFundBalance, 2), 'Error');
-            return back();
-        }
-
-        DB::transaction(function () use ($refund, $request) {
-            $refund->status = 'approved';
-            $refund->admin_note = $request->admin_note;
-            $refund->processed_by = Auth::id();
-            $refund->save();
-
-            // Deduct from admin fund
-            FundTransaction::create([
-                'direction'  => 'out',
-                'source'     => 'refund',
-                'source_id'  => $refund->id,
-                'amount'     => $refund->amount + $refund->shipping_charge,
-                'note'       => 'Refund approved for Order #' . $refund->order->invoice_id . ' - Refund ID: ' . $refund->refund_id,
-                'created_by' => Auth::id(),
-            ]);
-        });
-
-        Toastr::success('Refund approved successfully.', 'Success');
-        return back();
-    }
-
-    /**
-     * Reject refund request
-     */
-    public function reject(Request $request, $id)
     {
         $refund = Refund::findOrFail($id);
 
-        if ($refund->status !== 'pending' && $refund->status !== 'approved') {
-            Toastr::error('This refund has already been processed.', 'Error');
+        if ($refund->status !== 'pending') {
+            Toastr::error('This refund has already been reviewed.', 'Error');
+
             return back();
         }
 
         DB::transaction(function () use ($refund, $request) {
-            // If refund was already approved, reverse the fund transaction
-            if ($refund->status === 'approved') {
-                // Find and delete the fund transaction
-                $fundTransaction = FundTransaction::where('source', 'refund')
-                    ->where('source_id', $refund->id)
-                    ->where('direction', 'out')
-                    ->first();
+            $lockedRefund = Refund::query()->lockForUpdate()->findOrFail($refund->id);
+            abort_unless($lockedRefund->status === 'pending', 422, 'This refund has already been reviewed.');
 
-                if ($fundTransaction) {
-                    // Reverse the transaction by creating an 'in' transaction
+            $lockedRefund->update([
+                'status' => 'approved',
+                'admin_note' => $request->admin_note,
+                'processed_by' => Auth::id(),
+            ]);
+        });
+
+        Toastr::success('Refund approved. The fund will be deducted when payment is processed.', 'Success');
+
+        return back();
+    }
+
+    public function reject(Request $request, $id)
+    {
+        $refund = Refund::with('order')->findOrFail($id);
+
+        if (! in_array($refund->status, ['pending', 'approved'], true)) {
+            Toastr::error('This refund has already been processed.', 'Error');
+
+            return back();
+        }
+
+        DB::transaction(function () use ($refund, $request) {
+            $lockedRefund = Refund::query()->with('order')->lockForUpdate()->findOrFail($refund->id);
+
+            // Compatibility for old records that deducted funds during approval.
+            $legacyDeduction = FundTransaction::includedInAccounting()
+                ->where('source', 'refund')
+                ->where('source_id', $lockedRefund->id)
+                ->where('direction', 'out')
+                ->first();
+
+            if ($legacyDeduction) {
+                $existingReversal = FundTransaction::includedInAccounting()
+                    ->where('direction', 'in')
+                    ->where('source', 'refund_reversal')
+                    ->where('source_id', $lockedRefund->id)
+                    ->exists();
+
+                if (! $existingReversal) {
                     FundTransaction::create([
-                        'direction'  => 'in',
-                        'source'     => 'refund_reversal',
-                        'source_id'  => $refund->id,
-                        'amount'     => $refund->amount + $refund->shipping_charge,
-                        'note'       => 'Refund rejected - Reversal for Order #' . $refund->order->invoice_id . ' - Refund ID: ' . $refund->refund_id,
+                        'direction' => 'in',
+                        'source' => 'refund_reversal',
+                        'source_id' => $lockedRefund->id,
+                        'amount' => $legacyDeduction->amount,
+                        'note' => 'Rejected refund reversal for Order #'.optional($lockedRefund->order)->invoice_id,
                         'created_by' => Auth::id(),
                     ]);
                 }
             }
 
-            $refund->status = 'rejected';
-            $refund->admin_note = $request->admin_note;
-            $refund->processed_by = Auth::id();
-            $refund->processed_at = now();
-            $refund->save();
+            $lockedRefund->update([
+                'status' => 'rejected',
+                'admin_note' => $request->admin_note,
+                'processed_by' => Auth::id(),
+                'processed_at' => now(),
+            ]);
         });
 
         Toastr::success('Refund request rejected.', 'Success');
+
         return back();
     }
 
-    /**
-     * Process refund (mark as processed after payment)
-     */
     public function process(Request $request, $id)
     {
-        $refund = Refund::with(['order'])->findOrFail($id);
-
-        if ($refund->status !== 'approved') {
-            Toastr::error('Only approved refunds can be processed.', 'Error');
-            return back();
-        }
-
-        $request->validate([
+        $validated = $request->validate([
             'transaction_id' => 'required|string|max:255',
             'refund_method' => 'required|in:original_payment,bkash,nagad,bank,manual',
             'refund_account' => 'required|string|max:255',
             'refund_account_name' => 'nullable|string|max:255',
         ]);
 
-        DB::transaction(function () use ($refund, $request) {
-            $refund->status = 'processed';
-            $refund->transaction_id = $request->transaction_id;
-            $refund->refund_method = $request->refund_method;
-            $refund->refund_account = $request->refund_account;
-            $refund->refund_account_name = $request->refund_account_name;
-            $refund->processed_at = now();
-            $refund->save();
+        DB::transaction(function () use ($id, $validated) {
+            $refund = Refund::query()->with('order')->lockForUpdate()->findOrFail($id);
 
-            // Settle inventory if the order was cancelled. Idempotent: if the
-            // cancellation already released/restocked (webhook, admin panel), this
-            // is a no-op — fixing the old double-restock on refund processing.
-            if ($refund->order->order_status == 11) { // 11 = cancelled
-                \App\Services\InventoryService::releaseReservation($refund->order);
+            if ($refund->status !== 'approved') {
+                throw ValidationException::withMessages([
+                    'transaction_id' => 'Only an approved refund can be processed.',
+                ]);
+            }
+
+            $refundAmount = round((float) $refund->amount + (float) $refund->shipping_charge, 2);
+            $balance = AccountingSummaryService::lockedFundBalance();
+            if ($refundAmount > $balance) {
+                throw ValidationException::withMessages([
+                    'transaction_id' => 'Insufficient fund balance. Available: '.number_format($balance, 2),
+                ]);
+            }
+
+            $existingDeduction = FundTransaction::includedInAccounting()
+                ->where('direction', 'out')
+                ->where('source', 'refund')
+                ->where('source_id', $refund->id)
+                ->exists();
+
+            if (! $existingDeduction) {
+                FundTransaction::create([
+                    'direction' => 'out',
+                    'source' => 'refund',
+                    'source_id' => $refund->id,
+                    'amount' => $refundAmount,
+                    'note' => 'Refund processed for Order #'.$refund->order->invoice_id.' - Refund ID: '.$refund->refund_id,
+                    'created_by' => Auth::id(),
+                ]);
+            }
+
+            $refund->update([
+                'status' => 'processed',
+                'transaction_id' => $validated['transaction_id'],
+                'refund_method' => $validated['refund_method'],
+                'refund_account' => $validated['refund_account'],
+                'refund_account_name' => $validated['refund_account_name'] ?? null,
+                'processed_at' => now(),
+            ]);
+
+            if ((int) $refund->order->order_status === 11) {
+                InventoryService::releaseReservation($refund->order);
             }
         });
 
-        Toastr::success('Refund processed successfully.', 'Success');
+        Toastr::success('Refund processed and deducted from the fund exactly once.', 'Success');
+
         return back();
     }
 
-    /**
-     * Delete refund (only if pending)
-     */
     public function destroy($id)
     {
         $refund = Refund::findOrFail($id);
 
         if ($refund->status !== 'pending') {
             Toastr::error('Only pending refunds can be deleted.', 'Error');
+
             return back();
         }
 
         $refund->delete();
         Toastr::success('Refund request deleted successfully.', 'Success');
+
         return back();
     }
 }

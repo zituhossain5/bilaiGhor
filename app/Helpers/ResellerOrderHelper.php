@@ -3,8 +3,8 @@
 namespace App\Helpers;
 
 use App\Models\Order;
-use App\Models\User;
 use App\Models\ResellerWalletTransaction;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class ResellerOrderHelper
@@ -15,7 +15,11 @@ class ResellerOrderHelper
      */
     public static function deductDeliveryChargeOnCancel(Order $order): void
     {
-        if (!$order->user_id || !$order->reseller_profit) {
+        if (! config('business.reseller_enabled')) {
+            return;
+        }
+
+        if (! $order->user_id || ! $order->reseller_profit) {
             return; // Not a reseller order
         }
         if ($order->delivery_charge_deducted ?? false) {
@@ -26,11 +30,12 @@ class ResellerOrderHelper
         if ($charge <= 0) {
             $order->delivery_charge_deducted = true;
             $order->save();
+
             return;
         }
 
         $user = User::find($order->user_id);
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -45,7 +50,7 @@ class ResellerOrderHelper
             -$deduct,
             'Order',
             $order->id,
-            'অর্ডার #' . ($order->invoice_id ?? $order->id) . ' ক্যান্সেল - ডেলিভারি চার্জ ৳' . number_format($deduct, 2)
+            'অর্ডার #'.($order->invoice_id ?? $order->id).' ক্যান্সেল - ডেলিভারি চার্জ ৳'.number_format($deduct, 2)
         );
 
         $order->delivery_charge_deducted = true;

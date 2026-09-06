@@ -22,12 +22,6 @@
                     @error('new_price')<span class="invalid-feedback"><strong>{{ $message }}</strong></span>@enderror
                 </div>
                 <div class="col-6">
-                    <label for="reseller_price" class="form-label">Reseller</label>
-                    <input type="text" step="0.01" class="form-control @error('reseller_price') is-invalid @enderror"
-                           name="reseller_price" value="{{ old('reseller_price', $edit_data->reseller_price) }}" id="reseller_price" placeholder="Optional" />
-                    @error('reseller_price')<span class="invalid-feedback"><strong>{{ $message }}</strong></span>@enderror
-                </div>
-                <div class="col-6">
                     <label for="stock" class="form-label">Stock <small class="text-muted">(Opt.)</small></label>
                     <input type="text" class="form-control @error('stock') is-invalid @enderror"
                            name="stock" value="{{ $edit_data->stock }}" id="stock" placeholder="0" />

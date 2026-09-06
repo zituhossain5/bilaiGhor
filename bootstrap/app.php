@@ -43,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\TrackTrafficSource::class,
             // এডমিন লাইসেন্স — সেশন/রাউটের পরে (invalid → লক পেজ, ক্যাশ ক্লিয়ার → CD)
             \App\Http\Middleware\AppSessionHandler::class,
+            \App\Http\Middleware\DisableLegacyCommerceFeatures::class,
         ]);
 
         // =================================================================
@@ -51,7 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
-        
+
         // API throttle is handled by default in Laravel 12
 
         // =================================================================
@@ -68,12 +69,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'signed' => \App\Http\Middleware\ValidateSignature::class,
             'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-            
+
             // Spatie Permission Middleware
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-            
+
             // Custom Middleware
             'lock' => \App\Http\Middleware\LockAccount::class,
             'customer' => \App\Http\Middleware\Customer::class,

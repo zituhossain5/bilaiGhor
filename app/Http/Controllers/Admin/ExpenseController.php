@@ -57,18 +57,18 @@ class ExpenseController extends Controller
         $currentMonth = $today->month;
 
         // এই বছরে মোট খরচ
-        $yearlyExpense = Expense::whereYear('expense_date', $currentYear)->sum('amount');
+        $yearlyExpense = Expense::includedInAccounting()->whereYear('expense_date', $currentYear)->sum('amount');
 
         // এই মাসে মোট খরচ
-        $monthlyExpense = Expense::whereYear('expense_date', $currentYear)
+        $monthlyExpense = Expense::includedInAccounting()->whereYear('expense_date', $currentYear)
                             ->whereMonth('expense_date', $currentMonth)
                             ->sum('amount');
 
         // আজকের খরচ
-        $todayExpense = Expense::whereDate('expense_date', $today)->sum('amount');
+        $todayExpense = Expense::includedInAccounting()->whereDate('expense_date', $today)->sum('amount');
 
         // হিস্টরি
-        $expenses = Expense::orderBy('expense_date', 'desc')
+        $expenses = Expense::includedInAccounting()->orderBy('expense_date', 'desc')
                         ->orderBy('id', 'desc')
                         ->paginate(20);
 
@@ -165,7 +165,7 @@ class ExpenseController extends Controller
     // ✅ Edit ফর্ম
     public function edit($id)
     {
-        $expense = Expense::findOrFail($id);
+        $expense = Expense::includedInAccounting()->findOrFail($id);
 
         // উপরে summary একই থাকবে
         $accounting = AccountingSummaryService::snapshot();
@@ -175,13 +175,13 @@ class ExpenseController extends Controller
         $currentYear  = $today->year;
         $currentMonth = $today->month;
 
-        $yearlyExpense = Expense::whereYear('expense_date', $currentYear)->sum('amount');
-        $monthlyExpense = Expense::whereYear('expense_date', $currentYear)
+        $yearlyExpense = Expense::includedInAccounting()->whereYear('expense_date', $currentYear)->sum('amount');
+        $monthlyExpense = Expense::includedInAccounting()->whereYear('expense_date', $currentYear)
                             ->whereMonth('expense_date', $currentMonth)
                             ->sum('amount');
-        $todayExpense = Expense::whereDate('expense_date', $today)->sum('amount');
+        $todayExpense = Expense::includedInAccounting()->whereDate('expense_date', $today)->sum('amount');
 
-        $expenses = Expense::orderBy('expense_date', 'desc')
+        $expenses = Expense::includedInAccounting()->orderBy('expense_date', 'desc')
                         ->orderBy('id', 'desc')
                         ->paginate(20);
 
@@ -214,7 +214,7 @@ class ExpenseController extends Controller
         ]);
 
         return DB::transaction(function () use ($validated, $id) {
-            $expense = Expense::query()->lockForUpdate()->findOrFail($id);
+            $expense = Expense::includedInAccounting()->lockForUpdate()->findOrFail($id);
 
             // Save old values for logging
             $old_title = $expense->title;
@@ -226,7 +226,7 @@ class ExpenseController extends Controller
             // Calculate fund balance before update
             $fund_balance_before = AccountingSummaryService::lockedFundBalance();
             $fund = $expense->fund_transaction_id
-                ? FundTransaction::query()->lockForUpdate()->find($expense->fund_transaction_id)
+                ? FundTransaction::includedInAccounting()->lockForUpdate()->find($expense->fund_transaction_id)
                 : null;
             $validLinkedFund = $fund
                 && $fund->direction === 'out'
@@ -347,7 +347,7 @@ class ExpenseController extends Controller
         }
 
         return DB::transaction(function () use ($id) {
-            $expense = Expense::query()->lockForUpdate()->findOrFail($id);
+            $expense = Expense::includedInAccounting()->lockForUpdate()->findOrFail($id);
 
             // Save expense data for logging
             $old_title = $expense->title;
@@ -360,7 +360,7 @@ class ExpenseController extends Controller
             // Calculate fund balance before delete
             $fund_balance_before = AccountingSummaryService::lockedFundBalance();
             $fund = $fund_transaction_id
-                ? FundTransaction::query()->lockForUpdate()->find($fund_transaction_id)
+                ? FundTransaction::includedInAccounting()->lockForUpdate()->find($fund_transaction_id)
                 : null;
             $validLinkedFund = $fund
                 && $fund->direction === 'out'
@@ -448,7 +448,7 @@ class ExpenseController extends Controller
         $from = $request->input('from_date');
         $to   = $request->input('to_date');
 
-        $query = Expense::orderBy('expense_date', 'asc');
+        $query = Expense::includedInAccounting()->orderBy('expense_date', 'asc');
 
         if ($from) {
             $query->whereDate('expense_date', '>=', $from);

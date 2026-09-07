@@ -28,27 +28,8 @@
     {{-- ======= SUMMARY CARDS ======= --}}
     <div class="row mb-4">
 
-      {{-- Available Balance --}}
-<div class="col-md-3 mb-3">
-    <div class="card bg-success text-white" style="color:#fff !important;">
-        <div class="card-body" style="color:#fff !important;">
-            <h5 class="mb-1" style="color:#fff !important;">
-                {{ $accounting['latest_reconciliation'] ? 'Available Fund Balance' : 'Unverified Ledger Balance' }}
-            </h5>
-            <h2 class="mb-0" style="color:#fff !important;">{{ number_format($balance, 2) }} ৳</h2>
-            <small class="opacity-75 d-block mt-1" style="color:#fff !important;">
-                @if($accounting['latest_reconciliation'])
-                    Ledger updated from the last verified real-world balance
-                @else
-                    Do not treat this as available cash until it is reconciled below
-                @endif
-            </small>
-        </div>
-    </div>
-</div>
-
 {{-- This Year Expense --}}
-<div class="col-md-3 mb-3">
+<div class="col-md-4 mb-3">
     <div class="card bg-primary text-white" style="color:#fff !important;">
         <div class="card-body" style="color:#fff !important;">
             <h5 class="mb-1" style="color:#fff !important;">This Year ({{ $currentYear }})</h5>
@@ -61,7 +42,7 @@
 </div>
 
 {{-- This Month Expense --}}
-<div class="col-md-3 mb-3">
+<div class="col-md-4 mb-3">
     <div class="card bg-info text-white" style="color:#fff !important;">
         <div class="card-body" style="color:#fff !important;">
             <h5 class="mb-1" style="color:#fff !important;">
@@ -76,7 +57,7 @@
 </div>
 
 {{-- Today Expense --}}
-<div class="col-md-3 mb-3">
+<div class="col-md-4 mb-3">
     <div class="card bg-danger text-white" style="color:#fff !important;">
         <div class="card-body" style="color:#fff !important;">
             <h5 class="mb-1" style="color:#fff !important;">Today ({{ now()->format('d M, Y') }})</h5>
@@ -92,11 +73,16 @@
     </div>
 
     <div class="card shadow-sm mb-4 border-start border-4 border-warning">
-        <div class="card-header bg-white">
-            <h5 class="mb-1">Account Reconciliation</h5>
-            <small class="text-muted">The fund balance is liquid money only. Inventory value is reported separately and is never added to this balance.</small>
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="mb-1">Optional accounting information</h6>
+                <small class="text-muted">Expense entry is independent of the ledger balance.</small>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#expense-accounting-details" aria-expanded="false" aria-controls="expense-accounting-details">
+                View fund details
+            </button>
         </div>
-        <div class="card-body">
+        <div class="card-body collapse" id="expense-accounting-details">
             <div class="row g-3 mb-3">
                 <div class="col-xl-3 col-md-6">
                     <div class="text-muted small">Ledger Fund Balance</div>

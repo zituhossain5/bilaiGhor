@@ -5,16 +5,20 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\ExpenseLog;
-use App\Models\FundTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Services\AccountingSummaryService;
-use Illuminate\Validation\ValidationException;
+use App\Services\ExpenseFundTransactionService;
 
 class ExpenseController extends Controller
 {
+    public function __construct(
+        private readonly ExpenseFundTransactionService $expenseFunds
+    ) {
+    }
+
     /**
      * Check if current user is Admin (Super Admin or has Admin role)
      */
@@ -48,9 +52,7 @@ class ExpenseController extends Controller
     // ✅ List + Summary
     public function index()
     {
-        // ফান্ড ব্যালেন্স
         $accounting = AccountingSummaryService::snapshot();
-        $balance = $accounting['fund_balance'];
 
         $today        = Carbon::today();
         $currentYear  = $today->year;
@@ -73,7 +75,6 @@ class ExpenseController extends Controller
                         ->paginate(20);
 
         return view('backEnd.expenses.index', compact(
-            'balance',
             'currentYear',
             'currentMonth',
             'yearlyExpense',
@@ -97,13 +98,6 @@ class ExpenseController extends Controller
 
         // আগে expense এন্ট্রি
         DB::transaction(function () use ($validated) {
-            $balance = AccountingSummaryService::lockedFundBalance();
-            if ($validated['amount'] > $balance) {
-                throw ValidationException::withMessages([
-                    'amount' => 'Not enough balance in fund. Available: ' . number_format($balance, 2),
-                ]);
-            }
-
             $expense = Expense::create([
                 'title'        => $validated['title'],
                 'amount'       => $validated['amount'],
@@ -113,20 +107,7 @@ class ExpenseController extends Controller
                 'created_by'   => Auth::id(),
             ]);
 
-        // তারপর ফান্ড থেকে out ট্রানজ্যাকশন
-            $fund = FundTransaction::create([
-                'direction' => 'out',
-                'source'    => 'expense',
-                'source_id' => $expense->id,
-                'amount'    => $expense->amount,
-                'note'      => 'Expense: ' . $expense->title . ($expense->note ? ' - ' . $expense->note : ''),
-                'created_by'=> Auth::id(),
-            ]);
-
-        // লিঙ্ক আপডেট
-            $expense->update([
-                'fund_transaction_id' => $fund->id,
-            ]);
+            $this->expenseFunds->sync($expense, Auth::id());
         });
 
         return redirect()->route('admin.expenses.index')
@@ -167,10 +148,6 @@ class ExpenseController extends Controller
     {
         $expense = Expense::includedInAccounting()->findOrFail($id);
 
-        // উপরে summary একই থাকবে
-        $accounting = AccountingSummaryService::snapshot();
-        $balance = $accounting['fund_balance'];
-
         $today        = Carbon::today();
         $currentYear  = $today->year;
         $currentMonth = $today->month;
@@ -187,14 +164,12 @@ class ExpenseController extends Controller
 
         return view('backEnd.expenses.edit', compact(
             'expense',
-            'balance',
             'currentYear',
             'currentMonth',
             'yearlyExpense',
             'monthlyExpense',
             'todayExpense',
-            'expenses',
-            'accounting'
+            'expenses'
         ));
     }
 
@@ -225,22 +200,6 @@ class ExpenseController extends Controller
 
             // Calculate fund balance before update
             $fund_balance_before = AccountingSummaryService::lockedFundBalance();
-            $fund = $expense->fund_transaction_id
-                ? FundTransaction::includedInAccounting()->lockForUpdate()->find($expense->fund_transaction_id)
-                : null;
-            $validLinkedFund = $fund
-                && $fund->direction === 'out'
-                && $fund->source === 'expense'
-                && (int) $fund->source_id === (int) $expense->id;
-            $currentlyDeducted = $validLinkedFund ? (float) $fund->amount : 0.0;
-            $additionalDeduction = max(0, (float) $validated['amount'] - $currentlyDeducted);
-
-            if ($additionalDeduction > $fund_balance_before) {
-                throw ValidationException::withMessages([
-                    'amount' => 'Not enough balance for this change. Additional funds required: ' .
-                        number_format($additionalDeduction, 2),
-                ]);
-            }
 
             // Update expense
             $expense->update([
@@ -252,25 +211,7 @@ class ExpenseController extends Controller
                 'updated_by'   => Auth::id(),
             ]);
 
-            // Update linked fund transaction
-            if ($validLinkedFund) {
-                $fund->update([
-                    'amount' => $expense->amount,
-                    'note' => 'Expense: ' . $expense->title . ($expense->note ? ' - ' . $expense->note : ''),
-                    'updated_by' => Auth::id(),
-                ]);
-            } else {
-                $replacementFund = FundTransaction::create([
-                    'direction' => 'out',
-                    'source' => 'expense',
-                    'source_id' => $expense->id,
-                    'amount' => $expense->amount,
-                    'note' => 'Expense: ' . $expense->title . ($expense->note ? ' - ' . $expense->note : ''),
-                    'created_by' => Auth::id(),
-                ]);
-
-                $expense->update(['fund_transaction_id' => $replacementFund->id]);
-            }
+            $this->expenseFunds->sync($expense, Auth::id());
 
             // Calculate fund balance after update
             $fund_balance_after = $this->calculateFundBalance();
@@ -355,22 +296,10 @@ class ExpenseController extends Controller
             $old_expense_date = $expense->expense_date;
             $old_category = $expense->category;
             $old_note = $expense->note;
-            $fund_transaction_id = $expense->fund_transaction_id;
-
             // Calculate fund balance before delete
             $fund_balance_before = AccountingSummaryService::lockedFundBalance();
-            $fund = $fund_transaction_id
-                ? FundTransaction::includedInAccounting()->lockForUpdate()->find($fund_transaction_id)
-                : null;
-            $validLinkedFund = $fund
-                && $fund->direction === 'out'
-                && $fund->source === 'expense'
-                && (int) $fund->source_id === (int) $expense->id;
-
-            // Calculate expected balance after delete
-            // When expense is deleted, the linked fund transaction (OUT) should also be removed
-            // So balance will increase by the expense amount
-            $expected_balance_after = $fund_balance_before + ($validLinkedFund ? (float) $fund->amount : 0.0);
+            $removedFundAmount = $this->expenseFunds->deleteFor($expense);
+            $expected_balance_after = $fund_balance_before + $removedFundAmount;
 
             // Create log entry BEFORE deleting
             $balance_diff = $expected_balance_after - $fund_balance_before;
@@ -396,16 +325,7 @@ class ExpenseController extends Controller
                 'performed_by' => Auth::id(),
             ]);
 
-            // Delete linked fund transaction first (if exists)
-            if ($validLinkedFund) {
-                $fund->delete();
-            }
-
-            // Now delete the expense
             $expense->delete();
-
-            // Verify balance after delete
-            $actual_balance_after = $this->calculateFundBalance();
 
             return redirect()->route('admin.expenses.index')
                              ->with('success', 'Expense deleted successfully! Fund balance adjusted automatically.');

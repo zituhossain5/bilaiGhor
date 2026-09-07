@@ -26,26 +26,8 @@
     {{-- SUMMARY CARDS --}}
     <div class="row mb-4">
 
-        {{-- Available Balance --}}
-        <div class="col-md-3 mb-3">
-            <div class="card border-0 shadow-sm bg-success" style="color:white; border-radius: 12px;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h6 class="mb-0" style="color:white;">Available Fund Balance</h6>
-                        <i data-feather="wallet" style="width:18px;height:18px;"></i>
-                    </div>
-                    <h2 class="mb-0 fw-bold" style="color:white;">
-                        {{ number_format($balance, 2) }} ৳
-                    </h2>
-                    <small class="d-block mt-1" style="color:white;opacity: .9;">
-                        বর্তমানে তহবিলে অবশিষ্ট ব্যালেন্স
-                    </small>
-                </div>
-            </div>
-        </div>
-
         {{-- This Year --}}
-        <div class="col-md-3 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="card border-0 shadow-sm bg-primary" style="color:white; border-radius: 12px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -63,7 +45,7 @@
         </div>
 
         {{-- This Month --}}
-        <div class="col-md-3 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="card border-0 shadow-sm bg-info" style="color:white; border-radius: 12px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -85,7 +67,7 @@
         </div>
 
         {{-- Today --}}
-        <div class="col-md-3 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="card border-0 shadow-sm bg-danger" style="color:white; border-radius: 12px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-1">

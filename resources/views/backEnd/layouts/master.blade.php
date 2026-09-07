@@ -23,6 +23,8 @@
     <link href="{{asset('public/backEnd/')}}/assets/css/custom.css" rel="stylesheet" type="text/css" />
     <!-- Head js -->
     @yield('css')
+    <!-- Bilai Ghor admin brand theme -->
+    <link href="{{asset('public/backEnd/')}}/assets/css/admin-brand.css" rel="stylesheet" type="text/css" />
     <script src="{{asset('public/backEnd/')}}/assets/js/head.js"></script>
   </head>
 
@@ -1332,10 +1334,10 @@
     if (typeof Swal !== 'undefined') {
         Swal.fire({
             icon: 'info',
-            title: '<strong style="font-size:1.4rem;color:#2c3e50;">ডেমো মুড সক্রিয়</strong>',
-            html: '<div style="text-align:center;padding:10px 0;"><div style="width:70px;height:70px;margin:0 auto 15px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fe-eye" style="font-size:32px;color:#fff;"></i></div><p style="font-size:1rem;color:#5a6c7d;margin-bottom:8px;line-height:1.6;">অ্যাডমিন প্যানেল থেকে কোন ডাটা পরিবর্তন বা সংযোজন করা যাবে না।</p><p style="font-size:0.9rem;color:#95a5a6;margin:0;">কাস্টমার সাইটে অর্ডার, ট্রাকিং ও অন্যান্য সেবা স্বাভাবিকভাবে কাজ করবে।</p></div>',
+            title: '<strong style="font-size:1.4rem;color:#2a1505;">ডেমো মুড সক্রিয়</strong>',
+            html: '<div style="text-align:center;padding:10px 0;"><div style="width:70px;height:70px;margin:0 auto 15px;background:linear-gradient(135deg,#2a1505 0%,#e8861a 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fe-eye" style="font-size:32px;color:#fff;"></i></div><p style="font-size:1rem;color:#4f4f4f;margin-bottom:8px;line-height:1.6;">অ্যাডমিন প্যানেল থেকে কোন ডাটা পরিবর্তন বা সংযোজন করা যাবে না।</p><p style="font-size:0.9rem;color:#7a6a5e;margin:0;">কাস্টমার সাইটে অর্ডার, ট্রাকিং ও অন্যান্য সেবা স্বাভাবিকভাবে কাজ করবে।</p></div>',
             confirmButtonText: 'বুঝেছি',
-            confirmButtonColor: '#667eea',
+            confirmButtonColor: '#e8861a',
             customClass: { popup: 'demo-mode-popup', confirmButton: 'demo-mode-btn' },
             width: '420px',
             backdrop: 'rgba(0,0,0,0.5)',
@@ -1354,10 +1356,10 @@
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 icon: 'info',
-                title: '<strong style="font-size:1.4rem;color:#2c3e50;">ডেমো মুড সক্রিয়</strong>',
-                html: '<div style="text-align:center;padding:10px 0;"><div style="width:70px;height:70px;margin:0 auto 15px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fe-eye" style="font-size:32px;color:#fff;"></i></div><p style="font-size:1rem;color:#5a6c7d;margin-bottom:8px;line-height:1.6;">' + (msg || 'অ্যাডমিন প্যানেল থেকে কোন ডাটা পরিবর্তন বা সংযোজন করা যাবে না।') + '</p><p style="font-size:0.9rem;color:#95a5a6;margin:0;">কাস্টমার সাইটে অর্ডার, ট্রাকিং ও অন্যান্য সেবা স্বাভাবিকভাবে কাজ করবে।</p></div>',
+                title: '<strong style="font-size:1.4rem;color:#2a1505;">ডেমো মুড সক্রিয়</strong>',
+                html: '<div style="text-align:center;padding:10px 0;"><div style="width:70px;height:70px;margin:0 auto 15px;background:linear-gradient(135deg,#2a1505 0%,#e8861a 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fe-eye" style="font-size:32px;color:#fff;"></i></div><p style="font-size:1rem;color:#4f4f4f;margin-bottom:8px;line-height:1.6;">' + (msg || 'অ্যাডমিন প্যানেল থেকে কোন ডাটা পরিবর্তন বা সংযোজন করা যাবে না।') + '</p><p style="font-size:0.9rem;color:#7a6a5e;margin:0;">কাস্টমার সাইটে অর্ডার, ট্রাকিং ও অন্যান্য সেবা স্বাভাবিকভাবে কাজ করবে।</p></div>',
                 confirmButtonText: 'বুঝেছি',
-                confirmButtonColor: '#667eea',
+                confirmButtonColor: '#e8861a',
                 customClass: { popup: 'demo-mode-popup', confirmButton: 'demo-mode-btn' },
                 width: '420px',
                 backdrop: 'rgba(0,0,0,0.5)',
@@ -1390,7 +1392,7 @@
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
+            cancelButtonColor: '#3a1f0f',
             confirmButtonText: 'Yes, delete it!'
           }).then(function(result) {
             if (result.isConfirmed) { form.submit(); }

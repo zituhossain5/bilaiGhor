@@ -31,7 +31,7 @@ class ReportController extends Controller
         if ($type === 'today') {
             $from  = $now->copy()->startOfDay();
             $to    = $now->copy()->endOfDay();
-            $label = 'Today - ' . $now->format('d M, Y');
+            $label = 'Today - ' . $now->format('d/m/Y');
         } elseif ($type === 'month') {
             $year  = (int) $request->get('year', $now->year);
             $month = (int) $request->get('month', $now->month);
@@ -56,7 +56,7 @@ class ReportController extends Controller
                 ? Carbon::parse($toInput)->endOfDay()
                 : $now->copy()->endOfDay();
 
-            $label = 'From ' . $from->format('d M, Y') . ' To ' . $to->format('d M, Y');
+            $label = 'From ' . $from->format('d/m/Y') . ' To ' . $to->format('d/m/Y');
         }
 
         return [$from, $to, $label, $type];
@@ -236,7 +236,7 @@ $orders = $query->paginate(20)->withQueryString();
                         $discount,
                         $shipping,
                         is_object($order->status) ? ($order->status->name ?? '') : ($order->status ?? ''),
-                        optional($order->created_at)->format('Y-m-d H:i'),
+                        optional($order->created_at)->format('d/m/Y H:i'),
                     ]);
                 }
 
@@ -315,7 +315,7 @@ $orders = $query->paginate(20)->withQueryString();
 
                 foreach ($purchases as $p) {
                     $dateValue = $p->purchase_date ?? $p->created_at;
-                    $dateStr   = $dateValue ? Carbon::parse($dateValue)->format('Y-m-d') : '';
+                    $dateStr   = $dateValue ? Carbon::parse($dateValue)->format('d/m/Y') : '';
 
                     fputcsv($handle, [
                         $p->invoice_no ?? $p->id,
@@ -383,7 +383,7 @@ $totalExpense = $expenses->sum('amount');
 
                 foreach ($expenses as $e) {
                     $dateValue = $e->expense_date ?? $e->created_at;
-                    $dateStr   = $dateValue ? Carbon::parse($dateValue)->format('Y-m-d') : '';
+                    $dateStr   = $dateValue ? Carbon::parse($dateValue)->format('d/m/Y') : '';
 
                     fputcsv($handle, [
                         $dateStr,

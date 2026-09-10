@@ -141,7 +141,7 @@
     {{-- SUMMARY CARD --}}
     <div class="row mb-4">
         <div class="col-md-4">
-            <div class="expense-card">
+            <div class="expense-card admin-stat-card admin-stat-card--danger">
                 <div>
                     <div class="expense-label">Total Expenses</div>
                     <h2 class="expense-amount">৳{{ number_format($totalExpense ?? 0, 2) }}</h2>

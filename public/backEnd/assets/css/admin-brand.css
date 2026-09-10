@@ -22,6 +22,13 @@
     --bilai-admin-text: #4f4f4f;
     --bilai-admin-muted: #7a6a5e;
     --bilai-admin-heading: #2a1505;
+    --bilai-admin-stat-primary: linear-gradient(135deg, #e8861a 0%, #c96f00 100%);
+    --bilai-admin-stat-secondary: linear-gradient(135deg, #4a2a16 0%, #2a1505 100%);
+    --bilai-admin-stat-success: linear-gradient(135deg, #16884d 0%, #0f6b3d 100%);
+    --bilai-admin-stat-info: linear-gradient(135deg, #aa8453 0%, #7c572c 100%);
+    --bilai-admin-stat-warning: linear-gradient(135deg, #f2a73a 0%, #d9820d 100%);
+    --bilai-admin-stat-danger: linear-gradient(135deg, #c4552a 0%, #9a3412 100%);
+    --bilai-admin-stat-soft: #fff8f0;
 
     --ct-primary: var(--bilai-admin-orange);
     --ct-primary-rgb: 232, 134, 26;
@@ -260,6 +267,159 @@ ul#side-menu li {
     box-shadow: 0 12px 34px rgba(58, 31, 15, 0.09) !important;
 }
 
+/* Shared admin summary/stat cards */
+.admin-stat-card,
+.card.admin-stat-card,
+.content-page .card.bg-primary,
+.content-page .card.bg-info,
+.content-page .card.bg-danger,
+.content-page .card.bg-success,
+.content-page .card.bg-warning,
+.content-page .card.bg-secondary {
+    background: var(--bilai-admin-stat-primary) !important;
+    border: 1px solid rgba(232, 134, 26, 0.38) !important;
+    color: #fff !important;
+    box-shadow: 0 16px 34px rgba(58, 31, 15, 0.12) !important;
+    overflow: hidden;
+}
+
+.admin-stat-card--primary,
+.content-page .card.bg-primary {
+    background: var(--bilai-admin-stat-primary) !important;
+}
+
+.admin-stat-card--secondary,
+.content-page .card.bg-secondary {
+    background: var(--bilai-admin-stat-secondary) !important;
+}
+
+.admin-stat-card--success,
+.content-page .card.bg-success {
+    background: var(--bilai-admin-stat-success) !important;
+    border-color: rgba(22, 136, 77, 0.38) !important;
+}
+
+.admin-stat-card--info,
+.content-page .card.bg-info {
+    background: var(--bilai-admin-stat-info) !important;
+    border-color: rgba(170, 132, 83, 0.42) !important;
+}
+
+.admin-stat-card--warning,
+.content-page .card.bg-warning {
+    background: var(--bilai-admin-stat-warning) !important;
+    border-color: rgba(242, 167, 58, 0.42) !important;
+}
+
+.admin-stat-card--danger,
+.content-page .card.bg-danger {
+    background: var(--bilai-admin-stat-danger) !important;
+    border-color: rgba(196, 85, 42, 0.42) !important;
+}
+
+.admin-stat-card *,
+.content-page .card.bg-primary *,
+.content-page .card.bg-info *,
+.content-page .card.bg-danger *,
+.content-page .card.bg-success *,
+.content-page .card.bg-warning *,
+.content-page .card.bg-secondary * {
+    color: #fff !important;
+}
+
+.admin-stat-card small,
+.admin-stat-card .text-muted,
+.admin-stat-card .stats-sub,
+.admin-stat-card .stat-label,
+.admin-stat-card .stat-title,
+.content-page .card.bg-primary small,
+.content-page .card.bg-info small,
+.content-page .card.bg-danger small,
+.content-page .card.bg-success small,
+.content-page .card.bg-warning small,
+.content-page .card.bg-secondary small {
+    color: rgba(255, 255, 255, 0.84) !important;
+}
+
+.admin-stat-card:hover,
+.card.admin-stat-card:hover {
+    box-shadow: 0 18px 38px rgba(58, 31, 15, 0.17) !important;
+    transform: translateY(-1px);
+}
+
+.stats-value,
+.stat-value,
+.stat-amount {
+    color: var(--bilai-admin-heading) !important;
+}
+
+.stats-label,
+.stat-label,
+.stat-title {
+    color: var(--bilai-admin-brown-soft) !important;
+}
+
+.stats-sub {
+    color: var(--bilai-admin-muted) !important;
+}
+
+.admin-stat-card .stats-value,
+.admin-stat-card .stat-value,
+.admin-stat-card .stat-amount,
+.admin-stat-card .stats-label,
+.admin-stat-card .stat-label,
+.admin-stat-card .stat-title,
+.admin-stat-card .stats-sub {
+    color: #fff !important;
+}
+
+.bg-soft-primary,
+.bg-light-primary,
+.bg-icon-primary {
+    background: #fff3df !important;
+    color: var(--bilai-admin-orange-dark) !important;
+}
+
+.bg-soft-info,
+.bg-light-info,
+.bg-soft-secondary {
+    background: #f4eadc !important;
+    color: var(--bilai-admin-brown-soft) !important;
+}
+
+.bg-soft-warning,
+.bg-light-warning {
+    background: #fff0cf !important;
+    color: #9b5c00 !important;
+}
+
+.bg-soft-success,
+.bg-light-success {
+    background: #e4f4e5 !important;
+    color: #16884d !important;
+}
+
+.bg-soft-danger,
+.bg-light-danger,
+.bg-icon-danger {
+    background: #fbe9df !important;
+    color: #9a3412 !important;
+}
+
+.admin-stat-card .stats-icon,
+.admin-stat-card .stat-icon,
+.admin-stat-card .stat-icon-box {
+    background: rgba(255, 255, 255, 0.18) !important;
+    color: #fff !important;
+}
+
+.admin-stat-card .stats-icon *,
+.admin-stat-card .stat-icon *,
+.admin-stat-card .stat-icon-box * {
+    color: #fff !important;
+    stroke: currentColor !important;
+}
+
 .qa {
     background: #fffdf8 !important;
     color: var(--bilai-admin-brown-soft) !important;
@@ -410,6 +570,32 @@ table.clean tbody tr:hover td {
     color: #a99a89 !important;
 }
 
+.admin-date-input,
+.flatpickr-input.admin-date-input {
+    background-color: #fffdf8 !important;
+    border-color: var(--bilai-admin-border) !important;
+    color: var(--bilai-admin-text) !important;
+}
+
+.admin-date-input::placeholder {
+    color: #a99a89 !important;
+}
+
+.flatpickr-calendar {
+    border: 1px solid var(--bilai-admin-border) !important;
+    box-shadow: 0 16px 34px rgba(58, 31, 15, 0.14) !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover {
+    background: var(--bilai-admin-orange) !important;
+    border-color: var(--bilai-admin-orange) !important;
+}
+
 label,
 .form-label,
 .col-form-label {
@@ -462,6 +648,26 @@ input:focus + .slider {
 
 .bg-primary {
     background-color: var(--bilai-admin-orange) !important;
+}
+
+.bg-info {
+    background-color: #aa8453 !important;
+}
+
+.bg-success {
+    background-color: #16884d !important;
+}
+
+.bg-warning {
+    background-color: #f2a73a !important;
+}
+
+.bg-danger {
+    background-color: #c4552a !important;
+}
+
+.bg-secondary {
+    background-color: var(--bilai-admin-brown-soft) !important;
 }
 
 .text-primary {

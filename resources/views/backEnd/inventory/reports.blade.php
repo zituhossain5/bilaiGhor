@@ -35,7 +35,7 @@
 
     <div class="row">
         <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-success">
+            <div class="card admin-stat-card admin-stat-card--success h-100 py-2 border-start border-4 border-success">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-success"><i class="fe-download"></i></div>
                     <div>
@@ -47,7 +47,7 @@
             </div>
         </div>
         <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-danger">
+            <div class="card admin-stat-card admin-stat-card--danger h-100 py-2 border-start border-4 border-danger">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-danger"><i class="fe-upload"></i></div>
                     <div>
@@ -59,7 +59,7 @@
             </div>
         </div>
         <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-warning">
+            <div class="card admin-stat-card admin-stat-card--warning h-100 py-2 border-start border-4 border-warning">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-warning"><i class="fe-sliders"></i></div>
                     <div>

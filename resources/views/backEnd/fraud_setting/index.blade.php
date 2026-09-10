@@ -6,7 +6,7 @@
 
 <style>
     :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --primary-gradient: var(--bilai-admin-stat-primary, linear-gradient(135deg, #e8861a 0%, #c96f00 100%));
         --glass-white: rgba(255, 255, 255, 0.95);
         --text-dark: #2d3748;
         --text-muted: #718096;
@@ -15,7 +15,7 @@
 
     .fraud-page-wrapper {
         padding-top: 30px;
-        background-color: #f8f9fc;
+        background-color: var(--bilai-admin-page, #fbf5e6);
         min-height: 100vh;
         font-family: 'Inter', sans-serif;
     }
@@ -26,7 +26,7 @@
         border-radius: 16px;
         padding: 30px;
         color: white;
-        box-shadow: 0 10px 25px rgba(118, 75, 162, 0.2);
+        box-shadow: 0 10px 25px rgba(58, 31, 15, 0.16);
         margin-bottom: 30px;
         position: relative;
         overflow: hidden;

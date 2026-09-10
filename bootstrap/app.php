@@ -41,6 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             // প্রোডাক্ট লিঙ্ক শেয়ার থেকে ট্রাফিক সোর্স (referrer / fbclid — utm লাগে না)
             \App\Http\Middleware\TrackTrafficSource::class,
+            \App\Http\Middleware\NormalizeAdminDateInputs::class,
             // এডমিন লাইসেন্স — সেশন/রাউটের পরে (invalid → লক পেজ, ক্যাশ ক্লিয়ার → CD)
             \App\Http\Middleware\AppSessionHandler::class,
             \App\Http\Middleware\DisableLegacyCommerceFeatures::class,

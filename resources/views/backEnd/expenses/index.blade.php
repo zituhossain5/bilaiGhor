@@ -30,8 +30,8 @@
 
 {{-- This Year Expense --}}
 <div class="col-md-4 mb-3">
-    <div class="card bg-primary text-white" style="color:#fff !important;">
-        <div class="card-body" style="color:#fff !important;">
+    <div class="card admin-stat-card admin-stat-card--primary text-white">
+        <div class="card-body">
             <h5 class="mb-1" style="color:#fff !important;">This Year ({{ $currentYear }})</h5>
             <h3 class="mb-0" style="color:#fff !important;">{{ number_format($yearlyExpense, 2) }} ৳</h3>
             <small class="opacity-75 d-block mt-1" style="color:#fff !important;">
@@ -43,8 +43,8 @@
 
 {{-- This Month Expense --}}
 <div class="col-md-4 mb-3">
-    <div class="card bg-info text-white" style="color:#fff !important;">
-        <div class="card-body" style="color:#fff !important;">
+    <div class="card admin-stat-card admin-stat-card--info text-white">
+        <div class="card-body">
             <h5 class="mb-1" style="color:#fff !important;">
                 This Month ({{ \Carbon\Carbon::createFromDate(now()->year, $currentMonth, 1)->format('F') }})
             </h5>
@@ -58,8 +58,8 @@
 
 {{-- Today Expense --}}
 <div class="col-md-4 mb-3">
-    <div class="card bg-danger text-white" style="color:#fff !important;">
-        <div class="card-body" style="color:#fff !important;">
+    <div class="card admin-stat-card admin-stat-card--danger text-white">
+        <div class="card-body">
             <h5 class="mb-1" style="color:#fff !important;">Today ({{ now()->format('d M, Y') }})</h5>
             <h3 class="mb-0" style="color:#fff !important;">{{ number_format($todayExpense, 2) }} ৳</h3>
             <small class="opacity-75 d-block mt-1" style="color:#fff !important;">

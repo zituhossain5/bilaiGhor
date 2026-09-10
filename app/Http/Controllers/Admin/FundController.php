@@ -175,7 +175,7 @@ class FundController extends Controller
                 foreach ($transactions as $tx) {
                     fputcsv($handle, [
                         // format datetime in app timezone
-                        $tx->created_at->setTimezone(config('app.timezone'))->format('Y-m-d H:i:s'),
+                        $tx->created_at->setTimezone(config('app.timezone'))->format('d/m/Y H:i:s'),
                         $tx->direction == 'in' ? 'In (+)' : 'Out (-)',
                         $tx->source,
                         number_format((float)$tx->amount, 2, '.', ''), // normalized amount

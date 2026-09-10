@@ -29,8 +29,8 @@
         font-size: 0.9rem;
     }
     .form-control:focus {
-        border-color: #4e73df;
-        box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.1);
+        border-color: var(--bilai-admin-orange, #e8861a);
+        box-shadow: 0 0 0 3px rgba(232, 134, 26, 0.14);
     }
     .form-control[readonly] {
         background-color: #f8f9fc;
@@ -40,9 +40,9 @@
     
     /* --- Info Cards on Right --- */
     .info-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #858796; font-weight: 700; }
-    .info-value { font-size: 1.1rem; font-weight: 600; color: #4e73df; }
+    .info-value { font-size: 1.1rem; font-weight: 600; color: var(--bilai-admin-orange, #e8861a); }
     .grand-total-box {
-        background: linear-gradient(45deg, #4e73df, #224abe);
+        background: var(--bilai-admin-stat-primary, linear-gradient(135deg, #e8861a 0%, #c96f00 100%));
         color: white;
         border-radius: 10px;
         padding: 1.5rem;

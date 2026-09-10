@@ -147,7 +147,7 @@
     <div class="row g-4 mb-4">
         {{-- Total Orders --}}
         <div class="col-md-3">
-            <div class="stat-card">
+            <div class="stat-card admin-stat-card admin-stat-card--primary">
                 <div class="stat-icon bg-light-primary">
                     <i data-feather="shopping-bag"></i>
                 </div>
@@ -160,7 +160,7 @@
 
         {{-- Total Amount --}}
         <div class="col-md-3">
-            <div class="stat-card">
+            <div class="stat-card admin-stat-card admin-stat-card--success">
                 <div class="stat-icon bg-light-success">
                     <span class="fw-bold">৳</span>
                 </div>
@@ -173,7 +173,7 @@
 
         {{-- Total Discount --}}
         <div class="col-md-3">
-            <div class="stat-card">
+            <div class="stat-card admin-stat-card admin-stat-card--warning">
                 <div class="stat-icon bg-light-warning">
                     <i data-feather="tag"></i>
                 </div>
@@ -186,7 +186,7 @@
 
         {{-- Shipping --}}
         <div class="col-md-3">
-            <div class="stat-card">
+            <div class="stat-card admin-stat-card admin-stat-card--info">
                 <div class="stat-icon bg-light-info">
                     <i data-feather="truck"></i>
                 </div>

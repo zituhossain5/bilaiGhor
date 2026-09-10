@@ -19,7 +19,7 @@
         border-bottom: 1px solid #e3e6f0;
         padding: 1rem 1.35rem;
         font-weight: 700;
-        color: #4e73df;
+        color: var(--bilai-admin-orange, #e8861a);
         border-radius: 10px 10px 0 0 !important;
     }
     
@@ -40,9 +40,9 @@
         margin-right: 1rem;
         flex-shrink: 0;
     }
-    .bg-soft-primary { background-color: rgba(78, 115, 223, 0.1); color: #4e73df; }
+    .bg-soft-primary { background-color: #fff3df; color: var(--bilai-admin-orange-dark, #c96f00); }
     .bg-soft-success { background-color: rgba(28, 200, 138, 0.1); color: #1cc88a; }
-    .bg-soft-info    { background-color: rgba(54, 185, 204, 0.1); color: #36b9cc; }
+    .bg-soft-info    { background-color: #f4eadc; color: var(--bilai-admin-brown-soft, #3c2a1e); }
     .bg-soft-danger  { background-color: rgba(231, 74, 59, 0.1); color: #e74a3b; }
 
     .stats-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
@@ -61,7 +61,7 @@
     /* --- Table Styles --- */
     .table thead th {
         background-color: #f8f9fc;
-        color: #4e73df;
+        color: var(--bilai-admin-orange, #e8861a);
         font-size: 0.85rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -99,7 +99,7 @@
 
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-success">
+            <div class="card admin-stat-card admin-stat-card--success h-100 py-2 border-start border-4 border-success">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-success"><i class="fe-calendar"></i></div>
                     <div>
@@ -112,7 +112,7 @@
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-info">
+            <div class="card admin-stat-card admin-stat-card--info h-100 py-2 border-start border-4 border-info">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-info"><i class="fe-bar-chart-2"></i></div>
                     <div>
@@ -127,7 +127,7 @@
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-primary">
+            <div class="card admin-stat-card admin-stat-card--primary h-100 py-2 border-start border-4 border-primary">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-primary"><i class="fe-shopping-bag"></i></div>
                     <div>
@@ -140,7 +140,7 @@
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-danger">
+            <div class="card admin-stat-card admin-stat-card--danger h-100 py-2 border-start border-4 border-danger">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-danger"><i class="fe-alert-circle"></i></div>
                     <div>

@@ -17,7 +17,7 @@
 
     <div class="row">
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-primary">
+            <div class="card admin-stat-card admin-stat-card--primary h-100 py-2 border-start border-4 border-primary">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-primary"><i class="fe-box"></i></div>
                     <div>
@@ -29,7 +29,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-success">
+            <div class="card admin-stat-card admin-stat-card--success h-100 py-2 border-start border-4 border-success">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-success"><i class="fe-layers"></i></div>
                     <div>
@@ -41,7 +41,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-info">
+            <div class="card admin-stat-card admin-stat-card--info h-100 py-2 border-start border-4 border-info">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-info"><i class="fe-clock"></i></div>
                     <div>
@@ -53,7 +53,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-success">
+            <div class="card admin-stat-card admin-stat-card--success h-100 py-2 border-start border-4 border-success">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-success"><i class="fe-check-circle"></i></div>
                     <div>
@@ -68,7 +68,7 @@
 
     <div class="row">
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-warning">
+            <div class="card admin-stat-card admin-stat-card--warning h-100 py-2 border-start border-4 border-warning">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-warning"><i class="fe-alert-triangle"></i></div>
                     <div>
@@ -80,7 +80,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-danger">
+            <div class="card admin-stat-card admin-stat-card--danger h-100 py-2 border-start border-4 border-danger">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-danger"><i class="fe-x-circle"></i></div>
                     <div>
@@ -92,7 +92,7 @@
             </div>
         </div>
         <div class="col-xl-6 col-md-12 mb-4">
-            <div class="card h-100 py-2 border-start border-4 border-primary">
+            <div class="card admin-stat-card admin-stat-card--primary h-100 py-2 border-start border-4 border-primary">
                 <div class="card-body stats-card">
                     <div class="stats-icon bg-soft-primary"><i class="fe-dollar-sign"></i></div>
                     <div>

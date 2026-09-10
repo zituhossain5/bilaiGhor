@@ -74,7 +74,7 @@
     <div class="row g-4 mb-4">
         {{-- Total Products --}}
         <div class="col-md-4">
-            <div class="stat-card">
+            <div class="stat-card admin-stat-card admin-stat-card--primary">
                 <div>
                     <div class="stat-title">Total Items</div>
                     <h3 class="stat-value">{{ $products->total() }}</h3> {{-- Use total() for pagination count --}}
@@ -87,7 +87,7 @@
 
         {{-- Total Stock Qty --}}
         <div class="col-md-4">
-            <div class="stat-card">
+            <div class="stat-card admin-stat-card admin-stat-card--info">
                 <div>
                     <div class="stat-title">Stock Quantity</div>
                     <h3 class="stat-value">{{ number_format($totalStockQty) }}</h3>
@@ -100,7 +100,7 @@
 
         {{-- Total Stock Value --}}
         <div class="col-md-4">
-            <div class="stat-card">
+            <div class="stat-card admin-stat-card admin-stat-card--success">
                 <div>
                     <div class="stat-title">Available Stock Cost</div>
                     <h3 class="stat-value">৳{{ number_format($totalStockValue, 2) }}</h3>

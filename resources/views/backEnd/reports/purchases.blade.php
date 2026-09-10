@@ -145,7 +145,7 @@
     <div class="row g-4 mb-4">
         {{-- Total Purchase --}}
         <div class="col-md-4">
-            <div class="stat-card">
+            <div class="stat-card admin-stat-card admin-stat-card--primary">
                 <div class="stat-icon bg-light-primary">
                     <i data-feather="shopping-bag"></i>
                 </div>
@@ -158,7 +158,7 @@
 
         {{-- Total Paid --}}
         <div class="col-md-4">
-            <div class="stat-card">
+            <div class="stat-card admin-stat-card admin-stat-card--success">
                 <div class="stat-icon bg-light-success">
                     <i data-feather="check-circle"></i>
                 </div>
@@ -171,7 +171,7 @@
 
         {{-- Total Due --}}
         <div class="col-md-4">
-            <div class="stat-card">
+            <div class="stat-card admin-stat-card admin-stat-card--warning">
                 <div class="stat-icon bg-light-warning">
                     <i data-feather="alert-circle"></i>
                 </div>

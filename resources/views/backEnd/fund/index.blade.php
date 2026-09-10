@@ -18,7 +18,7 @@
 
        {{-- Total Balance --}}
 <div class="col-md-4 mb-3">
-    <div class="card" style="background:#198754; color:#fff;">
+    <div class="card admin-stat-card admin-stat-card--success text-white">
         <div class="card-body">
             <h5 class="mb-1" style="color:#fff !important;">Available Balance</h5>
             <h2 class="mb-0" style="color:#fff !important;">{{ number_format($balance, 2) }} ৳</h2>
@@ -29,7 +29,7 @@
 
 {{-- This Year --}}
 <div class="col-md-4 mb-3">
-    <div class="card" style="background:#0d6efd; color:#fff;">
+    <div class="card admin-stat-card admin-stat-card--primary text-white">
         <div class="card-body">
             <h5 class="mb-1" style="color:#fff !important;">This Year ({{ $currentYear }})</h5>
             <h3 class="mb-0" style="color:#fff !important;">{{ number_format($yearlyAdded, 2) }} ৳</h3>
@@ -40,7 +40,7 @@
 
 {{-- This Month --}}
 <div class="col-md-4 mb-3">
-    <div class="card" style="background:#222275; color:#fff;">
+    <div class="card admin-stat-card admin-stat-card--info text-white">
         <div class="card-body">
             <h5 class="mb-1" style="color:#fff !important;">This Month ({{ \Carbon\Carbon::create()->month($currentMonth)->format('F') }})</h5>
             <h3 class="mb-0" style="color:#fff !important;">{{ number_format($monthlyAdded, 2) }} ৳</h3>

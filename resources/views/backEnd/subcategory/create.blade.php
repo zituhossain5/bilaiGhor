@@ -255,7 +255,7 @@
                     </div>
                 </div>
 
-                <div class="card bg-primary text-white border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card admin-stat-card admin-stat-card--primary text-white border-0">
                     <div class="card-body">
                         <div class="d-flex align-items-start">
                             <i class="fe-info font-size-24 me-3 text-white-50"></i>

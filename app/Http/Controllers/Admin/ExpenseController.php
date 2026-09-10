@@ -394,7 +394,7 @@ class ExpenseController extends Controller
 
             foreach ($expenses as $exp) {
                 fputcsv($handle, [
-                    $exp->expense_date,
+                    $exp->expense_date ? Carbon::parse($exp->expense_date)->format('d/m/Y') : '',
                     $exp->title,
                     $exp->category,
                     $exp->amount,

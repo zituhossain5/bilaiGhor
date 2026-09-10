@@ -138,25 +138,25 @@
         {{-- Stat Cards --}}
         <div class="row g-4 mb-4">
             <div class="col-md-3">
-                <div class="stat-card bg-soft-primary">
+                <div class="stat-card admin-stat-card admin-stat-card--primary">
                     <div class="stat-title">Total Sales</div>
                     <div class="stat-amount">৳{{ number_format($salesAmount ?? 0, 2) }}</div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stat-card bg-soft-warning">
+                <div class="stat-card admin-stat-card admin-stat-card--warning">
                     <div class="stat-title">COGS (Cost)</div>
                     <div class="stat-amount">৳{{ number_format($cogs ?? 0, 2) }}</div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stat-card bg-soft-secondary">
+                <div class="stat-card admin-stat-card admin-stat-card--secondary">
                     <div class="stat-title">Total Expenses</div>
                     <div class="stat-amount">৳{{ number_format($totalExpense ?? 0, 2) }}</div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stat-card {{ ($netProfit ?? 0) >= 0 ? 'bg-soft-success' : 'bg-soft-danger' }}">
+                <div class="stat-card admin-stat-card {{ ($netProfit ?? 0) >= 0 ? 'admin-stat-card--success' : 'admin-stat-card--danger' }}">
                     <div class="stat-title">Net Profit/Loss</div>
                     <div class="stat-amount">৳{{ number_format($netProfit ?? 0, 2) }}</div>
                 </div>

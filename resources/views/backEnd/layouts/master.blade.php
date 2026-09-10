@@ -17,6 +17,7 @@
     <link href="{{asset('public/backEnd/')}}/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
     <!-- toastr css -->
     <link rel="stylesheet" href="{{asset('public/backEnd/')}}/assets/css/toastr.min.css" />
+    <link href="{{asset('public/backEnd/')}}/assets/libs/flatpickr/flatpickr.min.css" rel="stylesheet" type="text/css" />
     <!-- SweetAlert2 - ডেমো মুড পপআপের জন্য -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <!-- custom css -->
@@ -1271,6 +1272,8 @@
 
     <!-- App js -->
     <script src="{{asset('public/backEnd/')}}/assets/js/app.min.js"></script>
+    <script src="{{asset('public/backEnd/')}}/assets/libs/flatpickr/flatpickr.min.js"></script>
+    <script src="{{asset('public/backEnd/')}}/assets/js/admin-date-format.js"></script>
     
     {{-- vendor.min এ Feather থাকলেও সম্পূর্ণ আইকন সেট / টাইমিং ভিন্ন হতে পারে; CDN সংস্করণ লোড করে window.feather নিশ্চিত করা হয়।
          MutationObserver ব্যবহার করবেন না (সেখান থেকেই ট্যাব লোডিং লাগছিল); শুধু নির্দিষ্ট ইভেন্টে replace। --}}

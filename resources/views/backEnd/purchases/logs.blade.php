@@ -96,7 +96,7 @@
     {{-- STATS OVERVIEW --}}
     <div class="row mb-4">
         <div class="col-md-6 mb-3 mb-md-0">
-            <div class="stats-card">
+            <div class="stats-card admin-stat-card admin-stat-card--primary">
                 <div class="stats-icon bg-icon-primary">
                     <i data-feather="edit-2"></i>
                 </div>
@@ -107,7 +107,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="stats-card">
+            <div class="stats-card admin-stat-card admin-stat-card--danger">
                 <div class="stats-icon bg-icon-danger">
                     <i data-feather="trash-2"></i>
                 </div>

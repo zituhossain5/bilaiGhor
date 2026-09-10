@@ -14,6 +14,7 @@ use App\Models\FundTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use App\Services\AccountingSummaryService;
 use Illuminate\Validation\ValidationException;
 
@@ -360,7 +361,7 @@ class PurchaseController extends Controller
 
             foreach ($purchases as $p) {
                 fputcsv($handle, [
-                    $p->purchase_date,
+                    $p->purchase_date ? Carbon::parse($p->purchase_date)->format('d/m/Y') : '',
                     $p->invoice_no,
                     optional($p->supplier)->name,
                     $p->total_qty,

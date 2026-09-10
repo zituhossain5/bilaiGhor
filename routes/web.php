@@ -16,6 +16,7 @@ use App\Http\Controllers\Frontend\BkashController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\OrderPaymentController;
+use App\Http\Controllers\Admin\InlineOrderStatusController;
 use App\Http\Controllers\Admin\ManualOrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PermissionController;
@@ -1248,6 +1249,9 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::get('manual-orders/{order}/print', [ManualOrderController::class, 'print'])->name('admin.manual_orders.print');
     Route::get('manual-orders/{order}/download', [ManualOrderController::class, 'download'])->name('admin.manual_orders.download');
     Route::post('manual-orders/{order}/cancel', [ManualOrderController::class, 'cancel'])->name('admin.manual_orders.cancel');
+
+    Route::post('orders/{order}/inline-status', [InlineOrderStatusController::class, 'update'])
+        ->name('admin.orders.inline-status');
 
     // Order route 
 	Route::get('order/{slug}/ajax', [OrderController::class, 'ajaxIndex'])->name('admin.orders.ajax');

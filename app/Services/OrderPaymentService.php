@@ -5,9 +5,17 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class OrderPaymentService
 {
+    public const ADMIN_STATUSES = ['pending', 'paid', 'unpaid', 'partial', 'failed'];
+
+    public static function adminStatuses(): array
+    {
+        return self::ADMIN_STATUSES;
+    }
+
     public static function statusFromAmounts(float $paid, float $grandTotal): string
     {
         if ($paid <= 0) {
@@ -40,8 +48,10 @@ class OrderPaymentService
         $payment = self::currentPayment($order);
         $grandTotal = (float) $order->amount;
         $paid = (float) ($payment?->amount ?? $order->paid_amount ?? 0);
-
-        $status = self::statusFromAmounts($paid, $grandTotal);
+        $storedStatus = strtolower(trim((string) ($payment?->payment_status ?? $order->payment_status ?? '')));
+        $status = in_array($storedStatus, [...self::ADMIN_STATUSES, 'cancelled'], true)
+            ? $storedStatus
+            : self::statusFromAmounts($paid, $grandTotal);
 
         return [
             'payment' => $payment,
@@ -108,11 +118,27 @@ class OrderPaymentService
             $lockedOrder = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
             $payment = self::currentPayment($lockedOrder);
 
+            $requestedStatus = strtolower(trim($requestedStatus));
+            if (!in_array($requestedStatus, self::ADMIN_STATUSES, true)) {
+                throw ValidationException::withMessages([
+                    'payment_status' => 'Invalid payment status.',
+                ]);
+            }
+
+            $existingPaid = (float) ($payment?->amount ?? $lockedOrder->paid_amount ?? 0);
+            if (
+                $requestedStatus === 'partial'
+                && ($existingPaid <= 0 || $existingPaid >= (float) $lockedOrder->amount)
+            ) {
+                throw ValidationException::withMessages([
+                    'payment_status' => 'Enter a partial paid amount from the order edit page before selecting Partial.',
+                ]);
+            }
+
             $paid = match ($requestedStatus) {
                 'paid' => (float) $lockedOrder->amount,
-                'unpaid', 'pending', 'failed', 'cancelled', 'cancel' => 0.0,
-                'partial' => min((float) ($payment?->amount ?? $lockedOrder->paid_amount ?? 0), (float) $lockedOrder->amount),
-                default => min((float) ($payment?->amount ?? $lockedOrder->paid_amount ?? 0), (float) $lockedOrder->amount),
+                'unpaid', 'pending', 'failed' => 0.0,
+                'partial' => min($existingPaid, (float) $lockedOrder->amount),
             };
 
             $payment = self::upsertPayment(
@@ -123,6 +149,13 @@ class OrderPaymentService
                 $payment?->trx_id ?? $lockedOrder->transaction_id,
                 $payment?->sender_number ?? $lockedOrder->manual_customer_phone
             );
+
+            // Pending and failed both carry a zero paid amount, but remain distinct
+            // workflow states rather than being collapsed into "unpaid".
+            if (in_array($requestedStatus, ['pending', 'failed'], true)) {
+                $payment->forceFill(['payment_status' => $requestedStatus])->save();
+                $lockedOrder->forceFill(['payment_status' => $requestedStatus])->save();
+            }
 
             return [
                 'order' => $lockedOrder->refresh(),

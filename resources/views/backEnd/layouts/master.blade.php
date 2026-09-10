@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
 
     <title>@yield('title')@if(isset($generalsetting) && $generalsetting) - {{$generalsetting->name}}@endif</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -1548,6 +1549,7 @@
     @auth('admin')
         @include('backEnd.layouts.partials.admin_order_live_notify')
     @endauth
+    <script src="{{ asset('public/backEnd/assets/js/admin-order-inline-status.js') }}"></script>
     @yield('script')
   </body>
 </html>

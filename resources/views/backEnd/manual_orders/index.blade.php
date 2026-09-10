@@ -105,8 +105,20 @@
                                 <td class="text-end">৳{{ number_format($paymentState['paid'], 2) }}</td>
                                 <td class="text-end">৳{{ number_format($paymentState['due'], 2) }}</td>
                                 <td>{{ ucwords(str_replace('_', ' ', $paymentState['method'] ?: 'N/A')) }}</td>
-                                <td><span class="mo-status {{ $paymentState['status'] }}">{{ $paymentState['status'] }}</span></td>
-                                <td>{{ optional($order->status)->name ?: $order->order_status }}</td>
+                                <td>
+                                    @include('backEnd.order.partials.inline_status_select', [
+                                        'order' => $order,
+                                        'type' => 'payment',
+                                        'paymentState' => $paymentState,
+                                    ])
+                                </td>
+                                <td>
+                                    @include('backEnd.order.partials.inline_status_select', [
+                                        'order' => $order,
+                                        'type' => 'order',
+                                        'statuses' => $statuses,
+                                    ])
+                                </td>
                                 <td>{{ optional($order->creator)->name ?: 'Admin' }}</td>
                                 <td class="text-end">
                                     @if((int) $order->order_status !== \App\Services\InventoryService::CANCEL_STATUS)

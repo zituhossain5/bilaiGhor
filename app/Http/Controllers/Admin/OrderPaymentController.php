@@ -14,18 +14,10 @@ class OrderPaymentController extends Controller
     {
         $validated = $request->validate([
             'order_id' => ['required', 'integer', 'exists:orders,id'],
-            'payment_status' => ['required', 'string', 'max:55'],
+            'payment_status' => ['required', 'string', 'in:' . implode(',', OrderPaymentService::adminStatuses())],
         ]);
 
         $status = strtolower(trim($validated['payment_status']));
-        $allowed = ['pending', 'paid', 'unpaid', 'partial', 'failed', 'cancelled', 'cancel'];
-
-        if (!in_array($status, $allowed, true)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid payment status.',
-            ], 422);
-        }
 
         $result = OrderPaymentService::updateFromAdminStatus(
             Order::findOrFail($validated['order_id']),
@@ -36,6 +28,7 @@ class OrderPaymentController extends Controller
             'status' => 'success',
             'message' => 'Payment status updated successfully.',
             'payment_status' => $result['status'],
+            'status_key' => $result['status'],
             'paid_amount' => $result['paid'],
             'due_amount' => $result['due'],
         ]);

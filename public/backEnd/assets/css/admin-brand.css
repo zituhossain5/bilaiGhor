@@ -796,3 +796,62 @@ input:focus + .slider {
 .rightbar-overlay {
     background-color: rgba(42, 21, 5, 0.38) !important;
 }
+
+/* Shared inline order/payment status control */
+.admin-inline-status-select {
+    width: auto;
+    min-width: 118px;
+    max-width: 150px;
+    min-height: 32px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 10px;
+    border-color: var(--bilai-admin-border) !important;
+    border-radius: 6px;
+    background-color: #fffaf3 !important;
+    color: var(--bilai-admin-text) !important;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+    cursor: pointer;
+}
+
+.admin-inline-status-select:focus {
+    border-color: var(--bilai-admin-orange) !important;
+    box-shadow: 0 0 0 3px rgba(239, 132, 18, 0.16) !important;
+}
+
+.admin-inline-status-select.is-saving {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.admin-inline-status-select[data-state="paid"],
+.admin-inline-status-select[data-state="delivered"] {
+    background-color: #e8f7ed !important;
+    border-color: #9bd3aa !important;
+    color: #236b39 !important;
+}
+
+.admin-inline-status-select[data-state="cancelled"],
+.admin-inline-status-select[data-state="failed"],
+.admin-inline-status-select[data-state="unpaid"] {
+    background-color: #fff0ed !important;
+    border-color: #efb0a5 !important;
+    color: #9b3525 !important;
+}
+
+.admin-inline-status-select[data-state="pending"],
+.admin-inline-status-select[data-state="partial"] {
+    background-color: #fff5dc !important;
+    border-color: #e7c472 !important;
+    color: #7d5711 !important;
+}
+
+.admin-inline-status-select[data-state="processing"],
+.admin-inline-status-select[data-state="shipped"],
+.admin-inline-status-select[data-state="in-courier"] {
+    background-color: #fff1df !important;
+    border-color: #efb56f !important;
+    color: var(--bilai-admin-brown-soft) !important;
+}

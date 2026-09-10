@@ -93,8 +93,8 @@
                                         {{-- Amount (show remaining if partial paid) --}}
                                         <td>
                                             @php
-                                                $payment = \App\Models\Payment::where('order_id', $value->id)->first();
-                                                $paid = $payment ? floatval($payment->amount) : 0;
+                                                $paymentState = \App\Services\OrderPaymentService::state($value);
+                                                $paid = (float) $paymentState['paid'];
                                                 $total = floatval($value->amount);
                                                 $showAmount = $total;
                                                 if ($paid > 0 && $paid < $total) {
@@ -104,7 +104,21 @@
                                             <span class="oi-amount">৳{{ number_format($showAmount, 2) }}</span>
                                         </td>
 
-                                        <td><span class="oi-status-pill">{{ $value->status ? $value->status->name : '—' }}</span></td>
+                                        <td>
+                                            @include('backEnd.order.partials.inline_status_select', [
+                                                'order' => $value,
+                                                'type' => 'order',
+                                                'statuses' => $orderstatus,
+                                            ])
+                                        </td>
+
+                                        <td>
+                                            @include('backEnd.order.partials.inline_status_select', [
+                                                'order' => $value,
+                                                'type' => 'payment',
+                                                'paymentState' => $paymentState,
+                                            ])
+                                        </td>
 
                                         <td>
                                             {{-- 

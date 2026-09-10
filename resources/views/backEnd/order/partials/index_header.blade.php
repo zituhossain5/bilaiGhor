@@ -66,6 +66,7 @@
                             <th>ট্র্যাফিক</th>
                             <th>পরিমাণ</th>
                             <th>স্ট্যাটাস</th>
+                            <th>Payment</th>
                             <th>ফ্রড চেক</th>
                         </tr>
                     </thead>

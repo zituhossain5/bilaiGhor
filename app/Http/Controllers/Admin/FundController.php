@@ -8,9 +8,10 @@ use App\Models\FundTransaction;
 use App\Models\FundTransactionLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Services\AccountingSummaryService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class FundController extends Controller
@@ -20,45 +21,59 @@ class FundController extends Controller
      */
     public function index(Request $request)
     {
-        $query = FundTransaction::includedInAccounting()->orderBy('created_at', 'desc');
+        $period = $this->resolvePeriod($request);
+        $summary = AccountingSummaryService::businessSummary($period['from'], $period['to']);
 
-        if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->from_date);
-        }
-        if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->to_date);
-        }
+        $transactions = $this->transactionQuery($period)
+            ->with(['logs', 'creator:id,name'])
+            ->paginate(20)
+            ->withQueryString();
 
-        $transactions = $query->with('logs')->paginate(20)->withQueryString();
+        $investmentQuery = FundTransaction::includedInAccounting()
+            ->where('direction', 'in')
+            ->whereIn('source', ['investment', 'manual_add'])
+            ->orderByDesc(DB::raw('COALESCE(transaction_date, DATE(created_at))'))
+            ->orderByDesc('id');
+        AccountingSummaryService::applyDateRange(
+            $investmentQuery,
+            'COALESCE(transaction_date, DATE(created_at))',
+            $period['from'],
+            $period['to'],
+            rawColumn: true
+        );
+        $investments = $investmentQuery
+            ->with('creator:id,name')
+            ->paginate(15, ['*'], 'investments_page')
+            ->withQueryString();
 
-        // Compute totals more efficiently with a single query each (or you can combine into one)
         $fundTotals = AccountingSummaryService::fundTotals();
         $total_in = $fundTotals['in'];
         $total_out = $fundTotals['out'];
         $balance = $fundTotals['balance'];
-
-        $now = Carbon::now();
-        $currentYear  = $now->year;
-        $currentMonth = $now->month;
-
-        $yearlyAdded = FundTransaction::includedInAccounting()->where('direction', 'in')
-            ->whereYear('created_at', $currentYear)
-            ->sum('amount');
-
-        $monthlyAdded = FundTransaction::includedInAccounting()->where('direction', 'in')
-            ->whereYear('created_at', $currentYear)
-            ->whereMonth('created_at', $currentMonth)
-            ->sum('amount');
+        $hasInitialInvestment = FundTransaction::includedInAccounting()
+            ->where('direction', 'in')
+            ->whereIn('source', ['investment', 'manual_add'])
+            ->where(function ($query) {
+                $query->where('investment_type', 'initial')
+                    ->orWhere(function ($legacy) {
+                        $legacy->where('source', 'manual_add')->whereNull('investment_type');
+                    });
+            })
+            ->exists();
+        $isAdmin = $this->isAdmin();
+        $withdrawalToken = (string) Str::uuid();
 
         return view('backEnd.fund.index', compact(
+            'period',
+            'summary',
             'balance',
             'transactions',
+            'investments',
             'total_in',
             'total_out',
-            'yearlyAdded',
-            'monthlyAdded',
-            'currentYear',
-            'currentMonth'
+            'hasInitialInvestment',
+            'isAdmin',
+            'withdrawalToken'
         ));
     }
 
@@ -69,23 +84,45 @@ class FundController extends Controller
     {
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0.01',
+            'investment_type' => 'required|in:initial,additional',
+            'transaction_date' => 'required|date',
             'note'   => 'nullable|string|max:1000'
         ]);
 
-        // Use DB transaction for safety (in case more ops are added later)
         DB::transaction(function () use ($validated) {
+            if ($validated['investment_type'] === 'initial') {
+                $initialExists = FundTransaction::includedInAccounting()
+                    ->where('direction', 'in')
+                    ->whereIn('source', ['investment', 'manual_add'])
+                    ->where(function ($query) {
+                        $query->where('investment_type', 'initial')
+                            ->orWhere(function ($legacy) {
+                                $legacy->where('source', 'manual_add')->whereNull('investment_type');
+                            });
+                    })
+                    ->lockForUpdate()
+                    ->exists();
+
+                if ($initialExists) {
+                    throw ValidationException::withMessages([
+                        'investment_type' => 'Initial investment already exists. Record this as an additional investment.',
+                    ]);
+                }
+            }
+
             FundTransaction::create([
                 'direction'  => 'in',
-                'source'     => 'manual_add',
+                'source'     => 'investment',
                 'source_id'  => null,
-                // ensure decimal precision: cast to float or string decimal to avoid integer issues
+                'investment_type' => $validated['investment_type'],
                 'amount'     => round((float)$validated['amount'], 2),
+                'transaction_date' => $validated['transaction_date'],
                 'note'       => $validated['note'] ?? null,
-                'created_by' => Auth::id(),
+                'created_by' => Auth::guard('admin')->id(),
             ]);
         });
 
-        return back()->with('success', 'Fund added successfully!');
+        return back()->with('success', 'Investment recorded successfully.');
     }
 
     /**
@@ -95,12 +132,22 @@ class FundController extends Controller
     {
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0.01',
-            'note'   => 'nullable|string|max:1000'
+            'transaction_date' => 'required|date',
+            'note' => 'nullable|string|max:1000',
+            'idempotency_key' => 'required|uuid',
         ]);
 
         // calculate balance inside transaction and lock rows if concurrent operations possible
         // simple approach: compute current balance, then create out tx
         return DB::transaction(function () use ($validated) {
+            $existing = FundTransaction::query()
+                ->where('idempotency_key', $validated['idempotency_key'])
+                ->lockForUpdate()
+                ->first();
+            if ($existing) {
+                return redirect()->back()->with('success', 'This withdrawal was already recorded. No duplicate was created.');
+            }
+
             $balance = AccountingSummaryService::lockedFundBalance();
 
             $amount = round((float)$validated['amount'], 2);
@@ -108,18 +155,25 @@ class FundController extends Controller
             if ($amount > $balance) {
                 // throw ValidationException to redirect back with error
                 throw ValidationException::withMessages([
-                    'amount' => 'Not enough balance. Available: ' . number_format($balance, 2),
+                    'amount' => 'Withdrawal exceeds the available fund balance of ' . number_format($balance, 2) . '.',
                 ]);
             }
 
-            FundTransaction::create([
+            $withdrawal = FundTransaction::query()->firstOrCreate([
+                'idempotency_key' => $validated['idempotency_key'],
+            ], [
                 'direction'  => 'out',
                 'source'     => 'withdraw',
                 'source_id'  => null,
                 'amount'     => $amount,
+                'transaction_date' => $validated['transaction_date'],
                 'note'       => $validated['note'] ?? null,
-                'created_by' => Auth::id(),
+                'created_by' => Auth::guard('admin')->id(),
             ]);
+
+            if (! $withdrawal->wasRecentlyCreated) {
+                return redirect()->back()->with('success', 'This withdrawal was already recorded. No duplicate was created.');
+            }
 
             return redirect()->back()->with('success', 'Withdraw successful!');
         });
@@ -131,61 +185,49 @@ class FundController extends Controller
      */
     public function export(Request $request)
     {
-        $filter = $request->input('filter');
-
-        $query = FundTransaction::includedInAccounting()->orderBy('created_at', 'asc');
-
-        if ($filter === 'year') {
-            $year = (int) $request->input('year', now()->year);
-            $query->whereYear('created_at', $year);
-        } elseif ($filter === 'month') {
-            $year  = (int) $request->input('year', now()->year);
-            $month = (int) $request->input('month', now()->month);
-            $query->whereYear('created_at', $year)
-                  ->whereMonth('created_at', $month);
-        } else {
-            $request->validate([
-                'from_date' => 'nullable|date',
-                'to_date'   => 'nullable|date',
-            ]);
-
-            if ($request->filled('from_date')) {
-                $query->whereDate('created_at', '>=', $request->from_date);
-            }
-            if ($request->filled('to_date')) {
-                $query->whereDate('created_at', '<=', $request->to_date);
-            }
-        }
+        $period = $this->resolvePeriod($request);
+        $summary = AccountingSummaryService::businessSummary($period['from'], $period['to']);
+        $fundTotals = AccountingSummaryService::fundTotals();
+        $query = $this->transactionQuery($period, ascending: true)->with('creator:id,name');
 
         // File name
         $fileName = 'fund-history-'.now()->format('Y-m-d-H-i-s').'.csv';
 
         // Streamed response with chunking for large datasets
-        $response = new StreamedResponse(function () use ($query) {
+        $response = new StreamedResponse(function () use ($query, $period, $summary, $fundTotals) {
             $handle = fopen('php://output', 'w');
 
             // Add UTF-8 BOM so Excel can open correctly
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Header row
-            fputcsv($handle, ['Date', 'Direction', 'Source', 'Amount', 'Note', 'Created By']);
+            fputcsv($handle, ['Bilai Ghor Account & Fund Report']);
+            fputcsv($handle, ['Period', $period['label']]);
+            fputcsv($handle, ['Available Fund Balance', number_format($fundTotals['balance'], 2, '.', '')]);
+            fputcsv($handle, ['Investment Added', number_format($summary['period_investment'], 2, '.', '')]);
+            fputcsv($handle, ['Sales Revenue', number_format($summary['sales_revenue'], 2, '.', '')]);
+            fputcsv($handle, ['COGS', number_format($summary['cogs'], 2, '.', '')]);
+            fputcsv($handle, ['Gross Profit', number_format($summary['gross_profit'], 2, '.', '')]);
+            fputcsv($handle, ['Expenses', number_format($summary['expenses'], 2, '.', '')]);
+            fputcsv($handle, ['Net Profit', number_format($summary['net_profit'], 2, '.', '')]);
+            fputcsv($handle, ['Withdrawals', number_format($summary['withdrawals'], 2, '.', '')]);
+            fputcsv($handle, ['Period Fund Change', number_format($summary['period_fund_change'], 2, '.', '')]);
+            fputcsv($handle, []);
+            fputcsv($handle, ['#', 'Date & Time', 'Type', 'Source', 'Amount', 'Note / Reference', 'Created By']);
 
             // chunk to avoid memory issues
-            $query->chunk(500, function ($transactions) use ($handle) {
+            $rowNumber = 0;
+            $query->chunk(500, function ($transactions) use ($handle, &$rowNumber) {
                 foreach ($transactions as $tx) {
                     fputcsv($handle, [
-                        // format datetime in app timezone
-                        $tx->created_at->setTimezone(config('app.timezone'))->format('d/m/Y H:i:s'),
-                        $tx->direction == 'in' ? 'In (+)' : 'Out (-)',
-                        $tx->source,
-                        number_format((float)$tx->amount, 2, '.', ''), // normalized amount
+                        ++$rowNumber,
+                        $this->transactionDateTime($tx),
+                        strtoupper($tx->direction),
+                        str_replace('_', ' ', $tx->source),
+                        number_format((float)$tx->amount, 2, '.', ''),
                         $tx->note,
-                        $tx->created_by,
+                        $tx->creator?->name ?? 'System',
                     ]);
                 }
-                // flush after each chunk
-                if (function_exists('ob_flush')) ob_flush();
-                if (function_exists('flush')) flush();
             });
 
             fclose($handle);
@@ -195,6 +237,24 @@ class FundController extends Controller
         $response->headers->set('Content-Disposition', "attachment; filename=\"$fileName\"");
 
         return $response;
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $period = $this->resolvePeriod($request);
+        $summary = AccountingSummaryService::businessSummary($period['from'], $period['to']);
+        $fundTotals = AccountingSummaryService::fundTotals();
+        $transactions = $this->transactionQuery($period, ascending: true)
+            ->with('creator:id,name')
+            ->get();
+
+        return Pdf::loadView('backEnd.fund.report_pdf', compact(
+            'period',
+            'summary',
+            'fundTotals',
+            'transactions'
+        ))->setPaper('a4', 'landscape')
+            ->download('fund-report-' . now()->format('Y-m-d-H-i-s') . '.pdf');
     }
 
     /**
@@ -251,13 +311,18 @@ class FundController extends Controller
             abort(403, 'Only Admin can update fund transactions.');
         }
 
+        $transaction = FundTransaction::includedInAccounting()->findOrFail($id);
+        $isInvestment = in_array($transaction->source, ['investment', 'manual_add'], true);
+
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0.01',
             'note'   => 'nullable|string|max:1000',
-            'direction' => 'required|in:in,out'
+            'direction' => $isInvestment ? 'nullable' : 'required|in:in,out',
+            'investment_type' => $isInvestment ? 'required|in:initial,additional' : 'nullable',
+            'transaction_date' => $isInvestment ? 'required|date' : 'nullable|date',
         ]);
 
-        return DB::transaction(function () use ($validated, $id) {
+        return DB::transaction(function () use ($validated, $id, $isInvestment) {
             $transaction = FundTransaction::includedInAccounting()->lockForUpdate()->findOrFail($id);
             abort_unless($transaction->isManuallyEditable(), 422, 'System-generated transactions cannot be edited. Use reconciliation for corrections.');
 
@@ -271,14 +336,33 @@ class FundController extends Controller
 
             // Update transaction
             $new_amount = round((float)$validated['amount'], 2);
-            $new_direction = $validated['direction'];
+            $new_direction = $isInvestment ? 'in' : $validated['direction'];
             $new_note = $validated['note'] ?? null;
+
+            if ($isInvestment && $validated['investment_type'] === 'initial') {
+                $duplicateInitial = FundTransaction::includedInAccounting()
+                    ->where('id', '!=', $transaction->id)
+                    ->where('direction', 'in')
+                    ->whereIn('source', ['investment', 'manual_add'])
+                    ->where('investment_type', 'initial')
+                    ->lockForUpdate()
+                    ->exists();
+
+                if ($duplicateInitial) {
+                    throw ValidationException::withMessages([
+                        'investment_type' => 'Another initial investment already exists.',
+                    ]);
+                }
+            }
 
             $transaction->update([
                 'amount'    => $new_amount,
                 'note'      => $new_note,
                 'direction' => $new_direction,
-                'updated_by' => Auth::id(),
+                'source' => $isInvestment ? 'investment' : $transaction->source,
+                'investment_type' => $isInvestment ? $validated['investment_type'] : null,
+                'transaction_date' => $isInvestment ? $validated['transaction_date'] : $transaction->transaction_date,
+                'updated_by' => Auth::guard('admin')->id(),
             ]);
 
             // Calculate balance after update
@@ -424,5 +508,54 @@ class FundController extends Controller
         $total_deletes = FundTransactionLog::where('action', 'delete')->count();
 
         return view('backEnd.fund.logs', compact('logs', 'total_edits', 'total_deletes'));
+    }
+
+    private function resolvePeriod(Request $request): array
+    {
+        $mode = $request->input('mode', $request->input('filter', 'current_month'));
+
+        $validated = $request->validate([
+            'mode' => 'nullable|in:current_month,previous_month,month,year,custom,all',
+            'filter' => 'nullable|in:current_month,previous_month,month,year,custom,all',
+            'year' => 'nullable|integer|min:2000|max:2100',
+            'month' => 'nullable|integer|min:1|max:12',
+            'from_date' => [$mode === 'custom' ? 'required' : 'nullable', 'date'],
+            'to_date' => [$mode === 'custom' ? 'required' : 'nullable', 'date', 'after_or_equal:from_date'],
+        ]);
+
+        return AccountingSummaryService::period(
+            $mode,
+            isset($validated['year']) ? (int) $validated['year'] : null,
+            isset($validated['month']) ? (int) $validated['month'] : null,
+            $validated['from_date'] ?? null,
+            $validated['to_date'] ?? null,
+        );
+    }
+
+    private function transactionQuery(array $period, bool $ascending = false)
+    {
+        $query = FundTransaction::query()->includedInAccounting();
+        AccountingSummaryService::applyDateRange(
+            $query,
+            'COALESCE(transaction_date, DATE(created_at))',
+            $period['from'],
+            $period['to'],
+            rawColumn: true
+        );
+
+        $direction = $ascending ? 'asc' : 'desc';
+
+        return $query
+            ->orderByRaw("COALESCE(transaction_date, DATE(created_at)) {$direction}")
+            ->orderBy('created_at', $direction)
+            ->orderBy('id', $direction);
+    }
+
+    private function transactionDateTime(FundTransaction $transaction): string
+    {
+        $date = ($transaction->transaction_date ?: $transaction->created_at)->format('d/m/Y');
+        $time = $transaction->created_at?->format('h:i A');
+
+        return trim($date . ' ' . $time);
     }
 }

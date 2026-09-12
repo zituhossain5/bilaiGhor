@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Order;
-use App\Models\OrderDetails;   // ✅ এইটাই এখন ইউজ হবে
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
@@ -474,52 +473,12 @@ $totalExpense = $expenses->sum('amount');
     {
         [$from, $to, $label, $type] = $this->getDateRange($request);
 
-        // 1) SALES (Orders)
-        $ordersQuery = Order::whereBetween('created_at', [$from, $to]);
-
-        // orders টেবিলে যদি status কলাম থাকে তখনই ফিল্টার করব
-        if (Schema::hasColumn('orders', 'status')) {
-            $ordersQuery->where('status', '!=', 'canceled');
-        }
-
-        $orders = $ordersQuery->get();
-
-        $salesAmount = $orders->sum(function ($order) {
-            return $this->resolveOrderTotal($order);
-        });
-
-        // 2) COGS (Cost of Goods Sold)
-        $orderDetails = OrderDetails::whereIn('order_id', $orders->pluck('id'))
-            ->with('product:id,purchase_price') // ✅ Eager load to avoid N+1
-            ->get(); // ✅ এখানে plural মডেল
-
-        $cogs = 0;
-        foreach ($orderDetails as $od) {
-            // order_details টেবিলে purchase_price থাকলে সেটাই use করা ভালো
-            $purchasePrice = $od->purchase_price ?? null;
-
-            if ($purchasePrice === null) {
-                // fallback – eager loaded product থেকে নিন
-                $purchasePrice = $od->product->purchase_price ?? 0;
-            }
-
-            $cogs += $purchasePrice * ($od->qty ?? 0);
-        }
-
-        // 3) EXPENSES
-        $expQuery = Expense::query();
-        if (Schema::hasColumn('expenses', 'expense_date')) {
-            $expQuery->whereBetween('expense_date', [$from->toDateString(), $to->toDateString()]);
-        } else {
-            $expQuery->whereBetween('created_at', [$from, $to]);
-        }
-
-        $expenses     = $expQuery->get();
-        $totalExpense = $expenses->sum('amount');
-
-        // 4) GROSS & NET
-        $grossProfit = $salesAmount - $cogs;
-        $netProfit   = $grossProfit - $totalExpense;
+        $summary = AccountingSummaryService::businessSummary($from, $to);
+        $salesAmount = $summary['sales_revenue'];
+        $cogs = $summary['cogs'];
+        $totalExpense = $summary['expenses'];
+        $grossProfit = $summary['gross_profit'];
+        $netProfit = $summary['net_profit'];
 
         if ($request->get('export') === 'csv') {
             $fileName = 'profit-loss-' . now()->format('Ymd_His') . '.csv';

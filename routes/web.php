@@ -462,6 +462,7 @@ Route::prefix('admin')->middleware(['auth:admin', 'admin', 'admin_license', 'dem
     Route::post('/fund/add', [FundController::class, 'add'])->name('admin.fund.add');
     Route::post('/fund/withdraw', [FundController::class, 'withdraw'])->name('admin.fund.withdraw');
     Route::get('/fund/export', [FundController::class, 'export'])->name('admin.fund.export');
+    Route::get('/fund/export/pdf', [FundController::class, 'exportPdf'])->name('admin.fund.export.pdf');
     Route::get('/fund/logs', [FundController::class, 'logs'])->name('admin.fund.logs');
     Route::get('/fund/{id}/edit', [FundController::class, 'edit'])->name('admin.fund.edit');
     Route::post('/fund/{id}/update', [FundController::class, 'update'])->name('admin.fund.update');

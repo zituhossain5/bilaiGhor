@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FundTransaction extends Model
 {
-    private const MANUALLY_EDITABLE_SOURCES = ['manual_add', 'withdraw'];
+    private const MANUALLY_EDITABLE_SOURCES = ['investment', 'manual_add', 'withdraw'];
 
     public const LEGACY_BUSINESS_SOURCES = [
         'vendor_commission',
@@ -18,12 +19,14 @@ class FundTransaction extends Model
     ];
 
     protected $fillable = [
-        'direction', 'source', 'source_id', 'amount', 'note', 'created_by', 'updated_by',
+        'direction', 'source', 'source_id', 'investment_type', 'amount', 'transaction_date', 'idempotency_key',
+        'note', 'idempotency_key', 'created_by', 'updated_by',
         'excluded_from_accounting_at', 'accounting_exclusion_reason', 'accounting_cleanup_run_id',
     ];
 
     protected $casts = [
         'excluded_from_accounting_at' => 'datetime',
+        'transaction_date' => 'date',
     ];
 
     protected static function booted(): void
@@ -75,6 +78,11 @@ class FundTransaction extends Model
     public function logs(): HasMany
     {
         return $this->hasMany(FundTransactionLog::class, 'fund_transaction_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

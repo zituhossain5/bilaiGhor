@@ -6,12 +6,188 @@ use App\Models\FundReconciliation;
 use App\Models\FundTransaction;
 use App\Models\InventoryStock;
 use App\Models\Order;
+use App\Models\Expense;
 use App\Models\Purchase;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 final class AccountingSummaryService
 {
+    public static function period(
+        string $mode = 'current_month',
+        ?int $year = null,
+        ?int $month = null,
+        ?string $fromDate = null,
+        ?string $toDate = null
+    ): array {
+        $now = Carbon::now();
+        $year ??= $now->year;
+        $month ??= $now->month;
+
+        return match ($mode) {
+            'all' => ['from' => null, 'to' => null, 'label' => 'Full history', 'mode' => 'all'],
+            'previous_month' => (function () use ($now) {
+                $date = $now->copy()->subMonthNoOverflow();
+                return [
+                    'from' => $date->copy()->startOfMonth()->startOfDay(),
+                    'to' => $date->copy()->endOfMonth()->endOfDay(),
+                    'label' => $date->format('F Y'),
+                    'mode' => 'previous_month',
+                ];
+            })(),
+            'month' => (function () use ($year, $month) {
+                $date = Carbon::create($year, $month, 1);
+                return [
+                    'from' => $date->copy()->startOfMonth()->startOfDay(),
+                    'to' => $date->copy()->endOfMonth()->endOfDay(),
+                    'label' => $date->format('F Y'),
+                    'mode' => 'month',
+                ];
+            })(),
+            'year' => [
+                'from' => Carbon::create($year, 1, 1)->startOfDay(),
+                'to' => Carbon::create($year, 12, 31)->endOfDay(),
+                'label' => (string) $year,
+                'mode' => 'year',
+            ],
+            'custom' => [
+                'from' => Carbon::parse($fromDate)->startOfDay(),
+                'to' => Carbon::parse($toDate)->endOfDay(),
+                'label' => Carbon::parse($fromDate)->format('d/m/Y') . ' - ' . Carbon::parse($toDate)->format('d/m/Y'),
+                'mode' => 'custom',
+            ],
+            default => [
+                'from' => $now->copy()->startOfMonth()->startOfDay(),
+                'to' => $now->copy()->endOfMonth()->endOfDay(),
+                'label' => $now->format('F Y'),
+                'mode' => 'current_month',
+            ],
+        };
+    }
+
+    public static function businessSummary(?CarbonInterface $from = null, ?CarbonInterface $to = null): array
+    {
+        $saleCredits = FundTransaction::query()
+            ->includedInAccounting()
+            ->where('direction', 'in')
+            ->where('source', 'sale')
+            ->whereNotNull('source_id')
+            ->selectRaw('source_id, MIN(created_at) as recognized_at')
+            ->groupBy('source_id');
+
+        $ordersQuery = Order::query()
+            ->leftJoinSub($saleCredits, 'sale_credits', function ($join) {
+                $join->on('sale_credits.source_id', '=', 'orders.id');
+            })
+            ->where('orders.order_status', InventoryService::COMPLETE_STATUS)
+            ->whereRaw('LOWER(COALESCE(orders.payment_status, ?)) = ?', ['', 'paid']);
+
+        self::applyDateRange(
+            $ordersQuery,
+            'COALESCE(sale_credits.recognized_at, orders.updated_at)',
+            $from,
+            $to,
+            rawColumn: true
+        );
+
+        $orders = $ordersQuery->get(['orders.id', 'orders.amount']);
+        $orderIds = $orders->pluck('id');
+
+        $costs = DB::table('order_details as details')
+            ->leftJoin('products', 'products.id', '=', 'details.product_id')
+            ->whereIn('details.order_id', $orderIds)
+            ->selectRaw('COALESCE(SUM(COALESCE(details.purchase_price, products.purchase_price, 0) * details.qty), 0) as cogs')
+            ->selectRaw('SUM(CASE WHEN details.purchase_price IS NULL AND products.purchase_price IS NOT NULL THEN 1 ELSE 0 END) as fallback_lines')
+            ->selectRaw('SUM(CASE WHEN COALESCE(details.purchase_price, products.purchase_price, 0) = 0 THEN 1 ELSE 0 END) as zero_cost_lines')
+            ->first();
+
+        $expenseQuery = Expense::query()->includedInAccounting();
+        if ($from && $to) {
+            $expenseQuery->whereBetween('expense_date', [$from->toDateString(), $to->toDateString()]);
+        }
+        $expense = $expenseQuery
+            ->selectRaw('COUNT(*) as expense_count, COALESCE(SUM(amount), 0) as total')
+            ->first();
+
+        $investmentQuery = FundTransaction::query()
+            ->includedInAccounting()
+            ->where('direction', 'in')
+            ->whereIn('source', ['investment', 'manual_add']);
+        self::applyDateRange(
+            $investmentQuery,
+            'COALESCE(transaction_date, DATE(created_at))',
+            $from,
+            $to,
+            rawColumn: true
+        );
+
+        $periodInvestment = (float) $investmentQuery->sum('amount');
+        $periodFundQuery = FundTransaction::query()->includedInAccounting();
+        self::applyDateRange(
+            $periodFundQuery,
+            'COALESCE(transaction_date, DATE(created_at))',
+            $from,
+            $to,
+            rawColumn: true
+        );
+        $periodFund = $periodFundQuery
+            ->selectRaw("COALESCE(SUM(CASE WHEN direction = 'in' THEN amount ELSE 0 END), 0) as total_in")
+            ->selectRaw("COALESCE(SUM(CASE WHEN direction = 'out' THEN amount ELSE 0 END), 0) as total_out")
+            ->selectRaw("COALESCE(SUM(CASE WHEN direction = 'out' AND source = 'withdraw' THEN amount ELSE 0 END), 0) as withdrawals")
+            ->selectRaw("SUM(CASE WHEN direction = 'out' AND source = 'withdraw' THEN 1 ELSE 0 END) as withdrawal_count")
+            ->first();
+        $investmentTotals = FundTransaction::query()
+            ->includedInAccounting()
+            ->where('direction', 'in')
+            ->whereIn('source', ['investment', 'manual_add'])
+            ->selectRaw("COALESCE(SUM(CASE WHEN investment_type = 'initial' OR (investment_type IS NULL AND source = 'manual_add') THEN amount ELSE 0 END), 0) as initial_total")
+            ->selectRaw("COALESCE(SUM(CASE WHEN investment_type = 'additional' THEN amount ELSE 0 END), 0) as additional_total")
+            ->selectRaw('COALESCE(SUM(amount), 0) as total')
+            ->first();
+
+        $revenue = (float) $orders->sum('amount');
+        $cogs = (float) ($costs->cogs ?? 0);
+        $expenses = (float) ($expense->total ?? 0);
+        $grossProfit = $revenue - $cogs;
+
+        return [
+            'total_investment' => (float) ($investmentTotals->total ?? 0),
+            'initial_investment' => (float) ($investmentTotals->initial_total ?? 0),
+            'additional_investment' => (float) ($investmentTotals->additional_total ?? 0),
+            'period_investment' => $periodInvestment,
+            'period_fund_in' => (float) ($periodFund->total_in ?? 0),
+            'period_fund_out' => (float) ($periodFund->total_out ?? 0),
+            'period_fund_change' => (float) ($periodFund->total_in ?? 0) - (float) ($periodFund->total_out ?? 0),
+            'withdrawals' => (float) ($periodFund->withdrawals ?? 0),
+            'withdrawal_count' => (int) ($periodFund->withdrawal_count ?? 0),
+            'sales_orders' => $orders->count(),
+            'sales_revenue' => $revenue,
+            'cogs' => $cogs,
+            'gross_profit' => $grossProfit,
+            'expense_count' => (int) ($expense->expense_count ?? 0),
+            'expenses' => $expenses,
+            'net_profit' => $grossProfit - $expenses,
+            'cost_fallback_lines' => (int) ($costs->fallback_lines ?? 0),
+            'zero_cost_lines' => (int) ($costs->zero_cost_lines ?? 0),
+        ];
+    }
+
+    public static function applyDateRange($query, string $column, ?CarbonInterface $from, ?CarbonInterface $to, bool $rawColumn = false): void
+    {
+        if (!$from || !$to) {
+            return;
+        }
+
+        if ($rawColumn) {
+            $query->whereBetween(DB::raw($column), [$from, $to]);
+            return;
+        }
+
+        $query->whereBetween($column, [$from, $to]);
+    }
+
     public static function snapshot(): array
     {
         $fund = self::fundTotals();
@@ -144,7 +320,8 @@ final class AccountingSummaryService
             'fund_in' => $totalIn,
             'fund_out' => $totalOut,
             'fund_balance' => $fundBalance,
-            'owner_funding' => self::sourceTotal($fundSources, 'manual_add', 'in'),
+            'owner_funding' => self::sourceTotal($fundSources, 'manual_add', 'in')
+                + self::sourceTotal($fundSources, 'investment', 'in'),
             'sales_inflow' => self::sourceTotal($fundSources, 'sale', 'in'),
             'reconciliation_net' => self::sourceTotal($fundSources, 'reconciliation', 'in')
                 - self::sourceTotal($fundSources, 'reconciliation', 'out'),

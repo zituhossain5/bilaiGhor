@@ -38,6 +38,17 @@ $(function () {
         $(this).find(".bilai-cat-toggle-icon").toggleClass("fa-chevron-up fa-chevron-down");
     });
 
+    var $mobileFilterToggle = $("#bilaiMobileFilterToggle");
+    var $mobileFilterPanel = $("#bilaiCatFilterForm");
+    $mobileFilterToggle.on("click", function () {
+        var isOpen = $mobileFilterPanel.toggleClass("is-mobile-open").hasClass("is-mobile-open");
+        $(this).attr("aria-expanded", String(isOpen));
+        $(this).find(".bilai-mobile-filter-label").text(isOpen ? "Hide Filters" : "Show Filters");
+        $(this).find(".bilai-mobile-filter-icon")
+            .toggleClass("fa-chevron-down", !isOpen)
+            .toggleClass("fa-chevron-up", isOpen);
+    });
+
     // Brand search: filter the visible brand rows by name (client-side).
     var $brandSearch = $("#bilaiBrandSearch");
     if ($brandSearch.length) {

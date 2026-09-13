@@ -5,6 +5,27 @@
               $lifeStages + $lifeStageCountMap + $selectedLifeStages,
               $flavors + $flavorCountMap + $selectedFlavors,
               optional $activeSubcatSlug (category page only). --}}
+@php
+    $activeFilterCount = ($activeBrandId ? 1 : 0)
+        + count($selectedWeights ?? [])
+        + count($selectedLifeStages ?? [])
+        + count($selectedFlavors ?? [])
+        + ((request()->filled('min_price') || request()->filled('max_price')) ? 1 : 0);
+@endphp
+<button type="button"
+        class="bilai-mobile-filter-toggle"
+        id="bilaiMobileFilterToggle"
+        aria-expanded="false"
+        aria-controls="bilaiCatFilterForm">
+    <span><i class="fas fa-filter" aria-hidden="true"></i> <span class="bilai-mobile-filter-label">Show Filters</span></span>
+    <span class="bilai-mobile-filter-end">
+        @if($activeFilterCount > 0)
+            <span class="bilai-mobile-filter-count" aria-label="{{ $activeFilterCount }} active filters">{{ $activeFilterCount }}</span>
+        @endif
+        <i class="fas fa-chevron-down bilai-mobile-filter-icon" aria-hidden="true"></i>
+    </span>
+</button>
+
 <form action="" method="GET" class="bilai-cat-filter-form" id="bilaiCatFilterForm">
     {{-- preserve sort, subcategory, and brand link filter --}}
     @if(request('sort'))

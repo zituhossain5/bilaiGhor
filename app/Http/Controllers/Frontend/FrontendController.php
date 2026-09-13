@@ -1228,18 +1228,38 @@ $brands = Brand::where('status', 1)
 
     public function search(Request $request)
     {
-        $products = Product::select('id', 'name', 'slug', 'new_price', 'old_price','stock')
+        $products = Product::select(
+                'id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id',
+                'sold', 'stock', 'product_badge'
+            )
             ->where('status', 1)
             ->where('approval_status', 'approved')
-            ->with('image');
+            ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'subcategory']);
+
         if ($request->keyword) {
             $products = $products->where('name', 'LIKE', '%' . $request->keyword . "%");
         }
         if ($request->category) {
             $products = $products->where('category_id', $request->category);
         }
-        $products = $products->paginate(36);
+
+        if ($request->sort == 2) {
+            $products->orderBy('created_at', 'asc');
+        } elseif ($request->sort == 3) {
+            $products->orderBy('new_price', 'desc');
+        } elseif ($request->sort == 4) {
+            $products->orderBy('new_price', 'asc');
+        } elseif ($request->sort == 5) {
+            $products->orderBy('name', 'asc');
+        } elseif ($request->sort == 6) {
+            $products->orderBy('name', 'desc');
+        } else {
+            $products->latest();
+        }
+
+        $products = $products->paginate(24)->withQueryString();
         $keyword = $request->keyword;
+
         return view('frontEnd.layouts.pages.search', compact('products', 'keyword'));
     }
 

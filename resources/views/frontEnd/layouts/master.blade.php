@@ -26,7 +26,7 @@
 
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/wsit-menu.css')}}" />
 <link rel="stylesheet" href="{{ url('/style.css') }}?v=4">
-<link rel="stylesheet" href="{{ url('/responsive.css') }}?v=4">
+<link rel="stylesheet" href="{{ url('/responsive.css') }}?v=5">
         {{-- BilaiGhor Figma — DM Sans + Mochiy Pop One fonts --}}
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -591,22 +591,38 @@
             </div>
             <ul class="first-nav">
                 @foreach($menucategories as $scategory)
+                @php $mobileCategoryMenuId = 'mobile-category-menu-' . $scategory->id; @endphp
                 <li class="parent-category">
                     <a href="{{url('category/'.$scategory->slug)}}" class="menu-category-name">
                         <img src="{{asset($scategory->image)}}" alt="" class="side_cat_img" />
                         {{$scategory->name}}
                     </a>
                     @if($scategory->subcategories->count() > 0)
-                    <span class="menu-category-toggle"><i class="fa fa-chevron-down"></i></span>
+                    <button
+                        type="button"
+                        class="menu-category-toggle"
+                        aria-expanded="false"
+                        aria-controls="{{ $mobileCategoryMenuId }}"
+                        aria-label="Toggle {{$scategory->name}} submenu">
+                        <i class="fa fa-chevron-down" aria-hidden="true"></i>
+                    </button>
                     @endif
-                    <ul class="second-nav" style="display: none;">
+                    <ul class="second-nav" id="{{ $mobileCategoryMenuId }}" hidden>
                         @foreach($scategory->subcategories as $subcategory)
+                        @php $mobileSubcategoryMenuId = 'mobile-subcategory-menu-' . $subcategory->id; @endphp
                         <li class="parent-subcategory">
                             <a href="{{url('subcategory/'.$subcategory->slug)}}" class="menu-subcategory-name">{{$subcategory->subcategoryName}}</a>
                             @if($subcategory->childcategories->count() > 0)
-                            <span class="menu-subcategory-toggle"><i class="fa fa-chevron-down"></i></span>
+                            <button
+                                type="button"
+                                class="menu-subcategory-toggle"
+                                aria-expanded="false"
+                                aria-controls="{{ $mobileSubcategoryMenuId }}"
+                                aria-label="Toggle {{$subcategory->subcategoryName}} submenu">
+                                <i class="fa fa-chevron-down" aria-hidden="true"></i>
+                            </button>
                             @endif
-                            <ul class="third-nav" style="display: none;">
+                            <ul class="third-nav" id="{{ $mobileSubcategoryMenuId }}" hidden>
                                 @foreach($subcategory->childcategories as $childcat)
                                 <li class="childcategory"><a href="{{url('products/'.$childcat->slug)}}" class="menu-childcategory-name">{{$childcat->childcategoryName}}</a></li>
                                 @endforeach
@@ -2005,32 +2021,51 @@ window.addEventListener('pageshow', function (e) {
             });
         </script>
         <script>
-            $(document).ready(function () {
-                $(".parent-category").each(function () {
-                    const menuCatToggle = $(this).find(".menu-category-toggle");
-                    const secondNav = $(this).find(".second-nav");
+            (function () {
+                document.addEventListener("click", function (event) {
+                    var toggle = event.target.closest(
+                        ".mobile-menu .menu-category-toggle, .mobile-menu .menu-subcategory-toggle"
+                    );
 
-                    menuCatToggle.on("click", function () {
-                        menuCatToggle.toggleClass("active");
-                        secondNav.slideToggle("fast");
-                        $(this).closest(".parent-category").toggleClass("active");
-                    });
-                });
-                $(".parent-subcategory").each(function () {
-                    const menuSubcatToggle = $(this).find(".menu-subcategory-toggle");
-                    const thirdNav = $(this).find(".third-nav");
+                    if (!toggle) {
+                        return;
+                    }
 
-                    menuSubcatToggle.on("click", function () {
-                        menuSubcatToggle.toggleClass("active");
-                        thirdNav.slideToggle("fast");
-                        $(this).closest(".parent-subcategory").toggleClass("active");
-                    });
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    var submenuId = toggle.getAttribute("aria-controls");
+                    var submenu = submenuId ? document.getElementById(submenuId) : null;
+                    if (!submenu) {
+                        return;
+                    }
+
+                    var isOpen = toggle.getAttribute("aria-expanded") === "true";
+                    toggle.setAttribute("aria-expanded", String(!isOpen));
+                    toggle.classList.toggle("active", !isOpen);
+                    submenu.hidden = isOpen;
+                    submenu.classList.toggle("active", !isOpen);
+
+                    var parentSelector = toggle.classList.contains("menu-category-toggle")
+                        ? ".parent-category"
+                        : ".parent-subcategory";
+                    var parentItem = toggle.closest(parentSelector);
+                    if (parentItem) {
+                        parentItem.classList.toggle("active", !isOpen);
+                    }
                 });
-            });
+            })();
         </script>
 
         <script>
-            var menu = new MmenuLight(document.querySelector("#menu"), "all");
+            (function () {
+                var legacyMenu = document.querySelector("#menu");
+                var legacyToggle = document.querySelector('a[href="#menu"]');
+                if (!legacyMenu || !legacyToggle || typeof MmenuLight === "undefined") {
+                    return;
+                }
+
+                var menu = new MmenuLight(legacyMenu, "all");
 
             var navigator = menu.navigation({
                 selectedClass: "Selected",
@@ -2044,10 +2079,11 @@ window.addEventListener('pageshow', function (e) {
             });
 
             //  Open the menu.
-            document.querySelector('a[href="#menu"]').addEventListener("click", (evnt) => {
+                legacyToggle.addEventListener("click", (evnt) => {
                 evnt.preventDefault();
                 drawer.open();
             });
+            })();
         </script>
 
         <script>

@@ -159,6 +159,11 @@
     width: 100%;
 }
 
+.bilai-cat-layout.bilai-cat-layout--products-only {
+    grid-template-columns: minmax(0, 1020px);
+    justify-content: center;
+}
+
 .bilai-cat-sidebar {
     width: 360px;
     flex: none;
@@ -169,6 +174,10 @@
     border: 1px solid var(--bl-border-subtle);
     border-radius: var(--bl-panel-radius);
     box-sizing: border-box;
+}
+
+.bilai-mobile-filter-toggle {
+    display: none;
 }
 
 .bilai-cat-filter-form {
@@ -751,7 +760,7 @@
 
 .bilai-seo-accordion {
     max-width: 1440px;
-    margin: 60px auto 0;
+    margin: 60px auto 60px;
 }
 
 @media (max-width: 1499px) {
@@ -1233,5 +1242,87 @@ body .bilai-product-card .bilai-product-image img {
     body .bilai-product-card .bilai-product-image img {
         max-width: 170px !important;
         max-height: 150px !important;
+    }
+
+    .bilai-cat-layout {
+        gap: 16px;
+    }
+
+    .bilai-cat-sidebar {
+        width: 100%;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+    }
+
+    .bilai-mobile-filter-toggle {
+        width: 100%;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        border: 1px solid var(--bl-border-subtle, #ead8be);
+        border-radius: 8px;
+        background: var(--bl-surface, #fffdf8);
+        color: var(--bl-heading, #351600);
+        font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 22px;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .bilai-mobile-filter-toggle:focus-visible {
+        outline: 2px solid var(--bl-primary, #ef8611);
+        outline-offset: 2px;
+    }
+
+    .bilai-mobile-filter-toggle .fa-filter {
+        margin-right: 6px;
+        color: var(--bl-primary, #ef8611);
+    }
+
+    .bilai-mobile-filter-end {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .bilai-mobile-filter-count {
+        min-width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 7px;
+        border-radius: 12px;
+        background: var(--bl-primary, #ef8611);
+        color: #fff;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .bilai-mobile-filter-icon {
+        width: 14px;
+        text-align: center;
+    }
+
+    .bilai-cat-sidebar .bilai-cat-filter-form {
+        display: none;
+        width: 100%;
+        margin-top: 12px;
+        padding: 20px;
+        box-sizing: border-box;
+        background: var(--bl-surface, #fffdf8);
+        border: 1px solid var(--bl-border-subtle, #ead8be);
+        border-radius: 16px;
+    }
+
+    .bilai-cat-sidebar .bilai-cat-filter-form.is-mobile-open {
+        display: flex;
     }
 }

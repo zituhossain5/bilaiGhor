@@ -9,6 +9,9 @@
 @push('css')
     <link rel="stylesheet" href="{{ asset('public/frontEnd/css/jquery-ui.css') }}" />
 @endpush
+@push('css_after')
+    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-listing-figma.css') }}?v=8" />
+@endpush
 
 @section('content')
 <div class="bilai-cat-page">

@@ -68,6 +68,59 @@
     line-height: 1;
 }
 
+.bilai-listing-seo-header {
+    max-width: 920px;
+    margin: 0 0 28px;
+}
+
+.bilai-listing-seo-header h1 {
+    margin: 0 0 10px;
+    color: var(--bl-heading);
+    font-family: var(--bilai-font-heading, var(--bilai-font-main, "DM Sans", sans-serif));
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.bilai-listing-seo-header p {
+    margin: 0;
+    color: var(--bl-text);
+    font-family: var(--bilai-font-main, "DM Sans", sans-serif);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.65;
+}
+
+.bilai-seo-content ul {
+    list-style: disc;
+    list-style-position: outside;
+    margin: 8px 0 14px;
+    padding-left: 24px;
+}
+
+.bilai-seo-content ol {
+    list-style: decimal;
+    list-style-position: outside;
+    margin: 8px 0 14px;
+    padding-left: 24px;
+}
+
+.bilai-seo-content li {
+    display: list-item;
+    margin-bottom: 6px;
+    line-height: 1.6;
+}
+
+.bilai-seo-content p {
+    margin: 0 0 12px;
+}
+
+.bilai-seo-content h2,
+.bilai-seo-content h3 {
+    margin: 18px 0 10px;
+    color: var(--bl-heading);
+}
+
 .bilai-cat-sub-row {
     display: flex;
     align-items: flex-start;
@@ -856,6 +909,20 @@
 
     .bilai-cat-breadcrumb::-webkit-scrollbar {
         display: none;
+    }
+
+    .bilai-listing-seo-header {
+        margin-bottom: 20px;
+    }
+
+    .bilai-listing-seo-header h1 {
+        font-size: 24px;
+        line-height: 1.3;
+    }
+
+    .bilai-listing-seo-header p {
+        font-size: 14px;
+        line-height: 1.55;
     }
 
     .bilai-cat-sub-row {

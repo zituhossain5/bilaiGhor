@@ -7,7 +7,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'name',
+        'slug',
+        'parent_id',
+        'image',
+        'icon',
+        'meta_title',
+        'meta_description',
+        'meta_decription',
+        'seo_h1',
+        'full_description',
+        'status',
+        'front_view',
+        'sort_order',
+    ];
 
     public function scopeDisplayOrdered($query)
     {

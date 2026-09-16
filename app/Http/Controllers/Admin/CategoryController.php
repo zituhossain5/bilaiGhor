@@ -9,6 +9,7 @@ use Toastr;
 use Image;
 use File;
 use Str;
+use App\Support\SeoText;
 use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
@@ -39,6 +40,10 @@ class CategoryController extends Controller
             'name'   => 'required',
             'status' => 'required',
             'sort_order' => 'nullable|integer|min:0',
+            'seo_h1' => 'nullable|string|max:255',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'full_description' => 'nullable|string',
             // icon optional
             // 'icon'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
@@ -106,6 +111,9 @@ class CategoryController extends Controller
         $input['parent_id']  = $request->parent_id ? $request->parent_id : 0;
         $input['front_view'] = $request->front_view ? 1 : 0;
         $input['sort_order'] = $request->filled('sort_order') ? (int) $request->sort_order : 0;
+        $input['seo_h1'] = SeoText::plain($request->seo_h1);
+        $input['meta_title'] = SeoText::plain($request->meta_title);
+        $input['meta_description'] = SeoText::plain($request->meta_description);
         $input['image']      = $imageUrl;
         $input['icon']       = $iconUrl; // নতুন icon কলাম
 
@@ -128,6 +136,10 @@ class CategoryController extends Controller
         $this->validate($request, [
             'name' => 'required',
             'sort_order' => 'nullable|integer|min:0',
+            'seo_h1' => 'nullable|string|max:255',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'full_description' => 'nullable|string',
             // 'icon' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
@@ -213,6 +225,9 @@ class CategoryController extends Controller
         $input['parent_id']  = $request->parent_id ? $request->parent_id : 0;
         $input['front_view'] = $request->front_view ? 1 : 0;
         $input['sort_order'] = $request->filled('sort_order') ? (int) $request->sort_order : 0;
+        $input['seo_h1'] = SeoText::plain($request->seo_h1);
+        $input['meta_title'] = SeoText::plain($request->meta_title);
+        $input['meta_description'] = SeoText::plain($request->meta_description);
         $input['status']     = $request->status ? 1 : 0;
 
         $update_data->update($input);

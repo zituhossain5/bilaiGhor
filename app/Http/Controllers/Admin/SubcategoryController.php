@@ -8,6 +8,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use Intervention\Image\Facades\Image;
 use App\Models\Category;
 use App\Models\Subcategory;
+use App\Support\SeoText;
 use Illuminate\Support\Facades\Cache;
 use File;
 use DB;
@@ -46,6 +47,10 @@ class SubcategoryController extends Controller
             'subcategoryName' => 'required',
             'status' => 'required',
             'sort_order' => 'nullable|integer|min:0',
+            'seo_h1' => 'nullable|string|max:255',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'full_description' => 'nullable|string',
         ]);
         // image with intervention 
         $image = $request->file('image');
@@ -76,6 +81,9 @@ class SubcategoryController extends Controller
 
         $input['image'] = $imageUrl;
         $input['sort_order'] = $request->filled('sort_order') ? (int) $request->sort_order : 0;
+        $input['seo_h1'] = SeoText::plain($request->seo_h1);
+        $input['meta_title'] = SeoText::plain($request->meta_title);
+        $input['meta_description'] = SeoText::plain($request->meta_description);
         Subcategory::create($input);
         $this->clearFrontendCategoryCache();
         Toastr::success('Success','Data insert successfully');
@@ -96,6 +104,10 @@ class SubcategoryController extends Controller
             'subcategoryName' => 'required',
             'status' => 'required',
             'sort_order' => 'nullable|integer|min:0',
+            'seo_h1' => 'nullable|string|max:255',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'full_description' => 'nullable|string',
         ]);
         $update_data = Subcategory::find($request->id);
         $input = $request->all();
@@ -129,6 +141,9 @@ class SubcategoryController extends Controller
         $input['slug'] = str_replace('/', '', $input['slug']);
         $input['status'] = $request->status?1:0;
         $input['sort_order'] = $request->filled('sort_order') ? (int) $request->sort_order : 0;
+        $input['seo_h1'] = SeoText::plain($request->seo_h1);
+        $input['meta_title'] = SeoText::plain($request->meta_title);
+        $input['meta_description'] = SeoText::plain($request->meta_description);
         
         $update_data->update($input);
         $this->clearFrontendCategoryCache();

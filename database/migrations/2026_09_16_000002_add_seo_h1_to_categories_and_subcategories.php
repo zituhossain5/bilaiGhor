@@ -1,0 +1,38 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('categories', function (Blueprint $table) {
+            if (! Schema::hasColumn('categories', 'seo_h1')) {
+                $table->string('seo_h1')->nullable()->after('sort_order');
+            }
+        });
+
+        Schema::table('subcategories', function (Blueprint $table) {
+            if (! Schema::hasColumn('subcategories', 'seo_h1')) {
+                $table->string('seo_h1')->nullable()->after('sort_order');
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('subcategories', function (Blueprint $table) {
+            if (Schema::hasColumn('subcategories', 'seo_h1')) {
+                $table->dropColumn('seo_h1');
+            }
+        });
+
+        Schema::table('categories', function (Blueprint $table) {
+            if (Schema::hasColumn('categories', 'seo_h1')) {
+                $table->dropColumn('seo_h1');
+            }
+        });
+    }
+};

@@ -1,29 +1,75 @@
 @extends('frontEnd.layouts.master')
-@section('title', $subcategory->subcategoryName)
+@php
+    $seoTitle = \App\Support\SeoText::plain($subcategory->meta_title) ?: $subcategory->subcategoryName . ' | Bilai Ghor';
+    $seoDescription = \App\Support\SeoText::plain($subcategory->meta_description, 170);
+    $canonicalUrl = route('subcategory', $subcategory->slug);
+    $currentPage = (int) request('page', 1);
+    if ($currentPage > 1) {
+        $canonicalUrl .= '?page=' . $currentPage;
+    }
+    $seoH1 = \App\Support\SeoText::plain($subcategory->seo_h1) ?: $subcategory->subcategoryName;
+    $seoImage = $subcategory->image ? asset($subcategory->image) : null;
+    $breadcrumbItems = [
+        [
+            '@type' => 'ListItem',
+            'position' => 1,
+            'name' => 'Home',
+            'item' => route('home'),
+        ],
+    ];
+    if ($category) {
+        $breadcrumbItems[] = [
+            '@type' => 'ListItem',
+            'position' => 2,
+            'name' => $category->name,
+            'item' => route('category', $category->slug),
+        ];
+    }
+    $breadcrumbItems[] = [
+        '@type' => 'ListItem',
+        'position' => count($breadcrumbItems) + 1,
+        'name' => $subcategory->subcategoryName,
+        'item' => route('subcategory', $subcategory->slug),
+    ];
+    $breadcrumbJsonLd = [
+        '@context' => 'https://schema.org',
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => $breadcrumbItems,
+    ];
+@endphp
+@section('title', $seoTitle)
 @push('css')
     <link rel="stylesheet" href="{{ asset('public/frontEnd/css/jquery-ui.css') }}" />
 @endpush
 @push('css_after')
-    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-listing-figma.css') }}?v=8" />
+    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-listing-figma.css') }}?v=9" />
 @endpush
 @push('seo')
-    <meta name="app-url" content="{{ route('subcategory', $subcategory->slug) }}" />
-    <meta name="robots" content="index, follow" />
-    <meta name="description" content="{{ $subcategory->meta_description }}" />
-    <meta name="keywords" content="{{ $subcategory->slug }}" />
-    <meta name="twitter:card" content="product" />
-    <meta name="twitter:site" content="{{ $subcategory->subcategoryName }}" />
-    <meta name="twitter:title" content="{{ $subcategory->subcategoryName }}" />
-    <meta name="twitter:description" content="{{ $subcategory->meta_description }}" />
-    <meta name="twitter:creator" content="bilaighor.bd" />
-    <meta property="og:url" content="{{ route('subcategory', $subcategory->slug) }}" />
-    <meta name="twitter:image" content="{{ asset($subcategory->image) }}" />
-    <meta property="og:title" content="{{ $subcategory->subcategoryName }}" />
-    <meta property="og:type" content="product" />
-    <meta property="og:url" content="{{ route('subcategory', $subcategory->slug) }}" />
-    <meta property="og:image" content="{{ asset($subcategory->image) }}" />
-    <meta property="og:description" content="{{ $subcategory->meta_description }}" />
-    <meta property="og:site_name" content="{{ $subcategory->subcategoryName }}" />
+    <meta name="app-url" content="{{ $canonicalUrl }}" />
+    <meta name="robots" content="index,follow" />
+    @if($seoDescription)
+    <meta name="description" content="{{ $seoDescription }}" />
+    @endif
+    <link rel="canonical" href="{{ $canonicalUrl }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{{ $seoTitle }}" />
+    @if($seoDescription)
+    <meta property="og:description" content="{{ $seoDescription }}" />
+    @endif
+    <meta property="og:url" content="{{ $canonicalUrl }}" />
+    <meta property="og:site_name" content="Bilai Ghor" />
+    @if($seoImage)
+    <meta property="og:image" content="{{ $seoImage }}" />
+    @endif
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="{{ $seoTitle }}" />
+    @if($seoDescription)
+    <meta name="twitter:description" content="{{ $seoDescription }}" />
+    @endif
+    @if($seoImage)
+    <meta name="twitter:image" content="{{ $seoImage }}" />
+    @endif
+    <script type="application/ld+json">{!! json_encode($breadcrumbJsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 
 @section('content')
@@ -40,6 +86,13 @@
             @endif
             <span class="bilai-cat-breadcrumb-current">{{ $subcategory->subcategoryName }}</span>
         </nav>
+
+        <section class="bilai-listing-seo-header">
+            <h1>{{ $seoH1 }}</h1>
+            @if($seoDescription)
+            <p>{{ $seoDescription }}</p>
+            @endif
+        </section>
 
         {{-- SIBLING SUBCATEGORY CARDS --}}
         @if($siblings->count() > 0)

@@ -163,16 +163,30 @@
                         <div class="form-group mb-3">
                             <label for="meta_title" class="form-label">Meta Title</label>
                             <input type="text" class="form-control @error('meta_title') is-invalid @enderror" 
-                                   name="meta_title" value="{{ $edit_data->meta_title }}" id="meta_title">
+                                   name="meta_title" value="{{ old('meta_title', $edit_data->meta_title) }}" id="meta_title">
+                            <small class="text-muted">Used in browser title / Google title.</small>
                             @error('meta_title')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="form-group mb-3">
+                            <label for="seo_h1" class="form-label">SEO H1</label>
+                            <input type="text" class="form-control @error('seo_h1') is-invalid @enderror"
+                                   name="seo_h1" value="{{ old('seo_h1', $edit_data->seo_h1) }}" id="seo_h1"
+                                   placeholder="e.g. Cat Food in Bangladesh">
+                            <small class="text-muted">Visible main heading used for search-focused page topic.</small>
+                            @error('seo_h1')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
                             <label for="meta_description" class="form-label">Meta Description</label>
-                            <textarea class="summernote form-control @error('meta_description') is-invalid @enderror"
-                                      name="meta_description" id="meta_description">{!! $edit_data->meta_description !!}</textarea>
+                            <textarea class="form-control @error('meta_description') is-invalid @enderror"
+                                      name="meta_description" id="meta_description" rows="3"
+                                      placeholder="Short search-result description.">{{ old('meta_description', \App\Support\SeoText::plain($edit_data->meta_description)) }}</textarea>
+                            <small class="text-muted">Short search-result description. Plain text only.</small>
                             @error('meta_description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -181,7 +195,7 @@
                             <label for="full_description" class="form-label">Full Description / SEO Content</label>
                             <textarea class="summernote form-control @error('full_description') is-invalid @enderror"
                                       name="full_description" id="full_description">{!! $edit_data->full_description !!}</textarea>
-                            <small class="text-muted">Shown in accordion below the product grid on the category page.</small>
+                            <small class="text-muted">Long useful category content shown in accordion below the product grid.</small>
                             @error('full_description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

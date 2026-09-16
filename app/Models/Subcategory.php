@@ -8,7 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class Subcategory extends Model
 {
     use HasFactory;
-    protected $guarded = [];
+    protected $fillable = [
+        'subcategoryName',
+        'slug',
+        'category_id',
+        'image',
+        'meta_title',
+        'meta_description',
+        'meta_decription',
+        'seo_h1',
+        'full_description',
+        'status',
+        'sort_order',
+    ];
 
     public function scopeDisplayOrdered($query)
     {

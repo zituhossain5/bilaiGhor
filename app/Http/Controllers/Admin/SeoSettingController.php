@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\GoogleSiteVerification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -30,6 +31,10 @@ class SeoSettingController extends Controller
             'meta_description' => 'nullable|string',
             'search_console_verification' => 'nullable|string|max:255',
         ]);
+
+        $data['search_console_verification'] = GoogleSiteVerification::normalize(
+            $data['search_console_verification'] ?? null
+        );
 
         // Upsert: যদি row না থাকে create করবে, না হলে update করবে
         DB::table('seo_settings')->updateOrInsert(

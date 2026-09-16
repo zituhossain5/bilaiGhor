@@ -5,9 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta name="csrf-token" content="{{ csrf_token() }}" />
         <title>@yield('title')</title>
-		@if(!empty($seo->search_console_verification))
-{!! $seo->search_console_verification ?? '' !!}
-@endif
+        @php
+            $googleSiteVerification = \App\Support\GoogleSiteVerification::normalize(
+                optional($seo ?? null)->search_console_verification
+            );
+        @endphp
+        @if($googleSiteVerification)
+        <meta name="google-site-verification" content="{{ $googleSiteVerification }}" />
+        @endif
         <!-- App favicon -->
         <link rel="shortcut icon" href="{{asset($generalsetting->favicon)}}" alt="Super Ecommerce Favicon" />
         <meta name="author" content="Super Ecommerce" />
@@ -2439,7 +2444,7 @@ window.addEventListener('pageshow', function (e) {
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // ডাইনামিক হোয়াটসঅ্যাপ নাম্বার (ডাটাবেস থেকে)
-        var whatsappNumber = "{{ $contact->whatsapp ?? $contact->hotline ?? '8801700000000' }}"; 
+        var whatsappNumber = "{{ $contact->whatsapp ?? $contact->hotline ?? '8801700000000' }}";
         
         Swal.fire({
             title: '', 

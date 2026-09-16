@@ -145,7 +145,7 @@
                             <div class="p-3 bg-light rounded-3 border border-light h-100">
                                 <div class="info-label">File Path</div>
                                 <div class="info-value text-break" style="font-size: 13px; font-family: monospace;">
-                                    /public/sitemap.xml
+                                    /sitemap.xml
                                 </div>
                             </div>
                         </div>
@@ -166,11 +166,11 @@
                         <div class="col-md-7 mb-3 mb-md-0">
                             <label class="info-label mb-2">Public Sitemap URL</label>
                             <div class="url-input-group">
-                                <span class="url-text" id="sitemapUrl">{{ url('sitemap.xml') }}</span>
+                                <span class="url-text" id="sitemapUrl">{{ rtrim(config('sitemap.canonical_url'), '/') }}/sitemap.xml</span>
                                 <button class="btn-copy ms-2" onclick="copyToClipboard()" title="Copy Link">
                                     <i class="far fa-copy"></i>
                                 </button>
-                                <a href="{{ url('sitemap.xml') }}" target="_blank" class="btn-copy ms-1 text-decoration-none">
+                                <a href="{{ rtrim(config('sitemap.canonical_url'), '/') }}/sitemap.xml" target="_blank" class="btn-copy ms-1 text-decoration-none">
                                     <i class="fas fa-external-link-alt"></i>
                                 </a>
                             </div>

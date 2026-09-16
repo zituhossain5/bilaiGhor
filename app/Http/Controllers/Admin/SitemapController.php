@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Spatie\Sitemap\SitemapGenerator;
+use App\Services\SitemapService;
 
 class SitemapController extends Controller
 {
@@ -12,14 +12,13 @@ class SitemapController extends Controller
         return view('backEnd.sitemap.index');
     }
 
-    public function generate()
+    public function generate(SitemapService $sitemapService)
     {
-        // sitemap.xml মেইন ফোল্ডারে তৈরি হবে
-        $path = base_path('sitemap.xml');
+        $result = $sitemapService->generate(base_path('sitemap.xml'));
 
-        SitemapGenerator::create(config('app.url'))
-            ->writeToFile($path);
-
-        return redirect()->back()->with('success', '✅ Sitemap generated successfully at project root!');
+        return redirect()->back()->with(
+            'success',
+            "Sitemap generated successfully with {$result['urls']} canonical URLs."
+        );
     }
 }

@@ -232,6 +232,18 @@ Route::prefix('admin')->middleware(['auth:admin', 'admin', 'admin_license', 'dem
 Route::post('/incomplete-order/store', [\App\Http\Controllers\Frontend\FrontendController::class, 'storeIncompleteOrder'])
     ->name('incomplete.order.store');
 
+// Production serves this file directly from public_html. This fallback keeps
+// the same canonical URL available when the web root points to /public.
+Route::get('/sitemap.xml', function () {
+    $path = base_path('sitemap.xml');
+
+    abort_unless(is_file($path), 404);
+
+    return response()->file($path, [
+        'Content-Type' => 'application/xml; charset=UTF-8',
+    ]);
+})->name('sitemap.xml');
+
 // RedX Webhook (CSRF excluded)
 Route::post('/api/redx/webhook', [\App\Http\Controllers\Admin\RedXWebhookController::class, 'handleWebhook'])
     ->name('redx.webhook');

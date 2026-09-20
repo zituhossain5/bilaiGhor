@@ -512,41 +512,6 @@
         @endforeach
         <!-- ========== End Google Tag Manager ========== -->
 
-        <!-- ========== Facebook Pixel (single init, multiple pixels support) ========== -->
-        @if(isset($pixels) && $pixels->count() > 0)
-        <script>
-            !(function (f, b, e, v, n, t, s) {
-                if (f.fbq) return;
-                n = f.fbq = function () {
-                    n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-                };
-                if (!f._fbq) f._fbq = n;
-                n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = [];
-                t = b.createElement(e); t.async = !0; t.src = v;
-                s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
-            })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
-            @php
-                $fbInitUser = [];
-                if (\Illuminate\Support\Facades\Auth::guard('customer')->check()) {
-                    $fbInitUser = \App\Support\EcommerceTrackingUser::forBrowserPixel(
-                        \App\Support\EcommerceTrackingUser::fromCustomer(\Illuminate\Support\Facades\Auth::guard('customer')->user())
-                    );
-                }
-            @endphp
-            @foreach($pixels as $pixel)
-            fbq('init', '{{{ $pixel->code }}}', @json($fbInitUser ?: new \stdClass()));
-            @endforeach
-            fbq('track', 'PageView');
-        </script>
-        @foreach($pixels as $pixel)
-        <noscript>
-            <img height="1" width="1" style="display:none"
-                src="https://www.facebook.com/tr?id={{{ $pixel->code }}}&ev=PageView&noscript=1" />
-        </noscript>
-        @endforeach
-        @endif
-        <!-- ========== End Facebook Pixel ========== -->
-
         <!-- ========== TikTok Pixel (single init, multiple pixels support) ========== -->
         @if(isset($tiktok_pixels) && $tiktok_pixels->count() > 0)
         <script>

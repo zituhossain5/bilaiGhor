@@ -843,7 +843,7 @@
                 <div class="bilai-footer__group">
                     <h5 class="bilai-footer__title">Opening Hours</h5>
                     <p class="bilai-footer__hours">
-                        {{ optional($generalsetting)->opening_hours ?? 'Saturday to Friday: 8 am to 2 pm' }}
+                        {{ optional($generalsetting)->opening_hours ?? 'Always Open' }}
                     </p>
                 </div>
 

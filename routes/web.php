@@ -79,6 +79,7 @@ use App\Http\Controllers\Frontend\ContactMessageController as FrontendContactMes
 use App\Http\Controllers\Frontend\BlogController;
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
+use App\Http\Controllers\Admin\KittenPackController as AdminKittenPackController;
 use App\Http\Controllers\Admin\PopupController;
 
 Route::get('/invoice/verify/{token}', [ManualOrderController::class, 'verify'])
@@ -445,6 +446,22 @@ Route::prefix('admin')
             ->name('testimonial.update');
         Route::get('/testimonial/delete/{id}', [AdminTestimonialController::class, 'delete'])
             ->name('testimonial.delete');
+
+        // Kitten Pack Management
+        Route::get('/kitten-packs', [AdminKittenPackController::class, 'index'])
+            ->name('kitten-pack.index');
+        Route::get('/kitten-pack/create', [AdminKittenPackController::class, 'create'])
+            ->name('kitten-pack.create');
+        Route::post('/kitten-pack/store', [AdminKittenPackController::class, 'store'])
+            ->name('kitten-pack.store');
+        Route::get('/kitten-pack/edit/{id}', [AdminKittenPackController::class, 'edit'])
+            ->name('kitten-pack.edit');
+        Route::post('/kitten-pack/update/{id}', [AdminKittenPackController::class, 'update'])
+            ->name('kitten-pack.update');
+        Route::get('/kitten-pack/delete/{id}', [AdminKittenPackController::class, 'delete'])
+            ->name('kitten-pack.delete');
+        Route::post('/kitten-pack/addons', [AdminKittenPackController::class, 'storeAddons'])
+            ->name('kitten-pack.addons.store');
     });
 
 	
@@ -601,6 +618,7 @@ Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']
     Route::get('districts', [FrontendController::class, 'districts'])->name('districts');
     Route::get('/campaign/{slug}', [FrontendController::class, 'campaign'])->name('campaign');
     Route::get('/offer', [FrontendController::class, 'offers'])->name('offers');
+    Route::get('/kitten-packs', [FrontendController::class, 'kittenPacks'])->name('kitten.packs');
      Route::get('/payment-success', [FrontEndController::class, 'payment_success'])->name('payment_success');
     Route::get('/payment-cancel', [FrontEndController::class, 'payment_cancel'])->name('payment_cancel');
 

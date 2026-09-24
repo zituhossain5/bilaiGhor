@@ -43,6 +43,8 @@ use App\Models\ProductFlavor;
 use App\Models\Blog;
 use App\Models\Vendor;
 use App\Models\Testimonial;
+use App\Models\KittenPack;
+use App\Models\KittenPackAddon;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -1442,6 +1444,36 @@ $brands = Brand::where('status', 1)
     public function offers()
     {
         return view('frontEnd.layouts.pages.offers');
+    }
+
+    // ===========================
+    // Kitten Packs landing page
+    // ===========================
+    public function kittenPacks()
+    {
+        $packs = KittenPack::active()
+            ->ordered()
+            ->with(['items', 'product'])
+            ->get();
+
+        // Curated add-ons first; if none have been picked yet, fall back to recent
+        // active products so the "Add to Your Kit" row is not empty on a fresh install.
+        $addonIds = KittenPackAddon::orderBy('sort_order')->orderBy('id')->pluck('product_id');
+
+        $addonQuery = Product::where('status', 1)
+            ->where('approval_status', 'approved')
+            ->with(['prosizes', 'procolors', 'image', 'reviews', 'category', 'subcategory']);
+
+        if ($addonIds->isNotEmpty()) {
+            $addons = $addonQuery->whereIn('id', $addonIds)
+                ->get()
+                ->sortBy(fn ($product) => $addonIds->search($product->id))
+                ->values();
+        } else {
+            $addons = $addonQuery->latest('id')->limit(4)->get();
+        }
+
+        return view('frontEnd.layouts.pages.kitten-packs', compact('packs', 'addons'));
     }
 
     /**

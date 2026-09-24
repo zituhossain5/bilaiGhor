@@ -431,6 +431,31 @@
     </div>
 </li>
 
+{{-- Kitten Packs --}}
+<li>
+    <a href="#sidebar-kitten-pack" data-bs-toggle="collapse">
+        <i data-feather="package"></i>
+        <span> Kitten Packs </span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebar-kitten-pack">
+        <ul class="nav-second-level">
+            <li>
+                <a href="{{ route('admin.kitten-pack.index') }}">
+                    <i data-feather="list"></i>
+                    All Packs
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.kitten-pack.create') }}">
+                    <i data-feather="plus-circle"></i>
+                    Add New
+                </a>
+            </li>
+        </ul>
+    </div>
+</li>
+
 @canany(['purchase-list', 'purchase-create', 'purchase-edit'])
 <li>
   <a href="{{ route('purchases.index') }}">

@@ -476,7 +476,7 @@
             <p class="bilai-cat-situation-subtitle">Tell us your cat's situation, we will find you the right product.</p>
         </div>
         <div class="bilai-cat-situation-grid">
-            <a href="#" class="bilai-situation-card">
+            <a href="{{ route('kitten.packs') }}" class="bilai-situation-card">
                 <div class="bilai-situation-icon">
                     <img src="{{ asset('public/frontEnd/images/catDoingIcon1.svg') }}" alt="New Kitten" width="56" height="56" loading="lazy">
                 </div>

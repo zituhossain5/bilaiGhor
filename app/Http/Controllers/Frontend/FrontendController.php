@@ -215,10 +215,8 @@ $brands = Brand::where('status', 1)
         }
 
         // Testimonials for homepage
-        $testimonials = Testimonial::where('status', 1)
-            ->orderBy('sort_order')
-            ->orderBy('id', 'desc')
-            ->limit(3)
+        $testimonials = Testimonial::active()
+            ->ordered()
             ->get();
 
         // Active Vendors with shop info - for shop cards display

@@ -5,12 +5,25 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class TestimonialController extends Controller
 {
+    /** Max upload size in kilobytes. Change here to adjust the limit everywhere. */
+    private const MAX_IMAGE_KB = 2048;
+
+    /** Allowed image extensions. */
+    private const ALLOWED_MIMES = 'jpg,jpeg,png,webp';
+
+    /** Upload folder, relative to public/. */
+    private const UPLOAD_DIR = 'uploads/testimonials';
+
+    /** Homepage cache key set in FrontendController::index(). */
+    private const HOMEPAGE_CACHE_KEY = 'frontend_homepage_v3';
+
     public function index()
     {
-        $testimonials = Testimonial::orderBy('sort_order')->orderBy('id', 'desc')->get();
+        $testimonials = Testimonial::ordered()->get();
         return view('backEnd.testimonial.index', compact('testimonials'));
     }
 
@@ -22,41 +35,36 @@ class TestimonialController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'       => 'required|string|max:255',
-            'location'   => 'nullable|string|max:255',
-            'rating'     => 'required|integer|min:1|max:5',
-            'message'    => 'required|string',
-            'image'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'sort_order' => 'nullable|integer',
+            'image'      => 'required|array|min:1',
+            'image.*'    => 'required|image|mimes:' . self::ALLOWED_MIMES . '|max:' . self::MAX_IMAGE_KB,
+            'sort_order' => 'nullable|integer|min:0',
+        ], [
+            'image.required'   => 'Please select at least one image.',
+            'image.*.required' => 'Please select at least one image.',
+            'image.*.max'      => 'Each image must be ' . (self::MAX_IMAGE_KB / 1024) . 'MB or smaller.',
         ]);
 
-        $imagePath = null;
+        $sortOrder = (int) ($request->sort_order ?? 0);
+        $status    = $request->status ? 1 : 0;
+        $count     = 0;
 
-        if ($request->hasFile('image')) {
-            $image     = $request->file('image');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $uploadDir = public_path('uploads/testimonials');
+        // Each uploaded file becomes its own testimonial record.
+        foreach ($request->file('image') as $image) {
+            Testimonial::create([
+                'image'      => $this->storeImage($image),
+                'status'     => $status,
+                'sort_order' => $sortOrder + $count,
+            ]);
 
-            if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-
-            $image->move($uploadDir, $imageName);
-            $imagePath = 'uploads/testimonials/' . $imageName;
+            $count++;
         }
 
-        Testimonial::create([
-            'name'       => $request->name,
-            'location'   => $request->location,
-            'rating'     => $request->rating,
-            'message'    => $request->message,
-            'image'      => $imagePath,
-            'status'     => $request->status ? 1 : 0,
-            'sort_order' => $request->sort_order ?? 0,
-        ]);
+        $this->flushHomepageCache();
 
         return redirect()->route('admin.testimonial.index')
-            ->with('success', 'Testimonial created successfully');
+            ->with('success', $count > 1
+                ? $count . ' testimonials created successfully'
+                : 'Testimonial created successfully');
     }
 
     public function edit($id)
@@ -70,39 +78,22 @@ class TestimonialController extends Controller
         $testimonial = Testimonial::findOrFail($id);
 
         $request->validate([
-            'name'       => 'required|string|max:255',
-            'location'   => 'nullable|string|max:255',
-            'rating'     => 'required|integer|min:1|max:5',
-            'message'    => 'required|string',
-            'image'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'sort_order' => 'nullable|integer',
+            'image'      => 'nullable|image|mimes:' . self::ALLOWED_MIMES . '|max:' . self::MAX_IMAGE_KB,
+            'sort_order' => 'nullable|integer|min:0',
+        ], [
+            'image.max' => 'The image must be ' . (self::MAX_IMAGE_KB / 1024) . 'MB or smaller.',
         ]);
 
         if ($request->hasFile('image')) {
-            if ($testimonial->image && file_exists(public_path($testimonial->image))) {
-                unlink(public_path($testimonial->image));
-            }
-
-            $image     = $request->file('image');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $uploadDir = public_path('uploads/testimonials');
-
-            if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-
-            $image->move($uploadDir, $imageName);
-            $testimonial->image = 'uploads/testimonials/' . $imageName;
+            $this->deleteImage($testimonial->image);
+            $testimonial->image = $this->storeImage($request->file('image'));
         }
 
-        $testimonial->update([
-            'name'       => $request->name,
-            'location'   => $request->location,
-            'rating'     => $request->rating,
-            'message'    => $request->message,
-            'status'     => $request->status ? 1 : 0,
-            'sort_order' => $request->sort_order ?? 0,
-        ]);
+        $testimonial->status     = $request->status ? 1 : 0;
+        $testimonial->sort_order = (int) ($request->sort_order ?? 0);
+        $testimonial->save();
+
+        $this->flushHomepageCache();
 
         return redirect()->route('admin.testimonial.index')
             ->with('success', 'Testimonial updated successfully');
@@ -112,12 +103,41 @@ class TestimonialController extends Controller
     {
         $testimonial = Testimonial::findOrFail($id);
 
-        if ($testimonial->image && file_exists(public_path($testimonial->image))) {
-            unlink(public_path($testimonial->image));
-        }
-
+        $this->deleteImage($testimonial->image);
         $testimonial->delete();
 
+        $this->flushHomepageCache();
+
         return back()->with('success', 'Testimonial deleted successfully');
+    }
+
+    /** The homepage is cached for 5 minutes, so drop it to show changes right away. */
+    private function flushHomepageCache(): void
+    {
+        Cache::forget(self::HOMEPAGE_CACHE_KEY);
+    }
+
+    /** Move an uploaded file into the public uploads folder, returning its relative path. */
+    private function storeImage($image): string
+    {
+        // uniqid() keeps a multi-file upload from overwriting itself within the same second.
+        $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+        $uploadDir = public_path(self::UPLOAD_DIR);
+
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $image->move($uploadDir, $imageName);
+
+        return self::UPLOAD_DIR . '/' . $imageName;
+    }
+
+    /** Remove a previously uploaded file from disk. */
+    private function deleteImage(?string $path): void
+    {
+        if ($path && file_exists(public_path($path))) {
+            unlink(public_path($path));
+        }
     }
 }

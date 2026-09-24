@@ -799,39 +799,33 @@
             <div class="bilai-testimonial-header">
                 <h2 class="bilai-testimonial-title">What Bilai Parent Says <br> About Us</h2>
             </div>
-            <div class="bilai-testimonial-grid">
+            @php
+                // Fewer images than a full row: don't loop, centre them instead.
+                $testimonialSlidesPerView = 3;
+                $testimonialLoop = $testimonials->count() > $testimonialSlidesPerView;
+            @endphp
+            <div class="bilai-testimonial-slider owl-carousel owl-theme"
+                 data-loop="{{ $testimonialLoop ? 'true' : 'false' }}"
+                 data-count="{{ $testimonials->count() }}">
                 @foreach($testimonials as $t)
-                <div class="bilai-testimonial-card">
-                    <div class="bilai-testimonial-avatar">
-                        @if($t->image)
-                        <img src="{{ asset('public/'.$t->image) }}" alt="{{ $t->name }}" loading="lazy">
-                        @else
-                        <div class="bilai-testimonial-avatar-placeholder">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        @endif
-                    </div>
-                    <h4 class="bilai-testimonial-name">{{ $t->name }}</h4>
-                    @if($t->location)
-                    <p class="bilai-testimonial-location">{{ $t->location }}</p>
-                    @endif
-                    <div class="bilai-testimonial-stars">
-                        @for($i = 1; $i <= 5; $i++)
-                            @if($i <= $t->rating)
-                            <i class="fas fa-star"></i>
-                            @else
-                            <i class="far fa-star"></i>
-                            @endif
-                        @endfor
-                    </div>
-                    <p class="bilai-testimonial-message">"{{ $t->message }}"</p>
+                <div class="bilai-testimonial-slide">
+                    <button type="button" class="bilai-testimonial-image-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#bilaiTestimonialModal"
+                            data-image="{{ asset('public/'.$t->image) }}"
+                            aria-label="View customer review {{ $loop->iteration }} full size">
+                        <img src="{{ asset('public/'.$t->image) }}"
+                             alt="Customer review of Bilai Ghor {{ $loop->iteration }}"
+                             loading="lazy">
+                    </button>
                 </div>
                 @endforeach
             </div>
-            
+
         </div>
     </div>
-    {{-- CTA Banner --}}
+
+    {{-- CTA Banner — hidden for now, remove the surrounding comment to bring it back.
         <div class="container">
             <div class="bilai-testimonial-cta">
                     <div class="bilai-testimonial-cta-left">
@@ -839,10 +833,23 @@
                         <p class="bilai-testimonial-cta-desc">যে কোন প্রজাতি বিলাই নিয়ে তোলা আপনার ছবি আমাদের ওয়েবসাইটে আপনার বিলাইর ছবি বিখ্যাত করার সুযোগ। (গর্ব প্রচার)</p>
                     </div>
                     <a href="#" class="bilai-testimonial-cta-btn">বিলাইগর প্যারেন্ট &rarr;</a>
-                
+
             </div>
         </div>
+    --}}
 </section>
+
+{{-- Lightbox for full-size review screenshots --}}
+<div class="modal fade bilai-testimonial-modal" id="bilaiTestimonialModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <button type="button" class="btn-close bilai-testimonial-modal-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-body">
+                <img src="" alt="Customer review, full size" id="bilaiTestimonialModalImage">
+            </div>
+        </div>
+    </div>
+</div>
 @endif
 
 

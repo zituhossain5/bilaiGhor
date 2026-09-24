@@ -37,7 +37,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         {{-- BilaiGhor Figma — header & footer CSS --}}
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=45">
+        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=46">
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/main.css')}}" />
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-container-system.css')}}?v=2" />
         @stack('css_after')
@@ -1680,6 +1680,47 @@ window.addEventListener('pageshow', function (e) {
                 },
             },
         });
+        // Image-only testimonial slider + lightbox
+        var $testimonialSlider = $(".bilai-testimonial-slider");
+        if ($testimonialSlider.length) {
+            var testimonialLoop = $testimonialSlider.data("loop") === true || $testimonialSlider.data("loop") === "true";
+
+            if (!testimonialLoop) {
+                $testimonialSlider.addClass("is-centered");
+            }
+
+            $testimonialSlider.owlCarousel({
+                margin: 24,
+                loop: testimonialLoop,
+                dots: true,
+                nav: true,
+                autoplay: true,
+                autoplayTimeout: 5000,
+                autoplayHoverPause: true,
+                mouseDrag: true,
+                touchDrag: true,
+                smartSpeed: 600,
+                navText: ["<i class='fa-solid fa-angle-left'></i>", "<i class='fa-solid fa-angle-right'></i>"],
+                responsiveClass: true,
+                responsive: {
+                    0: {
+                        items: 1,
+                        nav: false,
+                    },
+                    576: {
+                        items: 2,
+                    },
+                    992: {
+                        items: 3,
+                    },
+                },
+            });
+
+            $(document).on("click", ".bilai-testimonial-image-btn", function() {
+                $("#bilaiTestimonialModalImage").attr("src", $(this).data("image"));
+            });
+        }
+
 		$(".customer-review").owlCarousel({
             margin: 8,
             items: 6,

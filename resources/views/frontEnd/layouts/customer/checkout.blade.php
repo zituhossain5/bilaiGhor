@@ -944,6 +944,10 @@ textarea.form-control-custom {
         // ✅ শিপিং লজিক চেক
         $requires_shipping = false;
         foreach (Cart::instance('shopping')->content() as $item) {
+            if (\App\Helpers\KittenPackCart::isPackRow($item)) {
+                $requires_shipping = true; // packs ship physical goods
+                break;
+            }
             $product = \App\Models\Product::find($item->id);
             if ($product && $product->is_digital != 1) {
                 $requires_shipping = true;
@@ -953,7 +957,7 @@ textarea.form-control-custom {
 
         // ✅ শিপিং চার্জ সেট
         // ⭐ Free Delivery Check - যদি সব প্রোডাক্ট free delivery eligible হয়, shipping charge 0
-        $hasAllFreeDelivery = \App\Http\Controllers\Frontend\ShoppingController::hasAllFreeDeliveryProducts();
+        $hasAllFreeDelivery = \App\Helpers\KittenPackCart::hasAllFreeDelivery();
 
         if ($requires_shipping && !$hasAllFreeDelivery) {
             $shipping = Session::get('shipping') ? Session::get('shipping') : 0;
@@ -978,7 +982,7 @@ textarea.form-control-custom {
                 'qty'               => $item->qty,
                 'price'             => (float) $item->price,
                 'image'             => asset($item->options->image ?? ''),
-                'link'              => isset($item->options->slug) ? url('/product/'.$item->options->slug) : '#',
+                'link'              => \App\Helpers\KittenPackCart::itemUrl($item),
                 'is_digital'        => (int) ($p->is_digital ?? 0),
                 'free_delivery'     => (int) ($p->free_delivery ?? 0),
                 'color_id'          => $item->options->color_id ?? null,
@@ -1340,13 +1344,13 @@ textarea.form-control-custom {
                                         @endphp
                                         <div class="checkout-item">
                                             {{-- Image --}}
-                                            <a href="{{ route('product', $value->options->slug) }}">
+                                            <a href="{{ \App\Helpers\KittenPackCart::itemUrl($value) }}">
                                                 <img src="{{ asset($value->options->image) }}" class="checkout-pro-img" alt="{{ $value->name }}">
                                             </a>
 
                                             {{-- Info --}}
                                             <div class="checkout-pro-info flex-grow-1">
-                                                <a href="{{ route('product', $value->options->slug) }}" style="text-decoration:none;">
+                                                <a href="{{ \App\Helpers\KittenPackCart::itemUrl($value) }}" style="text-decoration:none;">
                                                     <h6>{{ Str::limit($value->name, 40) }}</h6>
                                                 </a>
                                                 @if($value->options->product_size || $value->options->product_color)

@@ -12,7 +12,10 @@ class OrderHelper
         foreach (Cart::instance('shopping')->content() as $cart) {
             $detail = new OrderDetails();
             $detail->order_id = $order->id;
-            $detail->product_id = $cart->id;
+            // A kitten pack is sold as itself — no product row behind it.
+            $packId = KittenPackCart::packId($cart);
+            $detail->product_id = $packId ? null : $cart->id;
+            $detail->kitten_pack_id = $packId ?: null;
             $detail->product_name = $cart->name;
             $detail->purchase_price = $cart->options->purchase_price ?? null;
             $detail->sale_price = $cart->price;

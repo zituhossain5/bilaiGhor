@@ -9,6 +9,7 @@ class KittenPackItem extends Model
 {
     protected $fillable = [
         'kitten_pack_id',
+        'product_id',
         'name',
         'quantity',
         'is_included',
@@ -27,8 +28,25 @@ class KittenPackItem extends Model
         return $this->quantity . ' pcs';
     }
 
+    /** The live product name; the stored name is only a snapshot / label for unlinked rows. */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->product->name ?? (string) $this->name;
+    }
+
+    /** An included row with no product cannot be shipped, so it blocks the pack. */
+    public function getNeedsProductAttribute(): bool
+    {
+        return $this->product_id === null;
+    }
+
     public function pack(): BelongsTo
     {
         return $this->belongsTo(KittenPack::class, 'kitten_pack_id');
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 }

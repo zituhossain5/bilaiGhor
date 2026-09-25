@@ -16,12 +16,12 @@
         @foreach(Cart::instance('shopping')->content() as $value)
         <div class="sidebar-cart-item">
             <div class="sidebar-cart-item-img">
-                <a href="{{ route('product', $value->options->slug ?? '#') }}">
+                <a href="{{ \App\Helpers\KittenPackCart::itemUrl($value) }}">
                     <img src="{{ asset($value->options->image ?? 'public/uploads/default.webp') }}" alt="{{ $value->name }}">
                 </a>
             </div>
             <div class="sidebar-cart-item-details">
-                <a href="{{ route('product', $value->options->slug ?? '#') }}" class="sidebar-cart-item-title">
+                <a href="{{ \App\Helpers\KittenPackCart::itemUrl($value) }}" class="sidebar-cart-item-title">
                     {{ Str::limit($value->name, 45) }}
                 </a>
                 @if(!empty($value->options->product_size) || !empty($value->options->product_color))

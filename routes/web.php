@@ -619,6 +619,7 @@ Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']
     Route::get('/campaign/{slug}', [FrontendController::class, 'campaign'])->name('campaign');
     Route::get('/offer', [FrontendController::class, 'offers'])->name('offers');
     Route::get('/kitten-packs', [FrontendController::class, 'kittenPacks'])->name('kitten.packs');
+    Route::post('/kitten-packs/{id}/cart', [FrontendController::class, 'kittenPackCart'])->name('kitten.packs.cart');
      Route::get('/payment-success', [FrontEndController::class, 'payment_success'])->name('payment_success');
     Route::get('/payment-cancel', [FrontEndController::class, 'payment_cancel'])->name('payment_cancel');
 
@@ -1288,7 +1289,8 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
 	Route::get('order/{slug}/ajax', [OrderController::class, 'ajaxIndex'])->name('admin.orders.ajax');
 
     Route::get('order/{slug}', [OrderController::class,'index'])->name('admin.orders');
-    Route::get('order/edit/{invoice_id}', [OrderController::class,'order_edit'])->name('admin.order.edit');
+    Route::get('order/edit/{invoice_id}', [OrderController::class,'order_edit'])->name('admin.order.edit')
+        ->middleware(\App\Http\Middleware\PreventKittenPackOrderEdit::class);
     Route::post('order/update', [OrderController::class,'order_update'])->name('admin.order.update');
     Route::get('order/quick-view/{id}', [OrderController::class, 'orderQuickView'])->name('admin.order.quick_view');
     Route::get('order/invoice/{invoice_id}', [OrderController::class,'invoice'])->name('admin.order.invoice');

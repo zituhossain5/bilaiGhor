@@ -16,7 +16,7 @@
         @foreach(Cart::instance('shopping')->content() as $value)
             <tr>
                 <td class="text-left">
-                    <a style="font-size: 14px;" href="{{ route('product', $value->options->slug) }}">
+                    <a style="font-size: 14px;" href="{{ \App\Helpers\KittenPackCart::itemUrl($value) }}">
                         <img src="{{ asset($value->options->image) }}" height="30" width="30" alt="">
                         {{ Str::limit($value->name, 20) }}
                     </a>

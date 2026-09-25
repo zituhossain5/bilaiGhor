@@ -5,8 +5,7 @@ namespace App\Services;
 use App\Exceptions\InsufficientStockException;
 use App\Models\InventoryMovement;
 use App\Models\InventoryStock;
-use App\Models\KittenPack;
-use App\Models\KittenPackComponent;
+use App\Models\KittenPackItem;
 use App\Models\Order;
 use App\Models\OrderDetails;
 use App\Models\Product;
@@ -14,7 +13,6 @@ use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * Central inventory business logic — every stock change goes through here,
@@ -25,9 +23,9 @@ use Illuminate\Support\Facades\Schema;
  * read-only cache of available (clamped at 0) because the whole legacy
  * frontend/cart/API reads products.stock for availability.
  *
- * Kitten packs are bundles: the pack's cart product never has an inventory
- * row. Order lines for it are expanded into its component products, and its
- * products.stock is a cache of how many packs the components can build.
+ * Kitten packs are bundles sold as themselves (order_details.kitten_pack_id,
+ * product_id NULL). They hold no stock: a pack line is expanded into the real
+ * products of its INCLUDED items, and those are reserved / sold / restored.
  */
 class InventoryService
 {
@@ -54,10 +52,6 @@ class InventoryService
      */
     public static function stockRow(int $productId, bool $lock = true, ?int $excludeOrderId = null): ?InventoryStock
     {
-        if (self::isPackProduct($productId)) {
-            return null; // bundles hold no stock of their own
-        }
-
         $query = InventoryStock::where('product_id', $productId);
         $row   = ($lock ? $query->lockForUpdate() : $query)->first();
         if ($row) {
@@ -72,16 +66,9 @@ class InventoryService
         return self::seedProduct($product, $excludeOrderId);
     }
 
-    /**
-     * Create the inventory row from legacy products.stock + active order reservations.
-     * Returns null for a kitten pack's product — its stock comes from its components.
-     */
-    public static function seedProduct(Product $product, ?int $excludeOrderId = null, string $reason = 'Inventory system migration'): ?InventoryStock
+    /** Create the inventory row from legacy products.stock + active order reservations. */
+    public static function seedProduct(Product $product, ?int $excludeOrderId = null, string $reason = 'Inventory system migration'): InventoryStock
     {
-        if (self::isPackProduct($product->id)) {
-            return null;
-        }
-
         return DB::transaction(function () use ($product, $excludeOrderId, $reason) {
             $existing = InventoryStock::where('product_id', $product->id)->lockForUpdate()->first();
             if ($existing) {
@@ -147,11 +134,6 @@ class InventoryService
 
     public static function available(int $productId): int
     {
-        $components = self::packComponents($productId);
-        if ($components !== null) {
-            return self::packAvailable($components);
-        }
-
         $row = InventoryStock::where('product_id', $productId)->first();
         if ($row) {
             return $row->available;
@@ -169,22 +151,22 @@ class InventoryService
      * Locks the inventory rows — keep inside the same transaction as the
      * subsequent reserveForOrder() so no other request can take the units.
      *
-     * @param iterable $lines each: ['product_id' => int, 'qty' => int, 'name' => string]
+     * @param iterable $lines each: ['product_id' => int, 'qty' => int, 'name' => string, 'kitten_pack_id' => ?int]
      * @throws InsufficientStockException
      */
     public static function assertAvailable(iterable $lines): void
     {
         $lines = collect($lines)->all();
 
-        // A pack with no components has nothing to ship — never sellable.
+        // A pack with nothing linked to ship (no included items, or one without a product) is never sellable.
         foreach ($lines as $line) {
-            if (self::packComponents((int) $line['product_id']) === []) {
-                $name = $line['name'] ?? ('#' . $line['product_id']);
-                throw new InsufficientStockException((int) $line['product_id'], $name, 0, (int) $line['qty']);
+            $packId = (int) ($line['kitten_pack_id'] ?? 0);
+            if ($packId > 0 && !self::packIsShippable($packId)) {
+                throw new InsufficientStockException(0, $line['name'] ?? ('Pack #' . $packId), 0, (int) $line['qty']);
             }
         }
 
-        // Packs expand into their components, merged with any direct purchases of the same product.
+        // Packs expand into their included products, merged with any direct purchases of the same product.
         foreach (self::expandLines($lines) as $pid => $line) {
             $row = self::stockRow($pid, lock: true);
             $available = $row ? $row->available : 0;
@@ -504,9 +486,10 @@ class InventoryService
     {
         $lines = OrderDetails::where('order_id', $order->id)->get()
             ->map(fn ($detail) => [
-                'product_id' => (int) $detail->product_id,
-                'qty'        => (int) $detail->qty,
-                'name'       => $detail->product_name ?? ('#' . $detail->product_id),
+                'product_id'     => (int) $detail->product_id,
+                'kitten_pack_id' => (int) ($detail->kitten_pack_id ?? 0),
+                'qty'            => (int) $detail->qty,
+                'name'           => $detail->product_name ?? ('#' . $detail->product_id),
             ]);
 
         $hasPack = false;
@@ -519,71 +502,71 @@ class InventoryService
     // Kitten packs (bundles)
     // =========================================================
 
-    /** The pack table is new — keep stock operations working if its migration has not run yet. */
-    private static function packsEnabled(): bool
-    {
-        static $ready = false;
-
-        return $ready = $ready || Schema::hasTable('kitten_pack_components');
-    }
-
-    public static function isPackProduct(int $productId): bool
-    {
-        return $productId > 0
-            && self::packsEnabled()
-            && KittenPack::where('product_id', $productId)->exists();
-    }
-
     /**
-     * Components of the pack sold as $productId: [component product_id => units per pack].
-     * null when $productId is an ordinary product; [] for a pack with no components yet.
+     * Real products one pack consumes: [product_id => units per pack].
+     * Only INCLUDED rows count — struck-through rows are not part of the pack.
      */
-    public static function packComponents(int $productId): ?array
+    public static function packComponents(int $packId): array
     {
-        if (!self::isPackProduct($productId)) {
-            return null;
-        }
-
-        $packId = KittenPack::where('product_id', $productId)->value('id');
-
-        return KittenPackComponent::where('kitten_pack_id', $packId)
-            ->pluck('quantity', 'product_id')
-            ->map(fn ($qty) => max(1, (int) $qty))
+        return KittenPackItem::where('kitten_pack_id', $packId)
+            ->where('is_included', true)
+            ->whereNotNull('product_id')
+            ->get(['product_id', 'quantity'])
+            ->groupBy('product_id')
+            ->map(fn ($rows) => max(1, (int) $rows->sum('quantity')))
             ->all();
     }
 
-    /** How many whole packs the components can build right now; 0 without components. */
-    public static function packAvailable(array $components): int
+    /** Has at least one included item, and every included item is linked to a product. */
+    public static function packIsShippable(int $packId): bool
     {
-        if (empty($components)) {
+        $included = KittenPackItem::where('kitten_pack_id', $packId)->where('is_included', true);
+
+        return (clone $included)->exists() && !(clone $included)->whereNull('product_id')->exists();
+    }
+
+    /** How many whole packs the included products can make right now: min(floor(available / qty)). */
+    public static function packAvailable(int $packId): int
+    {
+        if (!self::packIsShippable($packId)) {
             return 0;
         }
 
+        $components = self::packComponents($packId);
+        $available  = self::availableMany(array_keys($components));
+
         $packs = PHP_INT_MAX;
         foreach ($components as $productId => $perPack) {
-            $packs = min($packs, intdiv(max(0, self::available((int) $productId)), max(1, (int) $perPack)));
+            $packs = min($packs, intdiv(max(0, $available[$productId] ?? 0), $perPack));
         }
 
-        return $packs;
+        return $packs === PHP_INT_MAX ? 0 : $packs;
     }
 
-    /** Refresh products.stock of a pack's cart product — the storefront/cart read it like any product. */
-    public static function syncPackProductCache(int $packProductId): void
+    /** available() for many products in two queries: [product_id => available units]. */
+    public static function availableMany(array $productIds): array
     {
-        $components = self::packComponents($packProductId);
-        if ($components === null) {
-            return;
+        if (empty($productIds)) {
+            return [];
         }
 
-        DB::table('products')->where('id', $packProductId)
-            ->update(['stock' => self::packAvailable($components)]);
+        $tracked = InventoryStock::whereIn('product_id', $productIds)->get()
+            ->mapWithKeys(fn ($row) => [(int) $row->product_id => (int) $row->available]);
+
+        // Untracked product: legacy field still is the availability.
+        $untracked = array_diff($productIds, $tracked->keys()->all());
+        $legacy = $untracked
+            ? Product::whereIn('id', $untracked)->pluck('stock', 'id')->map(fn ($s) => (int) $s)
+            : collect();
+
+        return $tracked->union($legacy)->all();
     }
 
     /**
-     * Expand pack lines into component lines and merge quantities per product,
-     * sorted by product id (a stable lock order). Ordinary lines pass through.
+     * Expand pack lines into their included products and merge quantities per
+     * product, sorted by product id (a stable lock order). Ordinary lines pass through.
      *
-     * @param iterable $lines each: ['product_id' => int, 'qty' => int, 'name' => string]
+     * @param iterable $lines each: ['product_id' => int, 'qty' => int, 'name' => string, 'kitten_pack_id' => ?int]
      * @return array<int, array{qty: int, name: string}>
      */
     public static function expandLines(iterable $lines, ?bool &$hasPack = null): array
@@ -597,23 +580,23 @@ class InventoryService
         };
 
         foreach ($lines as $line) {
+            $qty    = (int) ($line['qty'] ?? 0);
+            $packId = (int) ($line['kitten_pack_id'] ?? 0);
+
+            if ($packId > 0) {
+                $hasPack = true;
+                $packName = (string) ($line['name'] ?? ('Pack #' . $packId));
+                $components = self::packComponents($packId);
+                $names = Product::whereIn('id', array_keys($components))->pluck('name', 'id');
+                foreach ($components as $productId => $perPack) {
+                    $add($productId, $qty * $perPack, $packName . ' — ' . ($names[$productId] ?? ('#' . $productId)));
+                }
+                continue;
+            }
+
             $productId = (int) ($line['product_id'] ?? 0);
-            if ($productId <= 0) {
-                continue;
-            }
-            $qty  = (int) ($line['qty'] ?? 0);
-            $name = (string) ($line['name'] ?? ('#' . $productId));
-
-            $components = self::packComponents($productId);
-            if ($components === null) {
-                $add($productId, $qty, $name);
-                continue;
-            }
-
-            $hasPack = true;
-            $componentNames = Product::whereIn('id', array_keys($components))->pluck('name', 'id');
-            foreach ($components as $componentId => $perPack) {
-                $add($componentId, $qty * $perPack, $name . ' — ' . ($componentNames[$componentId] ?? ('#' . $componentId)));
+            if ($productId > 0) {
+                $add($productId, $qty, (string) ($line['name'] ?? ('#' . $productId)));
             }
         }
 
@@ -735,12 +718,6 @@ class InventoryService
             throw new \InvalidArgumentException('Invalid adjustment type.');
         }
 
-        if (self::isPackProduct($productId)) {
-            throw new \InvalidArgumentException(
-                'This product is a kitten pack — its stock comes from its components. Adjust those products instead.'
-            );
-        }
-
         return DB::transaction(function () use ($productId, $type, $qty, $reason, $notes, $adminId) {
             $row = self::stockRow($productId, lock: true);
             if (!$row) {
@@ -786,12 +763,6 @@ class InventoryService
      */
     public static function applyProductStockEdit(Product $product, int $targetAvailable, ?int $adminId = null): void
     {
-        if (self::isPackProduct($product->id)) {
-            // Typed value is ignored — a pack's stock is always derived from its components.
-            self::syncPackProductCache($product->id);
-            return;
-        }
-
         DB::transaction(function () use ($product, $targetAvailable, $adminId) {
             $row = self::stockRow($product->id, lock: true);
             if (!$row) {
@@ -866,18 +837,5 @@ class InventoryService
     {
         DB::table('products')->where('id', $row->product_id)
             ->update(['stock' => max(0, $row->on_hand - $row->reserved)]);
-
-        // Any pack built from this product can now make more / fewer packs.
-        if (self::packsEnabled()) {
-            $packProductIds = DB::table('kitten_pack_components')
-                ->join('kitten_packs', 'kitten_packs.id', '=', 'kitten_pack_components.kitten_pack_id')
-                ->where('kitten_pack_components.product_id', $row->product_id)
-                ->whereNotNull('kitten_packs.product_id')
-                ->pluck('kitten_packs.product_id');
-
-            foreach ($packProductIds as $packProductId) {
-                self::syncPackProductCache((int) $packProductId);
-            }
-        }
     }
 }

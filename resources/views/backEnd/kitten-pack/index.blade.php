@@ -48,6 +48,13 @@
     </div>
     @endif
 
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -66,8 +73,7 @@
                                     <th>Tier</th>
                                     <th>Items</th>
                                     <th>Price</th>
-                                    <th>Linked Product</th>
-                                    <th title="Worked out from the components' stock">Available Stock</th>
+                                    <th title="Worked out from the included items' stock">Available Stock</th>
                                     <th>Sort</th>
                                     <th>Status</th>
                                     <th class="text-end" style="width:120px;">Action</th>
@@ -94,7 +100,13 @@
                                         @endif
                                     </td>
                                     <td>{{ $pack->tier_label ?? '—' }}</td>
-                                    <td>{{ $pack->items_count }} rows</td>
+                                    <td>
+                                        {{ $pack->item_count }} items
+                                        @php $unlinked = $pack->items->where('is_included', true)->whereNull('product_id')->count(); @endphp
+                                        @if($unlinked)
+                                            <small class="text-danger d-block">{{ $unlinked }} need a product</small>
+                                        @endif
+                                    </td>
                                     <td>
                                         ৳{{ number_format($pack->price, 0) }}
                                         @if($pack->old_price)
@@ -102,22 +114,10 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($pack->product_id)
-                                            <span class="badge badge-pill badge-soft-success">Linked</span>
-                                        @else
-                                            <span class="badge badge-pill badge-soft-danger" title="Buy Now shows Coming Soon">Not linked</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($pack->components->isEmpty())
-                                            <span class="badge badge-pill badge-soft-danger" title="Add components on the edit page">No components</span>
-                                        @else
-                                            @php $available = $pack->available_stock; @endphp
-                                            <span class="badge badge-pill {{ $available > 0 ? 'badge-soft-success' : 'badge-soft-danger' }}">
-                                                {{ $available > 0 ? $available.' packs' : 'Stock Out' }}
-                                            </span>
-                                            <small class="text-muted d-block">{{ $pack->components->count() }} components</small>
-                                        @endif
+                                        @php $available = $pack->available_stock; @endphp
+                                        <span class="badge badge-pill {{ $available > 0 ? 'badge-soft-success' : 'badge-soft-danger' }}">
+                                            {{ $available > 0 ? $available.' packs' : 'Stock Out' }}
+                                        </span>
                                     </td>
                                     <td>{{ $pack->sort_order }}</td>
                                     <td>
@@ -141,7 +141,7 @@
                                     </td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="11" class="text-center text-muted py-4">No kitten packs yet.</td></tr>
+                                <tr><td colspan="10" class="text-center text-muted py-4">No kitten packs yet.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

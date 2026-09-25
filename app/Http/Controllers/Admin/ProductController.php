@@ -644,8 +644,8 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($request->hidden_id);
 
-        // A kitten pack is built from this product — deleting it would break the pack's stock.
-        $usedInPacks = \App\Models\KittenPack::whereHas('components', fn ($q) => $q->where('product_id', $product->id))
+        // A kitten pack ships this product — deleting it would leave the pack unsellable.
+        $usedInPacks = \App\Models\KittenPack::whereHas('items', fn ($q) => $q->where('product_id', $product->id)->where('is_included', true))
             ->pluck('name');
         if ($usedInPacks->isNotEmpty()) {
             Toastr::error('Remove this product from kitten pack(s) first: ' . $usedInPacks->implode(', '), 'Cannot delete');

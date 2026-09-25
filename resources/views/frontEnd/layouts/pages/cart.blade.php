@@ -188,13 +188,13 @@
                                     <tr>
                                         <td>
                                             <div class="bilai-cart-prod">
-                                                <a href="{{ route('product', $value->options->slug) }}">
+                                                <a href="{{ \App\Helpers\KittenPackCart::itemUrl($value) }}">
                                                     <img src="{{ asset($value->options->image) }}" class="bilai-cart-prod-img" alt="{{ $value->name }}"
                                                          onerror="this.src='{{ asset('public/uploads/default/no-image.png') }}'">
                                                 </a>
                                                 <div>
                                                     <p class="bilai-cart-prod-name">
-                                                        <a href="{{ route('product', $value->options->slug) }}">{{ Str::limit($value->name, 45) }}</a>
+                                                        <a href="{{ \App\Helpers\KittenPackCart::itemUrl($value) }}">{{ Str::limit($value->name, 45) }}</a>
                                                     </p>
                                                     @if($value->options->product_size || $value->options->product_color)
                                                         <p class="bilai-cart-prod-meta">

@@ -60,6 +60,12 @@ class ResellerCheckoutController extends Controller
             return redirect()->route('reseller.products.index');
         }
 
+        // Kitten packs have no reseller price — they are sold through the normal checkout only.
+        if (\App\Helpers\KittenPackCart::hasPackRows()) {
+            Toastr::warning('Kitten packs cannot be ordered through reseller checkout. Remove them from the cart first.', 'Warning');
+            return redirect()->route('cart.index');
+        }
+
         // Check if items have reseller_price (either in cart options or product table)
         $hasResellerPrice = false;
         foreach (Cart::instance('shopping')->content() as $item) {
@@ -207,6 +213,11 @@ class ResellerCheckoutController extends Controller
         if (Cart::instance('shopping')->count() <= 0) {
             Toastr::warning('আপনার কার্ট খালি', 'Warning');
             return redirect()->route('reseller.products.index');
+        }
+
+        if (\App\Helpers\KittenPackCart::hasPackRows()) {
+            Toastr::warning('Kitten packs cannot be ordered through reseller checkout. Remove them from the cart first.', 'Warning');
+            return redirect()->route('cart.index');
         }
 
         $request->validate([

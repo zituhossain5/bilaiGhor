@@ -561,10 +561,14 @@ class CustomerController extends Controller
             ->orderBy('id')
             ->get();
 
-        $hasAllFreeDelivery = \App\Http\Controllers\Frontend\ShoppingController::hasAllFreeDeliveryProducts();
+        $hasAllFreeDelivery = \App\Helpers\KittenPackCart::hasAllFreeDelivery();
 
         $requiresPhysicalShipping = false;
         foreach (Cart::instance('shopping')->content() as $item) {
+            if (\App\Helpers\KittenPackCart::isPackRow($item)) {
+                $requiresPhysicalShipping = true; // packs ship physical goods
+                break;
+            }
             $product = Product::find($item->id);
             if ($product && (int) $product->is_digital !== 1) {
                 $requiresPhysicalShipping = true;
@@ -707,13 +711,17 @@ public function order_save(Request $request)
 
         $requiresPhysicalShipping = false;
         foreach (Cart::instance('shopping')->content() as $item) {
+            if (\App\Helpers\KittenPackCart::isPackRow($item)) {
+                $requiresPhysicalShipping = true; // packs ship physical goods
+                break;
+            }
             $product = Product::find($item->id);
             if ($product && (int) $product->is_digital !== 1) {
                 $requiresPhysicalShipping = true;
                 break;
             }
         }
-        $hasAllFreeDelivery = \App\Http\Controllers\Frontend\ShoppingController::hasAllFreeDeliveryProducts();
+        $hasAllFreeDelivery = \App\Helpers\KittenPackCart::hasAllFreeDelivery();
 
         // Checkout collects District -> Thana (+ optional Post Code). Division is derived.
         $divisionId = null;
@@ -815,9 +823,11 @@ public function order_save(Request $request)
             // held until commit — two customers racing for the last unit serialize here.
             \App\Services\InventoryService::assertAvailable(
                 collect(Cart::instance('shopping')->content())->map(fn ($c) => [
-                    'product_id' => (int) $c->id,
-                    'qty'        => (int) $c->qty,
-                    'name'       => $c->name,
+                    // A pack row ("pack-{id}") is checked through its included products.
+                    'product_id'     => \App\Helpers\KittenPackCart::isPackRow($c) ? 0 : (int) $c->id,
+                    'kitten_pack_id' => \App\Helpers\KittenPackCart::packId($c),
+                    'qty'            => (int) $c->qty,
+                    'name'           => $c->name,
                 ])->all()
             );
         } catch (\App\Exceptions\InsufficientStockException $e) {
@@ -1166,7 +1176,7 @@ public function order_save(Request $request)
         $subtotal = (float) str_replace([',', '.00'], '', Cart::instance('shopping')->subtotal());
         $discount = (float) Session::get('discount', 0);
         $shipping = (float) Session::get('shipping', 0);
-        if (\App\Http\Controllers\Frontend\ShoppingController::hasAllFreeDeliveryProducts()) {
+        if (\App\Helpers\KittenPackCart::hasAllFreeDelivery()) {
             $shipping = 0;
         }
 

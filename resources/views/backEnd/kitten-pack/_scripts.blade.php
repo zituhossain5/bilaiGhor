@@ -14,63 +14,71 @@ function readURL(input) {
 }
 
 $(function() {
-    // Rows are indexed by position on submit, so gaps left by removals do not matter.
-    var nextIndex = $('#pack_items .pack-item-row').length;
+    var $items = $('#pack_items');
+    // Rows are posted as an indexed array; gaps left by removals do not matter.
+    var nextIndex = $items.find('.pack-item-row').length;
+    var $picker = $('#item_product');
 
-    $('#add_item_row').on('click', function() {
-        var row = '' +
-            '<div class="pack-item-row">' +
-                '<input type="text" name="items[' + nextIndex + '][name]" class="form-control" placeholder="Item name">' +
-                '<input type="number" name="items[' + nextIndex + '][quantity]" class="form-control" min="1" value="1" placeholder="Qty">' +
-                '<label class="pack-item-check">' +
-                    '<input type="checkbox" name="items[' + nextIndex + '][is_included]" value="1" checked>' +
-                    '<span>Included</span>' +
-                '</label>' +
-                '<button type="button" class="btn-remove-row" aria-label="Remove item"><i class="fe-x"></i></button>' +
-            '</div>';
+    $picker.select2({ width: '100%', placeholder: 'Select a product…' });
 
-        $('#pack_items').append(row);
-        nextIndex++;
+    // Rows carried over from the old free-text list pick their product from the same list.
+    $items.find('.item-link-select').each(function() {
+        $(this).append($picker.find('option[value!=""]').clone()).select2({ width: '100%', placeholder: 'Select a product…' });
     });
-
-    $('#pack_items').on('click', '.btn-remove-row', function() {
-        if ($('#pack_items .pack-item-row').length > 1) {
-            $(this).closest('.pack-item-row').remove();
-        } else {
-            $(this).closest('.pack-item-row').find('input[type="text"], input[type="number"]').val('');
-        }
-    });
-
-    // ---- Pack components ----
-    var $components = $('#pack_components');
-    var nextComponent = $components.find('.component-row').length;
-
-    $('#component_product').select2({ width: '100%', placeholder: 'Select a product…' });
-
-    // Mirrors KittenPack::available_stock: the scarcest component decides.
-    function refreshComponents() {
-        var $rows = $components.find('.component-row');
-        var packs = null;
-
-        $rows.each(function() {
-            var stock = parseInt($(this).data('stock'), 10) || 0;
-            var qty = Math.max(1, parseInt($(this).find('.component-qty').val(), 10) || 1);
-            var canBuild = Math.floor(Math.max(0, stock) / qty);
-            packs = packs === null ? canBuild : Math.min(packs, canBuild);
-        });
-
-        $components.find('.component-empty').prop('hidden', $rows.length > 0);
-        $('#component_available').text(packs === null ? 0 : packs);
-    }
 
     function hint(message) {
-        $('#component_hint').text(message).toggleClass('d-none', !message);
+        $('#item_hint').text(message).toggleClass('d-none', !message);
     }
 
-    $('#add_component').on('click', function() {
-        var $option = $('#component_product option:selected');
-        var productId = $option.val();
-        var qty = Math.max(1, parseInt($('#component_qty').val(), 10) || 1);
+    function productName(productId) {
+        return $.trim($picker.find('option[value="' + productId + '"]').text());
+    }
+
+    function productStock(productId) {
+        return parseInt($picker.find('option[value="' + productId + '"]').data('stock'), 10) || 0;
+    }
+
+    function highlight($row) {
+        $row.addClass('is-highlighted').find('.item-qty').trigger('focus').trigger('select');
+        setTimeout(function() { $row.removeClass('is-highlighted'); }, 1500);
+    }
+
+    // Mirrors InventoryService::packAvailable(): included rows only, the scarcest product decides.
+    function refresh() {
+        var $rows = $items.find('.pack-item-row');
+        var count = 0;
+        var packs = null;
+        var unlinked = 0;
+
+        $rows.each(function() {
+            var $row = $(this);
+            if (!$row.find('.item-included').is(':checked')) {
+                return;
+            }
+            var qty = Math.max(1, parseInt($row.find('.item-qty').val(), 10) || 1);
+            count += qty;
+
+            if (!$row.attr('data-product-id')) {
+                unlinked++;
+                return;
+            }
+            var canMake = Math.floor(Math.max(0, parseInt($row.attr('data-stock'), 10) || 0) / qty);
+            packs = packs === null ? canMake : Math.min(packs, canMake);
+        });
+
+        $items.find('.item-empty').prop('hidden', $rows.length > 0);
+        $('#item_count').text(count);
+        $('#packs_available').text(unlinked || packs === null ? 0 : packs);
+
+        var blocked = unlinked
+            ? unlinked + ' included item(s) still need a product — the pack shows Stock Out until they are linked.'
+            : (packs === null ? 'Add at least one included item to sell this pack.' : '');
+        $('#packs_blocked').text(blocked).toggleClass('d-none', !blocked);
+    }
+
+    $('#add_item').on('click', function() {
+        var productId = $picker.val();
+        var qty = Math.max(1, parseInt($('#item_qty').val(), 10) || 1);
 
         if (!productId) {
             hint('Pick a product first.');
@@ -78,48 +86,74 @@ $(function() {
         }
 
         // Already listed: edit its quantity there instead of adding a duplicate row.
-        var $existing = $components.find('.component-row[data-product-id="' + productId + '"]');
+        var $existing = $items.find('.pack-item-row[data-product-id="' + productId + '"]');
         if ($existing.length) {
             hint('This product is already in the pack — change its quantity below.');
-            $existing.addClass('is-highlighted').find('.component-qty').trigger('focus').trigger('select');
-            setTimeout(function() { $existing.removeClass('is-highlighted'); }, 1500);
+            highlight($existing);
             return;
         }
 
-        var stock = parseInt($option.data('stock'), 10) || 0;
-        var name = $.trim($option.text().replace(/\s—\sstock\s-?\d+$/, ''));
-        var i = nextComponent++;
-
-        var $row = $('<tr class="component-row">')
-            .attr('data-product-id', productId)
-            .attr('data-stock', stock);
+        var i = nextIndex++;
+        var stock = productStock(productId);
+        var $row = $('<tr class="pack-item-row">').attr('data-product-id', productId).attr('data-stock', stock);
 
         $row.append(
-            $('<td>').text(name).append(
-                $('<input type="hidden">').attr('name', 'components[' + i + '][product_id]').val(productId)
+            $('<td>').append(
+                $('<span class="item-name">').text(productName(productId)),
+                $('<input type="hidden">').attr('name', 'items[' + i + '][product_id]').val(productId)
             ),
             $('<td>').append($('<span class="stock-badge">').text(stock)),
             $('<td>').append(
-                $('<input type="number" class="form-control component-qty" min="1" required>')
-                    .attr('name', 'components[' + i + '][quantity]').val(qty)
+                $('<input type="number" class="form-control item-qty" min="1" required aria-label="Quantity">')
+                    .attr('name', 'items[' + i + '][quantity]').val(qty)
             ),
-            $('<td>').append('<button type="button" class="btn-remove-row btn-remove-component" aria-label="Remove component"><i class="fe-x"></i></button>')
+            $('<td>').append(
+                $('<label class="pack-item-check">').append(
+                    $('<input type="checkbox" value="1" class="item-included" checked>').attr('name', 'items[' + i + '][is_included]'),
+                    '<span>Included</span>'
+                )
+            ),
+            $('<td>').append('<button type="button" class="btn-remove-row btn-remove-item" aria-label="Remove item"><i class="fe-x"></i></button>')
         );
 
-        $components.find('.component-empty').before($row);
-        $('#component_product').val('').trigger('change');
-        $('#component_qty').val(1);
+        $items.find('.item-empty').before($row);
+        $picker.val('').trigger('change');
+        $('#item_qty').val(1);
         hint('');
-        refreshComponents();
+        refresh();
     });
 
-    $components.on('click', '.btn-remove-component', function() {
-        $(this).closest('.component-row').remove();
-        refreshComponents();
+    // Linking an old free-text row to a product turns it into a normal row.
+    $items.on('change', '.item-link-select', function() {
+        var $select = $(this);
+        var $row = $select.closest('.pack-item-row');
+        var productId = $select.val();
+
+        if (productId) {
+            var $existing = $items.find('.pack-item-row[data-product-id="' + productId + '"]').not($row);
+            if ($existing.length) {
+                hint('That product is already in the pack — change its quantity there, and remove this row.');
+                $select.val('').trigger('change.select2');
+                highlight($existing);
+                return;
+            }
+        }
+
+        $row.attr('data-product-id', productId || '')
+            .attr('data-stock', productId ? productStock(productId) : 0)
+            .toggleClass('needs-product', !productId);
+        $row.find('.stock-badge').text(productId ? productStock(productId) : '—');
+        hint('');
+        refresh();
     });
 
-    $components.on('input change', '.component-qty', refreshComponents);
+    $items.on('click', '.btn-remove-item', function() {
+        $(this).closest('.pack-item-row').remove();
+        refresh();
+    });
 
-    refreshComponents();
+    $items.on('input change', '.item-qty, .item-included', refresh);
+
+    refresh();
 });
 </script>

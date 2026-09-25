@@ -45,6 +45,7 @@ use App\Models\Vendor;
 use App\Models\Testimonial;
 use App\Models\KittenPack;
 use App\Models\KittenPackAddon;
+use App\Helpers\KittenPackCart;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -1265,7 +1266,7 @@ $brands = Brand::where('status', 1)
 
     public function shipping_charge(Request $request)
     {
-        $hasAllFreeDelivery = \App\Http\Controllers\Frontend\ShoppingController::hasAllFreeDeliveryProducts();
+        $hasAllFreeDelivery = \App\Helpers\KittenPackCart::hasAllFreeDelivery();
 
         if ($hasAllFreeDelivery || $request->id == 'free_delivery') {
             Session::put('shipping', 0);
@@ -1453,7 +1454,7 @@ $brands = Brand::where('status', 1)
     {
         $packs = KittenPack::active()
             ->ordered()
-            ->with(['items', 'product', 'components'])
+            ->with(['items.product'])
             ->get();
 
         // Curated add-ons first; if none have been picked yet, fall back to recent
@@ -1474,6 +1475,87 @@ $brands = Brand::where('status', 1)
         }
 
         return view('frontEnd.layouts.pages.kitten-packs', compact('packs', 'addons'));
+    }
+
+    /**
+     * Add a kitten pack to the cart as ONE line (pack name + pack price) — the pack
+     * counterpart of cartStore(): same order limit, stock messages, JSON for the AJAX
+     * cart button and order_now → checkout. Stock itself is reserved at order placement.
+     */
+    public function kittenPackCart(Request $request, $id)
+    {
+        $request->validate(['qty' => 'nullable|integer|min:1']);
+
+        $pack = KittenPack::active()->with('items.product')->findOrFail($id);
+        $wantsJson = $request->ajax() || $request->wantsJson();
+
+        // Same dynamic order limit as cartStore(), counted per pack.
+        $setting    = GeneralSetting::select('order_limit_time', 'order_limit_qty')->first();
+        $limitHours = $setting->order_limit_time ?? 48;
+        $limitQty   = $setting->order_limit_qty ?? 2;
+
+        $orderCount = DB::table('orders')
+            ->join('order_details', 'orders.id', '=', 'order_details.order_id')
+            ->where('order_details.kitten_pack_id', $pack->id)
+            ->where('orders.created_at', '>=', Carbon::now()->subHours($limitHours))
+            ->when(
+                Auth::guard('customer')->check(),
+                fn ($q) => $q->where('orders.customer_id', Auth::guard('customer')->id()),
+                fn ($q) => $q->where('orders.ip_address', $request->ip())
+            )
+            ->count();
+
+        if ($orderCount >= $limitQty) {
+            if ($wantsJson) {
+                return response()->json(['success' => false, 'message' => 'Order limit exceeded']);
+            }
+            return redirect()->back()->with('show_order_limit_modal', true);
+        }
+
+        $isBuyNow     = $request->has('order_now');
+        $requestedQty = max(1, (int) ($request->qty ?? 1));
+        $available    = $pack->available_stock;
+
+        if ($available <= 0) {
+            Toastr::error('এই প্যাকটি বর্তমানে স্টক আউট, অর্ডার করা যাবে না।', 'স্টক আউট!');
+            if ($wantsJson) {
+                return response()->json(['success' => false, 'message' => 'স্টক আউট']);
+            }
+            return redirect()->back();
+        }
+
+        // Buy Now replaces the qty, so what is already in the cart does not count.
+        $existing = KittenPackCart::findRow($pack);
+        $totalRequested = ($isBuyNow || !$existing ? 0 : (int) $existing->qty) + $requestedQty;
+
+        if ($totalRequested > $available) {
+            Toastr::error(
+                'স্টকে যত আছে তার বেশি অর্ডার করা যাবে না। সর্বোচ্চ ' . $available . ' টি নিতে পারবেন।',
+                'স্টক সীমা!'
+            );
+            if ($wantsJson) {
+                return response()->json(['success' => false, 'message' => 'স্টক সীমা']);
+            }
+            return redirect()->back();
+        }
+
+        $line = KittenPackCart::put($pack, $requestedQty, $isBuyNow);
+
+        Toastr::success('Product added to cart successfully', 'Success!');
+
+        if ($wantsJson) {
+            return response()->json([
+                'success' => true,
+                'qty'     => (int) $line->qty,
+                'price'   => (float) $line->price,
+            ]);
+        }
+
+        if ($isBuyNow) {
+            return redirect()->route('customer.checkout');
+        }
+
+        return redirect()->back();
     }
 
     /**

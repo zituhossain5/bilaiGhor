@@ -1,28 +1,20 @@
-{{-- Shared by create and edit. Expects $pack (KittenPack|null), $products and $componentProducts. --}}
+{{-- Shared by create and edit. Expects $pack (KittenPack|null) and $itemProducts (products with ->available). --}}
 @php
     $pack     = $pack ?? null;
     $oldItems = old('items');
 
-    $oldComponents = old('components');
-    if ($oldComponents === null) {
-        $oldComponents = $pack
-            ? $pack->components->map(fn ($c) => [
-                'product_id' => $c->product_id,
-                'quantity'   => $c->quantity,
-            ])->all()
-            : [];
-    }
-    $componentLookup = $componentProducts->keyBy('id');
-
     if ($oldItems === null) {
         $oldItems = $pack
             ? $pack->items->map(fn ($i) => [
+                'product_id'  => $i->product_id,
                 'name'        => $i->name,
                 'quantity'    => $i->quantity,
                 'is_included' => $i->is_included ? 1 : 0,
             ])->all()
             : [];
     }
+
+    $productLookup = $itemProducts->keyBy('id');
 @endphp
 
 <div class="row">
@@ -70,33 +62,20 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label">Price (৳) <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" min="0" name="price"
                                class="form-control @error('price') is-invalid @enderror"
                                value="{{ old('price', $pack->price ?? '') }}" required>
                         @error('price')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label">Old Price (৳)</label>
                         <input type="number" step="0.01" min="0" name="old_price"
                                class="form-control @error('old_price') is-invalid @enderror"
                                value="{{ old('old_price', $pack->old_price ?? '') }}">
                         @error('old_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         <small class="text-muted d-block mt-1">The "You save" line is worked out from this.</small>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Linked Product</label>
-                        <select name="product_id" class="form-select">
-                            <option value="">— none (Buy Now shows Coming Soon) —</option>
-                            @foreach($products as $product)
-                                <option value="{{ $product->id }}" {{ (int) old('product_id', $pack->product_id ?? 0) === $product->id ? 'selected' : '' }}>
-                                    {{ $product->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <small class="text-muted d-block mt-1">Goes into the cart and order. Its stock is worked out from the components below.</small>
-                        @error('product_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                 </div>
             </div>
@@ -105,119 +84,97 @@
         <div class="card">
             <div class="card-header">
                 <div class="header-icon"><i class="fe-list"></i></div>
-                <h5 class="card-title">What's Inside</h5>
+                <h5 class="card-title">Pack Items</h5>
             </div>
             <div class="card-body">
                 <p class="text-muted font-size-13">
-                    List every item the card shows. Untick <strong>Included</strong> to render the row struck through —
-                    the "Items" badge adds up the quantities of the ticked rows only.
+                    Build the pack from your products. <strong>Included</strong> items appear on the card, count towards the
+                    "Items" badge and are taken from stock when the pack sells. Untick <strong>Included</strong> to show an item
+                    struck through — it is never taken from stock.
                 </p>
 
-                <div id="pack_items">
-                    @forelse($oldItems as $i => $item)
-                    <div class="pack-item-row">
-                        <input type="text" name="items[{{ $i }}][name]" class="form-control" placeholder="Item name"
-                               value="{{ $item['name'] ?? '' }}">
-                        <input type="number" name="items[{{ $i }}][quantity]" class="form-control" min="1"
-                               value="{{ $item['quantity'] ?? 1 }}" placeholder="Qty">
-                        <label class="pack-item-check">
-                            <input type="checkbox" name="items[{{ $i }}][is_included]" value="1"
-                                   {{ !empty($item['is_included']) ? 'checked' : '' }}>
-                            <span>Included</span>
-                        </label>
-                        <button type="button" class="btn-remove-row" aria-label="Remove item"><i class="fe-x"></i></button>
-                    </div>
-                    @empty
-                    <div class="pack-item-row">
-                        <input type="text" name="items[0][name]" class="form-control" placeholder="Item name">
-                        <input type="number" name="items[0][quantity]" class="form-control" min="1" value="1" placeholder="Qty">
-                        <label class="pack-item-check">
-                            <input type="checkbox" name="items[0][is_included]" value="1" checked>
-                            <span>Included</span>
-                        </label>
-                        <button type="button" class="btn-remove-row" aria-label="Remove item"><i class="fe-x"></i></button>
-                    </div>
-                    @endforelse
-                </div>
-
-                <button type="button" id="add_item_row" class="btn btn-light border rounded-pill mt-3 px-4">
-                    <i class="fe-plus me-1"></i> Add Item
-                </button>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <div class="header-icon"><i class="fe-package"></i></div>
-                <h5 class="card-title">Pack Components</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted font-size-13">
-                    The real products this pack is built from. The pack has no stock of its own — it can sell as many
-                    packs as its scarcest component allows, and each sale reserves the components' stock.
-                    A pack with no components shows as <strong>Stock Out</strong>.
-                </p>
-
-                <div class="component-picker">
-                    <select id="component_product" class="form-control">
+                <div class="item-picker">
+                    <select id="item_product" class="form-control">
                         <option value="">Select a product…</option>
-                        @foreach($componentProducts as $product)
-                            <option value="{{ $product->id }}" data-stock="{{ (int) $product->stock }}">
-                                {{ $product->name }}{{ $product->status ? '' : ' (inactive)' }} — stock {{ (int) $product->stock }}
+                        @foreach($itemProducts as $product)
+                            <option value="{{ $product->id }}" data-stock="{{ (int) $product->available }}">
+                                {{ $product->name }}{{ $product->status ? '' : ' (inactive)' }}
                             </option>
                         @endforeach
                     </select>
-                    <input type="number" id="component_qty" class="form-control" min="1" value="1" placeholder="Qty">
-                    <button type="button" id="add_component" class="btn btn-light border rounded-pill px-4">
-                        <i class="fe-plus me-1"></i> Add Component
+                    <input type="number" id="item_qty" class="form-control" min="1" value="1" placeholder="Qty" aria-label="Quantity">
+                    <button type="button" id="add_item" class="btn btn-light border rounded-pill px-4">
+                        <i class="fe-plus me-1"></i> Add Item
                     </button>
                 </div>
-                <small id="component_hint" class="text-warning d-none mt-2"></small>
+                <small id="item_hint" class="text-warning d-none mt-2"></small>
 
-                @php $componentErrors = collect($errors->get('components*'))->flatten()->unique(); @endphp
-                @foreach($componentErrors as $message)
+                @php $itemErrors = collect($errors->get('items*'))->flatten()->unique(); @endphp
+                @foreach($itemErrors as $message)
                     <div class="text-danger small mt-2">{{ $message }}</div>
                 @endforeach
 
                 <div class="table-responsive mt-3">
-                    <table class="table component-table mb-0">
+                    <table class="table item-table mb-0">
                         <thead>
                             <tr>
                                 <th>Product</th>
-                                <th style="width:120px;">Current Stock</th>
-                                <th style="width:130px;">Qty per Pack</th>
+                                <th style="width:110px;">Stock</th>
+                                <th style="width:110px;">Qty</th>
+                                <th style="width:110px;">Included</th>
                                 <th style="width:50px;"></th>
                             </tr>
                         </thead>
-                        <tbody id="pack_components">
-                            @foreach($oldComponents as $i => $component)
-                                @php $product = $componentLookup->get((int) $component['product_id']); @endphp
-                                @continue(!$product)
-                                <tr class="component-row" data-product-id="{{ $product->id }}" data-stock="{{ (int) $product->stock }}">
+                        <tbody id="pack_items">
+                            @foreach($oldItems as $i => $item)
+                                @php
+                                    $product = !empty($item['product_id']) ? $productLookup->get((int) $item['product_id']) : null;
+                                    $stock   = $product ? (int) $product->available : 0;
+                                @endphp
+                                <tr class="pack-item-row {{ $product ? '' : 'needs-product' }}"
+                                    data-product-id="{{ $product->id ?? '' }}" data-stock="{{ $stock }}">
                                     <td>
-                                        {{ $product->name }}
-                                        <input type="hidden" name="components[{{ $i }}][product_id]" value="{{ $product->id }}">
+                                        @if($product)
+                                            <span class="item-name">{{ $product->name }}</span>
+                                            <input type="hidden" name="items[{{ $i }}][product_id]" value="{{ $product->id }}">
+                                        @else
+                                            {{-- Carried over from the old free-text list: link it to a product to sell the pack. --}}
+                                            <div class="needs-product-note">Needs a product: “{{ $item['name'] ?? '' }}”</div>
+                                            <select name="items[{{ $i }}][product_id]" class="form-select form-select-sm item-link-select">
+                                                <option value="">Select a product…</option>
+                                            </select>
+                                            <input type="hidden" name="items[{{ $i }}][name]" value="{{ $item['name'] ?? '' }}">
+                                        @endif
                                     </td>
-                                    <td><span class="stock-badge">{{ (int) $product->stock }}</span></td>
+                                    <td><span class="stock-badge">{{ $product ? $stock : '—' }}</span></td>
                                     <td>
-                                        <input type="number" name="components[{{ $i }}][quantity]" class="form-control component-qty"
-                                               min="1" value="{{ max(1, (int) $component['quantity']) }}" required>
+                                        <input type="number" name="items[{{ $i }}][quantity]" class="form-control item-qty"
+                                               min="1" value="{{ max(1, (int) ($item['quantity'] ?? 1)) }}" required aria-label="Quantity">
                                     </td>
                                     <td>
-                                        <button type="button" class="btn-remove-row btn-remove-component" aria-label="Remove component"><i class="fe-x"></i></button>
+                                        <label class="pack-item-check">
+                                            <input type="checkbox" name="items[{{ $i }}][is_included]" value="1" class="item-included"
+                                                   {{ !empty($item['is_included']) ? 'checked' : '' }}>
+                                            <span>Included</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn-remove-row btn-remove-item" aria-label="Remove item"><i class="fe-x"></i></button>
                                     </td>
                                 </tr>
                             @endforeach
-                            <tr class="component-empty" @if(count($oldComponents)) hidden @endif>
-                                <td colspan="4" class="text-muted text-center py-3">No components yet.</td>
+                            <tr class="item-empty" @if(count($oldItems)) hidden @endif>
+                                <td colspan="5" class="text-muted text-center py-3">No items yet — add products above.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="component-summary mt-3">
-                    Packs available with these components: <strong id="component_available">0</strong>
+                <div class="item-summary mt-3">
+                    <span><strong id="item_count">0</strong> items included</span>
+                    <span>Packs available: <strong id="packs_available">0</strong></span>
                 </div>
+                <small id="packs_blocked" class="text-danger d-none mt-2"></small>
             </div>
         </div>
     </div>

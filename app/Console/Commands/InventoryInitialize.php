@@ -26,10 +26,6 @@ class InventoryInitialize extends Command
                 }
 
                 $row = InventoryService::seedProduct($product);
-                if (!$row) {
-                    $skipped++; // kitten pack — stock comes from its components
-                    continue;
-                }
                 $this->line(sprintf(
                     '  #%d %s — on_hand %d, reserved %d, available %d',
                     $product->id,

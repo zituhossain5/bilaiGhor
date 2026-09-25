@@ -29,6 +29,7 @@ class OrderDetails extends Model
         'vendor_paid_at',
         'manual_variant',
         'is_manual_item',
+        'kitten_pack_id',
         'line_discount',
         'line_total',
     ];

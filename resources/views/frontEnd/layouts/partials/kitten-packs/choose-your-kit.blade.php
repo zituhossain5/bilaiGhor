@@ -30,7 +30,7 @@
                     @foreach($pack->items as $item)
                     <li class="bilai-kp-item {{ $item->is_included ? '' : 'is-excluded' }}">
                         <span class="bilai-kp-item-dot" aria-hidden="true"></span>
-                        <span class="bilai-kp-item-name">{{ $item->name }} {{ $item->quantity_label }}</span>
+                        <span class="bilai-kp-item-name">{{ $item->display_name }} {{ $item->quantity_label }}</span>
                     </li>
                     @endforeach
                 </ul>
@@ -47,32 +47,30 @@
                 @endif
 
                 <div class="bilai-kp-actions">
-                    @if($pack->product && $pack->available_stock < 1)
-                        {{-- Components cannot build a single pack right now. --}}
-                        <button type="button" class="bilai-kp-cart-btn" disabled aria-label="{{ $pack->name }} is out of stock">
-                            <i class="fas fa-shopping-cart"></i>
-                        </button>
-                        <button type="button" class="bilai-kp-buy-btn" disabled>Stock Out</button>
-                    @elseif($pack->product)
-                        <form action="{{ route('cart.store') }}" method="POST" class="bilai-kp-cart-form">
+                    @if($pack->is_in_stock)
+                        {{-- The pack is sold as itself (one cart line: pack name + pack price), like a normal product. --}}
+                        <form action="{{ route('kitten.packs.cart', $pack->id) }}" method="POST" class="bilai-kp-cart-form">
                             @csrf
-                            <input type="hidden" name="id" value="{{ $pack->product->id }}">
+                            <input type="hidden" name="id" value="{{ \App\Helpers\KittenPackCart::ROW_PREFIX . $pack->id }}">
                             <input type="hidden" name="qty" value="1">
-                            <button type="submit" class="bilai-kp-cart-btn" aria-label="Add {{ $pack->name }} to cart">
+                            <button type="submit" class="bilai-kp-cart-btn cart_store" data-id="{{ \App\Helpers\KittenPackCart::ROW_PREFIX . $pack->id }}"
+                                    aria-label="Add {{ $pack->name }} to cart">
                                 <i class="fas fa-shopping-cart"></i>
                             </button>
                         </form>
-                        {{-- Same Buy Now flow as regular products: order_now makes cartStore redirect to checkout. --}}
-                        <form action="{{ route('cart.store') }}" method="POST" class="bilai-kp-buy-form">
+                        {{-- order_now makes the pack endpoint redirect straight to checkout. --}}
+                        <form action="{{ route('kitten.packs.cart', $pack->id) }}" method="POST" class="bilai-kp-buy-form">
                             @csrf
-                            <input type="hidden" name="id" value="{{ $pack->product->id }}">
                             <input type="hidden" name="qty" value="1">
                             <input type="hidden" name="order_now" value="1">
                             <button type="submit" class="bilai-kp-buy-btn">Buy Now</button>
                         </form>
                     @else
-                        {{-- No backing product linked yet in admin, so there is nothing to check out. --}}
-                        <button type="button" class="bilai-kp-buy-btn bilai-kp-buy-btn--full" disabled>Coming Soon</button>
+                        {{-- An included product cannot cover one more pack (or an item still needs linking). --}}
+                        <button type="button" class="bilai-kp-cart-btn" disabled aria-label="{{ $pack->name }} is out of stock">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                        <button type="button" class="bilai-kp-buy-btn" disabled>Stock Out</button>
                     @endif
                 </div>
             </div>

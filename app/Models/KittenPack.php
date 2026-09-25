@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\InventoryService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -39,6 +40,23 @@ class KittenPack extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /** Real inventory products this pack is made of — the source of its stock. */
+    public function components(): HasMany
+    {
+        return $this->hasMany(KittenPackComponent::class)->orderBy('id');
+    }
+
+    /**
+     * Packs sellable right now: the lowest floor(component available / qty per pack).
+     * No components means nothing to ship, so 0.
+     */
+    public function getAvailableStockAttribute(): int
+    {
+        return InventoryService::packAvailable(
+            $this->components->pluck('quantity', 'product_id')->all()
+        );
     }
 
     public function scopeActive(Builder $query): Builder

@@ -47,7 +47,13 @@
                 @endif
 
                 <div class="bilai-kp-actions">
-                    @if($pack->product)
+                    @if($pack->product && $pack->available_stock < 1)
+                        {{-- Components cannot build a single pack right now. --}}
+                        <button type="button" class="bilai-kp-cart-btn" disabled aria-label="{{ $pack->name }} is out of stock">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                        <button type="button" class="bilai-kp-buy-btn" disabled>Stock Out</button>
+                    @elseif($pack->product)
                         <form action="{{ route('cart.store') }}" method="POST" class="bilai-kp-cart-form">
                             @csrf
                             <input type="hidden" name="id" value="{{ $pack->product->id }}">

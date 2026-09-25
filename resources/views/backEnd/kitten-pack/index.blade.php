@@ -67,6 +67,7 @@
                                     <th>Items</th>
                                     <th>Price</th>
                                     <th>Linked Product</th>
+                                    <th title="Worked out from the components' stock">Available Stock</th>
                                     <th>Sort</th>
                                     <th>Status</th>
                                     <th class="text-end" style="width:120px;">Action</th>
@@ -104,7 +105,18 @@
                                         @if($pack->product_id)
                                             <span class="badge badge-pill badge-soft-success">Linked</span>
                                         @else
-                                            <span class="badge badge-pill badge-soft-danger" title="Buy Now falls back to WhatsApp">Not linked</span>
+                                            <span class="badge badge-pill badge-soft-danger" title="Buy Now shows Coming Soon">Not linked</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($pack->components->isEmpty())
+                                            <span class="badge badge-pill badge-soft-danger" title="Add components on the edit page">No components</span>
+                                        @else
+                                            @php $available = $pack->available_stock; @endphp
+                                            <span class="badge badge-pill {{ $available > 0 ? 'badge-soft-success' : 'badge-soft-danger' }}">
+                                                {{ $available > 0 ? $available.' packs' : 'Stock Out' }}
+                                            </span>
+                                            <small class="text-muted d-block">{{ $pack->components->count() }} components</small>
                                         @endif
                                     </td>
                                     <td>{{ $pack->sort_order }}</td>
@@ -129,7 +141,7 @@
                                     </td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="10" class="text-center text-muted py-4">No kitten packs yet.</td></tr>
+                                <tr><td colspan="11" class="text-center text-muted py-4">No kitten packs yet.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

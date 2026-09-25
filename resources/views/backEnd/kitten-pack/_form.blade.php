@@ -1,7 +1,18 @@
-{{-- Shared by create and edit. Expects $pack (KittenPack|null) and $products. --}}
+{{-- Shared by create and edit. Expects $pack (KittenPack|null), $products and $componentProducts. --}}
 @php
     $pack     = $pack ?? null;
     $oldItems = old('items');
+
+    $oldComponents = old('components');
+    if ($oldComponents === null) {
+        $oldComponents = $pack
+            ? $pack->components->map(fn ($c) => [
+                'product_id' => $c->product_id,
+                'quantity'   => $c->quantity,
+            ])->all()
+            : [];
+    }
+    $componentLookup = $componentProducts->keyBy('id');
 
     if ($oldItems === null) {
         $oldItems = $pack
@@ -77,14 +88,15 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Linked Product</label>
                         <select name="product_id" class="form-select">
-                            <option value="">— none (Buy Now uses WhatsApp) —</option>
+                            <option value="">— none (Buy Now shows Coming Soon) —</option>
                             @foreach($products as $product)
                                 <option value="{{ $product->id }}" {{ (int) old('product_id', $pack->product_id ?? 0) === $product->id ? 'selected' : '' }}>
                                     {{ $product->name }}
                                 </option>
                             @endforeach
                         </select>
-                        <small class="text-muted d-block mt-1">Drives cart and checkout.</small>
+                        <small class="text-muted d-block mt-1">Goes into the cart and order. Its stock is worked out from the components below.</small>
+                        @error('product_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                 </div>
             </div>
@@ -131,6 +143,81 @@
                 <button type="button" id="add_item_row" class="btn btn-light border rounded-pill mt-3 px-4">
                     <i class="fe-plus me-1"></i> Add Item
                 </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="header-icon"><i class="fe-package"></i></div>
+                <h5 class="card-title">Pack Components</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted font-size-13">
+                    The real products this pack is built from. The pack has no stock of its own — it can sell as many
+                    packs as its scarcest component allows, and each sale reserves the components' stock.
+                    A pack with no components shows as <strong>Stock Out</strong>.
+                </p>
+
+                <div class="component-picker">
+                    <select id="component_product" class="form-control">
+                        <option value="">Select a product…</option>
+                        @foreach($componentProducts as $product)
+                            <option value="{{ $product->id }}" data-stock="{{ (int) $product->stock }}">
+                                {{ $product->name }}{{ $product->status ? '' : ' (inactive)' }} — stock {{ (int) $product->stock }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <input type="number" id="component_qty" class="form-control" min="1" value="1" placeholder="Qty">
+                    <button type="button" id="add_component" class="btn btn-light border rounded-pill px-4">
+                        <i class="fe-plus me-1"></i> Add Component
+                    </button>
+                </div>
+                <small id="component_hint" class="text-warning d-none mt-2"></small>
+
+                @php $componentErrors = collect($errors->get('components*'))->flatten()->unique(); @endphp
+                @foreach($componentErrors as $message)
+                    <div class="text-danger small mt-2">{{ $message }}</div>
+                @endforeach
+
+                <div class="table-responsive mt-3">
+                    <table class="table component-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th style="width:120px;">Current Stock</th>
+                                <th style="width:130px;">Qty per Pack</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="pack_components">
+                            @foreach($oldComponents as $i => $component)
+                                @php $product = $componentLookup->get((int) $component['product_id']); @endphp
+                                @continue(!$product)
+                                <tr class="component-row" data-product-id="{{ $product->id }}" data-stock="{{ (int) $product->stock }}">
+                                    <td>
+                                        {{ $product->name }}
+                                        <input type="hidden" name="components[{{ $i }}][product_id]" value="{{ $product->id }}">
+                                    </td>
+                                    <td><span class="stock-badge">{{ (int) $product->stock }}</span></td>
+                                    <td>
+                                        <input type="number" name="components[{{ $i }}][quantity]" class="form-control component-qty"
+                                               min="1" value="{{ max(1, (int) $component['quantity']) }}" required>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn-remove-row btn-remove-component" aria-label="Remove component"><i class="fe-x"></i></button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            <tr class="component-empty" @if(count($oldComponents)) hidden @endif>
+                                <td colspan="4" class="text-muted text-center py-3">No components yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="component-summary mt-3">
+                    Packs available with these components: <strong id="component_available">0</strong>
+                </div>
             </div>
         </div>
     </div>

@@ -1453,7 +1453,7 @@ $brands = Brand::where('status', 1)
     {
         $packs = KittenPack::active()
             ->ordered()
-            ->with(['items', 'product'])
+            ->with(['items', 'product', 'components'])
             ->get();
 
         // Curated add-ons first; if none have been picked yet, fall back to recent

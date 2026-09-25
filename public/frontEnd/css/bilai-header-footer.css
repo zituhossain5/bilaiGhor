@@ -6687,7 +6687,8 @@ body .bilai-product-card .bilai-product-image img {
     flex: 1 1 100%;
 }
 
-.bilai-kp-buy-btn:disabled {
+.bilai-kp-buy-btn:disabled,
+.bilai-kp-cart-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;

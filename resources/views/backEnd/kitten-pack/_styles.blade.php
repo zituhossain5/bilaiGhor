@@ -1,3 +1,4 @@
+<link href="{{ asset('public/backEnd') }}/assets/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
 <style>
     .card { border: none; box-shadow: 0 0 20px rgba(18,38,63,0.03); border-radius: 12px; background: #fff; margin-bottom: 24px; }
     .card-header { background: #fff; border-bottom: 1px solid #f1f5f7; padding: 20px 25px; display: flex; align-items: center; gap: 10px; }
@@ -23,7 +24,16 @@
     input:checked + .slider:before { transform: translateX(22px); }
     .btn-submit { background: linear-gradient(45deg,#0acf97,#06b6d4); border: none; color: white; padding: 12px; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(10,207,151,0.3); transition: 0.3s; }
     .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(10,207,151,0.4); color: #fff; }
+    .component-picker { display: grid; grid-template-columns: 1fr 90px auto; gap: 10px; align-items: center; }
+    .component-table th { font-size: 12px; font-weight: 600; color: #8391a2; text-transform: uppercase; border-bottom: 1px solid #f1f5f7; }
+    .component-table td { vertical-align: middle; font-size: 14px; color: #2d3436; }
+    .component-row { transition: background 0.3s; }
+    .component-row.is-highlighted { background: rgba(255,188,0,0.15); }
+    .stock-badge { display: inline-block; min-width: 38px; padding: 3px 10px; border-radius: 20px; background: #f1f5f7; font-size: 12px; font-weight: 600; text-align: center; }
+    .component-summary { padding: 12px 15px; border-radius: 8px; background: #f9fbfd; font-size: 13px; color: #636e72; }
     @media (max-width: 575px) {
         .pack-item-row { grid-template-columns: 1fr 70px auto 34px; }
+        .component-picker { grid-template-columns: 1fr 70px; }
+        .component-picker .btn { grid-column: 1 / -1; }
     }
 </style>

@@ -644,6 +644,14 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($request->hidden_id);
 
+        // A kitten pack is built from this product — deleting it would break the pack's stock.
+        $usedInPacks = \App\Models\KittenPack::whereHas('components', fn ($q) => $q->where('product_id', $product->id))
+            ->pluck('name');
+        if ($usedInPacks->isNotEmpty()) {
+            Toastr::error('Remove this product from kitten pack(s) first: ' . $usedInPacks->implode(', '), 'Cannot delete');
+            return redirect()->back();
+        }
+
         // digital ফাইল থাকলে ডিলিট
         if ($product->digital_file && Storage::disk('private')->exists($product->digital_file)) {
             Storage::disk('private')->delete($product->digital_file);

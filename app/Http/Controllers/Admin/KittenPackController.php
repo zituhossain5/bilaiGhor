@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\KittenPack;
 use App\Models\KittenPackAddon;
 use App\Models\Product;
+use App\Services\InventoryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class KittenPackController extends Controller
 {
@@ -22,7 +25,7 @@ class KittenPackController extends Controller
 
     public function index()
     {
-        $packs = KittenPack::withCount('items')->ordered()->get();
+        $packs = KittenPack::withCount('items')->with('components')->ordered()->get();
 
         $addons = KittenPackAddon::with('product.image')
             ->orderBy('sort_order')
@@ -35,7 +38,8 @@ class KittenPackController extends Controller
     public function create()
     {
         return view('backEnd.kitten-pack.create', [
-            'products' => $this->productOptions(),
+            'products'          => $this->productOptions(),
+            'componentProducts' => $this->componentOptions(),
         ]);
     }
 
@@ -43,21 +47,26 @@ class KittenPackController extends Controller
     {
         $data = $this->validatePack($request, true);
 
-        $pack = KittenPack::create([
-            'name'       => $data['name'],
-            'slug'       => $this->uniqueSlug($data['name']),
-            'tier_label' => $data['tier_label'] ?? null,
-            'badge'      => $data['badge'] ?? null,
-            'theme'      => $data['theme'],
-            'image'      => $request->hasFile('image') ? $this->storeImage($request->file('image')) : null,
-            'price'      => $data['price'],
-            'old_price'  => $data['old_price'] ?? null,
-            'product_id' => $data['product_id'] ?? null,
-            'status'     => $request->status ? 1 : 0,
-            'sort_order' => (int) ($request->sort_order ?? 0),
-        ]);
+        $image = $request->hasFile('image') ? $this->storeImage($request->file('image')) : null;
 
-        $this->syncItems($pack, $request);
+        DB::transaction(function () use ($request, $data, $image) {
+            $pack = KittenPack::create([
+                'name'       => $data['name'],
+                'slug'       => $this->uniqueSlug($data['name']),
+                'tier_label' => $data['tier_label'] ?? null,
+                'badge'      => $data['badge'] ?? null,
+                'theme'      => $data['theme'],
+                'image'      => $image,
+                'price'      => $data['price'],
+                'old_price'  => $data['old_price'] ?? null,
+                'product_id' => $data['product_id'] ?? null,
+                'status'     => $request->status ? 1 : 0,
+                'sort_order' => (int) ($request->sort_order ?? 0),
+            ]);
+
+            $this->syncItems($pack, $request);
+            $this->syncComponents($pack, $request);
+        });
 
         return redirect()->route('admin.kitten-pack.index')
             ->with('success', 'Kitten pack created successfully');
@@ -66,15 +75,16 @@ class KittenPackController extends Controller
     public function edit($id)
     {
         return view('backEnd.kitten-pack.edit', [
-            'pack'     => KittenPack::with('items')->findOrFail($id),
-            'products' => $this->productOptions(),
+            'pack'              => KittenPack::with(['items', 'components.product'])->findOrFail($id),
+            'products'          => $this->productOptions(),
+            'componentProducts' => $this->componentOptions(),
         ]);
     }
 
     public function update(Request $request, $id)
     {
         $pack = KittenPack::findOrFail($id);
-        $data = $this->validatePack($request, false);
+        $data = $this->validatePack($request, false, $pack->id);
 
         if ($request->hasFile('image')) {
             $this->deleteImage($pack->image);
@@ -97,9 +107,12 @@ class KittenPackController extends Controller
             $pack->slug = $this->uniqueSlug($data['name'], $pack->id);
         }
 
-        $pack->save();
+        DB::transaction(function () use ($pack, $request) {
+            $pack->save();
 
-        $this->syncItems($pack, $request);
+            $this->syncItems($pack, $request);
+            $this->syncComponents($pack, $request);
+        });
 
         return redirect()->route('admin.kitten-pack.index')
             ->with('success', 'Kitten pack updated successfully');
@@ -135,8 +148,14 @@ class KittenPackController extends Controller
         return back()->with('success', 'Add-on products updated successfully');
     }
 
-    private function validatePack(Request $request, bool $imageRequired): array
+    private function validatePack(Request $request, bool $imageRequired, ?int $packId = null): array
     {
+        // A component can never be a pack's cart product (no packs inside packs, no self-reference).
+        $packProductIds = KittenPack::whereNotNull('product_id')->pluck('product_id')
+            ->push((int) $request->product_id)
+            ->filter()
+            ->all();
+
         return $request->validate([
             'name'              => 'required|string|max:255',
             'tier_label'        => 'nullable|string|max:100',
@@ -144,13 +163,23 @@ class KittenPackController extends Controller
             'theme'             => 'required|in:light,dark',
             'price'             => 'required|numeric|min:0',
             'old_price'         => 'nullable|numeric|min:0|gte:price',
-            'product_id'        => 'nullable|integer|exists:products,id',
+            // One pack per cart product, or the bundle lookup would be ambiguous.
+            'product_id'        => [
+                'nullable', 'integer', 'exists:products,id',
+                Rule::unique('kitten_packs', 'product_id')->ignore($packId),
+            ],
             'sort_order'        => 'nullable|integer|min:0',
             'image'             => ($imageRequired ? 'required' : 'nullable') . '|image|mimes:' . self::ALLOWED_MIMES . '|max:' . self::MAX_IMAGE_KB,
             'items'             => 'nullable|array',
             'items.*.name'      => 'nullable|string|max:255',
             'items.*.quantity'  => 'nullable|integer|min:1',
+            'components'              => 'nullable|array',
+            'components.*.product_id' => ['required', 'integer', 'distinct', 'exists:products,id', Rule::notIn($packProductIds)],
+            'components.*.quantity'   => 'required|integer|min:1|max:1000',
         ], [
+            'product_id.unique'                => 'That product is already linked to another pack.',
+            'components.*.product_id.distinct' => 'Each product can only be added to the pack once.',
+            'components.*.product_id.not_in'   => 'A pack product cannot be used as a component.',
             'old_price.gte' => 'The old price must be greater than or equal to the price.',
             'image.max'     => 'The image must be ' . (self::MAX_IMAGE_KB / 1024) . 'MB or smaller.',
         ]);
@@ -175,11 +204,40 @@ class KittenPackController extends Controller
         }
     }
 
+    /**
+     * Replace the pack's component list with what the form submitted, then refresh
+     * the pack's cached stock. Replace (not diff): the list is small, nothing
+     * references component rows, and stock history lives in the inventory ledger.
+     */
+    private function syncComponents(KittenPack $pack, Request $request): void
+    {
+        $pack->components()->delete();
+
+        foreach ((array) $request->components as $row) {
+            $pack->components()->create([
+                'product_id' => (int) $row['product_id'],
+                'quantity'   => max(1, (int) $row['quantity']),
+            ]);
+        }
+
+        if ($pack->product_id) {
+            InventoryService::syncPackProductCache((int) $pack->product_id);
+        }
+    }
+
     private function productOptions()
     {
         return Product::where('status', 1)
             ->orderBy('name')
             ->get(['id', 'name', 'slug']);
+    }
+
+    /** Real inventory products a pack can be built from — every product except pack products. */
+    private function componentOptions()
+    {
+        return Product::whereNotIn('id', KittenPack::whereNotNull('product_id')->pluck('product_id'))
+            ->orderBy('name')
+            ->get(['id', 'name', 'stock', 'status']);
     }
 
     private function uniqueSlug(string $name, ?int $ignoreId = null): string

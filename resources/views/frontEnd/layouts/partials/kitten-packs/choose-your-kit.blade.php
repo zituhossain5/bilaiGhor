@@ -56,12 +56,17 @@
                                 <i class="fas fa-shopping-cart"></i>
                             </button>
                         </form>
-                        <a href="{{ route('product', $pack->product->slug) }}" class="bilai-kp-buy-btn">Buy Now</a>
+                        {{-- Same Buy Now flow as regular products: order_now makes cartStore redirect to checkout. --}}
+                        <form action="{{ route('cart.store') }}" method="POST" class="bilai-kp-buy-form">
+                            @csrf
+                            <input type="hidden" name="id" value="{{ $pack->product->id }}">
+                            <input type="hidden" name="qty" value="1">
+                            <input type="hidden" name="order_now" value="1">
+                            <button type="submit" class="bilai-kp-buy-btn">Buy Now</button>
+                        </form>
                     @else
-                        {{-- No backing product linked yet, so send the buyer to WhatsApp instead of a dead button. --}}
-                        <a href="https://wa.me/8801997900505?text={{ rawurlencode('Hi! I am interested in the '.$pack->name.'.') }}"
-                           target="_blank" rel="noopener"
-                           class="bilai-kp-buy-btn bilai-kp-buy-btn--full">Order on WhatsApp</a>
+                        {{-- No backing product linked yet in admin, so there is nothing to check out. --}}
+                        <button type="button" class="bilai-kp-buy-btn bilai-kp-buy-btn--full" disabled>Coming Soon</button>
                     @endif
                 </div>
             </div>
@@ -69,10 +74,12 @@
         @endforeach
     </div>
 
-    <p class="bilai-kp-note">
+    <div class="bilai-kp-note">
         <strong>Note:</strong>
-        Inside Dhaka delivery charge upto 2kg is 70 taka then extra 20 taka will be added for each kg.
-        Outside Dhaka delivery charge upto 2kg is 150 taka then extra 20 taka will be added for each kg.
-    </p>
+        <ul class="bilai-kp-note-list">
+            <li>Inside Dhaka delivery charge upto 2kg is 70 taka then extra 20 taka will be added for each kg.</li>
+            <li>Outside Dhaka delivery charge upto 2kg is 150 taka then extra 20 taka will be added for each kg.</li>
+        </ul>
+    </div>
 </section>
 @endif

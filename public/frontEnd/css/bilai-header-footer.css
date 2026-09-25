@@ -4782,7 +4782,9 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     color: var(--bilai-body-title, #2a1505);
     font-size: 18px;
     box-shadow: 0 4px 14px rgba(58, 31, 15, 0.14);
-    transition: background 0.2s, color 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
 }
 
 .bilai-testimonial-slider.owl-theme .owl-nav [class*="owl-"]:hover {
@@ -4812,7 +4814,9 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     height: 9px;
     margin: 0 4px;
     background: rgba(58, 31, 15, 0.22);
-    transition: background 0.2s, width 0.2s;
+    transition:
+        background 0.2s,
+        width 0.2s;
 }
 
 .bilai-testimonial-slider.owl-theme .owl-dots .owl-dot.active span {
@@ -6343,7 +6347,7 @@ body .bilai-product-card .bilai-product-image img {
 }
 
 .bilai-kitten-packs {
-    background: var(--bilai-kp-page-bg);
+    background: var(--bilai-cream, #fdfcf8);
     padding-bottom: 72px;
 }
 
@@ -6361,7 +6365,7 @@ body .bilai-product-card .bilai-product-image img {
 
 .bilai-kp-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 60px;
 }
 
 .bilai-kp-title {
@@ -6379,6 +6383,7 @@ body .bilai-product-card .bilai-product-image img {
     line-height: 27px;
     color: var(--bilai-text);
     margin: 20px 0 0;
+    text-align: center;
 }
 
 /* ---- Choose Your Kit ---- */
@@ -6394,10 +6399,12 @@ body .bilai-product-card .bilai-product-image img {
     display: flex;
     flex-direction: column;
     background: var(--bilai-kp-section-warm);
-    border: 1px solid var(--bilai-border);
-    border-radius: 25px;
+    border: 1px solid #c4a881;
+    border-radius: 30px;
     overflow: hidden;
-    transition: box-shadow 0.2s, transform 0.2s;
+    transition:
+        box-shadow 0.2s,
+        transform 0.2s;
 }
 
 .bilai-kp-card:hover {
@@ -6436,12 +6443,14 @@ body .bilai-product-card .bilai-product-image img {
     justify-content: center;
     border: 0;
     border-radius: 50%;
-    background: #fff;
+    background: #f0e6d8;
     color: var(--bilai-body-title);
     font-size: 14px;
     box-shadow: 0 2px 8px rgba(58, 31, 15, 0.12);
     cursor: pointer;
-    transition: background 0.2s, color 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
 }
 
 .bilai-kp-wishlist:hover {
@@ -6455,6 +6464,7 @@ body .bilai-product-card .bilai-product-image img {
     justify-content: center;
     height: 320px;
     padding: 25px;
+    background: #fdf9f4;
 }
 
 .bilai-kp-card-image img {
@@ -6469,7 +6479,7 @@ body .bilai-product-card .bilai-product-image img {
     display: flex;
     flex-direction: column;
     flex: 1;
-    padding: 0 20px 20px;
+    padding: 20px;
 }
 
 .bilai-kp-card-title {
@@ -6515,10 +6525,10 @@ body .bilai-product-card .bilai-product-image img {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 6px 0;
+    padding: 8px 0;
     font-family: var(--bilai-font-main);
-    font-size: 14px;
-    line-height: 21px;
+    font-size: 18px;
+    line-height: 27px;
     color: var(--bilai-text);
 }
 
@@ -6606,17 +6616,36 @@ body .bilai-product-card .bilai-product-image img {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 0;
-    border-radius: 12px;
+    border: 1px solid var(--bilai-primary);
+    border-radius: 10px;
     background: var(--bilai-primary);
     color: #fff;
     font-size: 16px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
 }
 
 .bilai-kp-cart-btn:hover {
     background: var(--bilai-primary-dark);
+}
+
+/* Figma: on the dark card the cart icon is an outlined button, not a filled one. */
+.bilai-kp-card.is-dark .bilai-kp-cart-btn {
+    background: transparent;
+    color: var(--bilai-primary);
+}
+
+.bilai-kp-card.is-dark .bilai-kp-cart-btn:hover {
+    background: var(--bilai-primary);
+    color: #fff;
+}
+
+.bilai-kp-buy-form {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
 }
 
 .bilai-kp-buy-btn {
@@ -6624,15 +6653,20 @@ body .bilai-product-card .bilai-product-image img {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
     height: 44px;
-    border-radius: 12px;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
     background: var(--bilai-body-title);
     color: var(--bilai-kp-page-bg);
     font-family: var(--bilai-font-main);
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 400;
     text-decoration: none;
-    transition: background 0.2s, color 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
 }
 
 .bilai-kp-buy-btn:hover {
@@ -6653,6 +6687,12 @@ body .bilai-product-card .bilai-product-image img {
     flex: 1 1 100%;
 }
 
+.bilai-kp-buy-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /* ---- Delivery note ---- */
 .bilai-kp-note {
     margin: 30px 0 0;
@@ -6664,6 +6704,21 @@ body .bilai-product-card .bilai-product-image img {
     font-size: 14px;
     line-height: 22px;
     color: var(--bilai-text);
+}
+
+.bilai-kp-note-list {
+    margin: 6px 0 0;
+    padding-left: 20px;
+    list-style: disc;
+}
+
+.bilai-kp-note-list li {
+    margin-bottom: 4px;
+    display: block;
+}
+
+.bilai-kp-note-list li:last-child {
+    margin-bottom: 0;
 }
 
 /* ---- Why these kits work ---- */
@@ -6788,7 +6843,9 @@ body .bilai-product-card .bilai-product-image img {
     font-size: 15px;
     font-weight: 600;
     text-decoration: none;
-    transition: background 0.2s, color 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
 }
 
 .bilai-kp-viewall-btn:hover {
@@ -6820,27 +6877,37 @@ body .bilai-product-card .bilai-product-image img {
     gap: 20px;
 }
 
-.bilai-kp-faq-item {
+/* Bootstrap's .accordion-item drops the top border on every item but the first and
+   squares the inner corners; Figma has each FAQ as a separate, fully bordered card. */
+.bilai-kp-accordion .bilai-kp-faq-item,
+.bilai-kp-accordion .bilai-kp-faq-item:first-of-type,
+.bilai-kp-accordion .bilai-kp-faq-item:last-of-type,
+.bilai-kp-accordion .bilai-kp-faq-item:not(:first-of-type) {
     border: 1px solid var(--bilai-kp-border-medium);
-    border-radius: 16px;
+    border-radius: 20px;
     background: var(--bilai-kp-section-warm);
     overflow: hidden;
 }
 
+.bilai-kp-accordion .bilai-kp-faq-item .accordion-button,
+.bilai-kp-accordion .bilai-kp-faq-item .accordion-collapse {
+    border-radius: 0;
+}
+
 .bilai-kp-faq-btn.accordion-button {
-    padding: 20px 24px;
+    padding: 20px;
     background: transparent;
     box-shadow: none;
     font-family: var(--bilai-font-main);
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
-    line-height: 24px;
-    color: var(--bilai-body-title);
+    line-height: 27px;
+    color: var(--bilai-kp-dark-shade);
 }
 
 .bilai-kp-faq-btn.accordion-button:not(.collapsed) {
     background: transparent;
-    color: var(--bilai-body-title);
+    color: var(--bilai-kp-dark-shade);
     box-shadow: none;
 }
 
@@ -6856,9 +6923,9 @@ body .bilai-product-card .bilai-product-image img {
 }
 
 .bilai-kp-faq-body.accordion-body {
-    padding: 0 24px 20px;
+    padding: 0 20px 20px;
     font-family: var(--bilai-font-main);
-    font-size: 15px;
+    font-size: 16px;
     line-height: 24px;
     color: var(--bilai-text);
 }

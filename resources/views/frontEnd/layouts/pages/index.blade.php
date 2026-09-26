@@ -744,7 +744,7 @@
 
 
 
-<!-- @if(isset($blogs) && $blogs->count() > 0)
+@if(isset($blogs) && $blogs->count() > 0)
 <section class="bilai-blog-section">
     <div class="container">
         <div class="bilai-blog-header">
@@ -787,7 +787,7 @@
         </div>
     </div>
 </section>
-@endif -->
+@endif
 
 
 

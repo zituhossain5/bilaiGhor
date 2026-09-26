@@ -110,7 +110,7 @@ class ManualOrderController extends Controller
                 $subtotal = collect($items)->sum('gross');
                 $itemDiscount = collect($items)->sum('discount');
                 $orderDiscount = min((float) ($validated['order_discount'] ?? 0), max(0, $subtotal - $itemDiscount));
-                $delivery = DeliveryLocation::chargeForThanaId((int) $validated['thana_id']);
+                $delivery = $this->deliveryCharge($validated);
                 $grandTotal = max(0, $subtotal - $itemDiscount - $orderDiscount + $delivery);
                 $paid = (float) ($validated['paid_amount'] ?? 0);
                 if ($paid > $grandTotal) {
@@ -486,6 +486,19 @@ class ManualOrderController extends Controller
         return $request->validate($rules);
     }
 
+    /**
+     * The admin-entered delivery charge (it may be negotiated down, or set per courier
+     * parcel). The thana's rate applies only when the field was left blank.
+     */
+    private function deliveryCharge(array $validated): float
+    {
+        $entered = $validated['delivery_charge'] ?? null;
+
+        return ($entered === null || $entered === '')
+            ? (float) DeliveryLocation::chargeForThanaId((int) $validated['thana_id'])
+            : (float) $entered;
+    }
+
     private function calculateTotals(array $items, array $validated): array
     {
         $subtotal = (float) collect($items)->sum('gross');
@@ -499,7 +512,7 @@ class ManualOrderController extends Controller
             ]);
         }
 
-        $delivery = DeliveryLocation::chargeForThanaId((int) $validated['thana_id']);
+        $delivery = $this->deliveryCharge($validated);
         $grandTotal = max(0, $subtotal - $itemDiscount - $orderDiscount + $delivery);
         $paid = (float) ($validated['paid_amount'] ?? 0);
 

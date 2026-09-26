@@ -8,6 +8,13 @@
     var initialDistrictId = @json((string) old('district_id', $selectedDistrictId ?? ''));
     var initialThanaId = @json((string) old('thana_id', $selectedThanaId ?? ''));
 
+    // The thana's rate is only a suggestion. Once the charge is set by hand it is never
+    // overwritten: an existing order keeps its saved charge, and a failed submit keeps
+    // what was typed.
+    var deliveryInput = document.getElementById('delivery_charge');
+    var deliveryManual = @json($isEdit || old('delivery_charge') !== null);
+    var suggestedCharge = null;
+
     function loadManualThanas(districtId, selectedThanaId) {
         var thana = document.getElementById('manual_thana');
         thana.disabled = true;
@@ -39,11 +46,22 @@
         var thana = document.getElementById('manual_thana');
         var option = thana.options[thana.selectedIndex];
         if (!option || !option.value) return;
-        document.getElementById('delivery_charge').value = option.dataset.charge || 0;
+        suggestedCharge = parseFloat(option.dataset.charge) || 0;
+        if (!deliveryManual) {
+            deliveryInput.value = suggestedCharge;
+        }
         if (!document.getElementById('manual_post_code').value) {
             document.getElementById('manual_post_code').value = option.dataset.postCode || '';
         }
         recalc();
+    }
+
+    // Show "Area rate: ৳X · Use area rate" only when the charge differs from the area's rate.
+    function syncDeliveryHint() {
+        var differs = suggestedCharge !== null
+            && Math.abs((parseFloat(deliveryInput.value) || 0) - suggestedCharge) > 0.001;
+        document.getElementById('delivery_charge_suggested').textContent = money(suggestedCharge);
+        document.getElementById('delivery_charge_hint').hidden = !differs;
     }
 
     function selectedProduct(row) {
@@ -128,6 +146,7 @@
         document.getElementById('sum-item-discount').textContent = money(itemDiscount);
         document.getElementById('sum-order-discount').textContent = money(orderDiscount);
         document.getElementById('sum-delivery').textContent = money(delivery);
+        syncDeliveryHint();
         document.getElementById('sum-total').textContent = money(grand);
         document.getElementById('sum-paid').textContent = money(paid);
         document.getElementById('sum-due').textContent = money(due);
@@ -151,6 +170,16 @@
         loadManualThanas(this.value, null);
     });
     document.getElementById('manual_thana').addEventListener('change', syncManualThana);
+
+    // Typing a charge makes it stick; the totals already follow it through the calc-input listener.
+    deliveryInput.addEventListener('input', function () { deliveryManual = true; });
+    document.getElementById('delivery_charge_reset').addEventListener('click', function (event) {
+        event.preventDefault();
+        if (suggestedCharge === null) return;
+        deliveryInput.value = suggestedCharge;
+        deliveryManual = false; // follow the area rate again until the next edit
+        recalc();
+    });
 
     document.getElementById('add-row').addEventListener('click', function () { addRow(); });
     document.addEventListener('input', function (event) {

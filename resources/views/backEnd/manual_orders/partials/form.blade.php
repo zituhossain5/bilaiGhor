@@ -145,7 +145,13 @@
                 <h5 class="mb-3">Totals</h5>
                 <div class="mb-3">
                     <label>Delivery Charge</label>
-                    <input type="number" step="0.01" min="0" name="delivery_charge" id="delivery_charge" value="{{ old('delivery_charge', $isEdit ? $order->shipping_charge : 0) }}" class="form-control calc-input" readonly>
+                    {{-- Pre-filled from the thana's rate as a suggestion; once typed, the typed value is kept. --}}
+                    <input type="number" step="0.01" min="0" name="delivery_charge" id="delivery_charge" value="{{ old('delivery_charge', $isEdit ? $order->shipping_charge : 0) }}" class="form-control calc-input @error('delivery_charge') is-invalid @enderror">
+                    @error('delivery_charge')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <small id="delivery_charge_hint" class="text-muted d-block mt-1" hidden>
+                        Area rate: <span id="delivery_charge_suggested"></span> ·
+                        <a href="#" id="delivery_charge_reset">Use area rate</a>
+                    </small>
                 </div>
                 <div class="mb-3">
                     <label>Order Discount</label>

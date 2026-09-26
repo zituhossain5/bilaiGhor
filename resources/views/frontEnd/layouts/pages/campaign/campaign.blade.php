@@ -380,12 +380,12 @@
                 <div class="row gy-2">
                     @if($campaign_data->image_one)
                     <div class="col-sm-6">
-                        <img class="img-fluid shadow" src="{{asset($campaign_data->image_one)}}" >
+                        <img class="img-fluid shadow" src="{{asset($campaign_data->image_one)}}" alt="{{ $campaign_data->image_one_alt ?: $campaign_data->name }}" >
                     </div>
                     @endif
                     @if($campaign_data->image_two)
                     <div class="col-sm-6">
-                        <img class="img-fluid shadow" src="{{asset($campaign_data->image_two)}}" >
+                        <img class="img-fluid shadow" src="{{asset($campaign_data->image_two)}}" alt="{{ $campaign_data->image_two_alt ?: $campaign_data->name }}" >
                     </div>
                     @endif
                 </div>
@@ -535,17 +535,17 @@
                             <div class="campro_img_slider owl-carousel">
                                 @if($campaign_data->image_one)
                                <div class="campro_img_item">
-                                   <img src="{{asset($campaign_data->image_one)}}" alt="">
+                                   <img src="{{asset($campaign_data->image_one)}}" alt="{{ $campaign_data->image_one_alt ?: $campaign_data->name }}">
                                </div> 
                                @endif
                                 @if($campaign_data->image_two)
                                <div class="campro_img_item">
-                                   <img src="{{asset($campaign_data->image_two)}}" alt="">
+                                   <img src="{{asset($campaign_data->image_two)}}" alt="{{ $campaign_data->image_two_alt ?: $campaign_data->name }}">
                                </div> 
                                @endif
                                 @if($campaign_data->image_three)
                                <div class="campro_img_item">
-                                   <img src="{{asset($campaign_data->image_three)}}" alt="">
+                                   <img src="{{asset($campaign_data->image_three)}}" alt="{{ $campaign_data->image_three_alt ?: $campaign_data->name }}">
                                </div>
                                @endif
                             </div>
@@ -573,7 +573,7 @@
                             <div class="review_slider owl-carousel">
                             @foreach($campaign_data->images as $key=>$value)
                             <div class="review_item">
-                                <img src="{{asset($value->image)}}" alt="">
+                                <img src="{{asset($value->image)}}" alt="{{ $value->image_alt ?: $campaign_data->name . ' customer review' }}">
                             </div>
                             @endforeach
                            </div>
@@ -647,7 +647,7 @@
                                                     value="{{ $product->id }}"
                                                     {{ $loop->first ? 'checked' : '' }}>
                                                 <label for="product_{{ $product->id }}" class="card shadow-sm product-card mb-0 w-100 {{ $loop->first ? 'selected' : '' }}">
-                                                    <img src="{{ asset(optional($product->image)->image ?? 'public/uploads/default.webp') }}" class="card-img-top" alt="{{ $product->name }}" style="height: 100px; object-fit: cover;">
+                                                    <img src="{{ asset(optional($product->image)->image ?? 'public/uploads/default.webp') }}" class="card-img-top" alt="{{ optional($product->image)->image_alt ?: $product->name }}" style="height: 100px; object-fit: cover;">
                                                     <div class="card-body p-1 text-center">
                                                         <div class="card-title">{{ Str::limit($product->name, 20) }}</div>
                                                         <div class="card-text mb-1">৳{{ $product->new_price }} <del>৳{{ $product->old_price }}</del></div>

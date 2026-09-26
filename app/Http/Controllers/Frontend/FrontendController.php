@@ -78,19 +78,19 @@ class FrontendController extends Controller
         // Main menu categories (for header/sidebar)
         $menucategories = Category::where('status', 1)
             ->where('parent_id', 0)
-            ->select('id', 'name', 'slug', 'icon', 'image')
+            ->select('id', 'name', 'slug', 'icon', 'image', 'image_alt')
             ->with(['subcategories.childcategories'])
             ->displayOrdered()
             ->get();
 
         // Front categories (যদি অন্য কোথাও ব্যবহার হয়)
         $frontcategory = Category::where(['status' => 1])
-            ->select('id', 'name', 'image', 'icon', 'slug', 'status')
+            ->select('id', 'name', 'image', 'image_alt', 'icon', 'slug', 'status')
             ->displayOrdered()
             ->get();
 
         $homeSubcategories = Subcategory::where('status', 1)
-            ->select('id', 'subcategoryName', 'slug', 'image', 'category_id')
+            ->select('id', 'subcategoryName', 'slug', 'image', 'image_alt', 'category_id')
             ->with(['category:id,name,slug,status'])
             ->displayOrdered()
             ->get();
@@ -102,7 +102,7 @@ class FrontendController extends Controller
             ->orderBy('id', 'ASC')
             ->get();
 $brands = Brand::where('status', 1)
-    ->select('id', 'name', 'slug', 'image')
+    ->select('id', 'name', 'slug', 'image', 'image_alt')
 	 ->limit(12)
     ->get();
     $blogs = Blog::where('status', 1)
@@ -110,32 +110,32 @@ $brands = Brand::where('status', 1)
         ->limit(3)
         ->get();
         $campaognads = Banner::where(['status' => 1, 'category_id' => 7])
-            ->select('id', 'image', 'link')
+            ->select('id', 'image', 'image_alt', 'title', 'link')
             ->limit(1)
             ->get();
 
         $sliderbottomads = Banner::where(['status' => 1, 'category_id' => 5])
-            ->select('id', 'image', 'link')
+            ->select('id', 'image', 'image_alt', 'title', 'link')
             ->limit(3)
             ->get();
 
         $footertopads = Banner::where(['status' => 1, 'category_id' => 6])
-            ->select('id', 'image', 'link')
+            ->select('id', 'image', 'image_alt', 'title', 'link')
             ->limit(3)
             ->get();
 
         $homepageads = Banner::where(['status' => 1, 'category_id' => 10])
-            ->select('id', 'image', 'link')
+            ->select('id', 'image', 'image_alt', 'title', 'link')
             ->limit(1)
             ->get();
 
         $homepageads2 = Banner::where(['status' => 1, 'category_id' => 11])
-            ->select('id', 'image', 'link')
+            ->select('id', 'image', 'image_alt', 'title', 'link')
             ->limit(1)
             ->get();
 
         $hitdealsbaner = Banner::where(['status' => 1, 'category_id' => 9])
-            ->select('id', 'image', 'link')
+            ->select('id', 'image', 'image_alt', 'title', 'link')
             ->limit(1)
             ->get();
 
@@ -201,7 +201,7 @@ $brands = Brand::where('status', 1)
         }
 
         $reviews = Banner::where(['status' => 1, 'category_id' => 8])
-            ->select('id', 'image', 'link')
+            ->select('id', 'image', 'image_alt', 'title', 'link')
             ->limit(3)
             ->get();
 

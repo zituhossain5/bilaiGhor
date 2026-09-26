@@ -53,6 +53,7 @@ class GeneralSettingController extends Controller
             'white_logo' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
             'dark_logo' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
             'og_baner' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'og_baner_alt' => 'nullable|string|max:255',
             'favicon' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required',
         ]);
@@ -93,6 +94,7 @@ class GeneralSettingController extends Controller
             'white_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'dark_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'og_baner' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'og_baner_alt' => 'nullable|string|max:255',
             'favicon' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
         $update_data = GeneralSetting::findOrFail($request->id);

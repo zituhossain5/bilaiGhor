@@ -25,6 +25,7 @@ class BrandController extends Controller
         $this->validate($request, [
             'name' => 'required',
             'status' => 'required',
+            'image_alt' => 'nullable|string|max:255',
         ]);
         // image with intervention 
         $image = $request->file('image');
@@ -66,6 +67,7 @@ class BrandController extends Controller
     {
         $this->validate($request, [
             'name' => 'required',
+            'image_alt' => 'nullable|string|max:255',
         ]);
         $update_data = Brand::find($request->id);
         $input = $request->all();

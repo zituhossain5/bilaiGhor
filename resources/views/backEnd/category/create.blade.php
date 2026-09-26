@@ -244,6 +244,7 @@
                             @error('image')
                                 <span class="text-danger small">{{ $message }}</span>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_alt', 'required' => true]])
                         </div>
 
                         <div class="mb-0">
@@ -276,6 +277,7 @@
 <script src="{{asset('public/backEnd/')}}/assets/js/pages/form-validation.init.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs/select2/js/select2.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs/summernote/summernote-lite.min.js"></script>
+@include('backEnd.partials.summernote-image-alt')
 
 <script>
     $(document).ready(function(){

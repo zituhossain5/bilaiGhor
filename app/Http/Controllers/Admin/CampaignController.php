@@ -29,8 +29,8 @@ class CampaignController extends Controller
     {
         $this->validate($request, [
             'name' => 'required',
-            'short_description' => 'nullable',
-            'description' => 'nullable',
+            'short_description' => ['nullable', new \App\Rules\RichTextImagesHaveAlt],
+            'description' => ['nullable', new \App\Rules\RichTextImagesHaveAlt],
             'banner' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'image_one' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'image_two' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -49,11 +49,18 @@ class CampaignController extends Controller
             'heading_4' => 'nullable|string|max:255',
             'note' => 'nullable|string|max:255',
             'billing_details' => 'nullable|string|max:255',
-        
+            // Banner and Image One are required on the form, so their alt text is too.
+            'banner_alt' => 'required|string|max:255',
+            'image_one_alt' => 'required|string|max:255',
+            'image_two_alt' => 'nullable|string|max:255',
+            'image_three_alt' => 'nullable|string|max:255',
+            'image_alt' => 'nullable|array',
+            'image_alt.*' => 'nullable|string|max:255',
         ]);
-    
-        // Prepare the input data
-        $input = $request->except('image', 'product_id');
+        $this->requireReviewImageAlts($request);
+
+        // Prepare the input data (review-image alts belong to campaign_reviews, not campaigns)
+        $input = $request->except('image', 'product_id', 'image_alt');
         $input['status'] = true; // Set status to true if not checked
     
         // Handle the first selected product ID
@@ -126,15 +133,19 @@ class CampaignController extends Controller
     
         // Handle additional images (review images)
         if ($request->hasFile('image')) {
-            foreach ($request->file('image') as $image) {
+            foreach ($request->file('image') as $key => $image) {
+                if (!$image) {
+                    continue; // empty row
+                }
                 $name = time() . '-' . strtolower(preg_replace('/\s+/', '-', $image->getClientOriginalName()));
                 $uploadPath = 'public/uploads/campaign/';
                 $image->move($uploadPath, $name);
                 $imageUrl = $uploadPath . $name;
-    
+
                 $pimage = new CampaignReview();
                 $pimage->campaign_id = $campaign->id;
                 $pimage->image = $imageUrl;
+                $pimage->image_alt = $request->input("image_alt.$key");
                 $pimage->save();
             }
         }
@@ -170,8 +181,8 @@ class CampaignController extends Controller
     { 
          $this->validate($request, [
             'name' => 'required',
-            'short_description' => 'nullable',
-            'description' => 'nullable',
+            'short_description' => ['nullable', new \App\Rules\RichTextImagesHaveAlt],
+            'description' => ['nullable', new \App\Rules\RichTextImagesHaveAlt],
             'banner' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'image_one' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'image_two' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -190,10 +201,19 @@ class CampaignController extends Controller
             'heading_4' => 'nullable|string|max:255',
             'note' => 'nullable|string|max:255',
             'billing_details' => 'nullable|string|max:255',
+            'banner_alt' => 'nullable|string|max:255',
+            'image_one_alt' => 'nullable|string|max:255',
+            'image_two_alt' => 'nullable|string|max:255',
+            'image_three_alt' => 'nullable|string|max:255',
+            'image_alt' => 'nullable|array',
+            'image_alt.*' => 'nullable|string|max:255',
+            'review_alt' => 'nullable|array',
+            'review_alt.*' => 'nullable|string|max:255',
         ]);
         // image one
         $update_data = Campaign::find($request->hidden_id);
-        $input = $request->except('hidden_id','product_ids','files','image');
+        // Review-image alts belong to campaign_reviews, not campaigns.
+        $input = $request->except('hidden_id','product_ids','files','image','image_alt','review_alt');
         $input['status'] = $request->has('status') ? 1 : 0;
         $input['video'] = $this->getYouTubeVideoId($request->video);
         $input['product_id'] = $request->product_id[0];
@@ -292,9 +312,19 @@ class CampaignController extends Controller
         $remainingProductIds = array_slice($request->product_id, 1);
         $update_data->products()->sync($remainingProductIds);
 
-        $images = $request->file('image');  
+        // Alt text of review images already on this landing page.
+        foreach ((array) $request->input('review_alt', []) as $reviewId => $alt) {
+            CampaignReview::where('id', $reviewId)
+                ->where('campaign_id', $update_data->id)
+                ->update(['image_alt' => $alt !== null && trim($alt) !== '' ? $alt : null]);
+        }
+
+        $images = $request->file('image');
         if($images){
             foreach ($images as $key => $image) {
+                if (!$image) {
+                    continue; // empty row
+                }
                 $name =  time().'-'.$image->getClientOriginalName();
                 $name = strtolower(preg_replace('/\s+/', '-', $name));
                 $uploadPath = 'public/uploads/campaign/';
@@ -304,6 +334,7 @@ class CampaignController extends Controller
                 $pimage             = new CampaignReview();
                 $pimage->campaign_id = $update_data->id;
                 $pimage->image      = $imageUrl;
+                $pimage->image_alt  = $request->input("image_alt.$key");
                 $pimage->save();
             }
         }
@@ -350,7 +381,20 @@ class CampaignController extends Controller
         $delete_data->delete();
         Toastr::success('Success','Data delete successfully');
         return redirect()->back();
-    } 
+    }
+
+    /** Review images are required when creating a landing page, so each uploaded one needs alt text. */
+    private function requireReviewImageAlts(Request $request): void
+    {
+        foreach ((array) $request->file('image') as $key => $image) {
+            if ($image && trim((string) $request->input("image_alt.$key")) === '') {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'image_alt' => 'Please add alt text for each review image.',
+                ]);
+            }
+        }
+    }
+
     public function getYouTubeVideoId($input)
     {
         // Check if the input is a valid YouTube video ID (11 characters long)

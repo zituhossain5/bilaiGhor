@@ -60,6 +60,7 @@ class KittenPackController extends Controller
                 'badge'      => $data['badge'] ?? null,
                 'theme'      => $data['theme'],
                 'image'      => $image,
+                'image_alt'  => $data['image_alt'] ?? null,
                 'price'      => $data['price'],
                 'old_price'  => $data['old_price'] ?? null,
                 'status'     => $request->status ? 1 : 0,
@@ -96,6 +97,7 @@ class KittenPackController extends Controller
             'tier_label' => $data['tier_label'] ?? null,
             'badge'      => $data['badge'] ?? null,
             'theme'      => $data['theme'],
+            'image_alt'  => $data['image_alt'] ?? null,
             'price'      => $data['price'],
             'old_price'  => $data['old_price'] ?? null,
             'status'     => $request->status ? 1 : 0,
@@ -166,6 +168,7 @@ class KittenPackController extends Controller
             'old_price'          => 'nullable|numeric|min:0|gte:price',
             'sort_order'         => 'nullable|integer|min:0',
             'image'              => ($imageRequired ? 'required' : 'nullable') . '|image|mimes:' . self::ALLOWED_MIMES . '|max:' . self::MAX_IMAGE_KB,
+            'image_alt'          => ($imageRequired ? 'required' : 'nullable') . '|string|max:255',
             'items'              => 'nullable|array',
             'items.*.product_id' => 'nullable|integer|exists:products,id',
             // Only rows carried over from the old free-text list have a name and no product.

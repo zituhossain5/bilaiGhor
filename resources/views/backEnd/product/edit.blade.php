@@ -104,7 +104,7 @@
                             <label for="description" class="form-label">Description</label>
                             <textarea name="description" rows="6"
                                       class="summernote form-control @error('description') is-invalid @enderror">
-                                {{$edit_data->description}}
+                                {{ old('description', $edit_data->description) }}
                             </textarea>
                             @error('description')
                             <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
@@ -289,6 +289,7 @@
                                             @endif
                                             <div class="variant-img-upload">
                                                 <input type="file" name="variant_image[{{ $variantIndex }}][image]" class="form-control form-control-sm variant-img-input" accept="image/*">
+                                                <input type="text" name="variant_image[{{ $variantIndex }}][alt]" class="form-control form-control-sm mt-1" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text">
                                                 <div class="variant-img-preview mt-1" style="display:none;">
                                                     <img src="" alt="Preview" class="rounded border" style="max-width:60px;max-height:60px;object-fit:cover;">
                                                     <button type="button" class="btn btn-sm btn-danger variant-img-clear ms-1" title="Remove"><i class="fe-x"></i></button>
@@ -355,6 +356,7 @@
                                             <label class="form-label">Variant Image</label>
                                             <div class="variant-img-upload">
                                                 <input type="file" name="variant_image[0][image]" class="form-control form-control-sm variant-img-input" accept="image/*">
+                                                <input type="text" name="variant_image[0][alt]" class="form-control form-control-sm mt-1" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text">
                                                 <div class="variant-img-preview mt-1" style="display:none;">
                                                     <img src="" alt="Preview" class="rounded border" style="max-width:60px;max-height:60px;object-fit:cover;">
                                                     <button type="button" class="btn btn-sm btn-danger variant-img-clear ms-1" title="Remove"><i class="fe-x"></i></button>
@@ -419,6 +421,7 @@
                                     </div>
                                 @endif
                                 <small class="text-muted d-block mt-1">Recommended size: 1200x630px</small>
+                                @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'meta_image_alt', 'value' => $edit_data->meta_image_alt, 'label' => 'Meta Image Alt Text', 'wrapperClass' => 'mt-2']])
                             </div>
                         </div>
                     </div>
@@ -439,6 +442,7 @@
 <script src="{{asset('public/backEnd/')}}/assets/libs/select2/js/select2.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/js/pages/form-advanced.init.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs//summernote/summernote-lite.min.js"></script>
+@include('backEnd.partials.summernote-image-alt')
 
 <script>
     $(".summernote").summernote({

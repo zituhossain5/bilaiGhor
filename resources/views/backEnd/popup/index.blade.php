@@ -189,6 +189,13 @@
                             </div>
                             <img id="imgPreview" class="preview-img" src="#" alt="Preview">
                         </div>
+                        @error('image')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        @include('backEnd.partials.image-alt-field', ['altField' => [
+                            'name'       => 'image_alt',
+                            'required'   => true,
+                            'labelClass' => 'form-label fw-bold small text-muted',
+                            'class'      => 'bg-light border-0',
+                        ]])
                     </div>
 
                     {{-- লিংক (ঐচ্ছিক) - ইমেজে ক্লিক করলে যাবে --}}

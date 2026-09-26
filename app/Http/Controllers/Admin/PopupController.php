@@ -21,6 +21,7 @@ class PopupController extends Controller
         // ভ্যালিডেশন - শুধু ইমেজ বাধ্যতামূলক
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'image_alt' => 'required|string|max:255',
         ]);
 
         try {
@@ -36,6 +37,7 @@ class PopupController extends Controller
                 $popup->image = 'uploads/popup/' . $new_name;
             }
 
+            $popup->image_alt = $request->image_alt;
             $popup->title = $request->title ?: 'Promo Popup';
             $popup->description = $request->description;
             $popup->btn_text = $request->btn_text;
@@ -63,6 +65,10 @@ class PopupController extends Controller
 
     public function update(Request $request)
     {
+        $request->validate([
+            'image_alt' => 'nullable|string|max:255',
+        ]);
+
         $popup = Popup::find($request->hidden_id);
 
         if ($request->hasFile('image')) {
@@ -79,6 +85,7 @@ class PopupController extends Controller
             $popup->image = 'uploads/popup/' . $new_name;
         }
 
+        $popup->image_alt = $request->image_alt;
         $popup->title = $request->title ?: 'Promo Popup';
         $popup->description = $request->description;
             $popup->btn_text = $request->btn_text;

@@ -194,7 +194,7 @@
                         <div class="form-group mb-0">
                             <label for="full_description" class="form-label">Full Description / SEO Content</label>
                             <textarea class="summernote form-control @error('full_description') is-invalid @enderror"
-                                      name="full_description" id="full_description">{!! $edit_data->full_description !!}</textarea>
+                                      name="full_description" id="full_description">{!! old('full_description', $edit_data->full_description) !!}</textarea>
                             <small class="text-muted">Long useful category content shown in accordion below the product grid.</small>
                             @error('full_description')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -257,6 +257,7 @@
                             @error('image')
                                 <span class="text-danger small">{{ $message }}</span>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_alt', 'value' => $edit_data->image_alt]])
                         </div>
 
                         <div class="mb-0">
@@ -295,6 +296,7 @@
 <script src="{{asset('public/backEnd/')}}/assets/js/pages/form-validation.init.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs/select2/js/select2.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs/summernote/summernote-lite.min.js"></script>
+@include('backEnd.partials.summernote-image-alt')
 
 <script>
     $(document).ready(function(){

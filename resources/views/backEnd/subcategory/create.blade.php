@@ -243,6 +243,7 @@
                         <label class="form-label">Upload Image <small class="text-muted">(Square, ~300×300px)</small></label>
                         <input type="file" name="image" class="form-control" accept="image/jpeg,image/png,image/webp">
                         <small class="text-muted d-block mt-1">JPG, PNG or WebP. Will be converted to WebP.</small>
+                        @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_alt']])
                     </div>
                 </div>
 
@@ -294,6 +295,7 @@
 <script src="{{asset('public/backEnd/')}}/assets/js/pages/form-validation.init.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs/select2/js/select2.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs/summernote/summernote-lite.min.js"></script>
+@include('backEnd.partials.summernote-image-alt')
 
 <script>
     $(document).ready(function(){

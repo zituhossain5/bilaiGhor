@@ -37,11 +37,17 @@ class TestimonialController extends Controller
         $request->validate([
             'image'      => 'required|array|min:1',
             'image.*'    => 'required|image|mimes:' . self::ALLOWED_MIMES . '|max:' . self::MAX_IMAGE_KB,
+            // One alt text per selected file, in the same order (image_alt[0] describes image[0]).
+            'image_alt'   => 'required|array|size:' . count((array) $request->file('image')),
+            'image_alt.*' => 'required|string|max:255',
             'sort_order' => 'nullable|integer|min:0',
         ], [
-            'image.required'   => 'Please select at least one image.',
-            'image.*.required' => 'Please select at least one image.',
-            'image.*.max'      => 'Each image must be ' . (self::MAX_IMAGE_KB / 1024) . 'MB or smaller.',
+            'image.required'       => 'Please select at least one image.',
+            'image.*.required'     => 'Please select at least one image.',
+            'image.*.max'          => 'Each image must be ' . (self::MAX_IMAGE_KB / 1024) . 'MB or smaller.',
+            'image_alt.required'   => 'Please add alt text for each image.',
+            'image_alt.size'       => 'Please add alt text for each image.',
+            'image_alt.*.required' => 'Please add alt text for each image.',
         ]);
 
         $sortOrder = (int) ($request->sort_order ?? 0);
@@ -49,9 +55,12 @@ class TestimonialController extends Controller
         $count     = 0;
 
         // Each uploaded file becomes its own testimonial record.
-        foreach ($request->file('image') as $image) {
+        $alts = array_values((array) $request->input('image_alt', []));
+
+        foreach (array_values($request->file('image')) as $index => $image) {
             Testimonial::create([
                 'image'      => $this->storeImage($image),
+                'image_alt'  => $alts[$index] ?? null,
                 'status'     => $status,
                 'sort_order' => $sortOrder + $count,
             ]);
@@ -79,6 +88,7 @@ class TestimonialController extends Controller
 
         $request->validate([
             'image'      => 'nullable|image|mimes:' . self::ALLOWED_MIMES . '|max:' . self::MAX_IMAGE_KB,
+            'image_alt'  => 'nullable|string|max:255',
             'sort_order' => 'nullable|integer|min:0',
         ], [
             'image.max' => 'The image must be ' . (self::MAX_IMAGE_KB / 1024) . 'MB or smaller.',
@@ -89,6 +99,7 @@ class TestimonialController extends Controller
             $testimonial->image = $this->storeImage($request->file('image'));
         }
 
+        $testimonial->image_alt  = $request->image_alt;
         $testimonial->status     = $request->status ? 1 : 0;
         $testimonial->sort_order = (int) ($request->sort_order ?? 0);
         $testimonial->save();

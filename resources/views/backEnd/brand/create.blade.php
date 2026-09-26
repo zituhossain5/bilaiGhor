@@ -204,6 +204,7 @@
                         @error('image')
                             <div class="text-danger small mt-2 text-center">{{ $message }}</div>
                         @enderror
+                        @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_alt']])
                     </div>
                 </div>
             </div>

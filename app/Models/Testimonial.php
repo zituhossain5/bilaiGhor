@@ -9,6 +9,7 @@ class Testimonial extends Model
 {
     protected $fillable = [
         'image',
+        'image_alt',
         'status',
         'sort_order',
     ];

@@ -134,7 +134,7 @@ class ProductController extends Controller
             'new_price'      => 'nullable|numeric|min:0',
             'purchase_price' => 'nullable|numeric|min:0',
             'stock'          => 'nullable|integer|min:0',
-            'description'    => 'required',
+            'description'    => ['required', new \App\Rules\RichTextImagesHaveAlt],
             'advance_amount' => 'nullable|numeric|min:0',
             'reseller_price' => 'nullable|numeric|min:0',
 
@@ -149,13 +149,22 @@ class ProductController extends Controller
             'wholesale_price.*.min_quantity' => 'nullable|integer|min:1',
             'wholesale_price.*.max_quantity' => 'nullable|integer|min:1',
             'wholesale_price.*.wholesale_price' => 'nullable|numeric|min:0',
+            'meta_image_alt' => 'nullable|string|max:255',
+            'image_alt' => 'nullable|array',
+            'image_alt.*' => 'nullable|string|max:255',
+            'gallery_alt' => 'nullable|array',
+            'gallery_alt.*' => 'nullable|string|max:255',
+            'variant_image.*.alt' => 'nullable|string|max:255',
         ]);
+        $this->requireGalleryImageAlts($request);
 
         $last_id = Product::max('id') + 1;
 
         // proSize, proColor, image, meta_image, variant_price, variant_image, digital_file বাদ
         $input = $request->except([
             'image',
+            'image_alt',   // per-image alts live on productimages
+            'gallery_alt',
             'image_color',
             'image_size',
             'meta_image',
@@ -279,6 +288,7 @@ class ProductController extends Controller
                 Productimage::create([
                     'product_id' => $product->id,
                     'image'      => 'uploads/product/'.$name,
+                    'image_alt'  => $request->input("image_alt.$idx") ?: null,
                     'color_id'   => $colorId ?: null,
                     'size_id'    => $sizeId ?: null,
                 ]);
@@ -332,6 +342,7 @@ class ProductController extends Controller
                 Productimage::create([
                     'product_id' => $product->id,
                     'image'      => $savedFiles[$imageRow],
+                    'image_alt'  => $request->input("variant_image.{$imageRow}.alt") ?: null,
                     'color_id'   => $colorId,
                     'size_id'    => $sizeId ?: null,
                 ]);
@@ -414,7 +425,7 @@ class ProductController extends Controller
             'new_price'      => 'nullable|numeric|min:0',
             'purchase_price' => 'nullable|numeric|min:0',
             'stock'          => 'nullable|integer|min:0',
-            'description'    => 'required',
+            'description'    => ['required', new \App\Rules\RichTextImagesHaveAlt],
             'reseller_price' => 'nullable|numeric|min:0',
 
             'product_type'        => 'required|in:physical,digital',
@@ -428,12 +439,20 @@ class ProductController extends Controller
             'wholesale_price.*.min_quantity' => 'nullable|integer|min:1',
             'wholesale_price.*.max_quantity' => 'nullable|integer|min:1',
             'wholesale_price.*.wholesale_price' => 'nullable|numeric|min:0',
+            'meta_image_alt' => 'nullable|string|max:255',
+            'image_alt' => 'nullable|array',
+            'image_alt.*' => 'nullable|string|max:255',
+            'gallery_alt' => 'nullable|array',
+            'gallery_alt.*' => 'nullable|string|max:255',
+            'variant_image.*.alt' => 'nullable|string|max:255',
         ]);
 
         $product = Product::findOrFail($request->id);
 
         $input = $request->except([
             'image',
+            'image_alt',   // per-image alts live on productimages
+            'gallery_alt',
             'image_color',
             'image_size',
             'meta_image',
@@ -547,6 +566,13 @@ class ProductController extends Controller
         $product->sizes()->sync($request->proSize ?? []);
         $product->colors()->sync($request->proColor ?? []);
 
+        // Alt text of images already on this product.
+        foreach ((array) $request->input('gallery_alt', []) as $imageId => $alt) {
+            Productimage::where('id', $imageId)
+                ->where('product_id', $product->id)
+                ->update(['image_alt' => $alt !== null && trim($alt) !== '' ? $alt : null]);
+        }
+
         // NEW IMAGES (with optional color/size per image)
         if ($request->hasFile('image')) {
             $imageColors = $request->image_color ?? [];
@@ -563,6 +589,7 @@ class ProductController extends Controller
                 Productimage::create([
                     'product_id' => $product->id,
                     'image'      => 'uploads/product/'.$name,
+                    'image_alt'  => $request->input("image_alt.$idx") ?: null,
                     'color_id'   => $colorId ?: null,
                     'size_id'    => $sizeId ?: null,
                 ]);
@@ -593,6 +620,7 @@ class ProductController extends Controller
                 Productimage::create([
                     'product_id' => $product->id,
                     'image'      => $savedFiles[$imageRow],
+                    'image_alt'  => $request->input("variant_image.{$imageRow}.alt") ?: null,
                     'color_id'   => $colorId,
                     'size_id'    => $sizeId ?: null,
                 ]);
@@ -635,6 +663,18 @@ class ProductController extends Controller
 
         Toastr::success('Product updated successfully!');
         return redirect()->route('products.index');
+    }
+
+    /** The gallery is required when creating a product, so each uploaded image needs alt text. */
+    private function requireGalleryImageAlts(Request $request): void
+    {
+        foreach ((array) $request->file('image') as $idx => $image) {
+            if ($image && trim((string) $request->input("image_alt.$idx")) === '') {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'image_alt' => 'Please add alt text for each gallery image.',
+                ]);
+            }
+        }
     }
 
     // ================================

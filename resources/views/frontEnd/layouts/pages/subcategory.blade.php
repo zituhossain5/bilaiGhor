@@ -105,7 +105,7 @@
                class="bilai-cat-sub-card {{ $isActive ? 'active' : '' }}">
                 <div class="bilai-cat-sub-img-box">
                     @if($sibling->image)
-                    <img src="{{ asset($sibling->image) }}" alt="{{ $sibling->subcategoryName }}" loading="lazy">
+                    <img src="{{ asset($sibling->image) }}" alt="{{ $sibling->image_alt ?: $sibling->subcategoryName }}" loading="lazy">
                     @else
                     <i class="fas fa-tag"></i>
                     @endif

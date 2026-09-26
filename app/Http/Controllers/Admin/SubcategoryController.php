@@ -50,7 +50,8 @@ class SubcategoryController extends Controller
             'seo_h1' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
-            'full_description' => 'nullable|string',
+            'full_description' => ['nullable', 'string', new \App\Rules\RichTextImagesHaveAlt],
+            'image_alt' => 'nullable|string|max:255',
         ]);
         // image with intervention 
         $image = $request->file('image');
@@ -107,7 +108,8 @@ class SubcategoryController extends Controller
             'seo_h1' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
-            'full_description' => 'nullable|string',
+            'full_description' => ['nullable', 'string', new \App\Rules\RichTextImagesHaveAlt],
+            'image_alt' => 'nullable|string|max:255',
         ]);
         $update_data = Subcategory::find($request->id);
         $input = $request->all();

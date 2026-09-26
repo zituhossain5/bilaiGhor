@@ -139,7 +139,7 @@
                             <div class="pro_img">
                                 <a href="{{ route('product', $value->slug) }}">
                                     <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                                         alt="{{ $value->name }}"
+                                         alt="{{ optional($value->image)->image_alt ?: $value->name }}"
                                          class="img-fluid"
                                          loading="lazy" />
                                 </a>

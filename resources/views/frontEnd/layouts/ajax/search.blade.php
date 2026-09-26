@@ -6,7 +6,7 @@
 		<a href="{{route('product',$value->slug)}}">
 			<li>
 					<div class="search_img">
-						<img src="{{asset($value->image?$value->image->image:'')}}" alt="{{$value->name}}">
+						<img src="{{asset($value->image?$value->image->image:'')}}" alt="{{ optional($value->image)->image_alt ?: $value->name }}">
 					</div>
 					<div class="search_content">
 						<p class="name">{{$value->name}}</p>                 

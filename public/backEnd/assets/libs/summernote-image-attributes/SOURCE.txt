@@ -1,0 +1,6 @@
+summernote-image-attributes (MIT) — adds an "Image Attributes" dialog (alt, title, size) to Summernote.
+Source:  https://github.com/DennisSuitters/summernote-image-attributes (formerly DiemenDesign)
+Commit:  f453cbb678f3020a0403e903dd5440b815687bf0
+File:    summernote-image-attributes.js (unmodified)
+SHA-256: 2d3b817312f0ce50377c94d6c0e4ca35f2244f8899b69ecbe32b3da471df6220
+Wired up by: public/backEnd/assets/js/summernote-image-alt.js

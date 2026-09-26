@@ -34,9 +34,10 @@ class BannerController extends Controller
         $this->validate($request, [
             'link' => 'required',
             'status' => 'required',
+            'image_alt' => 'required|string|max:255', // the banner image is required, so is its alt
         ]);
-        
-        // image with intervention 
+
+        // image with intervention
         $file = $request->file('image');
         $name = time().$file->getClientOriginalName();
         $uploadPath = 'public/uploads/banner/';
@@ -62,6 +63,7 @@ class BannerController extends Controller
     {
         $this->validate($request, [
             'link' => 'required',
+            'image_alt' => 'nullable|string|max:255',
         ]);
         $update_data = Banner::find($request->id);
         $input = $request->all();

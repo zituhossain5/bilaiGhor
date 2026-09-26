@@ -20,6 +20,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:url" content="{{ url()->current() }}" />
 <meta property="og:image" content="{{ asset($generalsetting->og_baner ?? 'public/logo.png') }}" />
+<meta property="og:image:alt" content="{{ optional($generalsetting)->og_baner_alt ?: ($seo->meta_title ?? optional($generalsetting)->name) }}" />
 <meta property="og:description" content="{{ $seo->meta_description ?? '' }}" />
 @endpush
 
@@ -102,7 +103,7 @@
                         <div class="ads_item">
                             <a href="{{ $value->link }}">
                                 <img src="{{ asset($value->image) }}"
-                                     alt="Ads"
+                                     alt="{{ $value->image_alt ?: ($value->title ?: (optional($generalsetting)->name ?? 'Bilai Ghor') . ' offer') }}"
                                      class="img-fluid"
                                      loading="lazy" />
                             </a>
@@ -164,7 +165,7 @@
                 <div class="bilai-product-image">
                     <a href="{{ route('product', $value->slug) }}">
                         <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                             alt="{{ $value->name }}"
+                             alt="{{ optional($value->image)->image_alt ?: $value->name }}"
                              loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
                     </a>
                 </div>
@@ -263,7 +264,7 @@
                 <div class="bilai-product-image">
                     <a href="{{ route('product', $value->slug) }}">
                         <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                             alt="{{ $value->name }}"
+                             alt="{{ optional($value->image)->image_alt ?: $value->name }}"
                              loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
                     </a>
                 </div>
@@ -353,7 +354,7 @@
                 <a href="{{ $homeads->link }}?sold=show">
                     <img class="img-fluid w-100"
                          src="{{ asset($homeads->image) }}"
-                         alt="Homepage Ads"
+                         alt="{{ $homeads->image_alt ?: ($homeads->title ?: (optional($generalsetting)->name ?? 'Bilai Ghor') . ' offer') }}"
                          loading="lazy" />
                 </a>
             </div>
@@ -394,7 +395,7 @@
                     </button>
                     <a href="{{ route('product', $value->slug) }}" class="bilai-na-img-wrap">
                         @if($value->image)
-                        <img src="{{ asset($value->image->image) }}" alt="{{ $value->name }}" loading="lazy">
+                        <img src="{{ asset($value->image->image) }}" alt="{{ optional($value->image)->image_alt ?: $value->name }}" loading="lazy">
                         @else
                         <img src="{{ asset('public/no-image.png') }}" alt="{{ $value->name }}" loading="lazy">
                         @endif
@@ -555,7 +556,7 @@
                         <div class="bilai-product-image">
                             <a href="{{ route('product', $value->slug) }}">
                                 <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                                     alt="{{ $value->name }}"
+                                     alt="{{ optional($value->image)->image_alt ?: $value->name }}"
                                      loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
                             </a>
                         </div>
@@ -721,7 +722,7 @@
 
                                 <div class="brand-img">
                                     <img src="{{ asset($brand->image) }}"
-                                         alt="{{ $brand->name }}"
+                                         alt="{{ $brand->image_alt ?: $brand->name }}"
                                          class="img-fluid"
                                          loading="lazy">
                                 </div>
@@ -753,36 +754,7 @@
         </div>
         <div class="bilai-blog-grid">
             @foreach($blogs->take(3) as $blog)
-            <div class="bilai-blog-card">
-                <a href="{{ route('blog.details', $blog->slug) }}" class="bilai-blog-img-wrap">
-                    <img
-                        src="{{ $blog->image ? url('public/'.$blog->image) : url('public/no-image.png') }}"
-                        alt="{{ $blog->title }}"
-                        loading="lazy"
-                    >
-                    <div class="bilai-blog-img-overlay">
-                        <div class="bilai-blog-brand">
-                            <img src="{{ asset(optional($generalsetting)->dark_logo ?? 'public/logo.png') }}" alt="{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}">
-                            <span>{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}</span>
-                        </div>
-                        <div class="bilai-blog-img-actions">
-                            <span><i class="fas fa-share-alt"></i></span>
-                            <span><i class="far fa-comment"></i> {{ $blog->views ?? 0 }}</span>
-                        </div>
-                    </div>
-                </a>
-                <div class="bilai-blog-body">
-                    <div class="bilai-blog-meta">
-                        <span class="bilai-blog-cat">Blog</span>
-                        <span class="bilai-blog-date">{{ $blog->created_at->format('jS F, Y') }}</span>
-                    </div>
-                    <h5 class="bilai-blog-title">
-                        <a href="{{ route('blog.details', $blog->slug) }}">{{ Str::limit($blog->title, 55) }}</a>
-                    </h5>
-                    <p class="bilai-blog-desc">{{ Str::limit($blog->short_description, 100) }}</p>
-                    <a href="{{ route('blog.details', $blog->slug) }}" class="bilai-blog-read-btn">Continue Reading</a>
-                </div>
-            </div>
+                <x-blog-card :blog="$blog" />
             @endforeach
         </div>
     </div>
@@ -815,7 +787,7 @@
                             data-image="{{ asset('public/'.$t->image) }}"
                             aria-label="View customer review {{ $loop->iteration }} full size">
                         <img src="{{ asset('public/'.$t->image) }}"
-                             alt="Customer review of Bilai Ghor {{ $loop->iteration }}"
+                             alt="{{ $t->image_alt ?: 'Customer review of Bilai Ghor ' . $loop->iteration }}"
                              loading="lazy">
                     </button>
                 </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Blog;
+use App\Rules\RichTextImagesHaveAlt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -34,8 +35,9 @@ class BlogController extends Controller
         $request->validate([
             'title'             => 'required|string|max:255',
             'short_description' => 'nullable|string|max:500',
-            'description'       => 'required',
+            'description'       => ['required', new RichTextImagesHaveAlt],
             'image'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image_alt'         => 'nullable|string|max:255',
             'status'            => 'nullable|in:0,1',
         ]);
 
@@ -60,6 +62,7 @@ class BlogController extends Controller
             'short_description' => $request->short_description,
             'description'       => $request->description,
             'image'             => $imagePath,
+            'image_alt'         => $request->image_alt,
             'status'            => $request->status ?? 1,
         ]);
 
@@ -87,8 +90,9 @@ class BlogController extends Controller
         $request->validate([
             'title'             => 'required|string|max:255',
             'short_description' => 'nullable|string|max:500',
-            'description'       => 'required',
+            'description'       => ['required', new RichTextImagesHaveAlt],
             'image'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image_alt'         => 'nullable|string|max:255',
             'status'            => 'nullable|in:0,1',
         ]);
 
@@ -116,6 +120,7 @@ class BlogController extends Controller
             'slug'              => Str::slug($request->title).'-'.time(),
             'short_description' => $request->short_description,
             'description'       => $request->description,
+            'image_alt'         => $request->image_alt,
             'status'            => $request->status ?? 1,
         ]);
 

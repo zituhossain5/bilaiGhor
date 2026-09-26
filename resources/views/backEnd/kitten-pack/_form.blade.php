@@ -229,6 +229,13 @@
                     </div>
                 </div>
                 @error('image')<div class="text-danger small mt-2 text-center">{{ $message }}</div>@enderror
+
+                {{-- The image is required only when creating, and so is its alt text. --}}
+                @include('backEnd.partials.image-alt-field', ['altField' => [
+                    'name'     => 'image_alt',
+                    'value'    => $pack->image_alt ?? '',
+                    'required' => !$pack,
+                ]])
             </div>
         </div>
     </div>

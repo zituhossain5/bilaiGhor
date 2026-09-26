@@ -188,7 +188,10 @@
 
                         <div class="form-group mb-0">
                             <label class="form-label">Full Content <span class="text-danger">*</span></label>
-                            <textarea name="description" class="summernote form-control" required>{!! $blog->description !!}</textarea>
+                            <textarea name="description" class="summernote form-control @error('description') is-invalid @enderror" required>{!! old('description', $blog->description) !!}</textarea>
+                            @error('description')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                     </div>
@@ -241,6 +244,8 @@
                                     <small class="text-muted d-block mt-2">JPG, PNG, WEBP (Max 2MB)</small>
                                 </div>
                         </div>
+
+                        @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_alt', 'value' => $blog->image_alt]])
                     </div>
                 </div>
 
@@ -253,6 +258,7 @@
 @section('script')
 {{-- Summernote JS --}}
 <script src="{{asset('public/backEnd')}}/assets/libs/summernote/summernote-lite.min.js"></script>
+@include('backEnd.partials.summernote-image-alt')
 
 <script>
     $(document).ready(function() {

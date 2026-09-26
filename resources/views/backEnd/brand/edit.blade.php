@@ -228,6 +228,7 @@
                             @error('image')
                                 <div class="text-danger small mt-2 text-center">{{ $message }}</div>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_alt', 'value' => $edit_data->image_alt]])
 
                             <div class="mt-3 text-center">
                                 <small class="text-muted d-block" style="font-size: 11px;">

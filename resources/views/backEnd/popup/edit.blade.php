@@ -103,6 +103,12 @@
                             </div>
                             <input type="file" name="image" id="editImageInput" class="d-none" accept="image/*" onchange="previewEditImage(this)">
                         </div>
+                        @include('backEnd.partials.image-alt-field', ['altField' => [
+                            'name'         => 'image_alt',
+                            'value'        => $edit->image_alt,
+                            'labelClass'   => 'form-label fw-bold small',
+                            'wrapperClass' => 'mt-4 text-start',
+                        ]])
                         <div class="mt-4 text-start">
                             <label class="form-label fw-bold small">লিংক (ইমেজ ক্লিকে)</label>
                             <input type="text" class="form-control" name="link" value="{{ $edit->link }}" placeholder="https://...">

@@ -16,6 +16,7 @@ class KittenPack extends Model
         'badge',
         'theme',
         'image',
+        'image_alt',
         'price',
         'old_price',
         'status',

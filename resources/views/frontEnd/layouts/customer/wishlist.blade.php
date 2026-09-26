@@ -248,7 +248,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
                                         <tr data-wishlist-row="{{ $p->id }}">
                                             <td>
                                                 <div class="bilai-wl-product">
-                                                    <img class="bilai-wl-img" src="{{ asset($p->image ? $p->image->image : '') }}" alt="{{ $p->name }}">
+                                                    <img class="bilai-wl-img" src="{{ asset($p->image ? $p->image->image : '') }}" alt="{{ optional($p->image)->image_alt ?: $p->name }}">
                                                     <div>
                                                         <p class="bilai-wl-name"><a href="{{ route('product', $p->slug) }}">{{ Str::limit($p->name, 65) }}</a></p>
                                                         @if($p->subcategory)
@@ -351,7 +351,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
                     <div class="bilai-product-image">
                         <a href="{{ route('product', $value->slug) }}">
                             <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                                 alt="{{ $value->name }}" loading="lazy" />
+                                 alt="{{ optional($value->image)->image_alt ?: $value->name }}" loading="lazy" />
                         </a>
                     </div>
                     <div class="bilai-product-meta">

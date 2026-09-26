@@ -49,6 +49,7 @@
                                     <strong>{{ $message }}</strong>
                                 </span>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'banner_alt', 'required' => true, 'label' => 'Banner Alt Text', 'labelClass' => 'form-label', 'wrapperClass' => 'mt-2']])
                         </div>
                     </div>
                     <!-- col end -->
@@ -239,6 +240,7 @@
                                     <strong>{{ $message }}</strong>
                                 </span>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_one_alt', 'required' => true, 'label' => 'Image One Alt Text', 'labelClass' => 'form-label', 'wrapperClass' => 'mt-2']])
                         </div>
                     </div>
                 
@@ -251,6 +253,7 @@
                                     <strong>{{ $message }}</strong>
                                 </span>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_two_alt', 'label' => 'Image Two Alt Text', 'labelClass' => 'form-label', 'wrapperClass' => 'mt-2']])
                         </div>
                     </div>
                 
@@ -263,6 +266,7 @@
                                     <strong>{{ $message }}</strong>
                                 </span>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_three_alt', 'label' => 'Image Three Alt Text', 'labelClass' => 'form-label', 'wrapperClass' => 'mt-2']])
                         </div>
                     </div>
                     <!-- col end -->
@@ -270,7 +274,8 @@
                     <div class="col-sm-6 mb-3">
                         <label for="image">Review Image *</label>
                         <div class="input-group control-group increment">
-                            <input type="file" name="image[]" class="form-control @error('image') is-invalid @enderror" required />
+                            <input type="file" name="image[0]" class="form-control @error('image') is-invalid @enderror" required />
+                            <input type="text" name="image_alt[0]" value="{{ old('image_alt.0') }}" class="form-control" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text — describe this image (e.g. 'Orange tabby kitten eating from a bowl')" required />
                             <div class="input-group-btn">
                                 <button class="btn btn-success btn-increment" type="button"><i class="fa fa-plus"></i></button>
                             </div>
@@ -282,12 +287,15 @@
                         </div>
                         <div class="clone hide" style="display: none;">
                             <div class="control-group input-group">
-                                <input type="file" name="image[]" class="form-control" />
+                                <input type="file" name="image[__ROW__]" class="form-control" disabled />
+                                <input type="text" name="image_alt[__ROW__]" class="form-control" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text — describe this image (e.g. 'Orange tabby kitten eating from a bowl')" required disabled />
                                 <div class="input-group-btn">
                                     <button class="btn btn-danger" type="button"><i class="fa fa-trash"></i></button>
                                 </div>
                             </div>
                         </div>
+                        <small class="text-muted d-block mt-1">Image Alt Text: describe each review image — improves SEO and accessibility.</small>
+                        @error('image_alt')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                     <!-- col end -->
                 
@@ -355,6 +363,7 @@
 <script src="{{asset('public/backEnd/')}}/assets/js/pages/form-pickers.init.js"></script>
 
 <script src="{{asset('public/backEnd/')}}/assets/libs//summernote/summernote-lite.min.js"></script>
+@include('backEnd.partials.summernote-image-alt')
 <script>
     $(".summernote").summernote({
         placeholder: "Enter Your Text Here",    
@@ -362,9 +371,12 @@
 </script>
 <script type="text/javascript">
     $(document).ready(function () {
+        var reviewRowKey = 1;
         $(".btn-increment").click(function () {
-            var html = $(".clone").html();
-            $(".increment").after(html);
+            // Each new row gets its own key so image[k] and image_alt[k] stay paired.
+            var $row = $($(".clone").html().replace(/__ROW__/g, reviewRowKey++));
+            $row.find(':disabled').prop('disabled', false);
+            $(".increment").after($row);
         });
         $("body").on("click", ".btn-danger", function () {
             $(this).parents(".control-group").remove();

@@ -22,7 +22,7 @@
            <a class="cart_remove" data-id="{{$value->rowId}}"><i class="fas fa-trash text-danger"></i></a>
           </td>
           <td class="text-left">
-           <a href="{{ \App\Helpers\KittenPackCart::itemUrl($value) }}"> <img src="{{asset($value->options->image)}}" style="height:30px;width:30px" /> {{Str::limit($value->name,20)}}</a>
+           <a href="{{ \App\Helpers\KittenPackCart::itemUrl($value) }}"> <img src="{{asset($value->options->image)}}" alt="{{ $value->name }}" style="height:30px;width:30px" /> {{Str::limit($value->name,20)}}</a>
            @if($value->options->product_size)
             <p>Size: {{$value->options->product_size}}</p>
            @endif

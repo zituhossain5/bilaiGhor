@@ -249,6 +249,8 @@
                         @error('image')
                             <div class="text-danger small mt-2 text-center">{{ $message }}</div>
                         @enderror
+
+                        @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_alt', 'value' => '']])
                     </div>
                 </div>
 
@@ -261,6 +263,7 @@
 @section('script')
 {{-- Summernote JS --}}
 <script src="{{asset('public/backEnd')}}/assets/libs/summernote/summernote-lite.min.js"></script>
+@include('backEnd.partials.summernote-image-alt')
 
 <script>
     $(document).ready(function() {

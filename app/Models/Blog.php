@@ -15,6 +15,7 @@ class Blog extends Model
         'short_description',
         'description',
         'image',
+        'image_alt',
         'views',
         'status',
     ];

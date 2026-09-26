@@ -37,7 +37,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         {{-- BilaiGhor Figma — header & footer CSS --}}
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=51">
+        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=52">
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/main.css')}}" />
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-container-system.css')}}?v=2" />
         @stack('css_after')
@@ -581,7 +581,7 @@
                 @php $mobileCategoryMenuId = 'mobile-category-menu-' . $scategory->id; @endphp
                 <li class="parent-category">
                     <a href="{{url('category/'.$scategory->slug)}}" class="menu-category-name">
-                        <img src="{{asset($scategory->image)}}" alt="" class="side_cat_img" />
+                        <img src="{{asset($scategory->image)}}" alt="{{ $scategory->image_alt ?: $scategory->subcategoryName }}" class="side_cat_img" />
                         {{$scategory->name}}
                     </a>
                     @if($scategory->subcategories->count() > 0)
@@ -750,7 +750,7 @@
                     {{-- BilaiGhor: RIGHT — static links + cart pill (≥ 992px) --}}
                     <div class="bilai-nav__right">
                         <ul class="bilai-nav__right-links">
-                            <li><a href="{{ route('home') }}" class="{{ Route::is('home') ? 'active' : '' }}">Home</a></li>
+                            <li><a href="{{ route('blogs') }}" class="{{ Route::is('blogs', 'blog.details') ? 'active' : '' }}">Blogs</a></li>
                             @if(config('business.vendor_enabled') && ($generalsetting?->vendor_enabled ?? 1) == 1)
                             <li><a href="{{ route('sellers') }}" class="{{ Route::is('sellers') ? 'active' : '' }}">Sellers</a></li>
                             @endif
@@ -2171,7 +2171,7 @@ window.addEventListener('pageshow', function (e) {
             @if($isSimpleImagePopup)
                 {{-- শুধু ইমেজ পপআপ (FABRILIFE/bKash স্টাইল) --}}
                 <a href="{{ !empty(trim($popup->link ?? '')) ? $popup->link : 'javascript:void(0)' }}" {{ !empty(trim($popup->link ?? '')) ? 'target="_blank"' : '' }} class="popup-simple-link">
-                    <img src="{{ url('public/'.$popup->image) }}" alt="{{ $popup->title }}" class="popup-simple-img">
+                    <img src="{{ url('public/'.$popup->image) }}" alt="{{ $popup->image_alt ?: $popup->title }}" class="popup-simple-img">
                 </a>
             @else
                 {{-- পুরনো লেআউট (টেক্সট + ইমেজ) --}}
@@ -2195,7 +2195,7 @@ window.addEventListener('pageshow', function (e) {
                         </div>
                     </div>
                     <div class="ps-image-section">
-                        <img src="{{ url('public/'.$popup->image) }}" alt="Offer Image">
+                        <img src="{{ url('public/'.$popup->image) }}" alt="{{ $popup->image_alt ?: $popup->title }}">
                     </div>
                 </div>
             @endif

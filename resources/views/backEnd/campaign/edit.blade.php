@@ -54,6 +54,7 @@
                                     <strong>{{ $message }}</strong>
                                 </span>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'banner_alt', 'value' => $edit_data->banner_alt, 'label' => 'Banner Alt Text', 'labelClass' => 'form-label', 'wrapperClass' => 'mt-2']])
                         </div>
                     </div>
                     <!-- col end -->
@@ -260,6 +261,7 @@
                                     <strong>{{ $message }}</strong>
                                 </span>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_one_alt', 'value' => $edit_data->image_one_alt, 'label' => 'Image One Alt Text', 'labelClass' => 'form-label', 'wrapperClass' => 'mt-2']])
                         </div>
                     </div>
                     <div class="col-sm-6 mb-3">
@@ -272,6 +274,7 @@
                                     <strong>{{ $message }}</strong>
                                 </span>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_two_alt', 'value' => $edit_data->image_two_alt, 'label' => 'Image Two Alt Text', 'labelClass' => 'form-label', 'wrapperClass' => 'mt-2']])
                         </div>
                     </div>
                       <div class="col-sm-6 mb-3">
@@ -284,13 +287,15 @@
                                     <strong>{{ $message }}</strong>
                                 </span>
                             @enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_three_alt', 'value' => $edit_data->image_three_alt, 'label' => 'Image Three Alt Text', 'labelClass' => 'form-label', 'wrapperClass' => 'mt-2']])
                         </div>
                     </div>
                     <!-- col end -->
                     <div class="col-sm-6 mb-3">
                         <label for="image">Review Image *</label>
                         <div class="input-group control-group increment">
-                            <input type="file" name="image[]" class="form-control @error('image') is-invalid @enderror" />
+                            <input type="file" name="image[0]" class="form-control @error('image') is-invalid @enderror" />
+                            <input type="text" name="image_alt[0]" value="{{ old('image_alt.0') }}" class="form-control" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text — describe this image (e.g. 'Orange tabby kitten eating from a bowl')" />
                             <div class="input-group-btn">
                                 <button class="btn btn-success btn-increment" type="button"><i class="fa fa-plus"></i></button>
                             </div>
@@ -302,15 +307,19 @@
                         </div>
                         <div class="clone hide" style="display: none;">
                             <div class="control-group input-group">
-                                <input type="file" name="image[]" class="form-control" />
+                                <input type="file" name="image[__ROW__]" class="form-control" disabled />
+                                <input type="text" name="image_alt[__ROW__]" class="form-control" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text — describe this image (e.g. 'Orange tabby kitten eating from a bowl')" disabled />
                                 <div class="input-group-btn">
                                     <button class="btn btn-danger" type="button"><i class="fa fa-trash"></i></button>
                                 </div>
                             </div>
                         </div>
+                        <small class="text-muted d-block mt-1">Image Alt Text: describe each review image — improves SEO and accessibility.</small>
+                        @error('image_alt')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                         <div class="product_img">
                             @foreach($edit_data->images as $image)
-                            <img src="{{asset($image->image)}}" class="edit-image border" alt="" />
+                            <img src="{{asset($image->image)}}" class="edit-image border" alt="{{ $image->image_alt }}" />
+                            <input type="text" name="review_alt[{{ $image->id }}]" value="{{ old('review_alt.'.$image->id, $image->image_alt) }}" class="form-control form-control-sm mt-1 mb-2" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text for this review image" />
                             <a href="{{route('campaign.image.destroy',['id'=>$image->id])}}" class="btn btn-xs btn-danger waves-effect waves-light"><i class="mdi mdi-close"></i></a>
                             @endforeach
                         </div>
@@ -332,7 +341,7 @@
                     <div class="col-sm-12 mb-3">
                         <div class="form-group">
                             <label for="short_description" class="form-label">Short Description</label>
-                            <textarea name="short_description"  rows="6" class="summernote form-control @error('short_description') is-invalid @enderror">{{$edit_data->short_description}}</textarea>
+                            <textarea name="short_description"  rows="6" class="summernote form-control @error('short_description') is-invalid @enderror">{{ old('short_description', $edit_data->short_description) }}</textarea>
                             @error('short_description')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -345,7 +354,7 @@
                     <div class="col-sm-12 mb-3">
                         <div class="form-group">
                             <label for="description" class="form-label">Description</label>
-                            <textarea name="description"  rows="6" class="summernote form-control @error('description') is-invalid @enderror">{{$edit_data->description}}</textarea>
+                            <textarea name="description"  rows="6" class="summernote form-control @error('description') is-invalid @enderror">{{ old('description', $edit_data->description) }}</textarea>
                             @error('description')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -394,6 +403,7 @@
 <script src="{{asset('public/backEnd/')}}/assets/js/pages/form-pickers.init.js"></script>
 <!-- Plugins js -->
 <script src="{{asset('public/backEnd/')}}/assets/libs//summernote/summernote-lite.min.js"></script>
+@include('backEnd.partials.summernote-image-alt')
 <script>
   $(".summernote").summernote({
     placeholder: "Enter Your Text Here",
@@ -404,9 +414,12 @@
 </script>
 <script type="text/javascript">
     $(document).ready(function () {
+        var reviewRowKey = 1;
         $(".btn-increment").click(function () {
-            var html = $(".clone").html();
-            $(".increment").after(html);
+            // Each new row gets its own key so image[k] and image_alt[k] stay paired.
+            var $row = $($(".clone").html().replace(/__ROW__/g, reviewRowKey++));
+            $row.find(':disabled').prop('disabled', false);
+            $(".increment").after($row);
         });
         $("body").on("click", ".btn-danger", function () {
             $(this).parents(".control-group").remove();

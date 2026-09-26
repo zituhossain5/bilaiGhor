@@ -60,6 +60,9 @@
                         <div class="form-group mb-3">
                             <label class="form-label">Full Description *</label>
                             <textarea name="description" class="summernote" required>{{ old('description') }}</textarea>
+                            @error('description')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="form-group mb-0">
@@ -152,6 +155,7 @@
                                         <label class="form-label">Variant Image</label>
                                         <div class="variant-img-upload position-relative">
                                             <input type="file" name="variant_image[0][image]" class="form-control form-control-sm variant-img-input" accept="image/*">
+                                            <input type="text" name="variant_image[0][alt]" class="form-control form-control-sm mt-1" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text">
                                             <div class="variant-img-preview mt-1" style="display:none;">
                                                 <img src="" alt="Preview" class="rounded border" style="max-width:60px;max-height:60px;object-fit:cover;">
                                                 <button type="button" class="btn btn-sm btn-danger variant-img-clear ms-1" title="Remove"><i class="fe-x"></i></button>
@@ -194,6 +198,7 @@
                             <div class="col-md-12">
                                 <label class="form-label">Meta Image</label>
                                 <input type="file" name="meta_image" class="form-control">
+                                @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'meta_image_alt', 'label' => 'Meta Image Alt Text', 'wrapperClass' => 'mt-2']])
                             </div>
                         </div>
                     </div>
@@ -212,6 +217,7 @@
 <script src="{{asset('public/backEnd/')}}/assets/libs/parsleyjs/parsley.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs/select2/js/select2.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs/summernote/summernote-lite.min.js"></script>
+@include('backEnd.partials.summernote-image-alt')
 
 <script>
     $(document).ready(function () {

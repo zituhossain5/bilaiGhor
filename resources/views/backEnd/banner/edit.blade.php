@@ -176,8 +176,16 @@
                     </div>
 
                     <div class="settings-area">
+                        {{-- Every banner type (hero slide or ad) has its own alt text. --}}
+                        @include('backEnd.partials.image-alt-field', ['altField' => [
+                            'name'         => 'image_alt',
+                            'value'        => $edit_data->image_alt,
+                            'labelClass'   => 'category-label',
+                            'class'        => 'input-clean',
+                            'wrapperClass' => 'mb-4',
+                        ]])
                         <div class="row g-4">
-                            
+
                             <div class="col-lg-7">
                                 <label class="category-label">Select Placement Category</label>
                                 <div class="radio-tile-group">
@@ -252,10 +260,6 @@
                             <div class="col-md-3">
                                 <label class="category-label">Sort Order</label>
                                 <input type="number" class="form-control input-clean" name="sort_order" value="{{ old('sort_order', $edit_data->sort_order ?? 0) }}" min="0">
-                            </div>
-                            <div class="col-md-12">
-                                <label class="category-label">Image Alt Text (SEO)</label>
-                                <input type="text" class="form-control input-clean" name="image_alt" value="{{ old('image_alt', $edit_data->image_alt) }}" placeholder="Descriptive alt text for the hero image">
                             </div>
                         </div>
 

@@ -18,7 +18,7 @@
 
             <div class="bilai-kp-card-image">
                 <img src="{{ $pack->image ? asset('public/'.$pack->image) : asset('public/no-image.png') }}"
-                     alt="{{ $pack->name }}" loading="lazy">
+                     alt="{{ $pack->image_alt ?: $pack->name }}" loading="lazy">
             </div>
 
             <div class="bilai-kp-card-body">

@@ -307,7 +307,7 @@
                     <div class="bilai-product-image">
                         <a href="{{ route('product', $value->slug) }}">
                             <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                                 alt="{{ $value->name }}" loading="lazy" />
+                                 alt="{{ optional($value->image)->image_alt ?: $value->name }}" loading="lazy" />
                         </a>
                     </div>
                     <div class="bilai-product-meta">

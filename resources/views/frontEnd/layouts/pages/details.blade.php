@@ -16,10 +16,12 @@
 <meta name="twitter:title" content="{{ $metaTitle }}" />
 <meta name="twitter:description" content="{{ $metaDescription }}" />
 <meta name="twitter:image" content="{{ $metaImage }}" />
+<meta name="twitter:image:alt" content="{{ $details->meta_image_alt ?: $metaTitle }}" />
 <meta property="og:title" content="{{ $metaTitle }}" />
 <meta property="og:type" content="product" />
 <meta property="og:url" content="{{ route('product', $details->slug) }}" />
 <meta property="og:image" content="{{ $metaImage }}" />
+<meta property="og:image:alt" content="{{ $details->meta_image_alt ?: $metaTitle }}" />
 <meta property="og:description" content="{{ $metaDescription }}" />
 <meta property="og:site_name" content="BilaiGhor" />
 @endpush
@@ -1023,7 +1025,7 @@ input.bpd-btn { cursor: pointer; }
                     <div class="indicator-item{{ $key === 0 ? ' bpd-thumb-active' : '' }}"
                          data-id="{{ $key }}"
                          data-color-id="{{ $image->color_id ?? '' }}">
-                        <img src="{{ asset($image->image) }}" alt="" />
+                        <img src="{{ asset($image->image) }}" alt="{{ $image->image_alt ?: $details->name }}" />
                     </div>
                     @endforeach
                 </div>
@@ -1037,7 +1039,7 @@ input.bpd-btn { cursor: pointer; }
                 <div class="details_slider owl-carousel" id="details_slider_main">
                     @foreach ($details->images as $value)
                     <div class="dimage_item" data-color-id="{{ $value->color_id ?? '' }}">
-                        <img src="{{ asset($value->image) }}" class="block__pic" />
+                        <img src="{{ asset($value->image) }}" alt="{{ $value->image_alt ?: $details->name }}" class="block__pic" />
                     </div>
                     @endforeach
                 </div>
@@ -1510,7 +1512,7 @@ input.bpd-btn { cursor: pointer; }
                 <div class="bilai-product-image">
                     <a href="{{ route('product', $value->slug) }}">
                         <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                             alt="{{ $value->name }}"
+                             alt="{{ optional($value->image)->image_alt ?: $value->name }}"
                              loading="{{ $loop->first ? 'eager' : 'lazy' }}" />
                     </a>
                 </div>

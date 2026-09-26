@@ -68,6 +68,12 @@
                                 </div>
                                 <div id="preview_grid" class="preview-grid d-none"></div>
                             </div>
+                            {{-- One "Image Alt Text" per selected file (filled in by readURL below). --}}
+                            <div id="alt_list" class="mt-3 d-none"></div>
+                            @error('image_alt')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                            @if(!$errors->has('image_alt') && $errors->has('image_alt.*'))
+                                <div class="text-danger small mt-2">{{ $errors->first('image_alt.*') }}</div>
+                            @endif
                             @error('image')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
                             @foreach($errors->get('image.*') as $messages)
                                 @foreach($messages as $message)
@@ -121,17 +127,34 @@
 <script>
 function readURL(input) {
     var $grid = $('#preview_grid');
+    var $alts = $('#alt_list');
 
     $grid.empty();
+    $alts.empty();
 
     if (!input.files || !input.files.length) {
         $grid.addClass('d-none');
+        $alts.addClass('d-none');
         $('#upload_placeholder').show();
         return;
     }
 
     $('#upload_placeholder').hide();
     $grid.removeClass('d-none');
+    $alts.removeClass('d-none');
+
+    // Built in file order, so image_alt[i] describes image[i] (same styling as the shared alt field).
+    $.each(input.files, function(index, file) {
+        $alts.append(
+            $('<div class="image-alt-field mb-3"></div>').append(
+                $('<label class="form-label"></label>').text('Image Alt Text — ' + file.name).append(' <span class="text-danger">*</span>'),
+                $('<input type="text" class="form-control" maxlength="255" required>')
+                    .attr('name', 'image_alt[' + index + ']')
+                    .attr('placeholder', "Describe this image for SEO (e.g. 'Orange tabby kitten eating from a bowl')"),
+                $('<small class="text-muted d-block mt-1"></small>').text('Improves SEO and accessibility.')
+            )
+        );
+    });
 
     $.each(input.files, function(index, file) {
         var reader = new FileReader();

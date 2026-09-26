@@ -38,13 +38,13 @@ class Product extends Model
     public function image()
     {
         return $this->hasOne(Productimage::class, 'product_id')
-                    ->select('id', 'image', 'product_id', 'color_id', 'size_id');
+                    ->select('id', 'image', 'image_alt', 'product_id', 'color_id', 'size_id');
     }
 
     public function images()
     {
         return $this->hasMany(Productimage::class, 'product_id')
-                    ->select('id', 'image', 'product_id', 'color_id', 'size_id');
+                    ->select('id', 'image', 'image_alt', 'product_id', 'color_id', 'size_id');
     }
 
     /** Default images (no color/size) */

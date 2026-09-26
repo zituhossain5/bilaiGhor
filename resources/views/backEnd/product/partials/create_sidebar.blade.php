@@ -39,6 +39,8 @@
                             <button class="btn btn-success btn-increment btn-sm w-100" type="button"><i class="fa fa-plus"></i></button>
                         </div>
                     </div>
+                    {{-- image_alt[] lines up with image[] row by row (same position). --}}
+                    <input type="text" name="image_alt[]" value="{{ old('image_alt.0') }}" class="form-control form-control-sm mt-1" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text — e.g. 'Orange tabby kitten eating from a bowl'" required>
                 </div>
             </div>
             <div class="clone d-none">
@@ -51,8 +53,11 @@
                             <button class="btn btn-danger btn-remove-image btn-sm w-100" type="button"><i class="fa fa-trash"></i></button>
                         </div>
                     </div>
+                    <input type="text" name="image_alt[]" class="form-control form-control-sm mt-1" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text — e.g. 'Orange tabby kitten eating from a bowl'">
                 </div>
             </div>
+            <small class="text-muted d-block mt-1">Image Alt Text: describe each image — improves SEO and accessibility.</small>
+            @error('image_alt')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
 
             <label class="form-label mt-2 mb-1">প্রোডাক্ট ভিডিও</label>
             <div class="d-flex pf-video-radios flex-wrap">

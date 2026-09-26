@@ -43,7 +43,8 @@ class CategoryController extends Controller
             'seo_h1' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
-            'full_description' => 'nullable|string',
+            'full_description' => ['nullable', 'string', new \App\Rules\RichTextImagesHaveAlt],
+            'image_alt' => 'required|string|max:255',
             // icon optional
             // 'icon'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
@@ -139,7 +140,8 @@ class CategoryController extends Controller
             'seo_h1' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
-            'full_description' => 'nullable|string',
+            'full_description' => ['nullable', 'string', new \App\Rules\RichTextImagesHaveAlt],
+            'image_alt' => 'nullable|string|max:255',
             // 'icon' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 

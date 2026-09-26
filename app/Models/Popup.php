@@ -17,6 +17,7 @@ class Popup extends Model
         'btn_text',
         'link',
         'image',
+        'image_alt',
         'status',
     ];
 

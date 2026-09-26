@@ -31,7 +31,7 @@ class CreatePageController extends Controller
         $this->validate($request, [
             'name' => 'required',
             'title' => 'required',
-            'description' => 'required',
+            'description' => ['required', new \App\Rules\RichTextImagesHaveAlt],
             'status' => 'required',
         ]);
 
@@ -53,7 +53,7 @@ class CreatePageController extends Controller
         $this->validate($request, [
             'name' => 'required',
             'title' => 'required',
-            'description' => 'required',
+            'description' => ['required', new \App\Rules\RichTextImagesHaveAlt],
         ]);
         $input = $request->except('hidden_id');
         $input['slug'] = strtolower(preg_replace('/\s+/', '-', $request->name));

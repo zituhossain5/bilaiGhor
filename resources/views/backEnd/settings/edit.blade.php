@@ -199,6 +199,16 @@
                                 <div class="logo-preview-box">
                                     <img src="{{asset($edit_data->$slug)}}" class="edit-image-pro" alt="Preview">
                                 </div>
+                                @if($slug === 'og_baner')
+                                    {{-- Shown by Facebook/WhatsApp as og:image:alt; logos use the site name. --}}
+                                    @include('backEnd.partials.image-alt-field', ['altField' => [
+                                        'name'         => 'og_baner_alt',
+                                        'value'        => $edit_data->og_baner_alt,
+                                        'labelClass'   => 'form-label-pro',
+                                        'class'        => 'custom-input',
+                                        'wrapperClass' => 'mt-2',
+                                    ]])
+                                @endif
                             </div>
                             @endforeach
                         </div>

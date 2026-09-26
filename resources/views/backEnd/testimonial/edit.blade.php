@@ -80,6 +80,7 @@
                                 </div>
                             </div>
                             @error('image')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                            @include('backEnd.partials.image-alt-field', ['altField' => ['name' => 'image_alt', 'value' => $testimonial->image_alt]])
                             <small class="text-muted d-block mt-2">Leave empty to keep the current image.</small>
                         </div>
 

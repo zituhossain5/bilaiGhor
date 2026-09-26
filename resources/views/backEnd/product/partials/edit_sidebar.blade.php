@@ -95,6 +95,8 @@
                             <button class="btn btn-success btn-increment btn-sm w-100" type="button"><i class="fa fa-plus"></i></button>
                         </div>
                     </div>
+                    {{-- image_alt[] lines up with image[] row by row (same position). --}}
+                    <input type="text" name="image_alt[]" class="form-control form-control-sm mt-1" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text — e.g. 'Orange tabby kitten eating from a bowl'">
                     @error('image')<span class="invalid-feedback"><strong>{{ $message }}</strong></span>@enderror
                 </div>
             </div>
@@ -108,16 +110,23 @@
                             <button class="btn btn-danger btn-remove-image btn-sm w-100" type="button"><i class="fa fa-trash"></i></button>
                         </div>
                     </div>
+                    <input type="text" name="image_alt[]" class="form-control form-control-sm mt-1" maxlength="255" aria-label="Image Alt Text" placeholder="Image Alt Text — e.g. 'Orange tabby kitten eating from a bowl'">
                 </div>
             </div>
-            <div class="product_img mt-1 d-flex flex-wrap">
+            <small class="text-muted d-block mt-1">Image Alt Text: describe each image — improves SEO and accessibility.</small>
+            <div class="product_img mt-2">
                 @foreach($edit_data->images->filter(fn($img) => !$img->color_id && !$img->size_id) as $image)
-                    <div class="position-relative me-1 mb-1">
-                        <img src="{{asset($image->image)}}" class="edit-image border" alt="">
-                        <a href="{{route('products.image.destroy',['id'=>$image->id])}}"
-                           class="btn btn-xs btn-danger position-absolute top-0 end-0 rounded-circle"
-                           style="padding: 0px 4px; top: -5px; right: -5px;"
-                           onclick="return confirm('Delete this image?')"><i class="mdi mdi-close"></i></a>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="position-relative flex-shrink-0">
+                            <img src="{{asset($image->image)}}" class="edit-image border" alt="{{ $image->image_alt }}">
+                            <a href="{{route('products.image.destroy',['id'=>$image->id])}}"
+                               class="btn btn-xs btn-danger position-absolute top-0 end-0 rounded-circle"
+                               style="padding: 0px 4px; top: -5px; right: -5px;"
+                               onclick="return confirm('Delete this image?')"><i class="mdi mdi-close"></i></a>
+                        </div>
+                        <input type="text" name="gallery_alt[{{ $image->id }}]" value="{{ old('gallery_alt.'.$image->id, $image->image_alt) }}"
+                               class="form-control form-control-sm" maxlength="255" aria-label="Image Alt Text"
+                               placeholder="Image Alt Text for this image">
                     </div>
                 @endforeach
             </div>
@@ -125,11 +134,16 @@
             @if($colorSizeImages->isNotEmpty())
             <div class="mt-1">
                 <label class="form-label small text-muted mb-0">Color/Size imgs</label>
-                <div class="d-flex flex-wrap gap-1 product_img">
+                <div class="product_img mt-1">
                     @foreach($colorSizeImages as $img)
-                        <div class="position-relative">
-                            <img src="{{asset($img->image)}}" class="edit-image border" alt="">
-                            <a href="{{route('products.image.destroy',['id'=>$img->id])}}" class="btn btn-xs btn-danger position-absolute top-0 end-0 rounded-circle" style="padding:0 4px;top:-5px;right:-5px;" onclick="return confirm('Delete?')"><i class="mdi mdi-close"></i></a>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="position-relative flex-shrink-0">
+                                <img src="{{asset($img->image)}}" class="edit-image border" alt="{{ $img->image_alt }}">
+                                <a href="{{route('products.image.destroy',['id'=>$img->id])}}" class="btn btn-xs btn-danger position-absolute top-0 end-0 rounded-circle" style="padding:0 4px;top:-5px;right:-5px;" onclick="return confirm('Delete?')"><i class="mdi mdi-close"></i></a>
+                            </div>
+                            <input type="text" name="gallery_alt[{{ $img->id }}]" value="{{ old('gallery_alt.'.$img->id, $img->image_alt) }}"
+                                   class="form-control form-control-sm" maxlength="255" aria-label="Image Alt Text"
+                                   placeholder="Image Alt Text for this image">
                         </div>
                     @endforeach
                 </div>

@@ -80,7 +80,7 @@
                 @if($blog->image)
                     <img src="{{ url('public/'.$blog->image) }}"
                          class="img-fluid mb-4"
-                         alt="{{ $blog->title }}">
+                         alt="{{ $blog->image_alt ?: $blog->title }}">
                 @else
                     <img src="{{ url('public/no-image.png') }}"
                          class="img-fluid mb-4"
@@ -113,7 +113,7 @@
                                 <div class="me-2">
                                     @if($rblog->image)
                                         <img src="{{ url('public/'.$rblog->image) }}"
-                                             alt="{{ $rblog->title }}">
+                                             alt="{{ $rblog->image_alt ?: $rblog->title }}">
                                     @else
                                         <img src="{{ url('public/no-image.png') }}"
                                              alt="No Image">

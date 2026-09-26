@@ -13,7 +13,7 @@
   <div class="cshort-summary">
     <ul>
     @foreach(Cart::instance('shopping')->content() as $key=>$value)
-      <li><a href=""><img src="{{asset($value->options->image)}}" alt=""></a></li>
+      <li><a href=""><img src="{{asset($value->options->image)}}" alt="{{ $value->name }}"></a></li>
       <li><a href="">{{$value->name}}</a></li>
       <li>Qty: {{$value->qty}}</li>
       <li><p>৳{{$value->price}}</p><button class="remove-cart cart_remove" data-id="{{$value->rowId}}"><i data-feather="x"></i></button></li>

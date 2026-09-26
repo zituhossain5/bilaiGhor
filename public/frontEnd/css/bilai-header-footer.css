@@ -3585,6 +3585,22 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
         font-size: 22px;
     }
 }
+/* /blogs listing page — reuses the homepage blog section and cards. */
+.bilai-blog-page {
+    padding-top: 24px;
+    min-height: 60vh;
+}
+
+.bilai-blog-page .bilai-cat-pagination {
+    margin-top: 36px;
+}
+
+.bilai-blog-empty {
+    font-family: var(--bilai-font-main);
+    font-size: 15px;
+    color: var(--bilai-text, #4f4f4f);
+    margin: 0;
+}
 /* ============================================================
    BilaiGhor Blog Section End
    ============================================================ */

@@ -200,15 +200,11 @@ class DashboardController extends Controller
     }
 
     /**
-     * লগইনের পর ড্যাশবোর্ডে নতুন অর্ডার পপআপ (সর্বোচ্চ ১০টি)
+     * ড্যাশবোর্ডে নতুন অর্ডার পপআপ — শুধু এই অ্যাডমিনের এখনও না-দেখা অর্ডার (সর্বোচ্চ ১০টি)
      */
     public function newOrdersForPopup()
     {
-        if (!AdminOrderNotification::shouldShowPopup()) {
-            return response()->json(['show' => false, 'orders' => [], 'count' => 0, 'latest_id' => (int) (Order::max('id') ?? 0)]);
-        }
-
-        $orders = Order::query()
+        $orders = AdminOrderNotification::unseenOrdersQuery(Auth::guard('admin')->user())
             ->with([
                 'shipping:id,order_id,name,phone',
                 'status:id,name',
@@ -218,7 +214,7 @@ class DashboardController extends Controller
                 'orderdetails.image',
             ])
             ->latest('id')
-            ->limit(10)
+            ->limit(AdminOrderNotification::POPUP_LIMIT)
             ->get();
 
         $mapped = $orders->map(fn (Order $order) => $this->mapOrderForNotification($order));
@@ -269,11 +265,19 @@ class DashboardController extends Controller
         ];
     }
 
-    public function dismissNewOrdersPopup()
+    /**
+     * পপআপে দেখানো অর্ডারগুলো এই অ্যাডমিনের জন্য "দেখা হয়েছে" হিসেবে চিহ্নিত করে
+     */
+    public function dismissNewOrdersPopup(Request $request)
     {
-        AdminOrderNotification::dismissPopup();
+        $validated = $request->validate([
+            'order_ids'   => ['present', 'array', 'max:' . AdminOrderNotification::POPUP_LIMIT],
+            'order_ids.*' => ['integer'],
+        ]);
 
-        return response()->json(['ok' => true]);
+        $marked = AdminOrderNotification::markSeen(Auth::guard('admin')->user(), $validated['order_ids']);
+
+        return response()->json(['ok' => true, 'marked' => $marked]);
     }
 
     public function changepassword()

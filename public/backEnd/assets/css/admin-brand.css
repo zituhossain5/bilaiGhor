@@ -107,6 +107,13 @@ body[data-topbar-color="light"] .navbar-custom {
     stroke: currentColor;
 }
 
+/* Dropdowns opened from the dark topbar sit on the light theme surface, so their icons
+   must follow the item text colour instead of the topbar's near-white icon colour. */
+.navbar-custom .dropdown-menu i,
+.navbar-custom .dropdown-menu svg {
+    color: inherit !important;
+}
+
 .navbar-custom .button-menu-mobile:hover,
 .navbar-custom .nav-link:hover,
 .navbar-custom .topnav-menu .nav-link:hover {

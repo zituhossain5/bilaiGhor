@@ -10,14 +10,14 @@
         overflow: hidden;
         box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(255,255,255,0.06) inset;
     }
+    /* admin-brand.css forces every .modal-header to the light theme surface, so the
+       header text/icons use the theme's dark heading colour (white was invisible). */
     #newOrdersModal .modal-header {
-        background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
         border: none;
         padding: 12px 14px;
         align-items: center;
     }
     #newOrdersModal .modal-header .btn-close {
-        filter: brightness(0) invert(1);
         opacity: 0.9;
         width: 0.65rem;
         height: 0.65rem;
@@ -27,7 +27,10 @@
     #newOrdersModal .modal-title,
     #newOrdersModal .modal-title span,
     #newOrdersModal .modal-title i {
-        color: #ffffff !important;
+        color: var(--bilai-admin-heading, #2a1505) !important;
+    }
+    #newOrdersModal .modal-title .nop-bell {
+        color: var(--bilai-admin-orange-dark, #c96f00) !important;
     }
     #newOrdersModal .modal-title {
         font-weight: 700;
@@ -39,8 +42,8 @@
         margin: 0;
     }
     #newOrdersModal .modal-title .nop-badge {
-        background: rgba(255, 255, 255, 0.25);
-        color: #ffffff !important;
+        background: var(--bilai-admin-orange, #e8861a);
+        color: var(--bilai-admin-heading, #2a1505) !important;
         font-size: 11px;
         font-weight: 700;
         padding: 2px 8px;
@@ -115,7 +118,7 @@
     }
     .nop-meta {
         font-size: 10px;
-        color: #94a3b8;
+        color: var(--bilai-admin-muted, #7a6a5e);
         margin-top: 1px;
         white-space: nowrap;
         overflow: hidden;
@@ -127,7 +130,7 @@
     }
     .nop-amount {
         font-weight: 700;
-        color: #059669;
+        color: #0f6b3d;
         font-size: 12px;
         white-space: nowrap;
     }
@@ -157,7 +160,7 @@
     }
     .nop-sound-hint {
         font-size: 10px;
-        color: #94a3b8;
+        color: var(--bilai-admin-muted, #7a6a5e);
         margin: 0;
         line-height: 1.3;
     }

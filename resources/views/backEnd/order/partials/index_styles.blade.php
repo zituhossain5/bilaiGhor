@@ -237,17 +237,16 @@
     .oi-paginate .pagination { flex-wrap: wrap; justify-content: center; gap: 4px; margin-bottom: 0; }
     .oi-paginate .page-link { border-radius: 8px; min-width: 38px; text-align: center; }
     .oi-modal .modal-content { border-radius: 14px; border: none; overflow: hidden; }
+    /* admin-brand.css forces every .modal-header to the light theme surface, so titles and
+       the close button stay dark (white text / inverted close icon were invisible). */
     .oi-modal .modal-header {
-        background: linear-gradient(135deg, #4f46e5, #6366f1);
-        color: #fff;
         border: none;
     }
-    .oi-modal .modal-header .btn-close { filter: brightness(0) invert(1); }
     #orderQuickViewModal .modal-header .modal-title,
     #orderQuickViewModal .modal-header .modal-title i,
     #noteModal .modal-header .modal-title,
     #noteModal .modal-header .modal-title i {
-        color: #fff !important;
+        color: var(--bilai-admin-heading, #2a1505) !important;
     }
     .oqv-notes-row {
         margin-bottom: 1.25rem;

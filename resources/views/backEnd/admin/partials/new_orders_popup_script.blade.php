@@ -33,15 +33,24 @@
         } catch (e) {}
     }
 
-    function dismissPopup() {
-        return fetch(dismissUrl, {
+    // পপআপে দেখানো অর্ডারগুলো — একবারই "দেখা হয়েছে" হিসেবে পাঠানো হয়
+    var shownOrderIds = [];
+    var acknowledged = false;
+
+    function acknowledgeShownOrders() {
+        if (acknowledged || !shownOrderIds.length) return;
+        acknowledged = true;
+        // keepalive: "প্রসেস" লিংকে ক্লিক করে পেজ ছেড়ে গেলেও রিকোয়েস্ট শেষ হবে
+        fetch(dismissUrl, {
             method: 'POST',
+            keepalive: true,
             headers: {
                 'X-CSRF-TOKEN': csrfToken,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            credentials: 'same-origin'
+            credentials: 'same-origin',
+            body: JSON.stringify({ order_ids: shownOrderIds })
         }).catch(function () {});
     }
 
@@ -95,6 +104,7 @@
             link.href = o.process_url || '#';
             link.className = 'nop-open';
             link.textContent = 'প্রসেস';
+            link.addEventListener('click', acknowledgeShownOrders);
             right.appendChild(amt);
             right.appendChild(link);
 
@@ -114,9 +124,14 @@
     function bindDismiss() {
         var el = document.getElementById('newOrdersModal');
         if (el) {
-            el.addEventListener('hidden.bs.modal', function () {
-                dismissPopup();
-            }, { once: true });
+            // বন্ধ (×) বা "বুঝেছি" — দুটোতেই মডাল লুকায়, তারপর দেখা হিসেবে চিহ্নিত হয়
+            el.addEventListener('hidden.bs.modal', acknowledgeShownOrders, { once: true });
+        }
+        var gotIt = document.getElementById('nopDismissBtn');
+        if (gotIt && el && typeof bootstrap !== 'undefined') {
+            gotIt.addEventListener('click', function () {
+                bootstrap.Modal.getOrCreateInstance(el).hide();
+            });
         }
     }
 
@@ -131,9 +146,9 @@
                 window.AdminOrderNotify.setBaseline(data.latest_id);
             }
             if (!data || !data.show || !data.orders || !data.orders.length) {
-                dismissPopup();
                 return;
             }
+            shownOrderIds = data.orders.map(function (o) { return o.id; });
             if (window.AdminOrderNotify && window.AdminOrderNotify.setBaseline) {
                 var maxId = data.latest_id || 0;
                 data.orders.forEach(function (o) {

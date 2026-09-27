@@ -31,7 +31,14 @@ class DashboardController extends Controller
         $total_delivery = Order::where('order_status', '6')->count();
 
         // ── Revenue & pending ──
-        $total_revenue     = Order::where('order_status', '6')->sum('amount');
+        // Revenue and delivery charge come from one aggregate over the same delivered
+        // orders, so Net Revenue always equals Total Revenue − Total Delivery Charge.
+        $revenueTotals = Order::where('order_status', '6')
+            ->selectRaw('COALESCE(SUM(amount), 0) as revenue, COALESCE(SUM(shipping_charge), 0) as delivery_charge')
+            ->first();
+        $total_revenue         = (float) $revenueTotals->revenue;
+        $total_delivery_charge = (float) $revenueTotals->delivery_charge;
+        $net_revenue           = $total_revenue - $total_delivery_charge;
         $pending_orders    = Order::whereNotIn('order_status', ['6','7'])->count();
         $low_stock         = Product::where('stock', '<', 10)->count();
 
@@ -140,7 +147,7 @@ class DashboardController extends Controller
 
         return view('backEnd.admin.dashboard', compact(
             'total_order', 'total_product', 'total_customer', 'total_delivery',
-            'total_revenue', 'pending_orders', 'low_stock',
+            'total_revenue', 'total_delivery_charge', 'net_revenue', 'pending_orders', 'low_stock',
             'today_order', 'today_revenue', 'today_delivered_revenue', 'today_delivery',
             'today_profit', 'trend_labels', 'trend_data',
             'statusLabels', 'statusData',

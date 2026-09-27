@@ -497,7 +497,7 @@
                     <span class="bilai-situation-btn">Find the Solution &rarr;</span>
                 </div>
             </a>
-            <a href="#" class="bilai-situation-card">
+            <!-- <a href="#" class="bilai-situation-card">
                 <div class="bilai-situation-icon">
                     <img src="{{ asset('public/frontEnd/images/catDoingIcon3.svg') }}" alt="Bored Cat" width="56" height="56" loading="lazy">
                 </div>
@@ -516,7 +516,7 @@
                     <p class="bilai-situation-desc">Grooming brushes, shampoo, everything you need to keep your bilai clean.</p>
                     <span class="bilai-situation-btn">See Grooming Kits &rarr;</span>
                 </div>
-            </a>
+            </a> -->
         </div>
     </div>
 </section>
@@ -671,9 +671,9 @@
             <img src="{{ asset('public/frontEnd/images/bilaiparaImg1.png') }}" alt="Cat parent with cats" loading="lazy">
             <img src="{{ asset('public/frontEnd/images/bilaiparaImg2.png') }}" alt="Cat parent with cats" loading="lazy">
         </div>
-        <div class="bilai-why-cta">
+        <!-- <div class="bilai-why-cta">
             <a href="#" class="bilai-why-btn">Visit Our Bilai Para &rarr;</a>
-        </div>
+        </div> -->
     </div>
 </section>
 

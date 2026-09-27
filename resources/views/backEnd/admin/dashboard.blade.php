@@ -15,7 +15,7 @@
 .dash-top-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 16px; }
 
 /* ─── Stat cards ─── */
-.stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 20px; }
+.stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 20px; }
 @media(max-width:1100px){ .stat-grid { grid-template-columns: repeat(2,1fr); } }
 @media(max-width:540px) { .stat-grid { grid-template-columns: 1fr 1fr; gap:12px; } }
 
@@ -325,6 +325,28 @@ table.clean tbody tr:hover td { background: #fafafa; }
                 <div class="sc-label">Total Revenue</div>
                 <div class="sc-val">৳{{ number_format($total_revenue) }}</div>
                 <div class="sc-note">{{ $total_delivery }} delivered</div>
+            </div>
+        </div>
+
+        <div class="sc">
+            <div class="sc-ico" style="background:#eef2ff;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            </div>
+            <div>
+                <div class="sc-label">Total Delivery Charge</div>
+                <div class="sc-val">৳{{ number_format($total_delivery_charge) }}</div>
+                <div class="sc-note">From {{ $total_delivery }} delivered orders</div>
+            </div>
+        </div>
+
+        <div class="sc">
+            <div class="sc-ico" style="background:#ecfdf5;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+            </div>
+            <div>
+                <div class="sc-label">Net Revenue (excl. Delivery)</div>
+                <div class="sc-val">৳{{ number_format($net_revenue) }}</div>
+                <div class="sc-note">Revenue after removing delivery charges</div>
             </div>
         </div>
 

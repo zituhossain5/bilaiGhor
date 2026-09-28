@@ -106,6 +106,7 @@ $brands = Brand::where('status', 1)
 	 ->limit(12)
     ->get();
     $blogs = Blog::where('status', 1)
+        ->withCount('approvedComments')
         ->latest()
         ->limit(3)
         ->get();

@@ -185,6 +185,8 @@
                             @enderror
                         </div>
 
+                        @include('backEnd.blog.partials.slug-field')
+
                         <div class="form-group mb-4">
                             <label class="form-label">Short Description</label>
                             <textarea name="short_description" class="form-control" rows="3" 

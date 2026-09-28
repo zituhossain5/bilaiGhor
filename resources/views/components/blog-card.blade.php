@@ -15,7 +15,8 @@
             </div>
             <div class="bilai-blog-img-actions">
                 <span><i class="fas fa-share-alt"></i></span>
-                <span><i class="far fa-comment"></i> {{ $blog->views ?? 0 }}</span>
+                <span title="Views"><i class="far fa-eye"></i> {{ $blog->views ?? 0 }}</span>
+                <span title="Comments"><i class="far fa-comment"></i> {{ $blog->approved_comments_count ?? $blog->approvedComments()->count() }}</span>
             </div>
         </div>
     </a>

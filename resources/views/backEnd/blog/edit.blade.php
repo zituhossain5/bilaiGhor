@@ -181,6 +181,8 @@
                                    value="{{ $blog->title }}" required>
                         </div>
 
+                        @include('backEnd.blog.partials.slug-field', ['blog' => $blog])
+
                         <div class="form-group mb-4">
                             <label class="form-label">Short Description</label>
                             <textarea name="short_description" class="form-control" rows="3">{{ $blog->short_description }}</textarea>

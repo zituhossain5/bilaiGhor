@@ -45,5 +45,13 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        // Public blog comment form: at most 3 per minute and 10 per hour from one IP.
+        RateLimiter::for('blog-comments', function (Request $request) {
+            return [
+                Limit::perMinute(3)->by('blog-comments:m:' . $request->ip()),
+                Limit::perHour(10)->by('blog-comments:h:' . $request->ip()),
+            ];
+        });
     }
 }

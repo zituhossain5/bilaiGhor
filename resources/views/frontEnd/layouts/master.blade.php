@@ -16,7 +16,6 @@
         <!-- App favicon -->
         <link rel="shortcut icon" href="{{asset($generalsetting->favicon)}}" alt="Super Ecommerce Favicon" />
         <meta name="author" content="Super Ecommerce" />
-        <link rel="canonical" href="" />
         @stack('seo') 
         @stack('css')
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/bootstrap.min.css')}}" />

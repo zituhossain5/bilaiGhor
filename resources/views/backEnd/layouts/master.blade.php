@@ -375,10 +375,17 @@
 
 {{-- ЁЯУЭ Blog Management --}}
 @canany(['blog-list','blog-create','blog-edit','blog-delete'])
+@php
+    // rescue(): never let the menu badge break the admin panel (e.g. before the migration runs).
+    $blogPendingComments = rescue(fn () => \App\Models\BlogComment::where('status', 'pending')->where('is_admin', false)->count(), 0, false);
+@endphp
 <li>
     <a href="#sidebar-blog" data-bs-toggle="collapse">
         <i data-feather="edit"></i>
         <span> Blog </span>
+        @if($blogPendingComments > 0)
+          <span class="badge bg-danger rounded-pill float-end me-2">{{ $blogPendingComments }}</span>
+        @endif
         <span class="menu-arrow"></span>
     </a>
 
@@ -398,6 +405,18 @@
                 <a href="{{ route('admin.blog.create') }}">
                     <i data-feather="plus-circle"></i>
                     Add New Blog
+                </a>
+            </li>
+            @endcan
+
+            @can('blog-list')
+            <li>
+                <a href="{{ route('admin.blog_comments.index') }}">
+                    <i data-feather="message-square"></i>
+                    Blog Comments
+                    @if($blogPendingComments > 0)
+                      <span class="badge bg-danger rounded-pill float-end">{{ $blogPendingComments }}</span>
+                    @endif
                 </a>
             </li>
             @endcan

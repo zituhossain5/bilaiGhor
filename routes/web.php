@@ -78,6 +78,7 @@ use App\Http\Controllers\Admin\FacebookPageController;
 use App\Http\Controllers\Frontend\ContactMessageController as FrontendContactMessageController;
 use App\Http\Controllers\Frontend\BlogController;
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
+use App\Http\Controllers\Admin\BlogCommentController as AdminBlogCommentController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
 use App\Http\Controllers\Admin\KittenPackController as AdminKittenPackController;
 use App\Http\Controllers\Admin\PopupController;
@@ -280,6 +281,9 @@ Route::get('/digital-download/{token}', [DigitalDownloadController::class, 'down
 /* Blog Frontend */
 Route::get('/blogs', [BlogController::class, 'index'])->name('blogs');
 Route::get('/blog/{slug}', [BlogController::class, 'details'])->name('blog.details');
+Route::post('/blog/{slug}/comments', [BlogController::class, 'storeComment'])
+    ->middleware('throttle:blog-comments')
+    ->name('blog.comments.store');
 
 
 // Vendor protected routes
@@ -414,24 +418,40 @@ Route::prefix('admin')
     ->name('admin.')
     ->group(function () {
 
-        // Blog Management
-        Route::get('/blogs', [AdminBlogController::class, 'index'])
-            ->name('blog.index');
+        // Blog Management — same protection as the main admin panel (the outer group's plain
+        // `auth` also lets logged-in vendors/resellers through).
+        Route::middleware(['auth:admin', 'admin', 'admin_license', 'lock', 'check_refer'])->group(function () {
+            Route::get('/blogs', [AdminBlogController::class, 'index'])
+                ->name('blog.index');
 
-        Route::get('/blog/create', [AdminBlogController::class, 'create'])
-            ->name('blog.create');
+            Route::get('/blog/create', [AdminBlogController::class, 'create'])
+                ->name('blog.create');
 
-        Route::post('/blog/store', [AdminBlogController::class, 'store'])
-            ->name('blog.store');
+            Route::post('/blog/store', [AdminBlogController::class, 'store'])
+                ->name('blog.store');
 
-        Route::get('/blog/edit/{id}', [AdminBlogController::class, 'edit'])
-            ->name('blog.edit');
+            Route::get('/blog/edit/{id}', [AdminBlogController::class, 'edit'])
+                ->name('blog.edit');
 
-        Route::post('/blog/update/{id}', [AdminBlogController::class, 'update'])
-            ->name('blog.update');
+            Route::post('/blog/update/{id}', [AdminBlogController::class, 'update'])
+                ->name('blog.update');
 
-        Route::get('/blog/delete/{id}', [AdminBlogController::class, 'delete'])
-            ->name('blog.delete');
+            Route::get('/blog/delete/{id}', [AdminBlogController::class, 'delete'])
+                ->name('blog.delete');
+
+            Route::get('/blog/slug-preview', [AdminBlogController::class, 'slugPreview'])
+                ->name('blog.slug_preview');
+
+            // Blog comment moderation
+            Route::get('/blog-comments', [AdminBlogCommentController::class, 'index'])
+                ->name('blog_comments.index');
+            Route::post('/blog-comments/{comment}/status', [AdminBlogCommentController::class, 'updateStatus'])
+                ->name('blog_comments.status');
+            Route::post('/blog-comments/{comment}/reply', [AdminBlogCommentController::class, 'reply'])
+                ->name('blog_comments.reply');
+            Route::post('/blog-comments/{comment}/delete', [AdminBlogCommentController::class, 'destroy'])
+                ->name('blog_comments.destroy');
+        });
 
         // Testimonial Management
         Route::get('/testimonials', [AdminTestimonialController::class, 'index'])

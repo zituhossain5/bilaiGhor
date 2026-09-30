@@ -29,7 +29,7 @@
                     <div class="bilai-search-packs-list">
                         @foreach($packs as $pack)
                         <a class="bilai-search-pack" href="{{ route('kitten.packs') }}#kitten-pack-{{ $pack->id }}">
-                            <img src="{{ $pack->image ? asset('public/'.$pack->image) : asset('public/no-image.png') }}"
+                            <img src="{{ $pack->image ? asset('public/'.$pack->image) : asset('public/uploads/default/no-image.png') }}"
                                  alt="{{ $pack->image_alt ?: $pack->name }}" loading="lazy">
                             <span class="bilai-search-pack-name">{{ $pack->name }}</span>
                             <span class="bilai-search-pack-price">&#2547;{{ number_format($pack->price, 0) }}</span>

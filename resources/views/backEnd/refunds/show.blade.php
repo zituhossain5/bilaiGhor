@@ -102,8 +102,8 @@
                                 @endphp
                                 <tr>
                                     <td>
-                                        <img src="{{ $img ? asset($img) : asset('public/no-image.png') }}" alt="" class="rf-product-thumb"
-                                             onerror="this.src='{{ asset('public/no-image.png') }}'">
+                                        <img src="{{ $img ? asset($img) : asset('public/uploads/default/no-image.png') }}" alt="" class="rf-product-thumb"
+                                             onerror="this.onerror=null;this.src='{{ asset('public/uploads/default/no-image.png') }}'">
                                     </td>
                                     <td><span class="fw-semibold">{{ $item->product_name }}</span></td>
                                     <td class="text-center">{{ $item->qty }}</td>

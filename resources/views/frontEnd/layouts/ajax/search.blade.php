@@ -6,7 +6,7 @@
 		<a href="{{ route('kitten.packs') }}#kitten-pack-{{ $pack->id }}">
 			<li>
 					<div class="search_img">
-						<img src="{{ $pack->image ? asset('public/'.$pack->image) : asset('public/no-image.png') }}" alt="{{ $pack->image_alt ?: $pack->name }}">
+						<img src="{{ $pack->image ? asset('public/'.$pack->image) : asset('public/uploads/default/no-image.png') }}" alt="{{ $pack->image_alt ?: $pack->name }}">
 					</div>
 					<div class="search_content">
 						<p class="name">{{ $pack->name }} <span class="bilai-search-tag">Kitten Pack</span></p>

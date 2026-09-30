@@ -17,7 +17,7 @@
             </button>
 
             <div class="bilai-kp-card-image">
-                <img src="{{ $pack->image ? asset('public/'.$pack->image) : asset('public/no-image.png') }}"
+                <img src="{{ $pack->image ? asset('public/'.$pack->image) : asset('public/uploads/default/no-image.png') }}"
                      alt="{{ $pack->image_alt ?: $pack->name }}" loading="lazy">
             </div>
 

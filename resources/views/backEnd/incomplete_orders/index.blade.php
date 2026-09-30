@@ -123,9 +123,10 @@
                                                                     $img = asset(ltrim($img, '/'));
                                                                 }
                                                             @endphp
-                                                            <img src="{{ $img ?: asset('public/no-image.png') }}"
-                                                                 alt="" class="io-item-thumb"
-                                                                 onerror="this.src='{{ asset('public/no-image.png') }}'">
+                                                            {{-- onerror clears itself so a missing fallback can never retry forever --}}
+                                                            <img src="{{ $img ?: asset('public/uploads/default/no-image.png') }}"
+                                                                 alt="" class="io-item-thumb" loading="lazy"
+                                                                 onerror="this.onerror=null;this.src='{{ asset('public/uploads/default/no-image.png') }}'">
                                                         </td>
                                                         <td>{{ \Illuminate\Support\Str::limit($it['name'] ?? 'পণ্য', 60) }}</td>
                                                         <td>×{{ $it['qty'] ?? 1 }}</td>

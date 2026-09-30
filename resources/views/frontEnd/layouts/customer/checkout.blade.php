@@ -418,12 +418,13 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 .checkout-location-fields .select2-container {
     width: 100% !important;
 }
+/* !important: the shared frontend styles force every Select2 box to 40px / 4px / grey with !important. */
 .checkout-location-fields .select2-container--default .select2-selection--single {
     display: flex;
     align-items: center;
-    height: 64px;
-    border: 1px solid var(--co-border);
-    border-radius: 10px;
+    height: 64px !important;
+    border: 1px solid var(--co-border) !important;
+    border-radius: 10px !important;
     background-color: var(--co-page);
     outline: none;
     transition: border-color 0.18s, box-shadow 0.18s;
@@ -452,7 +453,7 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
 }
 .checkout-location-fields .select2-container--default.select2-container--focus .select2-selection--single,
 .checkout-location-fields .select2-container--default.select2-container--open .select2-selection--single {
-    border-color: var(--co-primary);
+    border-color: var(--co-primary) !important;
     box-shadow: 0 0 0 3px rgba(242, 140, 0, 0.10);
 }
 .checkout-location-fields .select2-container--default.select2-container--disabled .select2-selection--single {
@@ -463,7 +464,12 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
     color: var(--co-disabled);
 }
 
-/* Open dropdown: rounded card with a search field and roomy options. */
+/* Open dropdown: rounded card with a search field and roomy options.
+   z-index 400 keeps it under the sticky site header (500) instead of Select2's default 1051. */
+.checkout-location-fields .select2-container--open,
+.checkout-location-fields .select2-dropdown {
+    z-index: 400;
+}
 .checkout-location-fields .select2-dropdown {
     overflow: hidden;
     border: 1px solid var(--co-border) !important;
@@ -2211,6 +2217,18 @@ $(function () {
             dropdownParent: $('.checkout-location-fields'),
             // The empty "Select District/Thana" option stays as the box label, not a list row.
             templateResult: function (option) { return option.id === '' ? null : option.text; }
+        }
+    });
+
+    // Select2 flips the list upward when the field is low on screen, which runs it into the
+    // sticky header. Scroll just enough first that the list fits below the field.
+    $('#checkout_district, #checkout_thana').on('select2:opening', function () {
+        var box = $(this).next('.select2-container')[0];
+        if (!box) return;
+        var roomNeeded = 360; // search field + list height + a small gap
+        var shortBy = box.getBoundingClientRect().bottom + roomNeeded - window.innerHeight;
+        if (shortBy > 0) {
+            window.scrollTo({ top: window.pageYOffset + shortBy, behavior: 'instant' });
         }
     });
 

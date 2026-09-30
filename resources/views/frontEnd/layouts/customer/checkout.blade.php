@@ -407,6 +407,119 @@ textarea.form-control-custom { height: auto; padding: 12px 14px; line-height: 1.
     margin-bottom: 30px !important;
 }
 
+/* District / Thana are searchable Select2 boxes — dressed to match the native Division select. */
+.checkout-location-fields {
+    position: relative; /* anchors the Select2 dropdown (dropdownParent) */
+}
+/* The card clips its content for the rounded corners; let an open dropdown spill past it. */
+.checkout-card:has(.checkout-location-fields .select2-container--open) {
+    overflow: visible;
+}
+.checkout-location-fields .select2-container {
+    width: 100% !important;
+}
+.checkout-location-fields .select2-container--default .select2-selection--single {
+    display: flex;
+    align-items: center;
+    height: 64px;
+    border: 1px solid var(--co-border);
+    border-radius: 10px;
+    background-color: var(--co-page);
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s;
+}
+.checkout-location-fields .select2-container--default .select2-selection--single .select2-selection__rendered {
+    width: 100%;
+    padding-left: 20px;
+    padding-right: 56px;
+    color: var(--co-text);
+    font-size: 16px;
+    line-height: 24px;
+}
+.checkout-location-fields .select2-container--default .select2-selection--single .select2-selection__arrow {
+    top: 0;
+    right: 20px;
+    width: 24px;
+    height: 100%;
+    background: url("{{ asset('public/uploads/checkout-arrow-figma.svg') }}") no-repeat center / 24px 24px;
+    transition: transform 0.2s;
+}
+.checkout-location-fields .select2-container--default .select2-selection--single .select2-selection__arrow b {
+    display: none;
+}
+.checkout-location-fields .select2-container--default.select2-container--open .select2-selection__arrow {
+    transform: rotate(180deg);
+}
+.checkout-location-fields .select2-container--default.select2-container--focus .select2-selection--single,
+.checkout-location-fields .select2-container--default.select2-container--open .select2-selection--single {
+    border-color: var(--co-primary);
+    box-shadow: 0 0 0 3px rgba(242, 140, 0, 0.10);
+}
+.checkout-location-fields .select2-container--default.select2-container--disabled .select2-selection--single {
+    background-color: #f7f2ea;
+    cursor: not-allowed;
+}
+.checkout-location-fields .select2-container--default.select2-container--disabled .select2-selection__rendered {
+    color: var(--co-disabled);
+}
+
+/* Open dropdown: rounded card with a search field and roomy options. */
+.checkout-location-fields .select2-dropdown {
+    overflow: hidden;
+    border: 1px solid var(--co-border) !important;
+    border-radius: 12px !important;
+    background: #fff;
+    box-shadow: 0 14px 34px rgba(58, 31, 15, 0.14);
+}
+.checkout-location-fields .select2-dropdown--below {
+    margin-top: 6px;
+}
+.checkout-location-fields .select2-dropdown--above {
+    margin-top: -6px;
+}
+.checkout-location-fields .select2-search--dropdown {
+    padding: 12px 12px 8px;
+}
+.checkout-location-fields .select2-container--default .select2-search--dropdown .select2-search__field {
+    height: 44px;
+    padding: 0 14px 0 40px;
+    border: 1px solid var(--co-border);
+    border-radius: 8px;
+    background: var(--co-page) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2377706A' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 14px center / 16px 16px;
+    color: var(--co-text);
+    font-size: 15px;
+    outline: none;
+}
+.checkout-location-fields .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    border-color: var(--co-primary);
+}
+.checkout-location-fields .select2-results > .select2-results__options {
+    max-height: 260px;
+    padding: 0 6px 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--co-border) transparent;
+}
+.checkout-location-fields .select2-container--default .select2-results__option {
+    margin: 2px 0;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: var(--co-text);
+    font-size: 15px;
+    line-height: 22px;
+}
+.checkout-location-fields .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background: #fff1dc;
+    color: var(--co-brown);
+}
+.checkout-location-fields .select2-container--default .select2-results__option--selected {
+    background: var(--co-cream);
+    color: var(--co-primary-dark);
+    font-weight: 600;
+}
+.checkout-location-fields .select2-container--default .select2-results__message {
+    color: var(--co-muted);
+}
+
 .checkout-card:first-child .card-body-custom > .row > .col-12:not(.checkout-address-field):not(.checkout-location-row) {
     order: 4;
 }
@@ -2092,7 +2205,13 @@ $(function () {
         district:     '#checkout_district',
         thana:        '#checkout_thana',
         selectedThana: PF.thana_id || null,
-        fresh:        true
+        fresh:        true,
+        select2: {
+            // Open inside the location row so the checkout-only dropdown styles apply.
+            dropdownParent: $('.checkout-location-fields'),
+            // The empty "Select District/Thana" option stays as the box label, not a list row.
+            templateResult: function (option) { return option.id === '' ? null : option.text; }
+        }
     });
 
     // Apply the selected Thana's authoritative delivery charge.

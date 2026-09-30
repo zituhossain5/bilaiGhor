@@ -1841,6 +1841,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return parseFloat($('#checkout_thana option:selected').attr('data-charge')) || 0;
         }
 
+        // Every District option as rendered by the server, captured once.
+        var $allDistrictOptions = null;
+
+        // Rebuild the District list for the chosen Division. The options are replaced rather
+        // than hidden: the District box is a Select2 dropdown, which ignores hidden options.
         function syncCheckoutDistrictOptions(clearDistrict) {
             var $division = $('#checkout_division');
             var $district = $('#checkout_district');
@@ -1848,25 +1853,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            var divisionId = String($division.val() || '');
-            var currentDistrictVisible = true;
-            $district.find('option').each(function () {
-                var $opt = $(this);
-                if (!$opt.val()) {
-                    $opt.prop('disabled', false).show();
-                    return;
-                }
-                var matches = !divisionId || String($opt.data('division') || '') === divisionId;
-                $opt.prop('disabled', !matches).toggle(matches);
-                if ($opt.is(':selected') && !matches) {
-                    currentDistrictVisible = false;
-                }
-            });
-
-            if (clearDistrict || !currentDistrictVisible) {
-                $district.val('');
-                $('#checkout_thana').html('<option value="">Select Thana</option>').prop('disabled', true);
+            if (!$allDistrictOptions) {
+                $allDistrictOptions = $district.find('option').clone();
             }
+
+            var divisionId = String($division.val() || '');
+            var current = String($district.val() || '');
+
+            $district.empty().append($allDistrictOptions.filter(function () {
+                return !this.value || !divisionId || String($(this).data('division') || '') === divisionId;
+            }).clone());
+
+            var currentStillListed = current !== '' && $district.find('option').filter(function () {
+                return this.value === current;
+            }).length > 0;
+
+            if (clearDistrict || !currentStillListed) {
+                $district.val('');
+                $('#checkout_thana').html('<option value="">Select Thana</option>')
+                    .prop('disabled', true).trigger('change.select2');
+            } else {
+                $district.val(current);
+            }
+            $district.trigger('change.select2');
         }
 
         // Reward discount currently applied (display only — server recomputes on submit).
@@ -2274,7 +2283,13 @@ $(function () {
         var $dist = $('#checkout_district'), $thana = $('#checkout_thana');
         if (!$dist.length || !distId) return;
 
-        var divisionId = String($dist.find('option[value="' + distId + '"]').data('division') || '');
+        var $opt = $dist.find('option[value="' + distId + '"]');
+        if (!$opt.length && $('#checkout_division').length) {
+            // Another Division is chosen, so this District is not listed — list them all again.
+            $('#checkout_division').val('').trigger('change');
+            $opt = $dist.find('option[value="' + distId + '"]');
+        }
+        var divisionId = String($opt.data('division') || '');
         if (divisionId && $('#checkout_division').length) {
             $('#checkout_division').val(divisionId).trigger('change');
         }

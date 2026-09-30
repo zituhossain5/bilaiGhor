@@ -36,7 +36,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Mochiy+Pop+One&display=swap">
         {{-- BilaiGhor Figma — header & footer CSS --}}
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=52">
+        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=54">
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/main.css')}}" />
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-container-system.css')}}?v=2" />
         @stack('css_after')
@@ -1969,36 +1969,39 @@ window.addEventListener('pageshow', function (e) {
         </script>
         <!-- cart js end -->
         <script>
-            $(".search_click").on("keyup change", function () {
-                var keyword = $(".search_keyword").val();
-                $.ajax({
-                    type: "GET",
-                    data: { keyword: keyword },
-                    url: "{{route('livesearch')}}",
-                    success: function (products) {
-                        if (products) {
-                            $(".search_result").html(products);
-                        } else {
-                            $(".search_result").empty();
-                        }
-                    },
-                });
-            });
-            $(".msearch_click").on("keyup change", function () {
-                var keyword = $(".msearch_keyword").val();
-                $.ajax({
-                    type: "GET",
-                    data: { keyword: keyword },
-                    url: "{{route('livesearch')}}",
-                    success: function (products) {
-                        if (products) {
+            // Search-as-you-type: wait until typing pauses, and drop replies to superseded keystrokes.
+            var liveSearchTimer = null;
+            var liveSearchRequest = null;
+            function bilaiLiveSearch(keyword) {
+                clearTimeout(liveSearchTimer);
+                keyword = $.trim(keyword);
+                if (!keyword) {
+                    if (liveSearchRequest) { liveSearchRequest.abort(); }
+                    $(".search_result").empty();
+                    return;
+                }
+                liveSearchTimer = setTimeout(function () {
+                    if (liveSearchRequest) { liveSearchRequest.abort(); }
+                    liveSearchRequest = $.ajax({
+                        type: "GET",
+                        data: { keyword: keyword },
+                        url: "{{route('livesearch')}}",
+                        success: function (products) {
                             $("#loading").hide();
-                            $(".search_result").html(products);
-                        } else {
-                            $(".search_result").empty();
-                        }
-                    },
-                });
+                            if ($.trim(products)) {
+                                $(".search_result").html(products);
+                            } else {
+                                $(".search_result").empty();
+                            }
+                        },
+                    });
+                }, 250);
+            }
+            $(".search_click").on("input change", function () {
+                bilaiLiveSearch($(".search_keyword").val());
+            });
+            $(".msearch_click").on("input change", function () {
+                bilaiLiveSearch($(".msearch_keyword").val());
             });
         </script>
         <!-- search js start -->

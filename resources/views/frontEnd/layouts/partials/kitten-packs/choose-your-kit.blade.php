@@ -7,7 +7,7 @@
 
     <div class="bilai-kp-grid">
         @foreach($packs as $pack)
-        <article class="bilai-kp-card {{ $pack->is_dark ? 'is-dark' : '' }}">
+        <article class="bilai-kp-card {{ $pack->is_dark ? 'is-dark' : '' }}" id="kitten-pack-{{ $pack->id }}">
             @if($pack->badge)
             <span class="bilai-kp-card-badge">{{ $pack->badge }}</span>
             @endif

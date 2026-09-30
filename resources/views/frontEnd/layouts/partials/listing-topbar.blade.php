@@ -1,5 +1,5 @@
 {{-- Shared listing top bar: result count + sort dropdown (preserves all other query params).
-     Expects: $products (paginator). --}}
+     Expects: $products (paginator). Optional: $relevanceSort (search page — adds a default "Best match"). --}}
 <div class="bilai-cat-topbar">
     <p class="bilai-cat-count">
         @if($products->total() > 0)
@@ -20,6 +20,9 @@
             @endif
         @endforeach
         <select name="sort" class="bilai-cat-sort-select" id="bilaiSortSelect">
+            @if(!empty($relevanceSort))
+            <option value="0" @if(!request('sort')) selected @endif>Best match</option>
+            @endif
             <option value="1" @if(request('sort')==1) selected @endif>Sort by Latest</option>
             <option value="2" @if(request('sort')==2) selected @endif>Oldest First</option>
             <option value="3" @if(request('sort')==3) selected @endif>Price: High to Low</option>

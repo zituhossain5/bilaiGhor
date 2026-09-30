@@ -46,6 +46,9 @@ use App\Models\Testimonial;
 use App\Models\KittenPack;
 use App\Models\KittenPackAddon;
 use App\Helpers\KittenPackCart;
+use App\Models\SearchMiss;
+use App\Services\ProductSearchService;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -847,7 +850,7 @@ $brands = Brand::where('status', 1)
         $flavors = ProductFlavor::whereIn('id', $flavorCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
 
         $products = Product::where($shopBase)
-            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'sold', 'stock', 'is_digital', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
             ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'brand']);
 
         if ($request->sort == 1) {
@@ -963,7 +966,7 @@ $brands = Brand::where('status', 1)
         $flavors = ProductFlavor::whereIn('id', $flavorCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
 
         $products = Product::where($catBase)
-            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id', 'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id', 'sold', 'stock', 'is_digital', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
             ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'subcategory', 'brand']);
 
         if ($request->sort == 1) {
@@ -1059,7 +1062,7 @@ $brands = Brand::where('status', 1)
         // Build product query
         $products = Product::where($subBase)
             ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id',
-                     'sold', 'stock', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
+                     'sold', 'stock', 'is_digital', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
             ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'subcategory', 'brand']);
 
         // Sort
@@ -1208,41 +1211,63 @@ $brands = Brand::where('status', 1)
         }
     }
 
-    public function livesearch(Request $request)
+    /** Header search-as-you-type dropdown: the best few products and packs. */
+    public function livesearch(Request $request, ProductSearchService $search)
     {
-        $products = Product::select('id', 'name', 'slug', 'new_price', 'old_price','stock')
-            ->where('status', 1)
-            ->where('approval_status', 'approved')
-            ->with('image');
-        if ($request->keyword) {
-            $products = $products->where('name', 'LIKE', '%' . $request->keyword . "%");
-        }
-        if ($request->category) {
-            $products = $products->where('category_id', $request->category);
-        }
-        $products = $products->get();
+        $keyword = trim((string) $request->keyword);
+        $products = [];
+        $packs = collect();
 
-        if (empty($request->category) && empty($request->keyword)) {
-            $products = [];
+        if ($keyword !== '') {
+            $result = $search->search($keyword, $request->integer('category') ?: null, 8);
+            $packs = $result['packs']->take(3);
+            $products = Product::select('id', 'name', 'slug', 'new_price', 'old_price', 'stock', 'is_digital')
+                ->whereIn('id', $result['product_ids'])
+                ->with('image')
+                ->get()
+                ->sortBy(fn ($product) => array_search($product->id, $result['product_ids']))
+                ->values();
         }
-        return view('frontEnd.layouts.ajax.search', compact('products'));
+
+        return view('frontEnd.layouts.ajax.search', compact('products', 'packs', 'keyword'));
     }
 
-    public function search(Request $request)
+    public function search(Request $request, ProductSearchService $search)
     {
+        $keyword = trim((string) $request->keyword);
+        $categoryId = $request->integer('category') ?: null;
+        $packs = collect();
+
         $products = Product::select(
                 'id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id',
-                'sold', 'stock', 'product_badge'
+                'sold', 'stock', 'is_digital', 'product_badge'
             )
             ->where('status', 1)
             ->where('approval_status', 'approved')
             ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'subcategory']);
 
-        if ($request->keyword) {
-            $products = $products->where('name', 'LIKE', '%' . $request->keyword . "%");
-        }
-        if ($request->category) {
-            $products = $products->where('category_id', $request->category);
+        if ($keyword !== '') {
+            $result = $search->search($keyword, $categoryId);
+            $ids = $result['product_ids'];
+            $packs = $result['packs'];
+            $products->whereIn('id', $ids);
+
+            // Default order is relevance; the sort dropdown still overrides it.
+            if (!in_array((int) $request->sort, [1, 2, 3, 4, 5, 6], true)) {
+                $page = LengthAwarePaginator::resolveCurrentPage();
+                $pageIds = array_slice($ids, ($page - 1) * 24, 24);
+                $items = (clone $products)->whereIn('id', $pageIds)->get()
+                    ->sortBy(fn ($product) => array_search($product->id, $pageIds))
+                    ->values();
+
+                $products = (new LengthAwarePaginator($items, count($ids), 24, $page, [
+                    'path' => $request->url(),
+                ]))->withQueryString();
+
+                return $this->searchResults($request, $search, $products, $packs, $keyword);
+            }
+        } elseif ($categoryId) {
+            $products->where('category_id', $categoryId);
         }
 
         if ($request->sort == 2) {
@@ -1260,9 +1285,42 @@ $brands = Brand::where('status', 1)
         }
 
         $products = $products->paginate(24)->withQueryString();
-        $keyword = $request->keyword;
 
-        return view('frontEnd.layouts.pages.search', compact('products', 'keyword'));
+        return $this->searchResults($request, $search, $products, $packs, $keyword);
+    }
+
+    /**
+     * Render the search page. A keyword that found nothing is logged for admins and gets
+     * a "did you mean" plus popular categories instead of a bare empty page.
+     */
+    private function searchResults(Request $request, ProductSearchService $search, $products, $packs, string $keyword)
+    {
+        $suggestion = null;
+        $popularCategories = collect();
+
+        if ($keyword !== '' && $products->total() === 0 && $packs->isEmpty()) {
+            if ($products->currentPage() === 1) {
+                SearchMiss::record($keyword);
+            }
+            $suggestion = $search->suggest($keyword);
+            $popularCategories = Category::select('id', 'name', 'slug')
+                ->where('status', 1)
+                ->where('parent_id', 0)
+                ->withCount(['homeproducts as active_products_count' => fn ($query) => $query
+                    ->where('status', 1)
+                    ->where('approval_status', 'approved')])
+                ->having('active_products_count', '>', 0)
+                ->orderByDesc('active_products_count')
+                ->limit(6)
+                ->get();
+        }
+
+        // Packs link to their own page, so they are only shown alongside the first page of products.
+        if ($products->currentPage() > 1) {
+            $packs = collect();
+        }
+
+        return view('frontEnd.layouts.pages.search', compact('products', 'packs', 'keyword', 'suggestion', 'popularCategories'));
     }
 
     public function shipping_charge(Request $request)

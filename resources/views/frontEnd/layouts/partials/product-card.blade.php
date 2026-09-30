@@ -18,6 +18,8 @@
             : rtrim(rtrim(number_format($price, 2, '.', ','), '0'), '.');
     };
     $cardCategoryName = optional($value->subcategory)->subcategoryName ?: optional($value->category)->name;
+    // Only when stock was loaded — a query that skipped the column must not mark everything sold out.
+    $isSoldOut = array_key_exists('stock', $value->getAttributes()) && !$value->is_digital && (int) $value->stock <= 0;
 @endphp
 <div class="bilai-product-card">
     <div class="bilai-product-top">
@@ -30,7 +32,10 @@
             <i class="far fa-heart"></i>
         </button>
     </div>
-    <div class="bilai-product-image">
+    <div class="bilai-product-image @if($isSoldOut) is-sold-out @endif">
+        @if($isSoldOut)
+        <span class="bilai-card-soldout">Sold out</span>
+        @endif
         <a href="{{ route('product', $value->slug) }}">
             <img src="{{ asset($value->image ? $value->image->image : '') }}"
                  alt="{{ optional($value->image)->image_alt ?: $value->name }}"

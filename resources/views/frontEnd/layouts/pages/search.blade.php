@@ -21,7 +21,23 @@
 
         <div class="bilai-cat-layout bilai-cat-layout--products-only">
             <main class="bilai-cat-main">
-                @include('frontEnd.layouts.partials.listing-topbar')
+                @include('frontEnd.layouts.partials.listing-topbar', ['relevanceSort' => $keyword !== ''])
+
+                @if($packs->isNotEmpty())
+                <div class="bilai-search-packs">
+                    <p class="bilai-search-packs-title">Kitten Packs</p>
+                    <div class="bilai-search-packs-list">
+                        @foreach($packs as $pack)
+                        <a class="bilai-search-pack" href="{{ route('kitten.packs') }}#kitten-pack-{{ $pack->id }}">
+                            <img src="{{ $pack->image ? asset('public/'.$pack->image) : asset('public/no-image.png') }}"
+                                 alt="{{ $pack->image_alt ?: $pack->name }}" loading="lazy">
+                            <span class="bilai-search-pack-name">{{ $pack->name }}</span>
+                            <span class="bilai-search-pack-price">&#2547;{{ number_format($pack->price, 0) }}</span>
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
 
                 @if($products->count() > 0)
                 <div class="bilai-cat-grid">
@@ -29,10 +45,25 @@
                         @include('frontEnd.layouts.partials.product-card', ['value' => $value, 'key' => $key])
                     @endforeach
                 </div>
-                @else
+                @elseif($packs->isEmpty())
                 <div class="bilai-cat-empty">
                     <i class="fas fa-search"></i>
                     <p>No products found for "{{ $keyword }}".</p>
+                    @if($suggestion)
+                    <p class="bilai-search-suggest">
+                        Did you mean <a href="{{ route('search', ['keyword' => $suggestion]) }}">{{ $suggestion }}</a>?
+                    </p>
+                    @endif
+                    @if($popularCategories->isNotEmpty())
+                    <div class="bilai-search-popular">
+                        <p>Browse popular categories</p>
+                        <div class="bilai-search-popular-list">
+                            @foreach($popularCategories as $category)
+                            <a href="{{ route('category', $category->slug) }}">{{ $category->name }}</a>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
                 </div>
                 @endif
 

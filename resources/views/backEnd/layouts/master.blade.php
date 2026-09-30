@@ -1066,6 +1066,14 @@
         </a>
       </li>
       @endcanany
+
+      @can('report-view')
+      <li>
+        <a href="{{ route('admin.reports.search_misses') }}">
+          <i data-feather="search"></i> Search Misses
+        </a>
+      </li>
+      @endcan
     </ul>
   </div>
 </li>

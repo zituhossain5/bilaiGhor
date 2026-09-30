@@ -861,6 +861,8 @@ Route::get('reports/purchases',     [ReportController::class, 'purchases'])->nam
 Route::get('reports/expenses',      [ReportController::class, 'expenses'])->name('admin.reports.expenses');
 Route::get('reports/stock',         [ReportController::class, 'stock'])->name('admin.reports.stock');
 Route::get('reports/profit-loss',   [ReportController::class, 'profitLoss'])->name('admin.reports.profit_loss');
+Route::get('reports/search-misses', [\App\Http\Controllers\Admin\SearchMissController::class, 'index'])->name('admin.reports.search_misses');
+Route::delete('reports/search-misses/{searchMiss}', [\App\Http\Controllers\Admin\SearchMissController::class, 'destroy'])->name('admin.reports.search_misses.destroy');
 
     // Supplier Routes
     Route::get('suppliers/manage', [SupplierController::class, 'index'])->name('admin.suppliers.index');

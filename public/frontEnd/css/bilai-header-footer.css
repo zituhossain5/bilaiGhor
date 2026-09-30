@@ -2443,6 +2443,11 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
     border-color: var(--bilai-primary, #e8861a) !important;
 }
 
+/* Weekly Deals has no prev/next arrows (it still autoplays and can be swiped/dragged). */
+.bilai-weekly-deals .owl-nav {
+    display: none !important;
+}
+
 /* Product card */
 .bilai-product-card {
     background: #fdf9f4;
@@ -7085,4 +7090,149 @@ body .bilai-product-card .bilai-product-image img {
 }
 /* ============================================================
    BilaiGhor Kitten Packs End
+   ============================================================ */
+
+/* ============================================================
+   BilaiGhor Search Start
+   ============================================================ */
+/* Autocomplete dropdown: small tags, "view all" footer */
+.bilai-search-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 8px;
+    border-radius: 20px;
+    background: var(--bilai-primary);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.bilai-search-tag--soldout {
+    background: #8a7a6e;
+}
+.bilai-search-all {
+    display: block;
+    padding: 10px 15px;
+    background: var(--bilai-light);
+    color: var(--bilai-primary-dark);
+    font-family: var(--bilai-font-main);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+}
+.bilai-search-all:hover {
+    background: #f6ecdc;
+    color: var(--bilai-primary-dark);
+    text-decoration: none;
+}
+
+/* Product card: sold-out marker (.bilai-product-image is already positioned, so it anchors the label) */
+.bilai-product-image.is-sold-out img {
+    opacity: 0.55;
+}
+.bilai-card-soldout {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    padding: 3px 12px;
+    border-radius: 20px;
+    background: rgba(42, 21, 5, 0.82);
+    color: #fff;
+    font-family: var(--bilai-font-main);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Search page: matching kitten packs */
+.bilai-search-packs {
+    margin-bottom: 20px;
+    font-family: var(--bilai-font-main);
+}
+.bilai-search-packs-title {
+    margin: 0 0 10px;
+    color: var(--bilai-body-title);
+    font-size: 16px;
+    font-weight: 700;
+}
+.bilai-search-packs-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.bilai-search-pack {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 8px;
+    border: 1px solid var(--bilai-border);
+    border-radius: var(--bilai-radius-sm);
+    background: var(--bilai-light);
+    color: var(--bilai-text);
+    text-decoration: none;
+}
+.bilai-search-pack:hover {
+    border-color: var(--bilai-primary);
+    color: var(--bilai-text);
+    text-decoration: none;
+}
+.bilai-search-pack img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+.bilai-search-pack-name {
+    font-weight: 600;
+}
+.bilai-search-pack-price {
+    color: var(--bilai-primary-dark);
+    font-weight: 700;
+}
+
+/* Search page: no-results help */
+.bilai-search-suggest {
+    margin-top: 4px;
+    font-size: 16px;
+}
+.bilai-search-suggest a {
+    color: var(--bilai-primary-dark);
+    font-weight: 700;
+    text-decoration: underline;
+}
+.bilai-search-popular {
+    margin-top: 24px;
+}
+.bilai-search-popular > p {
+    margin-bottom: 10px;
+    color: var(--bilai-text);
+    font-weight: 600;
+}
+.bilai-search-popular-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+.bilai-search-popular-list a {
+    padding: 6px 16px;
+    border: 1px solid var(--bilai-border);
+    border-radius: 20px;
+    background: var(--bilai-light);
+    color: var(--bilai-text);
+    text-decoration: none;
+}
+.bilai-search-popular-list a:hover {
+    border-color: var(--bilai-primary);
+    color: var(--bilai-primary-dark);
+}
+/* ============================================================
+   BilaiGhor Search End
    ============================================================ */

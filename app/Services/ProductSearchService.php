@@ -66,12 +66,12 @@ class ProductSearchService
      */
     public function search(string $query, ?int $categoryId = null, ?int $limit = null): array
     {
+        $index = $this->index();
         $tokens = $this->tokens($query);
         if (empty($tokens)) {
             return ['product_ids' => [], 'packs' => collect()];
         }
 
-        $index = $this->index();
         $compactQuery = $tokens['compact'];
 
         $products = array_filter(
@@ -169,7 +169,9 @@ class ProductSearchService
         if ($normalized === '') {
             return [];
         }
-        $words = array_values(array_unique(explode(' ', $normalized)));
+        $words = array_values(array_unique(
+            $this->joinCompounds(explode(' ', $normalized), $this->index()['vocabulary'])
+        ));
 
         $significant = array_values(array_filter(
             $words,
@@ -182,6 +184,33 @@ class ProductSearchService
             'all'         => $words,
             'significant' => $significant ?: $words,
         ];
+    }
+
+    /**
+     * A catalog word typed with spaces becomes one word again: "paw paw" → "pawpaw",
+     * "smart heart kitten" → "smartheart kitten". Otherwise "paw paw" would be searched as
+     * "paw" and match every "paws" in a description. Words that do not join into a catalog
+     * word ("cat food") are left alone.
+     */
+    private function joinCompounds(array $words, array $vocabulary): array
+    {
+        $joined = [];
+        $count = count($words);
+
+        for ($i = 0; $i < $count; $i++) {
+            // Longest run first, so three split parts join before two do.
+            for ($length = min(3, $count - $i); $length >= 2; $length--) {
+                $candidate = implode('', array_slice($words, $i, $length));
+                if (isset($vocabulary[$candidate])) {
+                    $joined[] = $candidate;
+                    $i += $length - 1;
+                    continue 2;
+                }
+            }
+            $joined[] = $words[$i];
+        }
+
+        return $joined;
     }
 
     /**

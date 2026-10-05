@@ -46,7 +46,10 @@ class KittenPackCart
             return route('kitten.packs');
         }
 
-        return !empty($item->options->slug) ? route('product', $item->options->slug) : '#';
+        // options->get(): the cart's options object has no __isset, so empty() would always say "missing".
+        $slug = $item->options->get('slug');
+
+        return $slug ? route('product', $slug) : '#';
     }
 
     /** The pack's row already in the cart, if any. */

@@ -1241,6 +1241,8 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
         ->name('admin.orders.inline-status');
 
     // Order route 
+    // Must come before order/{slug}, which would otherwise capture it as a status slug.
+    Route::get('order/cart-thana-shipping', [DeliveryThanaController::class, 'cartShipping'])->name('admin.order.cart_thana_shipping');
 	Route::get('order/{slug}/ajax', [OrderController::class, 'ajaxIndex'])->name('admin.orders.ajax');
 
     Route::get('order/{slug}', [OrderController::class,'index'])->name('admin.orders');
@@ -1313,7 +1315,7 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     // Order Edit page: persist Thana + Post Code (OrderController::order_update is IonCube-encoded and
     // has no knowledge of these columns — see updateOrderShipping() docblock).
     Route::post('order/update-shipping-location', [DeliveryThanaController::class, 'updateOrderShipping'])->name('admin.order.update_shipping_location');
-    Route::get('order/cart-thana-shipping', [DeliveryThanaController::class, 'cartShipping'])->name('admin.order.cart_thana_shipping');
+    // order/cart-thana-shipping is registered next to the order routes (it must precede order/{slug}).
     
     // backend customer route 
     Route::get('customer', [CustomerManageController::class,'index'])->name('customers.index');

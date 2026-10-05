@@ -5,13 +5,12 @@ namespace App\Http\Controllers\Frontend;
 use App\Helpers\KittenPackCart;
 use App\Http\Controllers\Controller;
 use App\Models\Color;
-use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\ProductVariantPrice;
 use App\Models\Size;
+use App\Services\CouponService;
 use App\Services\InventoryService;
 use Brian2694\Toastr\Facades\Toastr;
-use Carbon\Carbon;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -150,7 +149,7 @@ class ShoppingController extends Controller
     public function applyCoupon(Request $request)
     {
         $code = trim((string) $request->coupon_code);
-        $result = self::evaluateCoupon($code, self::cartSubtotal());
+        $result = CouponService::evaluate($code, self::cartSubtotal());
 
         if ($result['error']) {
             Toastr::error($result['error'], 'কুপন');
@@ -316,45 +315,6 @@ class ShoppingController extends Controller
             ->values();
     }
 
-    /**
-     * Validate a coupon against a subtotal.
-     *
-     * @return array{coupon: ?Coupon, discount: float, error: ?string}
-     */
-    private static function evaluateCoupon(string $code, float $subtotal): array
-    {
-        $fail = fn (string $message) => ['coupon' => null, 'discount' => 0.0, 'error' => $message];
-
-        if ($code === '') {
-            return $fail('কুপন কোড লিখুন।');
-        }
-        if ($subtotal <= 0) {
-            return $fail('কার্ট খালি।');
-        }
-
-        $coupon = Coupon::where('code', $code)->where('status', 1)->first();
-        if (!$coupon) {
-            return $fail('কুপন কোডটি সঠিক নয়।');
-        }
-
-        $today = Carbon::today();
-        if ($coupon->valid_from && $today->lt(Carbon::parse($coupon->valid_from)->startOfDay())) {
-            return $fail('এই কুপন এখনও চালু হয়নি।');
-        }
-        if ($coupon->valid_to && $today->gt(Carbon::parse($coupon->valid_to)->startOfDay())) {
-            return $fail('এই কুপনের মেয়াদ শেষ।');
-        }
-        if ($coupon->min_purchase && $subtotal < (float) $coupon->min_purchase) {
-            return $fail('এই কুপনের জন্য সর্বনিম্ন ৳' . number_format((float) $coupon->min_purchase, 0) . ' কেনাকাটা করতে হবে।');
-        }
-
-        $discount = $coupon->type === 'percent'
-            ? $subtotal * (float) $coupon->value / 100
-            : (float) $coupon->value;
-
-        return ['coupon' => $coupon, 'discount' => round(min($discount, $subtotal), 2), 'error' => null];
-    }
-
     /** Keep wholesale prices and any applied coupon in step with the cart's new contents. */
     private function afterCartChange(): void
     {
@@ -365,7 +325,7 @@ class ShoppingController extends Controller
             return;
         }
 
-        $result = self::evaluateCoupon((string) $code, self::cartSubtotal());
+        $result = CouponService::evaluate((string) $code, self::cartSubtotal());
         if ($result['error']) {
             Session::forget('coupon_code');
             Session::forget('discount');

@@ -17,6 +17,7 @@ use App\Models\ProductVariantPrice;
 use App\Models\Shipping;
 use App\Models\Size;
 use App\Models\User;
+use App\Services\CouponService;
 use App\Services\InventoryService;
 use App\Services\RewardPointService;
 use App\Support\TrafficSourceDetector;
@@ -32,14 +33,14 @@ use Illuminate\Validation\Rule;
 
 /**
  * Admin order management: lists, quick view, process, status, notes, invoice, print/label,
- * edit (via the session "pos_shopping" cart), delete and bulk actions.
+ * POS sales and order edits (both via the session "pos_shopping" cart), delete and bulk actions.
  *
  * Rewritten in plain PHP to replace the vendor's ionCube-encoded controller. Inventory,
  * reward points and fund crediting react to status changes through the Order model's
  * `updated` hook, so this controller only has to change orders the normal Eloquent way.
  *
- * POS order creation (phase 3) and courier/fraud/report tools (phase 4) are not rebuilt
- * yet; their routes answer with a clear message instead of failing.
+ * Courier/fraud/report tools (phase 4) are not rebuilt yet; their routes answer with a
+ * clear message instead of failing.
  */
 class OrderController extends Controller
 {
@@ -498,12 +499,15 @@ class OrderController extends Controller
             'options' => $this->cartOptions($product),
         ]);
 
+        $this->refreshPosCoupon();
+
         return response()->json(['status' => 'success']);
     }
 
     public function cart_content(Request $request)
     {
-        $view = $request->layout === 'edit' ? 'backEnd.order.cart_table_rows_edit' : 'backEnd.order.cart_content';
+        // Rows only: both pages bind their own click handlers once, so the response must not re-bind them.
+        $view = $request->layout === 'edit' ? 'backEnd.order.cart_table_rows_edit' : 'backEnd.order.cart_table_rows';
 
         return view($view, ['cartinfo' => Cart::instance(self::POS_CART)->content()]);
     }
@@ -520,6 +524,8 @@ class OrderController extends Controller
             $this->repricePosRow($item->rowId);
         }
 
+        $this->refreshPosCoupon();
+
         return response()->json(['status' => 'success']);
     }
 
@@ -530,6 +536,8 @@ class OrderController extends Controller
             $this->repricePosRow($item->rowId);
         }
 
+        $this->refreshPosCoupon();
+
         return response()->json(['status' => 'success']);
     }
 
@@ -538,6 +546,8 @@ class OrderController extends Controller
         if ($item = $this->posRow($request->id)) {
             Cart::instance(self::POS_CART)->remove($item->rowId);
         }
+
+        $this->refreshPosCoupon();
 
         return response()->json(['status' => 'success']);
     }
@@ -551,6 +561,8 @@ class OrderController extends Controller
             $options['product_discount'] = $discount;
             Cart::instance(self::POS_CART)->update($item->rowId, ['options' => $options]);
         }
+
+        $this->refreshPosCoupon();
 
         return response()->json(['status' => 'success']);
     }
@@ -578,6 +590,8 @@ class OrderController extends Controller
             'price'   => $product->resolveSalePrice((int) $item->qty, $options['color_id'] ?? null, $options['size_id'] ?? null),
         ]);
 
+        $this->refreshPosCoupon();
+
         return response()->json(['status' => 'success']);
     }
 
@@ -591,14 +605,173 @@ class OrderController extends Controller
     }
 
     // =========================================================
-    // Not rebuilt yet (phase 3: POS create; phase 4: courier, fraud, reports)
+    // POS: create an order from the admin panel
     // =========================================================
 
-    public function order_create(Request $request)       { return $this->notReady($request); }
-    public function order_store(Request $request)        { return $this->notReady($request); }
-    public function cart_shipping(Request $request)      { return $this->notReady($request); }
-    public function posApplyCoupon(Request $request)     { return $this->notReady($request); }
-    public function posRemoveCoupon(Request $request)    { return $this->notReady($request); }
+    public function order_create()
+    {
+        // Items left over from the order editor must not turn up in a new sale.
+        // options->get(): the cart's options object has no __isset, so empty()/isset() always say "missing".
+        if (Cart::instance(self::POS_CART)->content()->contains(fn ($item) => (bool) $item->options->get('details_id'))) {
+            $this->clearPosCart();
+        }
+
+        return view('backEnd.order.create', [
+            'products'  => Product::with('image')
+                ->where('status', 1)
+                ->where('approval_status', 'approved')
+                ->orderBy('name')
+                ->get(['id', 'name', 'new_price', 'old_price', 'stock']),
+            'divisions' => \App\Models\DeliveryDivision::active()->ordered()->get(['id', 'name']),
+            'cartinfo'  => Cart::instance(self::POS_CART)->content(),
+        ]);
+    }
+
+    public function order_store(Request $request)
+    {
+        $validated = $request->validate([
+            'name'        => 'required|string|max:155',
+            'phone'       => 'required|string|max:55',
+            'address'     => 'required|string|max:256',
+            'division_id' => 'nullable|integer',
+            'district_id' => 'required|integer|exists:districts,id',
+            'thana_id'    => 'required|integer|exists:thanas,id',
+        ]);
+
+        if (!\App\Support\DeliveryLocation::validateDistrictThana((int) $validated['district_id'], (int) $validated['thana_id'])) {
+            return back()->withInput()->withErrors(['thana_id' => 'The selected thana does not belong to this district.']);
+        }
+
+        $cart = Cart::instance(self::POS_CART)->content();
+        if ($cart->isEmpty()) {
+            Toastr::error('কার্টে কোনো পণ্য নেই।', 'ত্রুটি');
+
+            return back()->withInput();
+        }
+
+        $this->refreshPosCoupon();
+        $couponCode = Session::get('pos_coupon_code');
+        $couponDiscount = $couponCode ? (float) Session::get('pos_discount', 0) : 0.0;
+        $shipping = \App\Support\DeliveryLocation::chargeForThanaId((int) $validated['thana_id']);
+        $subtotal = $cart->sum(fn ($item) => (float) $item->price * (int) $item->qty);
+        $lineDiscount = $cart->sum(fn ($item) => (float) ($item->options->product_discount ?? 0) * (int) $item->qty);
+        $amount = max(0, $subtotal + $shipping - $couponDiscount - $lineDiscount);
+        $adminId = Auth::guard('admin')->id();
+
+        try {
+            $order = DB::transaction(function () use ($validated, $cart, $couponCode, $couponDiscount, $lineDiscount, $shipping, $amount, $adminId) {
+                $customer = $this->posCustomer($validated['name'], $validated['phone']);
+
+                $order = Order::create([
+                    'invoice_id'      => $this->newInvoiceId(),
+                    'amount'          => (int) round($amount),
+                    'discount'        => (int) round($couponDiscount + $lineDiscount),
+                    'shipping_charge' => (int) round($shipping),
+                    'customer_id'     => $customer->id,
+                    'order_status'    => 1,
+                    'payment_status'  => 'pending',
+                    'coupon_code'     => $couponCode,
+                    'order_source'    => 'pos',
+                    'traffic_source'  => 'direct',
+                    'created_by'      => $adminId,
+                    'user_id'         => $adminId,
+                ]);
+
+                $vendors = Product::whereIn('id', $cart->pluck('id'))->pluck('vendor_id', 'id');
+                foreach ($cart as $item) {
+                    $discount = (float) ($item->options->product_discount ?? 0);
+                    OrderDetails::create([
+                        'order_id'         => $order->id,
+                        'product_id'       => (int) $item->id,
+                        'vendor_id'        => $vendors[$item->id] ?? null,
+                        'product_name'     => $item->name,
+                        'purchase_price'   => $item->options->purchase_price,
+                        'sale_price'       => (float) $item->price,
+                        'product_discount' => $discount,
+                        'line_total'       => ((float) $item->price - $discount) * (int) $item->qty,
+                        'qty'              => (int) $item->qty,
+                        'product_color'    => $item->options->color_id ?: null,
+                        'product_size'     => $item->options->size_id ?: null,
+                        'variant_price_id' => $item->options->variant_price_id ?: null,
+                    ]);
+                }
+
+                Shipping::create([
+                    'order_id'    => $order->id,
+                    'customer_id' => $customer->id,
+                    'name'        => $validated['name'],
+                    'phone'       => $validated['phone'],
+                    'address'     => $validated['address'],
+                    'division_id' => \App\Support\DeliveryLocation::divisionIdForDistrict((int) $validated['district_id']),
+                    'district_id' => (int) $validated['district_id'],
+                    'thana_id'    => (int) $validated['thana_id'],
+                    'area'        => \App\Support\DeliveryLocation::shippingLabel((int) $validated['district_id'], (int) $validated['thana_id']),
+                ]);
+
+                Payment::create([
+                    'order_id'       => $order->id,
+                    'customer_id'    => $customer->id,
+                    'payment_method' => 'Cash On Delivery',
+                    'amount'         => $order->amount,
+                    'payment_status' => 'pending',
+                ]);
+
+                // Same rule as checkout: hold the stock now, fail the whole sale if it is not there.
+                InventoryService::reserveForOrder($order, strict: true);
+
+                return $order;
+            });
+        } catch (InsufficientStockException $e) {
+            Toastr::error($e->validationMessage(), 'স্টক নেই');
+
+            return back()->withInput();
+        }
+
+        $this->clearPosCart();
+        Toastr::success('অর্ডার তৈরি হয়েছে — #' . $order->invoice_id, 'সফল');
+
+        return redirect()->route('admin.order.invoice', $order->invoice_id);
+    }
+
+    /** Older POS screens set the delivery charge by thana here (the current one uses cart_thana_shipping). */
+    public function cart_shipping(Request $request): JsonResponse
+    {
+        $thanaId = (int) ($request->thana_id ?? $request->id);
+        $charge = $thanaId ? \App\Support\DeliveryLocation::chargeForThanaId($thanaId) : 0;
+        Session::put('pos_shipping', $charge);
+
+        return response()->json(['status' => 'success', 'shipping_charge' => $charge]);
+    }
+
+    public function posApplyCoupon(Request $request): JsonResponse
+    {
+        $result = CouponService::evaluate((string) $request->coupon_code, $this->posSubtotal());
+
+        if ($result['error']) {
+            return response()->json(['success' => false, 'message' => $result['error']]);
+        }
+
+        Session::put('pos_coupon_code', $result['coupon']->code);
+        Session::put('pos_discount', $result['discount']);
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'কুপন প্রয়োগ হয়েছে — ৳' . number_format($result['discount'], 2) . ' ছাড়',
+            'discount' => $result['discount'],
+        ]);
+    }
+
+    public function posRemoveCoupon(): JsonResponse
+    {
+        Session::forget(['pos_coupon_code', 'pos_discount']);
+
+        return response()->json(['success' => true]);
+    }
+
+    // =========================================================
+    // Not rebuilt yet (phase 4: courier, fraud, reports)
+    // =========================================================
+
     public function bulk_courier(Request $request, $slug = null) { return $this->notReady($request); }
     public function order_pathao(Request $request)       { return $this->notReady($request); }
     public function pathaocity(Request $request)         { return $this->notReady($request); }
@@ -782,7 +955,53 @@ class OrderController extends Controller
     private function clearPosCart(): void
     {
         Cart::instance(self::POS_CART)->destroy();
-        Session::forget(['pos_shipping', 'pos_discount', 'product_discount']);
+        Session::forget(['pos_shipping', 'pos_discount', 'product_discount', 'pos_coupon_code']);
+    }
+
+    /** A POS coupon follows the cart: re-priced on every change, dropped if no longer valid. */
+    private function refreshPosCoupon(): void
+    {
+        $code = Session::get('pos_coupon_code');
+        if (!$code) {
+            return;
+        }
+
+        $result = CouponService::evaluate((string) $code, $this->posSubtotal());
+        if ($result['error']) {
+            Session::forget(['pos_coupon_code', 'pos_discount']);
+        } else {
+            Session::put('pos_discount', $result['discount']);
+        }
+    }
+
+    private function posSubtotal(): float
+    {
+        return (float) Cart::instance(self::POS_CART)->subtotal(2, '.', '');
+    }
+
+    /** Reuse the customer account for this phone number, or open one (same as checkout and incomplete orders). */
+    private function posCustomer(string $name, string $phone): \App\Models\Customer
+    {
+        return \App\Models\Customer::firstOrCreate(
+            ['phone' => $phone],
+            [
+                'name'     => $name,
+                'slug'     => \Illuminate\Support\Str::slug($name) . '-' . random_int(1000, 9999),
+                'password' => bcrypt(\Illuminate\Support\Str::random(16)),
+                'verify'   => 1,
+                'status'   => 'active',
+            ]
+        );
+    }
+
+    /** Same numbering as checkout (5 digits), but never a number that is already taken. */
+    private function newInvoiceId(): string
+    {
+        do {
+            $id = (string) random_int(11111, 99999);
+        } while (Order::where('invoice_id', $id)->exists());
+
+        return $id;
     }
 
     private function findByInvoice($invoiceId, array $with): Order

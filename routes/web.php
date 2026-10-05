@@ -222,11 +222,6 @@ Route::get('/responsive.css', function () {
         'Cache-Control' => 'public, max-age=3600',
     ]);
 });
-Route::get('/dynamic-theme.css', function () {
-    return response()
-        ->view('frontEnd.assets.theme')
-        ->header('Content-Type', 'text/css');
-});
 
 Route::get('/digital-download/{token}', [DigitalDownloadController::class, 'download'])
     ->name('digital.download');
@@ -574,10 +569,8 @@ Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']
     Route::get('subcategory/{subcategory}', [FrontendController::class, 'subcategory'])->name('subcategory');
 
     Route::get('products/{slug}', [FrontendController::class, 'products'])->name('products');
-    Route::get('wholesale-products', [FrontendController::class, 'wholesaleProducts'])->name('wholesale.products');
 
     Route::get('hot-deals', [FrontendController::class, 'hotdeals'])->name('hotdeals');
-    Route::get('flash-sales', [FrontendController::class, 'flashsales'])->name('flashsales');
     Route::get('sellers', [FrontendController::class, 'sellers'])->name('sellers');
     Route::get('shop', [FrontendController::class, 'shop'])->name('shop');
     Route::get('all-products', [FrontendController::class, 'shop'])->name('all.products');
@@ -592,8 +585,6 @@ Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']
     Route::get('/offer', [FrontendController::class, 'offers'])->name('offers');
     Route::get('/kitten-packs', [FrontendController::class, 'kittenPacks'])->name('kitten.packs');
     Route::post('/kitten-packs/{id}/cart', [FrontendController::class, 'kittenPackCart'])->name('kitten.packs.cart');
-     Route::get('/payment-success', [FrontEndController::class, 'payment_success'])->name('payment_success');
-    Route::get('/payment-cancel', [FrontEndController::class, 'payment_cancel'])->name('payment_cancel');
 
 
 
@@ -710,7 +701,6 @@ Route::post('contact/store',
 Route::post('newsletter/subscribe',
     [\App\Http\Controllers\Frontend\NewsletterController::class, 'store']
 )->name('frontend.newsletter.subscribe');
-    Route::get('bkash/checkout-url/pay',[BkashController::class,'pay'])->name('url-pay');
 Route::any('bkash/checkout-url/create',[BkashController::class,'create'])->name('url-create');
 Route::get('bkash/checkout-url/callback',[BkashController::class,'callback'])->name('url-callback');
     // Route::get('/payment-success', [ShurjopayControllers::class, 'payment_success'])->name('payment_success');
@@ -775,9 +765,6 @@ Route::post('purchases/{id}/pay-due', [PurchaseController::class, 'payDue'])->na
 Route::post('purchase-item/{id}/return', [PurchaseController::class, 'returnItem'])->name('purchases.item_return');
 Route::get('purchases/{id}/invoice', [PurchaseController::class, 'invoice'])->name('purchases.invoice');
 Route::get('purchases/export', [PurchaseController::class, 'export'])->name('purchases.export');
-// ✅ Purchases AJAX Pagination
-Route::get('purchases/ajax', [PurchaseController::class, 'ajaxIndex'])
-    ->name('purchases.ajax');
 
 
 // ==== INVENTORY (Phase 1) ==== //
@@ -898,7 +885,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
 
     // permissions
     Route::get('permissions/manage', [PermissionController::class,'index'])->name('permissions.index');
-    Route::get('permissions/{id}/show', [PermissionController::class,'show'])->name('permissions.show');
     Route::get('permissions/create', [PermissionController::class,'create'])->name('permissions.create');
     Route::post('permissions/save', [PermissionController::class,'store'])->name('permissions.store');
     Route::get('permissions/{id}/edit', [PermissionController::class,'edit'])->name('permissions.edit');
@@ -907,7 +893,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
 
     // categories
     Route::get('categories/manage', [CategoryController::class,'index'])->name('categories.index');
-    Route::get('categories/{id}/show', [CategoryController::class,'show'])->name('categories.show');
     Route::get('categories/create', [CategoryController::class,'create'])->name('categories.create');
     Route::post('categories/save', [CategoryController::class,'store'])->name('categories.store');
     Route::get('categories/{id}/edit', [CategoryController::class,'edit'])->name('categories.edit');
@@ -918,7 +903,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
 
     // Subcategories
     Route::get('subcategories/manage', [SubcategoryController::class,'index'])->name('subcategories.index');
-    Route::get('subcategories/{id}/show', [SubcategoryController::class,'show'])->name('subcategories.show');
     Route::get('subcategories/create', [SubcategoryController::class,'create'])->name('subcategories.create');
     Route::post('subcategories/save', [SubcategoryController::class,'store'])->name('subcategories.store');
     Route::get('subcategories/{id}/edit', [SubcategoryController::class,'edit'])->name('subcategories.edit');
@@ -929,7 +913,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
 
     // Childcategories
     Route::get('childcategories/manage', [ChildcategoryController::class,'index'])->name('childcategories.index');
-    Route::get('childcategories/{id}/show', [ChildcategoryController::class,'show'])->name('childcategories.show');
     Route::get('childcategories/create', [ChildcategoryController::class,'create'])->name('childcategories.create');
     Route::post('childcategories/save', [ChildcategoryController::class,'store'])->name('childcategories.store');
     Route::get('childcategories/{id}/edit', [ChildcategoryController::class,'edit'])->name('childcategories.edit');
@@ -972,7 +955,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
 
     // attribute
     Route::get('orderstatus/manage', [OrderStatusController::class,'index'])->name('orderstatus.index');
-    Route::get('orderstatus/{id}/show', [OrderStatusController::class,'show'])->name('orderstatus.show');
     Route::get('orderstatus/create', [OrderStatusController::class,'create'])->name('orderstatus.create');
     Route::post('orderstatus/save', [OrderStatusController::class,'store'])->name('orderstatus.store');
     Route::get('orderstatus/{id}/edit', [OrderStatusController::class,'edit'])->name('orderstatus.edit');
@@ -983,7 +965,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     
     // pixels
     Route::get('pixels/manage', [PixelsController::class,'index'])->name('pixels.index');
-    Route::get('pixels/{id}/show', [PixelsController::class,'show'])->name('pixels.show');
     Route::get('pixels/create', [PixelsController::class,'create'])->name('pixels.create');
     Route::post('pixels/save', [PixelsController::class,'store'])->name('pixels.store');
     Route::get('pixels/{id}/edit', [PixelsController::class,'edit'])->name('pixels.edit');
@@ -1022,7 +1003,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     
      // tag manager
     Route::get('tag-manager/manage', [TagManagerController::class,'index'])->name('tagmanagers.index');
-    Route::get('tag-manager/{id}/show', [TagManagerController::class,'show'])->name('tagmanagers.show');
     Route::get('tag-manager/create', [TagManagerController::class,'create'])->name('tagmanagers.create');
     Route::post('tag-manager/save', [TagManagerController::class,'store'])->name('tagmanagers.store');
     Route::get('tag-manager/{id}/edit', [TagManagerController::class,'edit'])->name('tagmanagers.edit');
@@ -1033,7 +1013,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     
     // attribute
     Route::get('brands/manage', [BrandController::class,'index'])->name('brands.index');
-    Route::get('brands/{id}/show', [BrandController::class,'show'])->name('brands.show');
     Route::get('brands/create', [BrandController::class,'create'])->name('brands.create');
     Route::post('brands/save', [BrandController::class,'store'])->name('brands.store');
     Route::get('brands/{id}/edit', [BrandController::class,'edit'])->name('brands.edit');
@@ -1044,7 +1023,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
 
      // color
     Route::get('color/manage', [ColorController::class,'index'])->name('colors.index');
-    Route::get('color/{id}/show', [ColorController::class,'show'])->name('colors.show');
     Route::get('color/create', [ColorController::class,'create'])->name('colors.create');
     Route::post('color/save', [ColorController::class,'store'])->name('colors.store');
     Route::get('color/{id}/edit', [ColorController::class,'edit'])->name('colors.edit');
@@ -1055,7 +1033,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     
     // size
     Route::get('size/manage', [SizeController::class,'index'])->name('sizes.index');
-    Route::get('size/{id}/show', [SizeController::class,'show'])->name('sizes.show');
     Route::get('size/create', [SizeController::class,'create'])->name('sizes.create');
     Route::post('size/save', [SizeController::class,'store'])->name('sizes.store');
     Route::get('size/{id}/edit', [SizeController::class,'edit'])->name('sizes.edit');
@@ -1124,12 +1101,8 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::post('products/active', [ProductController::class,'active'])->name('products.active');
     Route::post('products/destroy', [ProductController::class,'destroy'])->name('products.destroy');
     Route::get('products/image/destroy', [ProductController::class,'imgdestroy'])->name('products.image.destroy');
-    Route::get('products/price/destroy', [ProductController::class,'pricedestroy'])->name('products.price.destroy');
     Route::post('products/update-deals', [ProductController::class,'update_deals'])->name('products.update_deals');
-    Route::get('products/update-feature', [ProductController::class,'update_feature'])->name('products.update_feature');
     Route::post('products/update-status', [ProductController::class,'update_status'])->name('products.update_status');
-    Route::get('products/price-edit', [ProductController::class,'price_edit'])->name('products.price_edit');
-    Route::post('products/price-update', [ProductController::class,'price_update'])->name('products.price_update');
     
     // Product Approval Routes
     Route::get('products/pending', [ProductController::class,'pending'])->name('products.pending');
@@ -1138,7 +1111,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     
     // campaign
     Route::get('campaign/manage', [CampaignController::class,'index'])->name('campaign.index');
-    Route::get('campaign/{id}/show', [CampaignController::class,'show'])->name('campaign.show');
     Route::get('campaign/create', [CampaignController::class,'create'])->name('campaign.create');
     Route::post('campaign/save', [CampaignController::class,'store'])->name('campaign.store');
     Route::get('campaign/{id}/edit', [CampaignController::class,'edit'])->name('campaign.edit');
@@ -1147,7 +1119,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::post('campaign/active', [CampaignController::class,'active'])->name('campaign.active');
     Route::post('campaign/destroy', [CampaignController::class,'destroy'])->name('campaign.destroy');
     Route::get('campaign/image/destroy', [CampaignController::class,'imgdestroy'])->name('campaign.image.destroy');
-    Route::post('campaign/builder/upload-image', [CampaignController::class,'uploadBuilderImage'])->name('campaign.builder.upload');
 
     // Error Log (Laravel log viewer)
     Route::get('error-log', [ErrorLogController::class,'index'])->name('error-log.index');
@@ -1176,7 +1147,6 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
 
      // contact route 
     Route::get('contact/manage', [ContactController::class,'index'])->name('contact.index');
-    Route::get('contact/create', [ContactController::class,'create'])->name('contact.create');
 
     Route::get('contact/{id}/edit', [ContactController::class,'edit'])->name('contact.edit');
     Route::post('contact/update', [ContactController::class,'update'])->name('contact.update');

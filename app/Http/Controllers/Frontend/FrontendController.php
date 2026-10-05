@@ -1390,7 +1390,9 @@ $brands = Brand::where('status', 1)
     public function page($slug)
     {
         $page = CreatePage::where('slug', $slug)->firstOrFail();
-        return view('frontEnd.layouts.pages.page', compact('page'));
+        $cmnmenu = CreatePage::where('status', 1)->get();
+
+        return view('frontEnd.layouts.pages.page', compact('page', 'cmnmenu'));
     }
 
     public function districts(Request $request)

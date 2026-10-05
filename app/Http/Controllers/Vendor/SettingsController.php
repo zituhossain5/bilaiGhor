@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Models\Vendor;
 use App\Models\User;
+use App\Support\SafeUpload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -53,6 +54,8 @@ class SettingsController extends Controller
             'phone' => 'required|string|max:20',
             'email' => 'required|email|max:255|unique:vendors,email,' . $vendor->id,
             'address' => 'nullable|string|max:500',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'banner' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
         ]);
 
         // Update vendor info
@@ -74,17 +77,8 @@ class SettingsController extends Controller
                 @unlink(public_path($vendor->logo));
             }
 
-            $logo = $request->file('logo');
-            $logoName = time() . '-logo-' . $logo->getClientOriginalName();
             $logoPath = 'uploads/vendor/logo/';
-            $logoFullPath = public_path($logoPath);
-            
-            // Create directory if not exists
-            if (!file_exists($logoFullPath)) {
-                File::makeDirectory($logoFullPath, 0755, true);
-            }
-
-            $logo->move($logoFullPath, $logoName);
+            $logoName = SafeUpload::move($request->file('logo'), public_path($logoPath), 'logo-', SafeUpload::IMAGES, 'logo');
             $vendor->logo = 'public/' . $logoPath . $logoName;
         }
 
@@ -96,16 +90,8 @@ class SettingsController extends Controller
             }
 
             $banner = $request->file('banner');
-            $bannerName = time() . '-banner-' . $banner->getClientOriginalName();
             $bannerPath = 'uploads/vendor/banner/';
-            $bannerFullPath = public_path($bannerPath);
-            
-            // Create directory if not exists
-            if (!file_exists($bannerFullPath)) {
-                File::makeDirectory($bannerFullPath, 0755, true);
-            }
-
-            $banner->move($bannerFullPath, $bannerName);
+            $bannerName = SafeUpload::move($banner, public_path($bannerPath), 'banner-', SafeUpload::IMAGES, 'banner');
             $vendor->banner = 'public/' . $bannerPath . $bannerName;
         }
 
@@ -130,6 +116,7 @@ class SettingsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $user->name = $request->name;
@@ -142,16 +129,8 @@ class SettingsController extends Controller
                 @unlink(public_path($user->image));
             }
 
-            $image = $request->file('image');
-            $imageName = time() . '-profile-' . $image->getClientOriginalName();
             $imagePath = 'public/uploads/user/';
-            
-            // Create directory if not exists
-            if (!file_exists($imagePath)) {
-                File::makeDirectory($imagePath, 0755, true);
-            }
-
-            $image->move($imagePath, $imageName);
+            $imageName = SafeUpload::move($request->file('image'), $imagePath, 'profile-', SafeUpload::IMAGES, 'image');
             $user->image = $imagePath . $imageName;
         }
 

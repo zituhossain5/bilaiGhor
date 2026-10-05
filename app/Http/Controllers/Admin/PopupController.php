@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Popup;
+use App\Support\SafeUpload;
 use Illuminate\Support\Facades\File; 
 use Toastr;
 
@@ -29,11 +30,7 @@ class PopupController extends Controller
 
             // ইমেজ আপলোড
             if ($request->hasFile('image')) {
-                $uploadPath = public_path('uploads/popup');
-                File::ensureDirectoryExists($uploadPath);
-                $image = $request->file('image');
-                $new_name = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->move($uploadPath, $new_name);
+                $new_name = SafeUpload::move($request->file('image'), public_path('uploads/popup'), '', SafeUpload::IMAGES, 'image');
                 $popup->image = 'uploads/popup/' . $new_name;
             }
 
@@ -66,22 +63,20 @@ class PopupController extends Controller
     public function update(Request $request)
     {
         $request->validate([
+            'hidden_id' => 'required|integer|exists:popups,id',
+            'image'     => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'image_alt' => 'nullable|string|max:255',
         ]);
 
-        $popup = Popup::find($request->hidden_id);
+        $popup = Popup::findOrFail($request->hidden_id);
 
         if ($request->hasFile('image')) {
-            $uploadPath = public_path('uploads/popup');
-            File::ensureDirectoryExists($uploadPath);
-            $image = $request->file('image');
-            $new_name = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            
-            if (File::exists(public_path($popup->image))) {
+            $new_name = SafeUpload::move($request->file('image'), public_path('uploads/popup'), '', SafeUpload::IMAGES, 'image');
+
+            if ($popup->image && File::exists(public_path($popup->image))) {
                 File::delete(public_path($popup->image));
             }
 
-            $image->move($uploadPath, $new_name);
             $popup->image = 'uploads/popup/' . $new_name;
         }
 

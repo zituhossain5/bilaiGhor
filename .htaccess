@@ -1,3 +1,29 @@
+# --- Security: the site root is the project folder, so keep everything but the shop off the web ---
+# Only index.php may run. Any other script (an upload, vendor/*.php, router.php, "x.php.jpg") is refused.
+<FilesMatch "(?i)\.(php[0-9]?|phtml|phar|pht|phps|cgi|pl|py|sh)(\.|$)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+<FilesMatch "^index\.php$">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</FilesMatch>
+# Application code, logs, dependencies and tooling files are not web pages.
+RedirectMatch 404 (?i)^/(app|bootstrap|config|database|docker|lang|node_modules|project|resources|routes|sail|storage|tests|vendor)(/|$)
+RedirectMatch 404 (?i)^/(composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|artisan|vite\.config\.js|[^/]*\.md|\.env.*|\.git.*|\.phpunit.*|\.editorconfig)$
+RedirectMatch 404 (?i)(\.(log|sql|sqlite|bak|old|swp)|/error_log)$
+# --- end security ---
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
@@ -67,7 +93,7 @@
 # To make changes to this file, use the cPanel MultiPHP INI Editor (Home >> Software >> MultiPHP INI Editor)
 # For more information, read our documentation (https://go.cpanel.net/EA4ModifyINI)
 <IfModule php8_module>
-   php_flag display_errors On
+   php_flag display_errors Off
    php_value max_execution_time 3000
    php_value max_input_time 3000
    php_value max_input_vars 1000
@@ -79,7 +105,7 @@
    php_flag zlib.output_compression On
 </IfModule>
 <IfModule lsapi_module>
-   php_flag display_errors On
+   php_flag display_errors Off
    php_value max_execution_time 3000
    php_value max_input_time 3000
    php_value max_input_vars 1000

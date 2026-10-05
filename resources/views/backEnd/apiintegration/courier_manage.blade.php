@@ -498,16 +498,16 @@
                                     <input type="text" class="form-control"
                                            name="webhook_url"
                                            id="redx_webhook_url"
-                                           value="{{ $redx->webhook_url ?? '' }}"
-                                           placeholder="{{ config('app.url') }}/api/redx/webhook"
+                                           value="{{ \App\Http\Controllers\Admin\RedXWebhookController::webhookUrl() }}"
+                                           readonly
                                            autocomplete="off" />
                                     <button type="button" class="btn btn-outline-secondary" id="copy_webhook_url" title="কপি">
                                         <i class="fe-copy"></i>
                                     </button>
                                 </div>
                                 <small class="text-muted small-hint d-block mt-1">
-                                    প্রস্তাবিত: <code id="suggested_webhook_url">{{ config('app.url') }}/api/redx/webhook</code><br>
-                                    RedX ড্যাশবোর্ডে URL সেট করলে পার্সেল স্ট্যাটাস আপডেট পাবেন। খালি রাখলে ওয়েবহুক ব্যবহার হবে না।
+                                    <span class="d-none" id="suggested_webhook_url">{{ \App\Http\Controllers\Admin\RedXWebhookController::webhookUrl() }}</span>
+                                    এই URL টি (গোপন token সহ) কপি করে RedX ড্যাশবোর্ডে বসান — token ছাড়া পুরোনো URL আর কাজ করবে না।
                                 </small>
                             </div>
 

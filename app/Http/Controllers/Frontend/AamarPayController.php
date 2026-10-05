@@ -21,22 +21,73 @@ class AamarPayController extends Controller
     private $store_id;
     private $signature_key;
     private $base_url;
+    private bool $enabled = false;
     protected $facebookCapiService;
 
     public function __construct(FacebookCapiService $facebookCapiService)
     {
         $this->facebookCapiService = $facebookCapiService;
         $aamarpay_gateway = PaymentGateway::where(['status' => 1, 'type' => 'aamarpay'])->first();
-        
-        if($aamarpay_gateway) {
+
+        // No silent fallback to aamarPay's public sandbox account: a switched-off gateway takes no payments.
+        if ($aamarpay_gateway && $aamarpay_gateway->app_key && $aamarpay_gateway->app_secret) {
+            $this->enabled = true;
             $this->store_id = $aamarpay_gateway->app_key; // store_id is stored in app_key field
             $this->signature_key = $aamarpay_gateway->app_secret; // signature_key is stored in app_secret field
             $this->base_url = $aamarpay_gateway->base_url ?? 'https://sandbox.aamarpay.com/jsonpost.php';
-        } else {
-            // Sandbox credentials (for development)
-            $this->store_id = 'aamarpaytest';
-            $this->signature_key = 'dbb74894e82415a2f7ff0ec3a97e4183';
-            $this->base_url = 'https://sandbox.aamarpay.com/jsonpost.php';
+        }
+    }
+
+    /**
+     * Ask aamarPay's own server whether this transaction was paid. The browser callback is never
+     * trusted on its own — anyone can open /aamarpay/success with made-up "Successful" values.
+     *
+     * @return array{amount: float, trx_id: string}|null
+     */
+    private function verifiedPayment(Order $order, string $merTxnId): ?array
+    {
+        // tran_id is "ORD{order id}_{random}" (see checkout), which ties the transaction to this order.
+        if (! $this->enabled || ! str_starts_with($merTxnId, 'ORD' . $order->id . '_')) {
+            return null;
+        }
+
+        $host = parse_url((string) $this->base_url, PHP_URL_HOST) ?: 'secure.aamarpay.com';
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(20)->get("https://{$host}/api/v1/trxcheck/request.php", [
+                'request_id'    => $merTxnId,
+                'store_id'      => $this->store_id,
+                'signature_key' => $this->signature_key,
+                'type'          => 'json',
+            ]);
+            $data = $response->json();
+        } catch (\Throwable $e) {
+            Log::error('aamarPay verification request failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+
+            return null;
+        }
+
+        $amount = (float) ($data['amount_original'] ?? $data['amount'] ?? 0);
+        $ok = is_array($data)
+            && strtolower((string) ($data['pay_status'] ?? '')) === 'successful'
+            && (string) ($data['mer_txnid'] ?? '') === $merTxnId
+            && $amount > 0;
+
+        if (! $ok) {
+            Log::warning('aamarPay payment not confirmed by aamarPay', ['order_id' => $order->id, 'mer_txnid' => $merTxnId, 'response' => $data]);
+
+            return null;
+        }
+
+        return ['amount' => $amount, 'trx_id' => (string) ($data['pg_txnid'] ?? $data['bank_trxid'] ?? $merTxnId)];
+    }
+
+    /** Only an unpaid aamarPay order may be marked failed — callbacks can't flip anything else. */
+    private function markFailed(Order $order): void
+    {
+        if ($order->payment_gateway === 'aamarpay' && $order->payment_status !== 'paid') {
+            $order->payment_status = 'failed';
+            $order->save();
         }
     }
 
@@ -49,6 +100,11 @@ class AamarPayController extends Controller
 
         if(!$orderId){
             return redirect()->back()->with('error', 'Order ID missing for aamarPay.');
+        }
+
+        if (! $this->enabled) {
+            Toastr::error('aamarPay payment is not available right now.', 'Error!');
+            return redirect()->back();
         }
 
         $order = Order::findOrFail($orderId);
@@ -189,12 +245,11 @@ class AamarPayController extends Controller
             return redirect()->route('customer.account');
         }
 
-        // Check payment status from callback
-        $statusCode = $request->status_code ?? null;
-        $payStatus = $request->pay_status ?? null;
+        // The callback's own status_code/pay_status are only hints; aamarPay's server has the final word.
+        $merTxnId = (string) ($request->mer_txnid ?? Session::get('aamarpay_tran_id') ?? '');
+        $verified = $this->verifiedPayment($order, $merTxnId);
 
-        // Status code: 2 = successful, 0 = initiated, 3 = expired, 7 = failed
-        if ($statusCode == '2' && strtolower($payStatus) == 'successful') {
+        if ($verified) {
             // Payment successful
             $order->payment_status = 'paid';
             $order->payment_gateway = 'aamarpay';
@@ -205,20 +260,12 @@ class AamarPayController extends Controller
             $payment = Payment::where('order_id', $order->id)->first();
             if ($payment) {
                 $payment->payment_status = 'paid';
-                $payment->trx_id = $request->pg_txnid ?? $request->mer_txnid ?? null;
+                $payment->trx_id = $verified['trx_id'];
                 $payment->sender_number = $request->cus_phone ?? null;
-                
-                // Update amount from callback or session
-                if ($request->amount) {
-                    $payment->amount = (float) $request->amount;
-                } elseif (Session::has('payable_amount')) {
-                    $payment->amount = Session::get('payable_amount');
-                } elseif ($order->customer_payable_amount) {
-                    $payment->amount = $order->customer_payable_amount;
-                } else {
-                    $payment->amount = $order->amount;
-                }
-                
+
+                // The amount aamarPay actually collected, not what the callback claims
+                $payment->amount = $verified['amount'];
+
                 $payment->save();
             }
 
@@ -285,10 +332,8 @@ class AamarPayController extends Controller
             return redirect()->route($redirectRoute, $order->id);
 
         } else {
-            // Payment failed or pending
-            $order->payment_status = 'failed';
-            $order->payment_gateway = 'aamarpay';
-            $order->save();
+            // Payment failed, pending, or not confirmed by aamarPay
+            $this->markFailed($order);
 
             Session::forget(['payable_amount', 'aamarpay_tran_id', 'aamarpay_order_id']);
 
@@ -312,9 +357,7 @@ class AamarPayController extends Controller
         if ($orderId) {
             $order = Order::where('id', $orderId)->first();
             if ($order) {
-                $order->payment_status = 'failed';
-                $order->payment_gateway = 'aamarpay';
-                $order->save();
+                $this->markFailed($order);
             }
         }
 

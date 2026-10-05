@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\Productimage;
+use App\Support\SafeUpload;
 use App\Models\Productcolor;
 use App\Models\Productsize;
 use App\Models\ProductVariantPrice;
@@ -768,6 +769,30 @@ class ProductController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Products status updated']);
     }
 
+    /** Product list row buttons (form posts hidden_id). Saved through the model so the search index refreshes. */
+    public function inactive(Request $request)
+    {
+        return $this->setStatus($request, 0, 'Product inactive successfully');
+    }
+
+    public function active(Request $request)
+    {
+        return $this->setStatus($request, 1, 'Product active successfully');
+    }
+
+    private function setStatus(Request $request, int $status, string $message)
+    {
+        $request->validate(['hidden_id' => 'required|integer']);
+
+        $product = Product::findOrFail($request->hidden_id);
+        $product->status = $status;
+        $product->save();
+
+        Toastr::success('Success', $message);
+
+        return redirect()->back();
+    }
+
     // ================================
     // PENDING PRODUCTS (FOR APPROVAL)
     // ================================
@@ -834,22 +859,14 @@ class ProductController extends Controller
 
         if ($videoType === 'upload') {
             if ($request->hasFile('pro_video_file')) {
-                // Delete old uploaded video if exists
+                // Image pattern অনুসরণ করে — CWD (htdocs) relative path; extension taken from the file's contents
+                $dir       = 'public/uploads/product/videos/';
+                $fileName  = SafeUpload::move($request->file('pro_video_file'), $dir, 'video-', SafeUpload::VIDEOS, 'pro_video_file');
+
+                // Delete old uploaded video only once the new one is safely saved
                 if ($product && $product->pro_video_path && file_exists($product->pro_video_path)) {
                     @unlink($product->pro_video_path);
                 }
-
-                $file      = $request->file('pro_video_file');
-                $ext       = $file->getClientOriginalExtension();
-                $fileName  = time() . '-video.' . $ext;
-                $dir       = 'public/uploads/product/videos/';
-
-                // Image pattern অনুসরণ করে — CWD (htdocs) relative path
-                if (!is_dir($dir)) {
-                    mkdir($dir, 0775, true);
-                }
-
-                $file->move($dir, $fileName);
 
                 $input['pro_video']      = null;
                 $input['pro_video_type'] = 'upload';

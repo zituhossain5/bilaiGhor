@@ -32,6 +32,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(prepend: [
             \App\Http\Middleware\ResellerCustomDomain::class,
         ]);
+
+        // One CSRF check only: App\Http\Middleware\VerifyCsrfToken (appended below) carries the
+        // exception list for courier webhooks and payment callbacks. Laravel's default copy knew
+        // nothing of that list and answered those requests with 419.
+        $middleware->web(remove: [
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+        ]);
         $middleware->web(append: [
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

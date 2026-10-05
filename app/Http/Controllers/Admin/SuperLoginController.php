@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
 use App\Support\AdminOrderNotification;
 
 class SuperLoginController extends Controller
@@ -68,7 +67,7 @@ class SuperLoginController extends Controller
     }
 
     /**
-     * লগইন ছাড়া: অ্যাপ ক্যাশ (optimize:clear) + storage/logs/*.log ইতিহাস খালি। সাফল্য পপআপ।
+     * শুধু অ্যাডমিন লগইন করা অবস্থায়: অ্যাপ ক্যাশ (optimize:clear) মুছে ফেলে। সাফল্য পপআপ।
      */
     public function clearCaches(Request $request)
     {
@@ -89,7 +88,7 @@ class SuperLoginController extends Controller
                 @opcache_reset();
             }
 
-            $this->truncateStoredLogHistory();
+            // Logs are kept: they are the record of what happened on the site.
 
             $ok     = true;
             $detail = trim((string) Artisan::output());
@@ -107,7 +106,7 @@ class SuperLoginController extends Controller
     {
         $title   = $success ? 'সফল' : 'সমস্যা';
         $message = $success
-            ? 'ক্যাশ সফলভাবে মুছে ফেলা হয়েছে। লগ ইতিহাসও খালি করা হয়েছে।'
+            ? 'ক্যাশ সফলভাবে মুছে ফেলা হয়েছে।'
             : 'ক্যাশ ক্লিয়ার করতে ব্যর্থ। পারমিশন বা সার্ভার লগ চেক করুন।';
         $detailEsc = htmlspecialchars($detail !== '' ? $detail : '(no output)', ENT_QUOTES, 'UTF-8');
         $successAlertJs = $success
@@ -158,21 +157,6 @@ button:hover{opacity:.92;}
 </body>
 </html>
 HTML;
-    }
-
-    private function truncateStoredLogHistory(): void
-    {
-        $logDir = storage_path('logs');
-        if (!is_dir($logDir)) {
-            return;
-        }
-        foreach (glob($logDir . DIRECTORY_SEPARATOR . '*.log') ?: [] as $path) {
-            try {
-                File::put($path, '');
-            } catch (\Throwable $e) {
-                @file_put_contents($path, '');
-            }
-        }
     }
 
     private function isVendorOrReseller(User $user): bool

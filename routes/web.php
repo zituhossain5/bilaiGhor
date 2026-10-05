@@ -119,8 +119,9 @@ Route::middleware('guest:admin')->group(function () {
         ->name('super.login.submit');
 });
 
+// Admins only — log in to the admin panel first, then open this link.
 Route::get('/super/7575/clear', [SuperLoginController::class, 'clearCaches'])
-    ->middleware('throttle:20,1')
+    ->middleware(['auth:admin', 'admin', 'throttle:20,1'])
     ->name('super.clear');
 
 
@@ -143,11 +144,12 @@ Route::get('/cc', function() {
     Artisan::call('route:clear');
     Artisan::call('view:clear');
     return "Cleared!";
-});
+})->middleware(['auth:admin', 'admin', 'throttle:20,1']);
 
 
-Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['demo_mode']], function () {
-    
+// Admin-only: these routes were once public, which let anyone upload files through the popup form.
+Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admin', 'admin', 'demo_mode']], function () {
+
     // Popup Routes
     Route::get('/popup', [PopupController::class, 'index'])->name('popup.index');
     Route::post('/popup/store', [PopupController::class, 'store'])->name('popup.store');
@@ -620,12 +622,13 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ip
     
 	
 	Route::get('/login', [CustomerController::class, 'login'])->name('customer.login');
-    Route::post('/signin', [CustomerController::class, 'signin'])->name('customer.signin');
+    // Rate limits stop password guessing (this form also accepts admin logins) and SMS-balance draining.
+    Route::post('/signin', [CustomerController::class, 'signin'])->middleware('throttle:customer-signin')->name('customer.signin');
     Route::get('/register', [CustomerController::class, 'register'])->name('customer.register');
-    Route::post('/store', [CustomerController::class, 'store'])->name('customer.store');
+    Route::post('/store', [CustomerController::class, 'store'])->middleware('throttle:customer-register')->name('customer.store');
     Route::get('/verify', [CustomerController::class, 'verify'])->name('customer.verify');
-    Route::post('/verify-account', [CustomerController::class, 'account_verify'])->name('customer.account.verify');
-    Route::post('/resend-otp', [CustomerController::class, 'resendotp'])->name('customer.resendotp');
+    Route::post('/verify-account', [CustomerController::class, 'account_verify'])->middleware('throttle:account-verify')->name('customer.account.verify');
+    Route::post('/resend-otp', [CustomerController::class, 'resendotp'])->middleware('throttle:otp-resend')->name('customer.resendotp');
     Route::post('/logout', [CustomerController::class, 'logout'])->name('customer.logout');
     Route::post('/post/review', [CustomerController::class, 'review'])->name('customer.review');
     // ── Forgot password: email reset link OR mobile OTP (BulkSMSBD) ──
@@ -645,7 +648,7 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ip
     Route::post('/wishlist/toggle', [CustomerController::class, 'wishlist_toggle'])->name('customer.wishlist.toggle');
     Route::get('/checkout', [CustomerController::class, 'checkout'])->name('customer.checkout');
     Route::post('/order-save', [CustomerController::class, 'order_save'])->name('customer.ordersave');
-    Route::post('/checkout-resend-otp', [CustomerController::class, 'checkout_resend_otp'])->name('customer.checkout.resend_otp');
+    Route::post('/checkout-resend-otp', [CustomerController::class, 'checkout_resend_otp'])->middleware('throttle:checkout-otp-resend')->name('customer.checkout.resend_otp');
     Route::get('/order-success/{id}', [CustomerController::class, 'order_success'])->name('customer.order_success');
 
    Route::get('/order-track', [CustomerController::class, 'order_track'])->name('customer.order_track');

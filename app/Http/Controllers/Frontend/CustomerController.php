@@ -19,6 +19,7 @@ use App\Models\PaymentGateway;
 use App\Models\ManualPaymentGateway;
 use App\Models\DeliveryDivision;
 use App\Support\DeliveryLocation;
+use App\Support\SafeUpload;
 use App\Models\SmsGateway;
 use App\Helpers\SmsHelper;
 use App\Models\Contact;
@@ -81,9 +82,7 @@ class CustomerController extends Controller
         $review->status     = 'pending';
 
         if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $name = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('review_images'), $name);
+            $name = SafeUpload::move($request->file('image'), public_path('review_images'), 'review_', ['jpg', 'png', 'webp'], 'image');
             $review->image = 'public/review_images/' . $name;
         }
 
@@ -497,6 +496,9 @@ class CustomerController extends Controller
     public function resendotp(Request $request)
     {
         $customer_info = Customer::where('phone',session::get('verify_phone'))->first();
+        if (!$customer_info) {
+            return redirect()->route('customer.register');
+        }
         $customer_info->verify = rand(1111,9999);
         $customer_info->save();
         $site_setting = GeneralSetting::where('status', 1)->first();
@@ -513,11 +515,23 @@ class CustomerController extends Controller
     {
         $this->validate($request,['otp' => 'required']);
         $customer_info = Customer::where('phone',session::get('verify_phone'))->first();
+        if (!$customer_info) {
+            return redirect()->route('customer.register');
+        }
+
+        // A 4-digit code must not be guessable: 5 wrong tries per phone, then a 15-minute wait.
+        $attemptKey = 'account-verify:' . $customer_info->phone;
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($attemptKey, 5)) {
+            Toastr::error('অনেকবার ভুল OTP দেওয়া হয়েছে। ১৫ মিনিট পরে আবার চেষ্টা করুন।', 'Error');
+            return redirect()->back();
+        }
 
         if($customer_info->verify != $request->otp){
+            \Illuminate\Support\Facades\RateLimiter::hit($attemptKey, 900);
             Toastr::error('Success','Your OTP not match');
             return redirect()->back();
         }
+        \Illuminate\Support\Facades\RateLimiter::clear($attemptKey);
 
         $customer_info->verify = 1;
         $customer_info->status = 'active';

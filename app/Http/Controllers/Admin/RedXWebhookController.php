@@ -21,8 +21,29 @@ class RedXWebhookController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
+    /**
+     * RedX can't send a custom header, so the webhook URL carries a secret (?token=…) derived from
+     * APP_KEY. Without it anyone could mark orders delivered or cancelled.
+     */
+    public static function secret(): string
+    {
+        return substr(hash_hmac('sha256', 'redx-webhook', (string) config('app.key')), 0, 40);
+    }
+
+    /** The URL to paste into the RedX merchant panel. */
+    public static function webhookUrl(): string
+    {
+        return rtrim((string) config('app.url'), '/') . '/api/redx/webhook?token=' . self::secret();
+    }
+
     public function handleWebhook(Request $request)
     {
+        if (! hash_equals(self::secret(), (string) $request->query('token', ''))) {
+            Log::warning('RedX Webhook rejected: missing or wrong token', ['ip' => $request->ip()]);
+
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
         try {
             // Log incoming webhook
             Log::info('RedX Webhook Received', [

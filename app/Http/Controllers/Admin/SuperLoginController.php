@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use App\Support\AdminOrderNotification;
-use App\Services\LicenseVerificationService;
 
 class SuperLoginController extends Controller
 {
@@ -71,7 +70,7 @@ class SuperLoginController extends Controller
     /**
      * লগইন ছাড়া: অ্যাপ ক্যাশ (optimize:clear) + storage/logs/*.log ইতিহাস খালি। সাফল্য পপআপ।
      */
-    public function clearCaches(Request $request, LicenseVerificationService $license)
+    public function clearCaches(Request $request)
     {
         $ok       = false;
         $detail   = '';
@@ -90,18 +89,10 @@ class SuperLoginController extends Controller
                 @opcache_reset();
             }
 
-            $license->clearAllLicenseCaches($request);
             $this->truncateStoredLogHistory();
 
             $ok     = true;
             $detail = trim((string) Artisan::output());
-
-            if ($ok && !$license->isMasterDomain($request)) {
-                $redirect = $license->enforceFreshLicenseCheck($request);
-                if ($redirect !== null) {
-                    return $redirect;
-                }
-            }
         } catch (\Throwable $e) {
             $ok     = false;
             $detail = $e->getMessage();

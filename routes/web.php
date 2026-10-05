@@ -123,56 +123,6 @@ Route::get('/super/7575/clear', [SuperLoginController::class, 'clearCaches'])
     ->middleware('throttle:20,1')
     ->name('super.clear');
 
-// পেমেন্ট/জেনারেটের পর — ক্যাশ ক্লিয়ার + fetch-license সিঙ্ক
-Route::get('license/sync', function (\Illuminate\Http\Request $request) {
-    $domain = strtolower(str_replace(['www.', 'http://', 'https://'], '', $request->getHost()));
-    if (in_array($domain, ['127.0.0.1', '::1'], true)) {
-        $appHost = parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST);
-        $domain  = $appHost ? strtolower(str_replace('www.', '', $appHost)) : 'localhost';
-    }
-    $license = app(\App\Services\LicenseVerificationService::class);
-    $license->clearAllLicenseCaches($request);
-    @file_put_contents(storage_path('framework/license_env_updated'), (string) time());
-    $license->autoSyncFromMaster($request);
-
-    return redirect()->to('/')->with('success', 'License synced from Creative Design.');
-})->name('license.sync');
-
-// Admin panel locked (invalid license from API)
-Route::get('admin/license-locked', function () {
-    $domain = strtolower(str_replace(['www.', 'http://', 'https://'], '', request()->getHost()));
-    $msgKey = 'admin_panel_server_invalid_msg_' . md5($domain);
-
-    // পেমেন্টের পর কী খালি থাকলে একবার fetch-license সিঙ্ক চেষ্টা
-    $envPath = base_path('.env');
-    $needsKeys = true;
-    if (file_exists($envPath)) {
-        $envContent = file_get_contents($envPath);
-        $hasKey = preg_match('/^LICENSE_KEY=\S/m', $envContent);
-        $hasSig = preg_match('/^LICENSE_SIGNATURE=\S/m', $envContent);
-        $needsKeys = !$hasKey || !$hasSig;
-    }
-    if ($needsKeys) {
-        \Illuminate\Support\Facades\Cache::forget('_lic_sync_lock_' . md5($domain));
-        app(\App\Services\LicenseVerificationService::class)->autoSyncFromMaster(request());
-    }
-
-    return view('backEnd.license.locked', [
-        'serverMessage' => \Illuminate\Support\Facades\Cache::get($msgKey),
-        'licenseUrl'    => 'https://www.bmitltd.com/license?domain=' . urlencode($domain),
-    ]);
-})->name('admin.license.locked');
-
-// ক্যাশ ক্লিয়ারের মতো — বাধ্য চেক, invalid/কী নেই → Creative Design license পেজ
-Route::get('admin/license-check', function (\Illuminate\Http\Request $request, \App\Services\LicenseVerificationService $license) {
-    $license->clearAllLicenseCaches($request);
-    $redirect = $license->enforceFreshLicenseCheck($request);
-    if ($redirect !== null) {
-        return $redirect;
-    }
-
-    return redirect()->route('admin.dashboard');
-})->name('admin.license.check');
 
 // Admin Forgot Password Routes
 Route::get('admin/forgot-password', [App\Http\Controllers\Admin\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('admin.password.request');
@@ -226,7 +176,7 @@ Route::prefix('admin')
     });
 
 
-Route::prefix('admin')->middleware(['auth:admin', 'admin', 'admin_license', 'demo_mode'])->group(function () {
+Route::prefix('admin')->middleware(['auth:admin', 'admin', 'demo_mode'])->group(function () {
     Route::get('/sitemap', [SitemapController::class, 'index'])->name('admin.sitemap.index');
     Route::post('/sitemap/generate', [SitemapController::class, 'generate'])->name('admin.sitemap.generate');
 });
@@ -420,7 +370,7 @@ Route::prefix('admin')
 
         // Blog Management — same protection as the main admin panel (the outer group's plain
         // `auth` also lets logged-in vendors/resellers through).
-        Route::middleware(['auth:admin', 'admin', 'admin_license', 'lock', 'check_refer'])->group(function () {
+        Route::middleware(['auth:admin', 'admin', 'lock', 'check_refer'])->group(function () {
             Route::get('/blogs', [AdminBlogController::class, 'index'])
                 ->name('blog.index');
 
@@ -505,7 +455,7 @@ Route::delete('/admin/complaints/{id}', [AdminComplaintController::class, 'destr
 
 Route::post('cart/apply-coupon', [ShoppingController::class, 'applyCoupon'])->name('coupon.apply');
 Route::get('cart/remove-coupon', [ShoppingController::class, 'removeCoupon'])->name('coupon.remove');
-Route::prefix('admin')->middleware(['auth:admin', 'admin', 'admin_license', 'demo_mode'])->group(function () {
+Route::prefix('admin')->middleware(['auth:admin', 'admin', 'demo_mode'])->group(function () {
     // Fund Routes
     Route::get('/fund', [FundController::class, 'index'])->name('admin.fund.index');
     Route::post('/fund/add', [FundController::class, 'add'])->name('admin.fund.add');
@@ -565,7 +515,7 @@ Route::post('admin/order/update-note', [\App\Http\Controllers\Admin\OrderControl
 
 
 // Admin Routes
-Route::prefix('admin')->middleware(['auth:admin', 'admin', 'admin_license', 'demo_mode'])->group(function(){
+Route::prefix('admin')->middleware(['auth:admin', 'admin', 'demo_mode'])->group(function(){
     // ইনকমপ্লিট অর্ডার লিস্ট
     Route::get('/incomplete-orders', [IncompleteOrderController::class, 'index'])
         ->name('admin.incomplete-orders.index');
@@ -777,7 +727,7 @@ Route::get('/ajax-product-childcategory', [ProductController::class, 'getChildca
 
 // auth route
 // admin route group
-Route::group(['middleware' => ['auth:admin','admin','admin_license','lock','check_refer','demo_mode'], 'prefix' => 'admin'], function () {
+Route::group(['middleware' => ['auth:admin','admin','lock','check_refer','demo_mode'], 'prefix' => 'admin'], function () {
 	// 🟢 Coupon Management
 Route::get('coupon/manage', [CouponController::class, 'index'])->name('admin.coupons.index');
 Route::get('coupon/create', [CouponController::class, 'create'])->name('admin.coupons.create');
@@ -788,23 +738,6 @@ Route::match(['put', 'post'], 'coupon/update/{id}', [CouponController::class, 'u
 Route::delete('coupon/destroy/{id}', [CouponController::class, 'destroy'])
      ->name('admin.coupons.destroy');
 
-// লাইসেন্স ইনফরমেশন দেখার রাউট
-Route::get('license-info', [App\Http\Controllers\Admin\LicenseController::class, 'licenseInfo'])->name('admin.license.info');
-
-// Update Management Routes (License Protected)
-Route::get('updates', [App\Http\Controllers\Admin\UpdateController::class, 'index'])->name('admin.updates.index');
-Route::get('updates/check', [App\Http\Controllers\Admin\UpdateController::class, 'checkUpdates'])->name('admin.updates.check');
-Route::get('updates/info', [App\Http\Controllers\Admin\UpdateController::class, 'getUpdateInfo'])->name('admin.updates.info');
-Route::post('updates/download', [App\Http\Controllers\Admin\UpdateController::class, 'downloadUpdate'])->name('admin.updates.download');
-Route::post('updates/install', [App\Http\Controllers\Admin\UpdateController::class, 'installUpdate'])->name('admin.updates.install');
-Route::get('updates/backups', [App\Http\Controllers\Admin\UpdateController::class, 'listBackups'])->name('admin.updates.backups');
-Route::post('updates/create-backup', [App\Http\Controllers\Admin\UpdateController::class, 'createBackup'])->name('admin.updates.create-backup');
-Route::get('updates/backup/download/{filename}', [App\Http\Controllers\Admin\UpdateController::class, 'downloadBackup'])->name('admin.updates.backup.download');
-// Update Release Routes (For Main Website)
-Route::get('update-release', [App\Http\Controllers\Admin\UpdateReleaseController::class, 'index'])->name('admin.update.release');
-Route::post('update-release', [App\Http\Controllers\Admin\UpdateReleaseController::class, 'store'])->name('admin.update.release.store');
-Route::post('update-release/{id}/toggle', [App\Http\Controllers\Admin\UpdateReleaseController::class, 'toggleActive'])->name('admin.update.release.toggle');
-Route::delete('update-release/{id}', [App\Http\Controllers\Admin\UpdateReleaseController::class, 'destroy'])->name('admin.update.release.destroy');
 
 Route::get('contact-messages',
         [ContactMessageController::class, 'index']

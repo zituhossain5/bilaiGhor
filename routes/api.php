@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\FrontendController;
-use App\Http\Controllers\Api\UpdateServerController;
 use App\Http\Controllers\Api\Mobile\AuthController;
 use App\Http\Controllers\Api\Mobile\ProductController;
 use App\Http\Controllers\Api\Mobile\CartController;
@@ -85,13 +84,6 @@ Route::prefix('v1/mobile')->middleware('auth:sanctum')->group(function () {
     });
 });
 
-// Update Server API Routes (License Protected)
-Route::prefix('updates')->group(function () {
-    Route::post('check', [UpdateServerController::class, 'check']);
-    Route::post('info', [UpdateServerController::class, 'info']);
-    Route::post('download', [UpdateServerController::class, 'download']);
-    Route::get('file/{version}', [UpdateServerController::class, 'downloadFile'])->name('api.updates.file');
-});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

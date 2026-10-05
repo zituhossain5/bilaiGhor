@@ -1102,24 +1102,6 @@
 
 
 
-@canany(['license-info', 'api-manage'])
-<li class="{{ request()->routeIs('admin.license.info') ? 'active' : '' }}">
-  <a href="{{ route('admin.license.info') }}">
-    <i data-feather="key"></i>
-    <span> License </span>
-  </a>
-</li>
-@endcanany
-
-@can('license-info')
-<li>
-  <a href="{{ route('admin.updates.index') }}">
-    <i data-feather="refresh-cw"></i>
-    <span>System Updates</span>
-  </a>
-</li>
-@endcan
-
 @can('cache-clear')
 <li>
   <a href="{{ route('admin.clear.cache') }}"

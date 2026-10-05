@@ -17,8 +17,12 @@ use App\Models\ProductVariantPrice;
 use App\Models\Shipping;
 use App\Models\Size;
 use App\Models\User;
+use App\Services\BdCourierService;
 use App\Services\CouponService;
+use App\Services\CourierDispatchService;
 use App\Services\InventoryService;
+use App\Services\PathaoService;
+use App\Services\RedXService;
 use App\Services\RewardPointService;
 use App\Support\TrafficSourceDetector;
 use Brian2694\Toastr\Facades\Toastr;
@@ -33,14 +37,12 @@ use Illuminate\Validation\Rule;
 
 /**
  * Admin order management: lists, quick view, process, status, notes, invoice, print/label,
- * POS sales and order edits (both via the session "pos_shopping" cart), delete and bulk actions.
+ * POS sales and order edits (both via the session "pos_shopping" cart), delete and bulk actions,
+ * courier booking (CourierDispatchService), fraud and duplicate-order checks.
  *
  * Rewritten in plain PHP to replace the vendor's ionCube-encoded controller. Inventory,
  * reward points and fund crediting react to status changes through the Order model's
  * `updated` hook, so this controller only has to change orders the normal Eloquent way.
- *
- * Courier/fraud/report tools (phase 4) are not rebuilt yet; their routes answer with a
- * clear message instead of failing.
  */
 class OrderController extends Controller
 {
@@ -89,18 +91,20 @@ class OrderController extends Controller
             ->paginate(self::PER_PAGE)
             ->withQueryString();
 
+        $pathao = new PathaoService();
+
         return [
             'order_status'           => $order_status,
             'show_data'              => $show_data,
             'orderstatus'            => $this->statuses(),
             'users'                  => $this->staffUsers(),
             'traffic_source_options' => $this->trafficSourceOptions(),
-            // Courier tools are rebuilt in phase 4 — their buttons stay hidden until then.
-            'steadfast'              => null,
-            'pathao_info'            => null,
-            'redx_info'              => null,
-            'pathaostore'            => null,
-            'pathaocities'           => null,
+            // A courier's button shows only when its API settings are switched on and filled in.
+            'steadfast'              => CourierDispatchService::config('steadfast'),
+            'pathao_info'            => $pathao->isConfigured(),
+            'redx_info'              => CourierDispatchService::config('redx'),
+            'pathaostore'            => $pathao->isConfigured() ? $pathao->stores() : null,
+            'pathaocities'           => $pathao->isConfigured() ? $pathao->cities() : null,
         ];
     }
 
@@ -119,10 +123,9 @@ class OrderController extends Controller
             'order'                  => $order,
             'blockedIps'             => DB::table('ip_blocks')->pluck('ip_no')->all(),
             'traffic_source_options' => $this->trafficSourceOptions(),
-            // Courier send buttons return in phase 4.
-            'steadfast'              => null,
-            'pathao_info'            => null,
-            'redx_info'              => null,
+            'steadfast'              => CourierDispatchService::config('steadfast'),
+            'pathao_info'            => CourierDispatchService::config('pathao'),
+            'redx_info'              => CourierDispatchService::config('redx'),
         ])->render();
 
         return response()->json(['status' => 'success', 'html' => $html, 'invoice_id' => $order->invoice_id]);
@@ -769,35 +772,288 @@ class OrderController extends Controller
     }
 
     // =========================================================
-    // Not rebuilt yet (phase 4: courier, fraud, reports)
+    // Courier booking (Steadfast, Pathao, RedX)
     // =========================================================
 
-    public function bulk_courier(Request $request, $slug = null) { return $this->notReady($request); }
-    public function order_pathao(Request $request)       { return $this->notReady($request); }
-    public function pathaocity(Request $request)         { return $this->notReady($request); }
-    public function pathaozone(Request $request)         { return $this->notReady($request); }
-    public function redxAreas(Request $request)          { return $this->notReady($request); }
-    public function redxPickupStores(Request $request)   { return $this->notReady($request); }
-    public function fraudCheck(Request $request)         { return $this->notReady($request); }
-    public function manualFraudCheckPage(Request $request)   { return $this->notReady($request); }
-    public function manualFraudCheck(Request $request)       { return $this->notReady($request); }
-    public function duplicateOrderCheck(Request $request)    { return $this->notReady($request); }
-    public function manualDuplicateOrderCheckPage(Request $request) { return $this->notReady($request); }
-    public function manualDuplicateOrderCheck(Request $request)     { return $this->notReady($request); }
-    public function stock_report(Request $request)       { return $this->notReady($request); }
-    public function order_report(Request $request)       { return $this->notReady($request); }
-
-    private function notReady(Request $request)
+    /** Steadfast / RedX: send the ticked orders (GET ?order_ids[]=…&status=5). */
+    public function bulk_courier(Request $request, $slug = null): JsonResponse
     {
-        $message = 'এই ফিচারটি নতুন করে তৈরি করা হচ্ছে — শীঘ্রই চালু হবে।';
-
-        if ($request->expectsJson() || $request->ajax()) {
-            return response()->json(['status' => 'error', 'message' => $message]);
+        if (!in_array($slug, ['steadfast', 'redx'], true)) {
+            return response()->json(['status' => 'error', 'message' => 'অজানা কুরিয়ার'], 404);
+        }
+        if (!CourierDispatchService::config($slug)) {
+            return response()->json(['status' => 'error', 'message' => CourierDispatchService::label($slug) . ' API সেটিংস চালু/পূরণ করা নেই']);
         }
 
-        Toastr::warning($message, 'শীঘ্রই আসছে');
+        return $this->dispatchToCourier($request, $this->orderIds($request), $slug);
+    }
 
-        return redirect()->route('admin.orders', 'all');
+    /** Pathao: the dialog posts comma-separated order_ids plus store/city/zone/area. */
+    public function order_pathao(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'order_ids'   => 'required|string',
+            'pathaostore' => 'required|integer',
+            'pathaocity'  => 'required|integer',
+            'pathaozone'  => 'required|integer',
+            'pathaoarea'  => 'required|integer',
+        ]);
+
+        if (!CourierDispatchService::config('pathao')) {
+            return response()->json(['status' => 'error', 'message' => 'Pathao API সেটিংস চালু/পূরণ করা নেই']);
+        }
+
+        $ids = collect(explode(',', $validated['order_ids']))->map(fn ($id) => (int) trim($id))->filter()->unique()->values()->all();
+
+        $response = $this->dispatchToCourier($request, $ids, 'pathao', [
+            'store_id' => $validated['pathaostore'],
+            'city_id'  => $validated['pathaocity'],
+            'zone_id'  => $validated['pathaozone'],
+            'area_id'  => $validated['pathaoarea'],
+        ]);
+
+        // The Pathao dialog reads the per-order lists from "result".
+        $data = $response->getData(true);
+        $data['result'] = ['success' => $data['success'] ?? [], 'failed' => $data['failed'] ?? []];
+
+        return response()->json($data, $response->getStatusCode());
+    }
+
+    /** Zones of a Pathao city (the dialog's second dropdown). */
+    public function pathaocity(Request $request): JsonResponse
+    {
+        $zones = (new PathaoService())->zones((int) $request->city_id);
+
+        return $zones
+            ? response()->json($zones)
+            : response()->json(['message' => 'Pathao থেকে জোন লোড করা যায়নি'], 502);
+    }
+
+    /** Areas of a Pathao zone (the dialog's third dropdown). */
+    public function pathaozone(Request $request): JsonResponse
+    {
+        $areas = (new PathaoService())->areas((int) $request->zone_id);
+
+        return $areas
+            ? response()->json($areas)
+            : response()->json(['message' => 'Pathao থেকে এরিয়া লোড করা যায়নি'], 502);
+    }
+
+    public function redxAreas(Request $request): JsonResponse
+    {
+        $service = new RedXService();
+        if (!$service->isConfigured()) {
+            return response()->json(['message' => 'RedX API সেটিংস চালু/পূরণ করা নেই'], 422);
+        }
+
+        $areas = $service->getAreas($request->integer('post_code') ?: null, $request->district_name ?: null);
+
+        return $areas ? response()->json($areas) : response()->json(['message' => 'RedX থেকে এরিয়া লোড করা যায়নি'], 502);
+    }
+
+    public function redxPickupStores(): JsonResponse
+    {
+        $service = new RedXService();
+        if (!$service->isConfigured()) {
+            return response()->json(['message' => 'RedX API সেটিংস চালু/পূরণ করা নেই'], 422);
+        }
+
+        $stores = $service->getPickupStores();
+
+        return $stores ? response()->json($stores) : response()->json(['message' => 'RedX থেকে পিকআপ স্টোর লোড করা যায়নি'], 502);
+    }
+
+    /**
+     * Book each order, then move the booked ones to the requested status (In Courier by default).
+     * Answers with the lists the order page shows: success[] and failed[{order_id, message, status_code}].
+     */
+    private function dispatchToCourier(Request $request, array $ids, string $courier, array $pathao = []): JsonResponse
+    {
+        if (!$ids) {
+            return response()->json(['status' => 'error', 'message' => 'Please Select An Order First !']);
+        }
+
+        $targetStatus = (int) $request->input('status', 5);
+        if (!OrderStatus::whereKey($targetStatus)->exists()) {
+            $targetStatus = 5;
+        }
+
+        $service = new CourierDispatchService();
+        $success = [];
+        $failed = [];
+
+        foreach (Order::whereIn('id', $ids)->get() as $order) {
+            $result = $service->send($order, $courier, $pathao);
+
+            if (!$result['ok']) {
+                $failed[] = [
+                    'order_id'    => $order->invoice_id,
+                    'message'     => $result['message'],
+                    'status_code' => $result['status_code'] ?? null,
+                ];
+                continue;
+            }
+
+            try {
+                $this->changeStatus($order, $targetStatus);
+            } catch (\Throwable $e) {
+                // The parcel is booked either way; only the status move failed.
+                Log::warning('Courier booked but status change failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+
+            $success[] = $order->invoice_id;
+        }
+
+        $name = CourierDispatchService::label($courier);
+
+        if (!$success) {
+            $first = $failed[0]['message'] ?? 'পাঠানো যায়নি';
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => count($failed) > 1 ? "{$name}: কোনো অর্ডার পাঠানো যায়নি — {$first}" : "{$name}: {$first}",
+                'success' => [],
+                'failed'  => $failed,
+            ]);
+        }
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => count($success) . " টি অর্ডার {$name} এ পাঠানো হয়েছে" . ($failed ? ', ' . count($failed) . ' টি ব্যর্থ' : ''),
+            'success' => $success,
+            'failed'  => $failed,
+        ]);
+    }
+
+    // =========================================================
+    // Fraud and duplicate-order checks
+    // =========================================================
+
+    /** Order-list "ফ্রড চেক" button: BD Courier history for a phone, saved onto that phone's orders. */
+    public function fraudCheck(Request $request): JsonResponse
+    {
+        $mobile = trim((string) $request->mobile);
+        if ($mobile === '') {
+            return response()->json(['status' => 'error', 'message' => 'মোবাইল নম্বর নেই'], 422);
+        }
+
+        $check = BdCourierService::fetchCourierCheck($mobile, true);
+
+        return $check['success']
+            ? response()->json(['status' => 'success', 'data' => $check['payload']])
+            : response()->json(['status' => 'error', 'message' => $check['message']]);
+    }
+
+    public function manualFraudCheckPage()
+    {
+        return view('backEnd.fraud.manual_check');
+    }
+
+    public function manualFraudCheck(Request $request)
+    {
+        $mobile = trim((string) $request->mobile);
+        if ($mobile === '') {
+            return back()->with('error', 'দয়া করে একটি মোবাইল নাম্বার লিখুন');
+        }
+
+        $check = BdCourierService::fetchCourierCheck($mobile, true);
+        if (!$check['success']) {
+            return back()->withInput()->with('error', $check['message']);
+        }
+
+        return view('backEnd.fraud.manual_check', [
+            'mobile'  => $mobile,
+            'data'    => $check['payload']['data'] ?? [],
+            'reports' => $check['payload']['reports'] ?? [],
+        ]);
+    }
+
+    /** JSON: open orders already placed with this phone (also flagged on those orders). */
+    public function duplicateOrderCheck(Request $request): JsonResponse
+    {
+        $mobile = trim((string) $request->mobile);
+        if (strlen(CourierDispatchService::phone($mobile)) < 10) {
+            return response()->json(['status' => 'error', 'message' => 'সঠিক মোবাইল নম্বর দিন'], 422);
+        }
+
+        return response()->json(['status' => 'success', 'data' => $this->duplicateSummary($mobile, true)]);
+    }
+
+    public function manualDuplicateOrderCheckPage()
+    {
+        return view('backEnd.duplicate_order.manual_check');
+    }
+
+    public function manualDuplicateOrderCheck(Request $request)
+    {
+        $mobile = trim((string) $request->mobile);
+        if (strlen(CourierDispatchService::phone($mobile)) < 10) {
+            return back()->with('error', 'সঠিক মোবাইল নম্বর দিন');
+        }
+
+        return view('backEnd.duplicate_order.manual_check', [
+            'mobile' => $mobile,
+            'data'   => $this->duplicateSummary($mobile, true),
+        ]);
+    }
+
+    /**
+     * A "duplicate" is a second order from the same phone that is still open (pending, processing,
+     * shipped, in courier or unpaid) — the usual sign of a double submit or a repeat fake order.
+     */
+    private function duplicateSummary(string $mobile, bool $flagOrders): array
+    {
+        $digits = CourierDispatchService::phone($mobile);
+        $variants = array_values(array_unique([$mobile, $digits, '88' . $digits, '+88' . $digits]));
+
+        $orders = Order::with('status')
+            ->whereHas('shipping', fn ($q) => $q->whereIn('phone', $variants))
+            ->latest('id')
+            ->get(['id', 'invoice_id', 'amount', 'order_status', 'created_at']);
+
+        $open = $orders->filter(fn ($o) => in_array((int) $o->order_status, InventoryService::RESERVE_STATUSES, true));
+        $duplicates = max($open->count() - 1, 0);
+        $rate = $orders->count() ? round($duplicates / $orders->count() * 100, 2) : 0;
+        $last = $duplicates ? $open->first()->created_at : null;
+
+        if ($flagOrders && $open->isNotEmpty()) {
+            Order::whereIn('id', $open->pluck('id'))->update([
+                'is_duplicate_order'        => $duplicates > 0 ? 1 : 0,
+                'duplicate_order_count'     => $duplicates,
+                'duplicate_order_rate'      => $rate,
+                'last_duplicate_order_date' => $last,
+            ]);
+        }
+
+        return [
+            'is_duplicate'        => $duplicates > 0,
+            'duplicate_count'     => $duplicates,
+            'duplicate_rate'      => $rate,
+            'last_duplicate_date' => $last?->format('d M Y, h:i A'),
+            'details'             => [
+                'total_orders' => $orders->count(),
+                'open_orders'  => $open->map(fn ($o) => [
+                    'invoice' => $o->invoice_id,
+                    'amount'  => (float) $o->amount,
+                    'status'  => $o->status->name ?? (string) $o->order_status,
+                    'date'    => $o->created_at?->format('d M Y, h:i A'),
+                ])->values()->all(),
+            ],
+        ];
+    }
+
+    // =========================================================
+    // Old report links — the reports live in ReportController now
+    // =========================================================
+
+    public function stock_report(Request $request)
+    {
+        return redirect()->route('admin.reports.stock', $request->query());
+    }
+
+    public function order_report(Request $request)
+    {
+        return redirect()->route('admin.reports.orders', $request->query());
     }
 
     // =========================================================

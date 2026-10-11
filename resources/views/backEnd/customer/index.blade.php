@@ -52,6 +52,8 @@
     /* Soft Badges */
     .badge-soft-success { background-color: rgba(10, 207, 151, 0.18); color: #0acf97; }
     .badge-soft-danger { background-color: rgba(250, 92, 124, 0.18); color: #fa5c7c; }
+    .badge-soft-warning { background-color: rgba(255, 188, 0, 0.18); color: #b98900; }
+    .badge-soft-info { background-color: rgba(57, 175, 209, 0.18); color: #2a8fad; }
     .badge-pill { padding: 5px 10px; border-radius: 50rem; font-weight: 500; font-size: 11px; }
 
     /* Action Buttons */
@@ -127,6 +129,10 @@
                     <h4 class="page-title mb-1" style="font-weight: 700; color: #2d3436;">Customer List</h4>
                     <p class="text-muted font-size-13 mb-0">Manage your customers and their account status.</p>
                 </div>
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                <a href="{{ route('customers.create') }}" class="btn btn-primary rounded-pill px-3">
+                    <i class="fe-user-plus me-1"></i> Add Customer
+                </a>
                 @if($show_data->total() > 0)
                 <form method="post" action="{{ route('customers.destroy-all') }}" id="form-delete-all-customers" class="mb-0">
                     @csrf
@@ -136,14 +142,46 @@
                     </button>
                 </form>
                 @endif
+                </div>
             </div>
         </div>
     </div>
+
+    @if(session('customer_duplicates'))
+        @php $dup = session('customer_duplicates'); @endphp
+        <div class="alert alert-warning">
+            <i class="fe-alert-triangle me-1"></i>
+            {{ $dup['customer'] }} shares a mobile number with:
+            @foreach($dup['others'] as $other)
+                <a href="{{ route('customers.edit', $other['id']) }}" class="alert-link">{{ $other['name'] }}{{ $other['manual'] ? ' (Manual)' : '' }}</a>@if(! $loop->last), @endif
+            @endforeach
+            — saved anyway; check it isn't the same person entered twice.
+        </div>
+    @endif
 
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
+
+                    <form method="GET" action="{{ route('customers.index') }}" class="row g-2 align-items-center mb-3">
+                        <div class="col-md-5">
+                            <input type="text" name="keyword" value="{{ $keyword }}" class="form-control" placeholder="Search name, mobile (any format) or email">
+                        </div>
+                        <div class="col-md-3">
+                            <select name="source" class="form-select">
+                                <option value="">All customers</option>
+                                <option value="registered" @selected($source === 'registered')>Registered</option>
+                                <option value="manual" @selected($source === 'manual')>Manual</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary"><i class="fe-search me-1"></i> Search</button>
+                            @if($keyword !== '' || $source)
+                                <a href="{{ route('customers.index') }}" class="btn btn-light">Clear</a>
+                            @endif
+                        </div>
+                    </form>
 
                     {{-- AJAX WRAPPER START --}}
                     <div id="customer-table-wrapper">
@@ -154,7 +192,9 @@
                                     <tr>
                                         <th style="width: 50px;">SL</th>
                                         <th>Name</th>
-                                        <th>Contact Info</th>
+                                        <th>Mobile</th>
+                                        <th>Source</th>
+                                        <th>Location</th>
                                         <th>Status</th>
                                         <th class="text-end" style="width: 220px;">Action</th>
                                     </tr>
@@ -162,21 +202,36 @@
                                 <tbody>
                                     @foreach($show_data as $key=>$value)
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        
+                                        <td>{{ $show_data->firstItem() + $loop->index }}</td>
+
                                         <td>
-                                            <span class="customer-name">{{ $value->name }}</span>
+                                            <span class="customer-name">{{ $value->name ?: '—' }}</span>
+                                            @if($value->email)
+                                                <span class="customer-contact"><i class="fe-mail me-1"></i> {{ $value->email }}</span>
+                                            @endif
                                         </td>
 
                                         <td>
-                                            <div class="d-flex flex-column">
+                                            @if($value->phone)
                                                 <span class="text-dark"><i class="fe-phone me-1 text-muted"></i> {{ $value->phone }}</span>
-                                                @if($value->email)
-                                                    <span class="customer-contact"><i class="fe-mail me-1"></i> {{ $value->email }}</span>
-                                                @endif
-                                            </div>
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endif
                                         </td>
-                                        
+
+                                        <td>
+                                            @if($value->isManual())
+                                                <span class="badge badge-pill badge-soft-warning">Manual</span>
+                                            @else
+                                                <span class="badge badge-pill badge-soft-info">Registered</span>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            @php $place = collect([optional($value->district)->name, optional($value->thana)->name_bn ?: optional($value->thana)->name])->filter()->implode(' / '); @endphp
+                                            <span class="customer-contact mt-0">{{ $place ?: '—' }}</span>
+                                        </td>
+
                                         <td>
                                             @if($value->status=='active')
                                                 <span class="badge badge-pill badge-soft-success">Active</span> 
@@ -217,7 +272,8 @@
                                                     <i class="fe-eye"></i>
                                                 </a>
 
-                                                {{-- Login As User (Admin Log) --}}
+                                                {{-- Login As User (Admin Log) — manual customers have no account --}}
+                                                @unless($value->isManual())
                                                 <form method="post" action="{{route('customers.adminlog')}}" class="d-inline" target="_blank">
                                                     @csrf
                                                     <input type="hidden" value="{{$value->id}}" name="hidden_id">
@@ -225,6 +281,7 @@
                                                         <i class="fe-log-in"></i>
                                                     </button>
                                                 </form>
+                                                @endunless
 
                                                 <form method="post" action="{{ route('customers.destroy', $value->id) }}" class="d-inline"
                                                       onsubmit="return confirm('এই কাস্টমার মুছে ফেলবেন? অর্ডার রেকর্ড থাকলেও কাস্টমার অ্যাকাউন্ট মুছে যাবে।');">

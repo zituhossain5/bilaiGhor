@@ -21,8 +21,8 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255|unique:customers,email',
-            'phone' => 'required|string|max:20|unique:customers,phone',
+            'email' => 'nullable|email|max:255|unique:customers,email,NULL,id,source,registered',
+            'phone' => 'required|string|max:20|unique:customers,phone,NULL,id,source,registered',
             'password' => 'required|string|min:6|confirmed',
             'password_confirmation' => 'required|string|min:6',
         ]);
@@ -98,9 +98,9 @@ class AuthController extends Controller
         
         $customer = null;
         if ($isEmail) {
-            $customer = Customer::where('email', $login)->first();
+            $customer = Customer::registered()->where('email', $login)->first();
         } else {
-            $customer = Customer::where('phone', $login)->first();
+            $customer = Customer::registered()->where('phone', $login)->first();
         }
 
         if (!$customer || !Hash::check($password, $customer->password)) {
@@ -177,8 +177,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|max:255|unique:customers,email,' . $customer->id,
-            'phone' => 'sometimes|string|max:20|unique:customers,phone,' . $customer->id,
+            'email' => 'sometimes|email|max:255|unique:customers,email,' . $customer->id . ',id,source,registered',
+            'phone' => 'sometimes|string|max:20|unique:customers,phone,' . $customer->id . ',id,source,registered',
             'address' => 'nullable|string|max:500',
             'city' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:20',

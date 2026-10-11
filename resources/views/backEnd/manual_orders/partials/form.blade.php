@@ -31,15 +31,28 @@
                     <h5 class="mb-3">Customer Information</h5>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label>Existing Customer</label>
-                            <select name="customer_id" id="customer_id" class="form-select">
+                            <label for="customer_id">Existing Customer</label>
+                            {{-- Searched as you type (customers.search); only the linked customer is rendered here. --}}
+                            <select name="customer_id" id="customer_id" class="form-select" data-search-url="{{ route('customers.search') }}">
                                 <option value="">No registered customer</option>
-                                @foreach($customers as $customer)
-                                    <option value="{{ $customer->id }}" data-name="{{ $customer->name }}" data-phone="{{ $customer->phone }}" data-email="{{ $customer->email }}" data-address="{{ $customer->address }}" data-district="{{ $customer->district_id }}" data-thana="{{ $customer->thana_id }}" @selected((string) $selectedCustomerId === (string) $customer->id)>
-                                        {{ $customer->name }} {{ $customer->phone ? '- '.$customer->phone : '' }}
+                                @if($selectedCustomer)
+                                    @php
+                                        $selectedPlace = collect([optional($selectedCustomer->district)->name, optional($selectedCustomer->thana)->name_bn ?: optional($selectedCustomer->thana)->name])->filter()->implode(' / ');
+                                    @endphp
+                                    <option value="{{ $selectedCustomer->id }}" selected data-manual="{{ $selectedCustomer->isManual() ? 1 : 0 }}">
+                                        {{ collect([$selectedCustomer->name ?: 'Unnamed', $selectedCustomer->phone, $selectedPlace])->filter()->implode(' — ') }}
                                     </option>
-                                @endforeach
+                                @endif
                             </select>
+                            <div class="form-check mt-2" id="update-customer-wrap" @if(! $selectedCustomerId) hidden @endif>
+                                <input class="form-check-input" type="checkbox" name="update_customer" value="1" id="update_customer" @checked(old('update_customer'))>
+                                <label class="form-check-label fw-normal" for="update_customer">Also update this customer's saved details</label>
+                                <small class="d-block text-muted">A registered customer's login phone and email are left as they are.</small>
+                            </div>
+                            <div class="form-check mt-2" id="save-customer-wrap" @if($selectedCustomerId) hidden @endif>
+                                <input class="form-check-input" type="checkbox" name="save_as_customer" value="1" id="save_as_customer" @checked(old('save_as_customer'))>
+                                <label class="form-check-label fw-normal" for="save_as_customer">Save as new customer</label>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label>Order Source *</label>
@@ -54,8 +67,13 @@
                             <input type="text" name="customer_name" id="customer_name" value="{{ $customerName }}" class="form-control" required>
                         </div>
                         <div class="col-md-6">
-                            <label>Mobile Number *</label>
-                            <input type="text" name="customer_phone" id="customer_phone" value="{{ $customerPhone }}" class="form-control" required>
+                            <label for="customer_phone">Mobile Number *</label>
+                            <div class="mo-phone-wrap">
+                                <input type="text" name="customer_phone" id="customer_phone" value="{{ $customerPhone }}" class="form-control" required
+                                       autocomplete="off" inputmode="tel" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="phone-suggest">
+                                <ul id="phone-suggest" class="mo-suggest" role="listbox" hidden></ul>
+                            </div>
+                            <div id="phone-match-hint" class="mo-match-hint" hidden></div>
                         </div>
                         <div class="col-md-6">
                             <label>Email</label>

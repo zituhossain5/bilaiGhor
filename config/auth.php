@@ -56,7 +56,7 @@ return [
 
         // Customers table
         'customers' => [
-            'driver' => 'eloquent',
+            'driver' => 'customer-eloquent', // eloquent, minus manual customers (App\Auth\CustomerUserProvider)
             'model' => App\Models\Customer::class,
         ],
 

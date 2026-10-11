@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Notifications\CustomerResetPasswordNotification;
+use App\Support\BdPhone;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -36,12 +37,70 @@ class Customer extends Authenticatable
         'district_id',   // districts.id — used by Profile Edit / addresses
         'thana_id',      // thanas.id - used by Profile Edit / addresses
         'image',
+        'source',        // registered | manual (see SOURCE_* below)
+        'post_code',
+        'notes',         // admin-only note
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'notes',
     ];
+
+    /** Signed up on the site/app/checkout — can log in. */
+    public const SOURCE_REGISTERED = 'registered';
+    /** Added by an admin — a record only, never a login. */
+    public const SOURCE_MANUAL = 'manual';
+
+    protected $attributes = [
+        'source' => self::SOURCE_REGISTERED,
+    ];
+
+    protected static function booted(): void
+    {
+        // phone_normalized is what every lookup matches on; keep it in step with phone.
+        static::saving(function (Customer $customer) {
+            if ($customer->isDirty('phone') || ($customer->phone && ! $customer->phone_normalized)) {
+                $customer->phone_normalized = BdPhone::normalize($customer->phone);
+            }
+        });
+    }
+
+    public function isManual(): bool
+    {
+        return $this->source === self::SOURCE_MANUAL;
+    }
+
+    public function scopeRegistered($query)
+    {
+        return $query->where('source', self::SOURCE_REGISTERED);
+    }
+
+    public function scopeManual($query)
+    {
+        return $query->where('source', self::SOURCE_MANUAL);
+    }
+
+    /** Same number in any format (+8801…, 8801…, 01…). */
+    public function scopeWithPhone($query, ?string $phone)
+    {
+        return $query->where('phone_normalized', BdPhone::normalize($phone) ?? '__no_phone__');
+    }
+
+    /**
+     * The customer an order placed with this phone belongs to: the registered account if there
+     * is one, otherwise a manual customer with the same number. Null when nobody has it.
+     */
+    public static function forOrderPhone(?string $phone): ?self
+    {
+        if (blank($phone)) {
+            return null;
+        }
+
+        return static::registered()->where('phone', $phone)->first()
+            ?? static::manual()->withPhone($phone)->orderBy('id')->first();
+    }
 
     /** Password-reset mail must point at the customer reset route, not the admin one. */
     public function sendPasswordResetNotification($token): void

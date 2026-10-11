@@ -65,6 +65,8 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('customer-register', fn (Request $request) => Limit::perMinutes(10, 10)->by('register:' . $request->ip()));
         RateLimiter::for('account-verify', fn (Request $request) => Limit::perMinute(10)->by('verify:' . $request->ip()));
         RateLimiter::for('otp-resend', fn (Request $request) => Limit::perMinutes(10, 3)->by('otp-resend:' . $request->ip()));
+        // Admin customer search (typing in the invoice customer picker / mobile field).
+        RateLimiter::for('admin-customer-search', fn (Request $request) => Limit::perMinute(120)->by('customer-search:' . ($request->user('admin')?->id ?: $request->ip())));
         RateLimiter::for('checkout-otp-resend', fn (Request $request) => Limit::perMinutes(10, 5)->by('checkout-otp:' . $request->ip()));
     }
 }

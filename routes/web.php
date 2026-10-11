@@ -1293,6 +1293,11 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     // backend customer route 
     Route::get('customer', [CustomerManageController::class,'index'])->name('customers.index');
     Route::get('customer/manage', [CustomerManageController::class,'index'])->name('customers.manage');
+    Route::get('customer/create', [CustomerManageController::class,'create'])->name('customers.create');
+    Route::post('customer/store', [CustomerManageController::class,'store'])->name('customers.store');
+    // Customer picker / mobile lookup on admin forms (JSON).
+    Route::get('customer/search', [CustomerManageController::class,'search'])
+        ->middleware('throttle:admin-customer-search')->name('customers.search');
     Route::get('customer/{id}/edit', [CustomerManageController::class,'edit'])->name('customers.edit');
     Route::post('customer/update', [CustomerManageController::class,'update'])->name('customers.update');
     Route::post('customer/inactive', [CustomerManageController::class,'inactive'])->name('customers.inactive');

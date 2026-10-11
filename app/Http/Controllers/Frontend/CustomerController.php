@@ -133,7 +133,7 @@ class CustomerController extends Controller
             }
 
             // Check if it's a reseller phone (via customer record email matching)
-            $customer = Customer::where('phone', $login)->first();
+            $customer = Customer::registered()->where('phone', $login)->first();
             if ($customer && $customer->email) {
                 $resellerUser = \App\Models\User::where('email', $customer->email)
                     ->where(function($query) {
@@ -152,7 +152,7 @@ class CustomerController extends Controller
         // 1) Try customer (phone-based) - only if not a vendor or reseller phone
         // Also check if customer exists with this phone number
         if (!$isVendorPhone && !$isResellerPhone && preg_match('/^[0-9+]+$/', $login)) {
-            $customerExists = Customer::where('phone', $login)->exists();
+            $customerExists = Customer::registered()->where('phone', $login)->exists();
             if ($customerExists && Auth::guard('customer')->attempt(['phone' => $login, 'password' => $password], $remember)) {
                 Toastr::success('You are login successfully', 'success!');
                 if (Cart::instance('shopping')->count() > 0) {
@@ -203,7 +203,7 @@ class CustomerController extends Controller
                     $adminCredentials = ['email' => $login, 'password' => $password];
                 } else {
                     // Check if it's a customer email (but not a reseller)
-                    $customerExists = Customer::where('email', $login)->exists();
+                    $customerExists = Customer::registered()->where('email', $login)->exists();
                     // Also check if this customer email is not linked to a reseller
                     $isResellerCustomer = \App\Models\User::where('email', $login)
                         ->where(function($query) {
@@ -275,8 +275,8 @@ class CustomerController extends Controller
             // Reseller registration — ডকিমেন্ট ড্যাশবোর্ডের ভেরিফিকেশন পেজে (Reseller\\VerificationController)
             $request->validate([
                 'name'               => 'required|string|max:255',
-                'phone'              => 'required|string|max:55|unique:customers,phone',
-                'email'              => 'required|email|unique:users,email|unique:customers,email',
+                'phone'              => 'required|string|max:55|unique:customers,phone,NULL,id,source,registered',
+                'email'              => 'required|email|unique:users,email|unique:customers,email,NULL,id,source,registered',
                 'reseller_shop_name' => 'required|string|max:255',
                 'password'           => 'required|confirmed|min:6',
                 'voter_id_front'     => 'nullable|image|mimes:jpeg,jpg,png,webp|max:102400',
@@ -459,7 +459,7 @@ class CustomerController extends Controller
             // Customer registration
             $this->validate($request, [
                 'name'     => 'required',
-                'phone'    => 'required|unique:customers',
+                'phone'    => 'required|unique:customers,phone,NULL,id,source,registered',
                 'password' => 'required|min:6'
             ]);
 
@@ -495,7 +495,7 @@ class CustomerController extends Controller
 
     public function resendotp(Request $request)
     {
-        $customer_info = Customer::where('phone',session::get('verify_phone'))->first();
+        $customer_info = Customer::registered()->where('phone',session::get('verify_phone'))->first();
         if (!$customer_info) {
             return redirect()->route('customer.register');
         }
@@ -514,7 +514,7 @@ class CustomerController extends Controller
     public function account_verify(Request $request)
     {
         $this->validate($request,['otp' => 'required']);
-        $customer_info = Customer::where('phone',session::get('verify_phone'))->first();
+        $customer_info = Customer::registered()->where('phone',session::get('verify_phone'))->first();
         if (!$customer_info) {
             return redirect()->route('customer.register');
         }
@@ -811,7 +811,8 @@ public function order_save(Request $request)
         if(Auth::guard('customer')->user()){
             $customer_id = Auth::guard('customer')->user()->id;
         }else{
-            $exist = Customer::where('phone',$request->phone)->select('id')->first();
+            // Registered account first, otherwise a manual (admin-added) customer with this number.
+            $exist = Customer::forOrderPhone($request->phone);
             if($exist){
                 $customer_id = $exist->id;
             }else{
@@ -1517,7 +1518,7 @@ public function order_save(Request $request)
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
-            'email' => 'nullable|email|max:255|unique:customers,email,'.$update_data->id,
+            'email' => 'nullable|email|max:255|unique:customers,email,'.$update_data->id.',id,source,registered',
             'address' => 'required|string|max:500',
             'district_id' => 'required|integer|exists:districts,id',
             'thana_id' => 'required|integer|exists:thanas,id',

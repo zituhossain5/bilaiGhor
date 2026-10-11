@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Auth\CustomerUserProvider;
 use App\Models\User;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
@@ -25,6 +27,11 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
+
+        // Customer logins skip manual (admin-added) customers — see CustomerUserProvider.
+        Auth::provider('customer-eloquent', function ($app, array $config) {
+            return new CustomerUserProvider($app['hash'], $config['model']);
+        });
 
         Gate::before(function ($user): ?bool {
             if (! $user instanceof User) {

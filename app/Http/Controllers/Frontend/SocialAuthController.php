@@ -58,7 +58,7 @@ class SocialAuthController extends Controller
                 $customer = Customer::where($providerColumn, $providerId)->lockForUpdate()->first();
 
                 if (!$customer && $email) {
-                    $customer = Customer::where('email', $email)->lockForUpdate()->first();
+                    $customer = Customer::registered()->where('email', $email)->lockForUpdate()->first();
                 }
 
                 if ($customer) {

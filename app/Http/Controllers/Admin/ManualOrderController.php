@@ -100,12 +100,15 @@ class ManualOrderController extends Controller
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
+            'update_customer' => ['nullable', 'boolean'],
+            'save_as_customer' => ['nullable', 'boolean'],
         ]);
 
         $this->validateThana($validated);
 
         try {
             $order = DB::transaction(function () use ($validated) {
+                $validated['customer_id'] = $this->resolveCustomer($validated);
                 $items = $this->normalizeItems($validated['items']);
                 $subtotal = collect($items)->sum('gross');
                 $itemDiscount = collect($items)->sum('discount');
@@ -230,6 +233,7 @@ class ManualOrderController extends Controller
                     ]);
                 }
 
+                $validated['customer_id'] = $this->resolveCustomer($validated);
                 $items = $this->normalizeItems($validated['items']);
                 $totals = $this->calculateTotals($items, $validated);
                 $targetStatus = (int) $validated['order_status'];
@@ -477,6 +481,8 @@ class ManualOrderController extends Controller
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
+            'update_customer' => ['nullable', 'boolean'],
+            'save_as_customer' => ['nullable', 'boolean'],
         ];
 
         if ($updating) {
@@ -582,10 +588,16 @@ class ManualOrderController extends Controller
         $selectedDistrictId = $order ? optional($order->shipping)->district_id : null;
         $selectedThanaId = $order ? optional($order->shipping)->thana_id : null;
 
+        // Customers are searched on demand (customers.search); only the linked one is pre-loaded.
+        $selectedCustomerId = old('customer_id', $order?->customer_id);
+        $selectedCustomer = $selectedCustomerId
+            ? Customer::with(['district:id,name', 'thana:id,name,name_bn'])->find($selectedCustomerId)
+            : null;
+
         return [
             'order' => $order,
             'products' => $products,
-            'customers' => Customer::orderBy('name')->limit(300)->get(['id', 'name', 'phone', 'email', 'address', 'district_id', 'thana_id']),
+            'selectedCustomer' => $selectedCustomer,
             'districts' => DeliveryDistrict::active()->ordered()->get(['id', 'name']),
             'statuses' => OrderStatus::where('status', 1)->orderBy('id')->get(),
             'sources' => $this->sources,
@@ -595,6 +607,48 @@ class ManualOrderController extends Controller
             'selectedThanaId' => $selectedThanaId,
             'paymentState' => $order ? OrderPaymentService::state($order) : null,
         ];
+    }
+
+    /**
+     * The customer this order belongs to. With "Also update this customer's saved details" the
+     * order's details are copied back to the customer (a registered customer keeps the phone and
+     * email they log in with). With "Save as new customer" and no customer picked, a manual
+     * customer is created from the order's details. The order keeps its own snapshot either way.
+     */
+    private function resolveCustomer(array $validated): ?int
+    {
+        $details = [
+            'name' => $validated['customer_name'],
+            'phone' => $validated['customer_phone'],
+            'email' => ($validated['customer_email'] ?? null) && mb_strlen($validated['customer_email']) <= 55
+                ? $validated['customer_email'] : null,
+            'address' => mb_substr($validated['customer_address'], 0, 255),
+            'district_id' => (int) $validated['district_id'],
+            'thana_id' => (int) $validated['thana_id'],
+            'post_code' => $validated['post_code'] ?? null,
+        ];
+
+        if (! empty($validated['customer_id'])) {
+            if (! empty($validated['update_customer'])) {
+                $customer = Customer::lockForUpdate()->findOrFail($validated['customer_id']);
+                $customer->fill($customer->isManual() ? $details : collect($details)->except(['phone', 'email'])->all());
+                $customer->save();
+            }
+
+            return (int) $validated['customer_id'];
+        }
+
+        if (! empty($validated['save_as_customer'])) {
+            $customer = new Customer($details);
+            $customer->source = Customer::SOURCE_MANUAL;
+            $customer->status = 'active';
+            $customer->slug = Str::slug($details['name']) . '-' . Str::lower(Str::random(6));
+            $customer->save();
+
+            return $customer->id;
+        }
+
+        return null;
     }
 
     private function validateThana(array $validated): void

@@ -244,7 +244,7 @@ class CustomerPasswordResetController extends Controller
         // A) Email link — token must exist and still be valid for that customer.
         if ($token) {
             $email    = (string) $request->query('email', '');
-            $customer = $email ? Customer::where('email', $email)->first() : null;
+            $customer = $email ? Customer::registered()->where('email', $email)->first() : null;
 
             if (!$customer || !Password::broker('customers')->getRepository()->exists($customer, $token)) {
                 Toastr::error('This password reset link is invalid or has expired.', 'Link expired');
@@ -386,7 +386,7 @@ class CustomerPasswordResetController extends Controller
     {
         $variants = [$mobile, '88'.$mobile, '+88'.$mobile, substr($mobile, 1)];
 
-        $customer = Customer::whereIn('phone', $variants)->first();
+        $customer = Customer::registered()->whereIn('phone', $variants)->first();
         if ($customer) {
             // A customer whose email also owns a reseller User account resets both.
             if ($customer->email) {
@@ -438,7 +438,7 @@ class CustomerPasswordResetController extends Controller
 
             // Reseller logs into both panels with the same credentials.
             if ($user->email) {
-                Customer::where('email', $user->email)->update(['password' => $hash]);
+                Customer::registered()->where('email', $user->email)->update(['password' => $hash]);
             }
             return true;
         }

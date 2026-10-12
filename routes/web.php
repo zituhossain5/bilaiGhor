@@ -1101,6 +1101,10 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::post('products/active', [ProductController::class,'active'])->name('products.active');
     Route::post('products/destroy', [ProductController::class,'destroy'])->name('products.destroy');
     Route::get('products/image/destroy', [ProductController::class,'imgdestroy'])->name('products.image.destroy');
+    // Short names for receipts: form suggestion + bulk fill
+    Route::get('products/short-names/suggest', [\App\Http\Controllers\Admin\ProductShortNameController::class, 'suggest'])->name('products.short_names.suggest');
+    Route::get('products/short-names', [\App\Http\Controllers\Admin\ProductShortNameController::class, 'index'])->name('products.short_names');
+    Route::post('products/short-names', [\App\Http\Controllers\Admin\ProductShortNameController::class, 'store'])->name('products.short_names.store');
     Route::post('products/update-deals', [ProductController::class,'update_deals'])->name('products.update_deals');
     Route::post('products/update-status', [ProductController::class,'update_status'])->name('products.update_status');
     

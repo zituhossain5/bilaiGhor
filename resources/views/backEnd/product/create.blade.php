@@ -33,6 +33,8 @@
                             @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
 
+                        <x-admin.short-name-field :value="old('short_name')" />
+
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Main Category *</label>

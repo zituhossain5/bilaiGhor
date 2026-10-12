@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\Productimage;
 use App\Support\SafeUpload;
+use App\Support\ShortName;
 use App\Models\Productcolor;
 use App\Models\Productsize;
 use App\Models\ProductVariantPrice;
@@ -131,6 +132,7 @@ class ProductController extends Controller
     {
         $this->validate($request, [
             'name'           => 'required',
+            'short_name'     => 'nullable|string|max:' . ShortName::max(),
             'category_id'    => 'required',
             'new_price'      => 'nullable|numeric|min:0',
             'purchase_price' => 'nullable|numeric|min:0',
@@ -422,6 +424,7 @@ class ProductController extends Controller
     {
         $this->validate($request, [
             'name'           => 'required',
+            'short_name'     => 'nullable|string|max:' . ShortName::max(),
             'category_id'    => 'required',
             'new_price'      => 'nullable|numeric|min:0',
             'purchase_price' => 'nullable|numeric|min:0',

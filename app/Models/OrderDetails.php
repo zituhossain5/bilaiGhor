@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ShortName;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,6 +16,7 @@ class OrderDetails extends Model
         'order_id',
         'product_id',
         'product_name',
+        'invoice_name',
         'purchase_price',
         'sale_price',
         'product_discount',
@@ -33,6 +35,28 @@ class OrderDetails extends Model
         'line_discount',
         'line_total',
     ];
+
+    /**
+     * Each line keeps the name it was sold under on receipts (invoice_name): the product's
+     * short name, otherwise its name shortened. Renaming the product later doesn't change it.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (OrderDetails $line) {
+            if (blank($line->invoice_name)) {
+                $product = $line->product_id ? Product::find($line->product_id, ['id', 'name', 'short_name']) : null;
+                $line->invoice_name = mb_substr(ShortName::forLine($product, $line->product_name), 0, 60);
+            }
+        });
+    }
+
+    /** Name printed on receipts; lines saved before invoice_name existed fall back to the product. */
+    public function getDisplayNameAttribute(): string
+    {
+        $saved = trim((string) $this->invoice_name);
+
+        return $saved !== '' ? $saved : ShortName::forLine($this->product, $this->product_name);
+    }
 
     // ✅ অর্ডারের সাথে রিলেশন
     public function order()

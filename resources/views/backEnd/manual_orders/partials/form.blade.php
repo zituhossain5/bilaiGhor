@@ -200,12 +200,16 @@
             <select class="form-select product-select" name="items[__INDEX__][product_id]">
                 <option value="">Custom/manual item</option>
                 @foreach($products as $product)
-                    <option value="{{ $product->id }}" data-name="{{ $product->name }}" data-price="{{ $product->new_price }}" data-stock="{{ $product->editable_stock }}" data-variant="{{ optional($product->weight)->name }}">
+                    <option value="{{ $product->id }}" data-name="{{ $product->name }}" data-receipt-name="{{ $product->receipt_name }}" data-price="{{ $product->new_price }}" data-stock="{{ $product->editable_stock }}" data-variant="{{ optional($product->weight)->name }}">
                         {{ $product->name }} (Available to this order: {{ $product->editable_stock }})
                     </option>
                 @endforeach
             </select>
             <input type="text" class="form-control mt-1 item-name" name="items[__INDEX__][name]" placeholder="Custom item name">
+            <div class="input-group input-group-sm mt-1" title="Name printed on this order's receipt. Empty = the product's short name.">
+                <span class="input-group-text">On receipt</span>
+                <input type="text" class="form-control item-invoice-name" name="items[__INDEX__][invoice_name]" maxlength="{{ \App\Support\ShortName::max() }}" placeholder="Short name (automatic)">
+            </div>
         </td>
         <td><input type="text" class="form-control item-variant" name="items[__INDEX__][variant]" placeholder="Weight/variant"></td>
         <td>

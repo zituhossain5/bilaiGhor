@@ -254,6 +254,25 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="mb-4">
+                            <label class="form-label-pro" for="receiptDenseAfter">Printed Receipt (manual orders)</label>
+                            <div class="d-grid gap-2">
+                                <div>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Compact rows above</span>
+                                        <input type="number" min="1" max="200" name="receipt_dense_after" id="receiptDenseAfter" class="form-control custom-input" value="{{ old('receipt_dense_after', $edit_data->receipt_dense_after ?? 12) }}">
+                                        <span class="input-group-text">items</span>
+                                    </div>
+                                    <small class="text-muted">Receipts with more items than this use a smaller font and tighter rows.</small>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="receipt_comma_list" value="1" id="receiptCommaList" {{ ($edit_data->receipt_comma_list ?? 0) == 1 ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="receiptCommaList">
+                                        <strong>Comma list instead of a table</strong> — items print as one paragraph ("Nekko Kitten ×5, Whiskas Ocean Fish ×1"), followed by the totals. Uses the least paper, but <strong>no per-item prices</strong> are shown, so the customer can't check each line.
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

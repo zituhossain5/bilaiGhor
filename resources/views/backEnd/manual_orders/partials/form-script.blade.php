@@ -96,6 +96,7 @@
         if (item) {
             row.querySelector('.product-select').value = item.product_id || '';
             row.querySelector('.item-name').value = item.name || '';
+            row.querySelector('.item-invoice-name').value = item.invoice_name || '';
             row.querySelector('.item-variant').value = item.variant || '';
             row.querySelector('.item-qty').value = item.qty || 1;
             row.querySelector('.item-price').value = item.unit_price || 0;
@@ -452,6 +453,8 @@
         var opt = event.target.options[event.target.selectedIndex];
         var row = event.target.closest('tr');
         row.querySelector('.item-name').value = opt.dataset.name || '';
+        // A different product brings its own receipt name; it can still be edited for this order.
+        row.querySelector('.item-invoice-name').value = opt.dataset.receiptName || '';
         row.querySelector('.item-price').value = opt.dataset.price || 0;
         row.querySelector('.item-variant').value = opt.dataset.variant || '';
         syncProductRow(row);

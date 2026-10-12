@@ -13,6 +13,10 @@
 }
 @page { size: A4 portrait; margin: 10mm; }
 
+/*
+ * Compact receipt. Item rows are one line of a fixed height, so App\Services\ReceiptLayout
+ * can tell how many fit on an A4 page. Keep its height constants in step with the sizes here.
+ */
 .mi-standalone { width: auto; max-width: 100%; margin: 0; padding: 0; background: #fff; }
 .mi-doc,
 .mi-doc * { box-sizing: border-box; }
@@ -24,62 +28,81 @@
     color: #222;
     background: #fff;
     font-family: 'Bilai Receipt', DejaVu Sans, Arial, Helvetica, sans-serif;
-    font-size: 9.5px;
-    line-height: 1.28;
+    font-size: 8px;
+    line-height: 1.3;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
 }
-.mi-top { width: 100%; margin: 0 0 5mm; border-collapse: collapse; table-layout: fixed; }
+.mi-doc-break { page-break-before: always; break-before: page; }
+
+/* Header: logo left, "Receipt" + "BG-… · date" right */
+.mi-top { width: 100%; margin: 0 0 2.5mm; border-collapse: collapse; table-layout: fixed; }
 .mi-top td { padding: 0; border: 0; vertical-align: middle; }
-.mi-logo { width: 43%; text-align: left; }
-.mi-logo img { display: block; width: 24mm; height: 16mm; max-width: 100%; object-fit: contain; object-position: left center; }
-.mi-title { width: 57%; padding-left: 3mm !important; text-align: right; overflow: visible; }
-.mi-title h1 { margin: 0 0 3px; font-size: 18px; line-height: 1.05; font-weight: 500; color: #1f1f1f; }
-.mi-title p { margin: 0 0 2px; font-size: 8.2px; line-height: 1.25; color: #111; white-space: nowrap; }
-.mi-customer { margin-bottom: 4mm; padding: 3mm; background: #eeeeee; border-radius: 2mm; }
-.mi-box-title { margin: 0 0 3mm; font-size: 10px; font-weight: 700; }
-.mi-details { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.mi-details td { padding: 0 0 1.8mm; border: 0; vertical-align: top; font-size: 8.5px; }
-.mi-details tr:last-child td { padding-bottom: 0; }
-.mi-details .mi-label { width: 15mm; padding-right: 2mm; color: #222; }
-.mi-value { color: #111; overflow-wrap: anywhere; word-wrap: break-word; }
-.mi-table { width: 100%; margin-bottom: 4mm; border-collapse: collapse; table-layout: fixed; }
-.mi-table th { padding: 0 0 2mm; border-bottom: 1px solid #bfbfbf; font-size: 8.5px; font-weight: 400; color: #555; text-align: left; }
-.mi-table td { padding: 2.2mm 0; border-bottom: 1px dotted #d2d2d2; vertical-align: top; font-size: 8.2px; page-break-inside: avoid; overflow-wrap: break-word; word-wrap: break-word; }
-.mi-table .mi-product-col { width: 48%; padding-right: 2mm; }
-.mi-table .mi-qty-col { width: 10%; }
-.mi-table .mi-price-col { width: 18%; }
-.mi-table .mi-amount-col { width: 24%; }
-.mi-table .mi-num { text-align: right; white-space: nowrap; }
-.mi-product-name { font-weight: 600; color: #222; overflow-wrap: anywhere; word-wrap: break-word; }
-.mi-product-variant { margin-top: 1mm; color: #555; font-size: 7.8px; }
-.mi-summary { width: 70%; margin: 0 0 3mm auto; border-collapse: collapse; table-layout: fixed; page-break-inside: avoid; }
-.mi-summary-label-col { width: 61%; }
-.mi-summary-value-col { width: 39%; }
-.mi-summary td { padding: 1.4mm 2mm; border: 0; font-size: 8.5px; }
+.mi-logo { width: 40%; text-align: left; }
+.mi-logo img { display: block; width: 18mm; height: 11mm; max-width: 100%; object-fit: contain; object-position: left center; }
+.mi-title { width: 60%; text-align: right; }
+.mi-title h1 { margin: 0 0 1mm; font-size: 13px; line-height: 1.05; font-weight: 400; color: #1f1f1f; }
+.mi-title p { margin: 0; font-size: 8px; line-height: 1.3; color: #111; white-space: nowrap; }
+.mi-page-no { color: #777 !important; }
+
+/* Customer: "Name · phone", then the address (at most 3 lines) */
+.mi-customer { margin: 0 0 2.5mm; padding: 0 0 2mm; border-bottom: 1px solid #e3e3e3; }
+.mi-customer-line { font-size: 8.5px; line-height: 3.6mm; color: #111; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mi-address { max-height: 9.9mm; overflow: hidden; font-size: 8px; line-height: 3.3mm; color: #333; overflow-wrap: anywhere; word-wrap: break-word; }
+
+/* Following pages repeat the order ID and page number */
+.mi-continued { margin: 0 0 2mm; height: 4mm; line-height: 4mm; font-size: 8px; color: #555; }
+
+/* Items: one line per row */
+.mi-table { width: 100%; margin: 0 0 2mm; border-collapse: collapse; table-layout: fixed; }
+.mi-table th { height: 4.2mm; padding: 0 0 .6mm; border-bottom: 1px solid #bdbdbd; font-size: 7.5px; font-weight: 400; color: #666; text-align: left; vertical-align: bottom; }
+.mi-table td { height: 4.2mm; padding: 0; line-height: 4mm; border-bottom: 1px solid #ececec; font-size: 8px; vertical-align: middle; white-space: nowrap; overflow: hidden; page-break-inside: avoid; break-inside: avoid; }
+.mi-table tr { page-break-inside: avoid; break-inside: avoid; }
+/* Widths sit on the header cells: the PDF renderer ignores <col> widths. */
+.mi-table .mi-item-col { width: 62%; }
+.mi-table .mi-qty-col { width: 8%; }
+.mi-table .mi-price-col { width: 14%; }
+.mi-table .mi-amount-col { width: 16%; }
+.mi-table .mi-num { text-align: right; }
+.mi-item { padding-right: 1.5mm !important; text-overflow: ellipsis; }
+.mi-item-name { font-weight: 700; color: #222; white-space: nowrap; }
+.mi-item-variant { color: #888; font-size: 7px; line-height: 1; white-space: nowrap; }
+
+/* Long orders: smaller rows */
+.mi-dense .mi-table td { height: 3.1mm; line-height: 2.9mm; font-size: 7.2px; }
+.mi-dense .mi-item-variant { font-size: 6.4px; }
+
+/* Comma-list mode */
+.mi-comma-list { margin: 0 0 3mm; font-size: 8px; line-height: 1.45; color: #222; overflow-wrap: anywhere; }
+
+/* Totals: only rows with a value; the payment line sits under TOTAL */
+.mi-summary { width: 68%; margin: 0 0 3mm auto; border-collapse: collapse; table-layout: fixed; page-break-inside: avoid; }
+.mi-summary-label-col { width: 58%; }
+.mi-summary-value-col { width: 42%; }
+.mi-summary td { height: 4.2mm; padding: 0 2mm; border: 0; font-size: 8px; line-height: 4.2mm; }
 .mi-summary .mi-summary-label { text-align: left; }
 .mi-summary .mi-summary-value { text-align: right; white-space: nowrap; }
-.mi-summary .mi-total-row td { padding-top: 2mm; padding-bottom: 2mm; background: #eeeeee !important; font-weight: 700; }
+.mi-summary .mi-total-row td { height: 5mm; line-height: 5mm; background: #eeeeee !important; font-size: 8.5px; font-weight: 700; }
 .mi-summary .mi-total-row .mi-summary-label { border-radius: 3px 0 0 3px; }
 .mi-summary .mi-total-row .mi-summary-value { border-radius: 0 3px 3px 0; }
-.mi-payment { margin: 0 0 5mm; font-size: 7.8px; color: #222; }
-.mi-thanks { margin: 0 0 4mm; text-align: center; font-size: 8.5px; }
-.mi-footer { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.mi-footer td { padding: 0; border: 0; vertical-align: bottom; }
-.mi-social { width: 63%; padding-right: 3mm !important; font-size: 8px; color: #111; }
-.mi-social-line { display: inline-table; width: 49%; margin-top: 0; white-space: nowrap; vertical-align: middle; }
-.mi-social-line:first-child { margin-top: 0; }
+.mi-summary .mi-payment td { padding-top: .6mm; font-size: 7.5px; color: #444; text-align: right; white-space: nowrap; }
+
+/* Footer: thank-you + Facebook + WhatsApp on the left, QR on the right, one row */
+.mi-footer { width: 100%; border-collapse: collapse; table-layout: fixed; page-break-inside: avoid; }
+.mi-footer td { padding: 0; border: 0; vertical-align: middle; }
+.mi-footer-text { width: 72%; padding-right: 2mm !important; font-size: 7.6px; color: #111; }
+.mi-thanks { margin: 0 0 1.4mm; font-size: 8.5px; font-weight: 700; }
+.mi-social-line { display: table; margin-top: .9mm; white-space: nowrap; }
 .mi-social-line > span { display: table-cell; vertical-align: middle; }
-.mi-social-icon { width: 5.5mm; }
-.mi-social-icon img { display: block; width: 4mm; height: 4mm; padding: .75mm; border-radius: 50%; background: #111; object-fit: contain; }
-.mi-qr { width: 37%; text-align: right; font-size: 7px; color: #555; }
-.mi-qr img { display: block; width: 19mm; height: 19mm; max-width: 100%; margin-left: auto; padding: .5mm; border: 1px solid #dedede; background: #fff; object-fit: contain; }
-.mi-qr-caption { margin-top: 1mm; white-space: nowrap; }
+.mi-social-icon { width: 5mm; }
+.mi-social-icon img { display: block; width: 3.6mm; height: 3.6mm; padding: .65mm; border-radius: 50%; background: #111; object-fit: contain; }
+.mi-qr { width: 28%; text-align: right; font-size: 6.5px; color: #666; }
+.mi-qr img { display: block; width: 16mm; height: 16mm; max-width: 100%; margin-left: auto; padding: .4mm; border: 1px solid #dedede; background: #fff; object-fit: contain; }
+.mi-qr-caption { margin-top: .6mm; white-space: nowrap; }
 
 @media print {
     html, body { width: auto !important; max-width: 100% !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
     .mi-doc { width: 80mm; max-width: 80mm; margin: 0 auto; padding: 6mm 5mm; border: 0; border-radius: 0; box-shadow: none; }
-    .mi-customer,
     .mi-summary .mi-total-row td { background: #eeeeee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .mi-print-page .mi-doc { margin: 0; }
 }

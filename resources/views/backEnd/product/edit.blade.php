@@ -39,6 +39,8 @@
                             @enderror
                         </div>
 
+                        <x-admin.short-name-field :value="old('short_name', $edit_data->short_name)" />
+
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="category_id" class="form-label">Categories *</label>

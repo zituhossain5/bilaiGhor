@@ -96,6 +96,7 @@ class GeneralSettingController extends Controller
             'og_baner' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
             'og_baner_alt' => 'nullable|string|max:255',
             'favicon' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'receipt_dense_after' => 'nullable|integer|min:1|max:200',
         ]);
         $update_data = GeneralSetting::findOrFail($request->id);
         $input = $request->except(['_token', 'white_logo', 'dark_logo', 'favicon', 'og_baner']);
@@ -114,6 +115,8 @@ class GeneralSettingController extends Controller
         $input['vendor_enabled'] = 0;
         $input['reseller_enabled'] = 0;
         $input['checkout_otp_enabled'] = $request->has('checkout_otp_enabled') ? 1 : 0;
+        $input['receipt_dense_after'] = (int) ($request->input('receipt_dense_after') ?: 12);
+        $input['receipt_comma_list'] = $request->has('receipt_comma_list') ? 1 : 0;
 
         $update_data->update($input);
 

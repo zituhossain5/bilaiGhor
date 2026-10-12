@@ -16,7 +16,9 @@ use App\Models\Product;
 use App\Models\Shipping;
 use App\Services\InventoryService;
 use App\Services\OrderPaymentService;
+use App\Services\ReceiptLayout;
 use App\Support\DeliveryLocation;
+use App\Support\ShortName;
 use Brian2694\Toastr\Facades\Toastr;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -96,6 +98,7 @@ class ManualOrderController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['nullable', 'integer', 'exists:products,id'],
             'items.*.name' => ['required_without:items.*.product_id', 'nullable', 'string', 'max:255'],
+            'items.*.invoice_name' => ['nullable', 'string', 'max:' . ShortName::max()],
             'items.*.variant' => ['nullable', 'string', 'max:155'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
@@ -168,6 +171,7 @@ class ManualOrderController extends Controller
                         'order_id' => $order->id,
                         'product_id' => $item['product_id'],
                         'product_name' => $item['name'],
+                        'invoice_name' => $item['invoice_name'],
                         'manual_variant' => $item['variant'],
                         'is_manual_item' => empty($item['product_id']),
                         'purchase_price' => $item['purchase_price'],
@@ -443,6 +447,8 @@ class ManualOrderController extends Controller
             $items[] = [
                 'product_id' => $product?->id,
                 'name' => $product?->name ?: trim((string) $row['name']),
+                // Name printed on the receipt for this order only; empty = the product's short name.
+                'invoice_name' => trim((string) ($row['invoice_name'] ?? '')) ?: null,
                 'variant' => trim((string) ($row['variant'] ?? '')) ?: ($product?->weight?->name),
                 'qty' => $qty,
                 'unit_price' => $unitPrice,
@@ -477,6 +483,7 @@ class ManualOrderController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['nullable', 'integer', 'exists:products,id'],
             'items.*.name' => ['required_without:items.*.product_id', 'nullable', 'string', 'max:255'],
+            'items.*.invoice_name' => ['nullable', 'string', 'max:' . ShortName::max()],
             'items.*.variant' => ['nullable', 'string', 'max:155'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
@@ -547,6 +554,7 @@ class ManualOrderController extends Controller
                 'order_id' => $order->id,
                 'product_id' => $item['product_id'],
                 'product_name' => $item['name'],
+                'invoice_name' => $item['invoice_name'],
                 'manual_variant' => $item['variant'],
                 'is_manual_item' => empty($item['product_id']),
                 'purchase_price' => $item['purchase_price'],
@@ -564,7 +572,7 @@ class ManualOrderController extends Controller
         $products = Product::with('weight')
             ->where('status', 1)
             ->orderBy('name')
-            ->get(['id', 'name', 'new_price', 'old_price', 'stock', 'purchase_price', 'weight_id']);
+            ->get(['id', 'name', 'short_name', 'new_price', 'old_price', 'stock', 'purchase_price', 'weight_id']);
 
         $existingQuantities = $order
             ? $order->orderdetails->whereNotNull('product_id')->groupBy('product_id')->map->sum('qty')
@@ -572,12 +580,14 @@ class ManualOrderController extends Controller
 
         $products->each(function ($product) use ($existingQuantities) {
             $product->editable_stock = (int) $product->stock + (int) ($existingQuantities[$product->id] ?? 0);
+            $product->receipt_name = ShortName::forLine($product, $product->name);
         });
 
         $initialItems = $order
             ? $order->orderdetails->map(fn ($item) => [
                 'product_id' => $item->product_id,
                 'name' => $item->product_name,
+                'invoice_name' => $item->display_name,
                 'variant' => $item->manual_variant,
                 'qty' => (int) $item->qty,
                 'unit_price' => (float) $item->sale_price,
@@ -714,6 +724,7 @@ class ManualOrderController extends Controller
         return [
             'order' => $order,
             'generalsetting' => $generalsetting,
+            'receipt' => ReceiptLayout::build($order, $generalsetting),
             'contact' => Contact::where('status', 1)->first(),
             'printMode' => $printMode,
             'verifyUrl' => $verifyUrl,

@@ -6,11 +6,12 @@
         <img
             src="{{ $blog->image ? url('public/'.$blog->image) : url('public/no-image.png') }}"
             alt="{{ $blog->image_alt ?: $blog->title }}"
+            width="420" height="220" decoding="async"
             loading="lazy"
         >
         <div class="bilai-blog-img-overlay">
             <div class="bilai-blog-brand">
-                <img src="{{ asset(optional($generalsetting)->dark_logo ?? 'public/logo.png') }}" alt="{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}">
+                <img src="{{ asset(optional($generalsetting)->dark_logo ?? 'public/logo.png') }}" alt="" aria-hidden="true" width="22" height="22" loading="lazy">
                 <span>{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}</span>
             </div>
             <div class="bilai-blog-img-actions">

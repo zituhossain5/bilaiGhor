@@ -7236,3 +7236,114 @@ body .bilai-product-card .bilai-product-image img {
 /* ============================================================
    BilaiGhor Search End
    ============================================================ */
+
+/* ============================================================
+   Core Web Vitals: layout before Owl Carousel initialises
+   owl.carousel.min.css hides every .owl-carousel (display:none) until owl.carousel.min.js
+   adds .owl-loaded. The hero and the product rows therefore appeared seconds after the
+   page painted and pushed everything below them down (desktop CLS ~0.37), and the hero
+   image could not become the LCP until all JavaScript had run.
+   These rules show the first slide / first row immediately, at exactly the size Owl will
+   give it. Owl sizes items as (container + margin) / items - margin, with margin-right =
+   margin, so nothing moves when Owl takes over. Item counts and margins mirror the
+   owlCarousel() options in frontEnd/layouts/master.blade.php — keep them in sync.
+   ============================================================ */
+.main_slider.owl-carousel:not(.owl-loaded),
+.product_slider.owl-carousel:not(.owl-loaded),
+.bilai-testimonial-slider.owl-carousel:not(.owl-loaded) {
+    display: flex;
+    overflow: hidden;
+}
+
+/* Hero: items 1, margin 0 — only the first slide, nothing else downloads early. */
+.main_slider.owl-carousel:not(.owl-loaded) > * {
+    flex: 0 0 100%;
+    min-width: 0;
+}
+.main_slider.owl-carousel:not(.owl-loaded) > :not(:first-child) {
+    display: none;
+}
+
+/* Product rows: items 1 / 2 / 4 at <600 / 600 / 1000px, margin 16. */
+.product_slider.owl-carousel:not(.owl-loaded) > * {
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-right: 16px;
+}
+@media (min-width: 600px) {
+    .product_slider.owl-carousel:not(.owl-loaded) > * {
+        flex-basis: calc((100% + 16px) / 2 - 16px);
+        max-width: calc((100% + 16px) / 2 - 16px);
+    }
+}
+@media (min-width: 1000px) {
+    .product_slider.owl-carousel:not(.owl-loaded) > * {
+        flex-basis: calc((100% + 16px) / 4 - 16px);
+        max-width: calc((100% + 16px) / 4 - 16px);
+    }
+    /* nav:true here — Owl adds a 32px arrow row below, but only when there are more items
+       than the 4 visible ones. Weekly Deals hides its arrows (.bilai-weekly-deals .owl-nav). */
+    .product_slider.owl-carousel:not(.owl-loaded):has(> :nth-child(5)) {
+        margin-bottom: 32px;
+    }
+    .bilai-weekly-deals .product_slider.owl-carousel:not(.owl-loaded) {
+        margin-bottom: 0;
+    }
+}
+
+/* Testimonials: items 1 / 2 / 3 at <576 / 576 / 992px, margin 24. */
+.bilai-testimonial-slider.owl-carousel:not(.owl-loaded) > * {
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-right: 24px;
+}
+@media (min-width: 576px) {
+    .bilai-testimonial-slider.owl-carousel:not(.owl-loaded) > * {
+        flex-basis: calc((100% + 24px) / 2 - 24px);
+        max-width: calc((100% + 24px) / 2 - 24px);
+    }
+}
+@media (min-width: 992px) {
+    .bilai-testimonial-slider.owl-carousel:not(.owl-loaded) > * {
+        flex-basis: calc((100% + 24px) / 3 - 24px);
+        max-width: calc((100% + 24px) / 3 - 24px);
+    }
+}
+/* Dots (and, from 576px, arrows) appear below when there are more reviews than fit. */
+@media (max-width: 575px) {
+    .bilai-testimonial-slider.owl-carousel:not(.owl-loaded):has(> :nth-child(2)) {
+        margin-bottom: 31px;
+    }
+}
+@media (min-width: 576px) and (max-width: 991px) {
+    .bilai-testimonial-slider.owl-carousel:not(.owl-loaded):has(> :nth-child(3)) {
+        margin-bottom: 47px;
+    }
+}
+
+/* Homepage "Weekly Deals" countdown: filled by jquery.syotimer after load. Reserve the
+   height of its cells (70 / 58 / 54px, see .bilai-deal-timer .syotimer-cell) while empty. */
+.bilai-deal-timer:empty {
+    min-height: 70px;
+    min-width: 340px; /* filled width; makes the header wrap exactly as it will once filled */
+}
+@media (max-width: 480px) {
+    .bilai-deal-timer:empty {
+        min-height: 58px;
+        min-width: 0; /* full-width grid row here */
+    }
+}
+@media (max-width: 360px) {
+    .bilai-deal-timer:empty {
+        min-height: 54px;
+    }
+}
+
+/* The mobile-menu logo is sized by height only; keep its width from the image ratio now that
+   the <img> carries width/height attributes (which would otherwise set a fixed width). */
+.logo-image img {
+    width: auto;
+}
+/* ============================================================
+   Core Web Vitals End
+   ============================================================ */

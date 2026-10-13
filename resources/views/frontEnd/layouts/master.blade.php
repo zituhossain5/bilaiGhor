@@ -36,7 +36,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Hind+Siliguri:wght@400;500;600;700&family=Mochiy+Pop+One&display=swap">
         {{-- BilaiGhor Figma — header & footer CSS --}}
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=54">
+        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=55">
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/main.css')}}" />
         <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-container-system.css')}}?v=2" />
         @stack('css_after')
@@ -569,7 +569,7 @@
         <div class="mobile-menu">
             <div class="mobile-menu-logo">
                 <div class="logo-image">
-                    <img src="{{asset($generalsetting->dark_logo)}}" alt="{{$generalsetting->name}}" />
+                    <img src="{{asset($generalsetting->dark_logo)}}" alt="{{$generalsetting->name}}"{{ \App\Support\ImageSize::attrs($generalsetting->dark_logo) }} />
                 </div>
                 <div class="mobile-menu-close">
                     <i class="fa fa-times"></i>
@@ -662,7 +662,7 @@
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <a href="{{route('home')}}" class="bilai-mobile-header__logo">
-                    <img src="{{asset($generalsetting->dark_logo)}}" alt="{{$generalsetting->name}}" />
+                    <img src="{{asset($generalsetting->dark_logo)}}" alt="{{$generalsetting->name}}"{{ \App\Support\ImageSize::attrs($generalsetting->dark_logo) }} />
                 </a>
                 <a href="{{route('cart.index')}}" class="bilai-mobile-header__icon-btn" style="position:relative;">
                     <i class="fa-solid fa-cart-shopping"></i>
@@ -685,7 +685,7 @@
 
                     {{-- Logo --}}
                     <a href="{{route('home')}}" class="bilai-main-header__logo">
-                        <img src="{{asset($generalsetting->dark_logo)}}" alt="{{$generalsetting->name}}" />
+                        <img src="{{asset($generalsetting->dark_logo)}}" alt="{{$generalsetting->name}}"{{ \App\Support\ImageSize::attrs($generalsetting->dark_logo) }} />
                     </a>
 
                     {{-- Search --}}
@@ -836,7 +836,7 @@
             {{-- Column 1: Brand / Opening Hours / Social --}}
             <div class="bilai-footer__brand">
                 <a href="{{ url('/') }}" class="bilai-footer__logo">
-                    <img src="{{ asset('public/frontEnd/images/footer-figma/bilai-ghor-logo.png') }}" alt="{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}">
+                    <img src="{{ asset('public/frontEnd/images/footer-figma/bilai-ghor-logo.png') }}" alt="{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}" width="349" height="108" loading="lazy" decoding="async">
                 </a>
 
                 <div class="bilai-footer__group">
@@ -860,7 +860,7 @@
                         <li>
                             <a href="{{ $socialHref }}" target="_blank" rel="noopener" aria-label="{{ $si->title ?? 'Social' }}">
                                 @if($socialAsset)
-                                <img src="{{ $socialAsset }}" alt="">
+                                <img src="{{ $socialAsset }}" alt="" width="40" height="40" loading="lazy">
                                 @else
                                 <span style="background-color: {{ $si->color ?: '#3c2a1e' }}"><i class="{{ $si->icon }}"></i></span>
                                 @endif
@@ -904,19 +904,19 @@
                     <ul class="bilai-footer__contacts">
                         @if($footerPhone)
                         <li>
-                            <span class="bilai-footer__ci"><img src="{{ asset('public/frontEnd/images/footer-figma/phone.png') }}" alt=""></span>
+                            <span class="bilai-footer__ci"><img src="{{ asset('public/frontEnd/images/footer-figma/phone.png') }}" alt="" width="18" height="18" loading="lazy"></span>
                             <a href="tel:{{ $footerPhone }}">{{ $footerPhone }}</a>
                         </li>
                         @endif
                         @if($footerEmail)
                         <li>
-                            <span class="bilai-footer__ci"><img src="{{ asset('public/frontEnd/images/footer-figma/email.png') }}" alt=""></span>
+                            <span class="bilai-footer__ci"><img src="{{ asset('public/frontEnd/images/footer-figma/email.png') }}" alt="" width="18" height="18" loading="lazy"></span>
                             <a href="mailto:{{ $footerEmail }}">{{ $footerEmail }}</a>
                         </li>
                         @endif
                         @if($footerWhatsapp)
                         <li>
-                            <span class="bilai-footer__ci bilai-footer__ci--whatsapp"><img src="{{ asset('public/frontEnd/images/footer-figma/whatsapp.png') }}" alt=""></span>
+                            <span class="bilai-footer__ci bilai-footer__ci--whatsapp"><img src="{{ asset('public/frontEnd/images/footer-figma/whatsapp.png') }}" alt="" width="20" height="20" loading="lazy"></span>
                             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $footerWhatsapp) }}" target="_blank" rel="noopener">{{ $footerWhatsapp }}</a>
                         </li>
                         @endif

@@ -9,6 +9,10 @@
 @endpush
 
 @push('seo')
+@if($sliders->isNotEmpty())
+{{-- LCP: start downloading the first hero slide before CSS/JS are parsed --}}
+<link rel="preload" as="image" href="{{ asset($sliders->first()->image) }}" fetchpriority="high">
+@endif
 <meta name="app-url" content="{{ url('/') }}" />
 <meta name="robots" content="index, follow" />
 
@@ -59,9 +63,12 @@
                         @endif
                     </div> -->
                 <div class="bilai-hero-image">
+                    {{-- First slide is the LCP image: high priority, never lazy. CSS fixes its box size. --}}
                     <img src="{{ asset($value->image) }}"
                          alt="{{ $value->image_alt ?: ($value->title ?: 'Hero Slide') }}"
-                         loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
+                         {{ \App\Support\ImageSize::attrs($value->image, [1920, 675]) }}
+                         decoding="async"
+                         @if($key === 0) fetchpriority="high" loading="eager" @else loading="lazy" @endif />
                 </div>
             </div>
         </div>
@@ -75,18 +82,18 @@
         <div class="bilai-promo-grid">
             <div class="bilai-promo-item">
                 <span class="bilai-promo-icon">
-                    <img src="{{ asset('public/frontEnd/images/truck.svg') }}" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Free Delivery Icon" width="42" height="42">
+                    <img src="{{ asset('public/frontEnd/images/truck.svg') }}" alt="Free Delivery Icon" width="42" height="42">
                 </span>
                 <span class="bilai-promo-text">পুরান ঢাকার নির্দিষ্ট এলাকায় ফ্রী ডেলিভারি</span>
             </div>
             <div class="bilai-promo-item">
                 <span class="bilai-promo-icon">
-                    <img src="{{ asset('public/frontEnd/images/redeem.svg') }}" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Reedem Icon" width="42" height="42">                </span>
+                    <img src="{{ asset('public/frontEnd/images/redeem.svg') }}" alt="Reedem Icon" width="42" height="42">                </span>
                 <span class="bilai-promo-text">প্রতি অর্ডারে রিডিম পয়েন্ট জিতুন</span>
             </div>
             <div class="bilai-promo-item">
                 <span class="bilai-promo-icon">
-                    <img src="{{ asset('public/frontEnd/images/return.svg') }}" width='42' height='42'%3E%3Crect width='42' height='42' fill='%23dccab2' rx='8'/%3E%3C/svg%3E" alt="Return" width="42" height="42">                </span>
+                    <img src="{{ asset('public/frontEnd/images/return.svg') }}" alt="Return" width="42" height="42">                </span>
                 <span class="bilai-promo-text">সহজ রিটার্ন  (শর্ত প্রযোজ্য)</span>
             </div>
         </div>
@@ -105,6 +112,7 @@
                                 <img src="{{ asset($value->image) }}"
                                      alt="{{ $value->image_alt ?: ($value->title ?: (optional($generalsetting)->name ?? 'Bilai Ghor') . ' offer') }}"
                                      class="img-fluid"
+                                     {{ \App\Support\ImageSize::attrs($value->image) }}
                                      loading="lazy" />
                             </a>
                         </div>
@@ -132,6 +140,7 @@
                 <div class="bilai-cat-img">
                     <img src="{{ asset($subcategoryImage) }}"
                          alt="{{ $value->subcategoryName }}"
+                         width="300" height="300" decoding="async"
                          loading="lazy" />
                 </div>
                 <span class="bilai-cat-name">{{ $value->subcategoryName }}</span>
@@ -166,6 +175,7 @@
                     <a href="{{ route('product', $value->slug) }}">
                         <img src="{{ asset($value->image ? $value->image->image : '') }}"
                              alt="{{ optional($value->image)->image_alt ?: $value->name }}"
+                             width="170" height="156" decoding="async"
                              loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
                     </a>
                 </div>
@@ -265,6 +275,7 @@
                     <a href="{{ route('product', $value->slug) }}">
                         <img src="{{ asset($value->image ? $value->image->image : '') }}"
                              alt="{{ optional($value->image)->image_alt ?: $value->name }}"
+                             width="170" height="156" decoding="async"
                              loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
                     </a>
                 </div>
@@ -355,6 +366,7 @@
                     <img class="img-fluid w-100"
                          src="{{ asset($homeads->image) }}"
                          alt="{{ $homeads->image_alt ?: ($homeads->title ?: (optional($generalsetting)->name ?? 'Bilai Ghor') . ' offer') }}"
+                         {{ \App\Support\ImageSize::attrs($homeads->image) }} decoding="async"
                          loading="lazy" />
                 </a>
             </div>
@@ -395,9 +407,9 @@
                     </button>
                     <a href="{{ route('product', $value->slug) }}" class="bilai-na-img-wrap">
                         @if($value->image)
-                        <img src="{{ asset($value->image->image) }}" alt="{{ optional($value->image)->image_alt ?: $value->name }}" loading="lazy">
+                        <img src="{{ asset($value->image->image) }}" alt="{{ optional($value->image)->image_alt ?: $value->name }}" width="140" height="180" decoding="async" loading="lazy">
                         @else
-                        <img src="{{ asset('public/no-image.png') }}" alt="{{ $value->name }}" loading="lazy">
+                        <img src="{{ asset('public/no-image.png') }}" alt="{{ $value->name }}" width="140" height="180" decoding="async" loading="lazy">
                         @endif
                     </a>
                 </div>
@@ -557,6 +569,7 @@
                             <a href="{{ route('product', $value->slug) }}">
                                 <img src="{{ asset($value->image ? $value->image->image : '') }}"
                                      alt="{{ optional($value->image)->image_alt ?: $value->name }}"
+                                     width="170" height="156" decoding="async"
                                      loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
                             </a>
                         </div>
@@ -668,8 +681,8 @@
             </div>
         </div>
         <div class="bilai-why-photos">
-            <img src="{{ asset('public/frontEnd/images/bilaiparaImg1.png') }}" alt="Cat parent with cats" loading="lazy">
-            <img src="{{ asset('public/frontEnd/images/bilaiparaImg2.png') }}" alt="Cat parent with cats" loading="lazy">
+            <img src="{{ asset('public/frontEnd/images/bilaiparaImg1.png') }}" alt="Cat parent with cats" width="700" height="463" decoding="async" loading="lazy">
+            <img src="{{ asset('public/frontEnd/images/bilaiparaImg2.png') }}" alt="Cat parent with cats" width="700" height="463" decoding="async" loading="lazy">
         </div>
         <!-- <div class="bilai-why-cta">
             <a href="#" class="bilai-why-btn">Visit Our Bilai Para &rarr;</a>
@@ -687,6 +700,7 @@
                     <img class="img-fluid w-100"
                          src="{{ asset($homeads2->image) }}"
                          alt="Homepage Ads 2"
+                         {{ \App\Support\ImageSize::attrs($homeads2->image) }} decoding="async"
                          loading="lazy" />
                 </a>
             </div>
@@ -724,6 +738,7 @@
                                     <img src="{{ asset($brand->image) }}"
                                          alt="{{ $brand->image_alt ?: $brand->name }}"
                                          class="img-fluid"
+                                         {{ \App\Support\ImageSize::attrs($brand->image) }} decoding="async"
                                          loading="lazy">
                                 </div>
 
@@ -788,6 +803,7 @@
                             aria-label="View customer review {{ $loop->iteration }} full size">
                         <img src="{{ asset('public/'.$t->image) }}"
                              alt="{{ $t->image_alt ?: 'Customer review of Bilai Ghor ' . $loop->iteration }}"
+                             {{ \App\Support\ImageSize::attrs('public/'.$t->image, [360, 340]) }} decoding="async"
                              loading="lazy">
                     </button>
                 </div>

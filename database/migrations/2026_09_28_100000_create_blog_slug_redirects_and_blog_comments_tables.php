@@ -63,6 +63,7 @@ return new class extends Migration
             }
         }
 
-        return 'int unsigned';
+        // Only reached if the lookup returned nothing (e.g. `migrate --pretend`); blogs.id is BIGINT here.
+        return 'bigint unsigned';
     }
 };

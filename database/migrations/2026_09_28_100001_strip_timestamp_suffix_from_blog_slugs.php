@@ -33,8 +33,9 @@ return new class extends Migration
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-                // Leave updated_at alone so the sitemap's lastmod doesn't claim a content change.
-                DB::table('blogs')->where('id', $blog->id)->update(['slug' => $slug]);
+                // Keep updated_at so the sitemap's lastmod doesn't claim a content change. It must be
+                // set explicitly: blogs.updated_at is ON UPDATE CURRENT_TIMESTAMP in MySQL.
+                DB::table('blogs')->where('id', $blog->id)->update(['slug' => $slug, 'updated_at' => DB::raw('`updated_at`')]);
             }
         });
     }
@@ -45,7 +46,7 @@ return new class extends Migration
         $rows = DB::table('blog_slug_redirects')->get(['blog_id', 'old_slug']);
         foreach ($rows as $row) {
             if (preg_match('/-\d{10}$/', $row->old_slug)) {
-                DB::table('blogs')->where('id', $row->blog_id)->update(['slug' => $row->old_slug]);
+                DB::table('blogs')->where('id', $row->blog_id)->update(['slug' => $row->old_slug, 'updated_at' => DB::raw('`updated_at`')]);
                 DB::table('blog_slug_redirects')->where('old_slug', $row->old_slug)->delete();
             }
         }

@@ -3,9 +3,11 @@
 @php
     $generalsetting = \App\Models\GeneralSetting::first();
 
-    // Cat image for the left panel; until it is uploaded a Font Awesome cat is shown instead.
-    $contactCatPath = 'frontEnd/images/contact/contact-cat.webp';
+    // Mascot for the left panel (PNG; a WebP copy is preferred when present). Nothing renders if missing.
+    $contactCatPath = 'frontEnd/images/bilai-cat.png';
+    $contactCatWebp = 'frontEnd/images/bilai-cat.webp';
     $contactCatExists = file_exists(public_path($contactCatPath));
+    $contactCatWebpExists = file_exists(public_path($contactCatWebp));
 
     // wa.me needs the number in international format (01XXXXXXXXX → 8801XXXXXXXXX).
     $toWhatsAppUrl = function (?string $number) {
@@ -48,7 +50,7 @@
 @endphp
 
 @push('css_after')
-    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-contact.css') }}?v=1" />
+    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-contact.css') }}?v=2" />
 @endpush
 
 @section('content')
@@ -124,11 +126,13 @@
 
                 @if($contactCatExists)
                     <div class="bilai-contact__cat">
-                        <img src="{{ asset('public/' . $contactCatPath) }}" alt="" width="260" height="260" loading="lazy">
-                    </div>
-                @else
-                    <div class="bilai-contact__cat bilai-contact__cat--icon" aria-hidden="true">
-                        <span><i class="fa-solid fa-cat"></i></span>
+                        <picture>
+                            @if($contactCatWebpExists)
+                                <source srcset="{{ asset('public/' . $contactCatWebp) }}" type="image/webp">
+                            @endif
+                            <img src="{{ asset('public/' . $contactCatPath) }}" alt="BilaiGhor mascot"
+                                 width="1055" height="973" loading="lazy">
+                        </picture>
                     </div>
                 @endif
             </aside>
@@ -148,6 +152,12 @@
                 <form class="bilai-contact__form" action="{{ route('frontend.contact.store') }}" method="POST">
                     @csrf
                     <input type="hidden" name="status" value="0">
+
+                    {{-- Honeypot: off-screen (not display:none, which some bots skip). Must stay empty. --}}
+                    <div class="bilai-contact__hp" aria-hidden="true">
+                        <label for="contact_website">Website</label>
+                        <input type="text" name="website" id="contact_website" value="" tabindex="-1" autocomplete="off">
+                    </div>
 
                     <div class="row g-3">
                         <div class="col-md-6">

@@ -695,7 +695,7 @@ Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']
     // Contact form submit (✅ correct place)
 Route::post('contact/store',
     [FrontendContactMessageController::class, 'store']
-)->name('frontend.contact.store');
+)->middleware('throttle:5,1')->name('frontend.contact.store');
 
     // Newsletter subscribe (footer)
 Route::post('newsletter/subscribe',

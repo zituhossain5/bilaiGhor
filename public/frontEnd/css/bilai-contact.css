@@ -157,34 +157,56 @@ a.bilai-contact__info-value:focus-visible {
     color: #fff;
 }
 
-/* Cat at the bottom of the panel */
+/* Mascot, centered at the bottom of the panel */
 .bilai-contact__cat {
+    position: relative;
     margin-top: auto;
+    padding: 8px 0 28px;
     display: flex;
     justify-content: center;
     align-items: flex-end;
     pointer-events: none;
 }
 
+/* Soft cream glow so the brown-outlined mascot stands out on the dark panel */
+.bilai-contact__cat::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    width: 300px;
+    height: 300px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(253, 252, 248, 0.24) 0%, rgba(253, 252, 248, 0.08) 45%, transparent 70%);
+    background: radial-gradient(circle,
+        color-mix(in srgb, var(--bilai-cream) 24%, transparent) 0%,
+        color-mix(in srgb, var(--bilai-cream) 8%, transparent) 45%,
+        transparent 70%);
+}
+
+.bilai-contact__cat picture {
+    position: relative; /* above the glow */
+    display: block;
+    width: 220px;
+    max-width: 100%;
+}
+
 .bilai-contact__cat img {
     display: block;
     width: 100%;
-    max-width: 260px;
     height: auto;
+    filter: drop-shadow(0 10px 14px rgba(42, 5, 5, 0.45));
+    animation: bilai-contact-float 4s ease-in-out infinite;
 }
 
-/* Fallback when no cat image has been uploaded yet */
-.bilai-contact__cat--icon span {
-    width: 150px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-top: 12px;
-    border-radius: 150px 150px 0 0;
-    background: var(--bilai-cream);
-    color: var(--bilai-primary);
-    font-size: 64px;
+@keyframes bilai-contact-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bilai-contact__cat img { animation: none; }
 }
 
 /* ---------- Right panel (form) ---------- */
@@ -297,6 +319,15 @@ a.bilai-contact__info-value:focus-visible {
     transform: translateY(1px);
 }
 
+/* Honeypot field: off-screen for people, still "visible" to naive bots */
+.bilai-contact__hp {
+    position: absolute !important;
+    left: -10000px !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 /* Success message */
 .bilai-contact__alert {
     display: flex;
@@ -341,15 +372,10 @@ a.bilai-contact__info-value:focus-visible {
         right: 20px;
         bottom: 0;
         margin: 0;
-        opacity: 0.95;
+        padding: 0 0 18px;
     }
-    .bilai-contact__cat img { max-width: 150px; }
-    .bilai-contact__cat--icon span {
-        width: 96px;
-        height: 76px;
-        font-size: 40px;
-        padding-top: 8px;
-    }
+    .bilai-contact__cat::before { width: 170px; height: 170px; bottom: 0; }
+    .bilai-contact__cat picture { width: 120px; }
     .bilai-contact__info,
     .bilai-contact__intro { max-width: calc(100% - 150px); }
     .bilai-contact__main { padding: 36px 28px 40px; }
@@ -358,7 +384,12 @@ a.bilai-contact__info-value:focus-visible {
 @media (max-width: 767px) {
     .bilai-contact__info,
     .bilai-contact__intro { max-width: none; }
-    .bilai-contact__cat { display: none; } /* keep the stacked panel short on phones */
+    /* Rows are full width here: the mascot shares the last line with the social icons. */
+    .bilai-contact__social {
+        min-height: 92px;
+        align-items: flex-end;
+        padding-right: 140px;
+    }
 }
 
 @media (max-width: 575px) {

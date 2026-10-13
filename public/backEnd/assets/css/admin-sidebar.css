@@ -1,0 +1,178 @@
+/*
+ * Grouped admin sidebar: section labels, collapsible sections, badges on collapsed sections
+ * and the "Search menu…" box. Loaded after admin-brand.css (same dark brown / cream palette).
+ * Markup: resources/views/backEnd/layouts/partials/sidebar.blade.php
+ * Behaviour: public/backEnd/assets/js/admin-sidebar.js
+ */
+
+/* ---------------------------------------------------------------- search box */
+#sidebar-menu .bg-menu-search {
+    position: relative;
+    margin: 4px 14px 6px;
+}
+
+#sidebar-menu .bg-menu-search input {
+    width: 100%;
+    height: 34px;
+    padding: 6px 30px 6px 32px;
+    border: 1px solid rgba(220, 202, 178, 0.22);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #f0e6d8;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s, background-color .15s, box-shadow .15s;
+}
+
+#sidebar-menu .bg-menu-search input::placeholder {
+    color: rgba(240, 230, 216, 0.5);
+}
+
+#sidebar-menu .bg-menu-search input:focus {
+    border-color: rgba(232, 134, 26, 0.65);
+    background: rgba(255, 255, 255, 0.09);
+    box-shadow: 0 0 0 3px rgba(232, 134, 26, 0.15);
+}
+
+#sidebar-menu .bg-menu-search input::-webkit-search-cancel-button {
+    filter: invert(0.85);
+    cursor: pointer;
+}
+
+#sidebar-menu .bg-menu-search .fe-search {
+    position: absolute;
+    top: 50%;
+    left: 11px;
+    transform: translateY(-50%);
+    color: rgba(220, 202, 178, 0.6);
+    font-size: 14px;
+    pointer-events: none;
+}
+
+#sidebar-menu .bg-menu-search kbd {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    padding: 0 6px;
+    border: 1px solid rgba(220, 202, 178, 0.25);
+    border-radius: 4px;
+    background: transparent;
+    box-shadow: none;
+    color: rgba(240, 230, 216, 0.55);
+    font-family: inherit;
+    font-size: 11px;
+    line-height: 18px;
+    pointer-events: none;
+}
+
+#sidebar-menu .bg-menu-search input:focus ~ kbd,
+#sidebar-menu .bg-menu-search input:not(:placeholder-shown) ~ kbd {
+    display: none;
+}
+
+#sidebar-menu .bg-menu-empty {
+    margin: 0;
+    padding: 10px 20px;
+    color: rgba(240, 230, 216, 0.55);
+    font-size: 12.5px;
+}
+
+/* ---------------------------------------------------------------- section labels */
+ul#side-menu > li.bg-menu-group {
+    margin-top: 14px;
+    border-bottom: 0 !important;
+}
+
+#sidebar-menu .bg-menu-group-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 20px 5px;
+    border: 0;
+    background: transparent;
+    color: rgba(240, 230, 216, 0.5);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-align: left;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+#sidebar-menu .bg-menu-group-toggle:hover,
+#sidebar-menu .bg-menu-group-toggle:focus-visible {
+    color: rgba(240, 230, 216, 0.82);
+    outline: none;
+}
+
+#sidebar-menu .bg-menu-group-toggle:focus-visible {
+    box-shadow: inset 2px 0 0 #e8861a;
+}
+
+#sidebar-menu .bg-menu-group-label {
+    flex: 1 1 auto;
+}
+
+#sidebar-menu .bg-menu-group-chevron {
+    font-size: 12px;
+    opacity: 0.7;
+    transition: transform .15s ease;
+}
+
+#sidebar-menu .bg-menu-group.is-collapsed .bg-menu-group-chevron {
+    transform: rotate(-90deg);
+}
+
+/* Count shown next to a collapsed section (e.g. Inventory's low-stock badge) */
+#sidebar-menu .bg-menu-group-badge {
+    min-width: 18px;
+    padding: 1px 6px;
+    border-radius: 9px;
+    background: #f1556c;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.4;
+    text-align: center;
+}
+
+#sidebar-menu .bg-menu-group-badge[hidden],
+#sidebar-menu.is-searching .bg-menu-group-badge {
+    display: none;
+}
+
+/* ---------------------------------------------------------------- hiding */
+/* Items of a collapsed section */
+ul#side-menu > li.bg-group-hidden {
+    display: none;
+}
+
+/* While searching, matches in collapsed sections are shown too */
+#sidebar-menu.is-searching ul#side-menu > li.bg-group-hidden {
+    display: block;
+}
+
+#sidebar-menu.is-searching .bg-menu-group-chevron {
+    visibility: hidden;
+}
+
+/* Items and labels that don't match the search */
+#sidebar-menu .bg-search-hidden {
+    display: none !important;
+}
+
+/* ---------------------------------------------------------------- icon-only sidebar */
+/* No labels or search; every item stays reachable as an icon (name shown on hover). */
+body[data-leftbar-size="condensed"] #sidebar-menu .bg-menu-search,
+body[data-leftbar-size="condensed"] #sidebar-menu .bg-menu-group,
+body[data-leftbar-size="condensed"] #sidebar-menu .bg-menu-empty {
+    display: none !important;
+}
+
+body[data-leftbar-size="condensed"] ul#side-menu > li.bg-group-hidden {
+    display: block;
+}

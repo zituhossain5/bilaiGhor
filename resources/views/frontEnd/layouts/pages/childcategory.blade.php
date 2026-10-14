@@ -450,3 +450,12 @@
         })();
     </script>
 @endpush
+
+{{-- wow.js "zoomIn" entrance animation of the product cards (only these pages use it) --}}
+@push('css')
+<link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/animate.css') }}" />
+@endpush
+@push('script')
+<script src="{{ asset_v('public/frontEnd/js/wow.min.js') }}"></script>
+<script>new WOW().init();</script>
+@endpush

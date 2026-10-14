@@ -19,12 +19,10 @@
         @stack('seo') 
         @stack('css')
         <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bootstrap.min.css') }}" />
-        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/animate.css') }}" />
         <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/all.min.css') }}" />
         <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/owl.carousel.min.css') }}" />
         <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/owl.theme.default.min.css') }}" />
         <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/mobile-menu.css') }}" />
-        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/select2.min.css') }}" />
         <!-- toastr css -->
         <link rel="stylesheet" href="{{ asset_v('public/backEnd/assets/css/toastr.min.css') }}" />
 
@@ -40,7 +38,6 @@
         <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/main.css') }}" />
         <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bilai-container-system.css') }}" />
         @stack('css_after')
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
         <style>
             .float{
@@ -487,13 +484,38 @@
                 : 'other')))));
         @endphp
         <script>
+            /* Third-party tags (Meta/TikTok pixels, GTM) download after the page is usable: on the
+               first scroll/click/touch/key press, or 5s after "load" at the latest. Their stubs
+               (fbq, ttq, dataLayer) exist right away and queue every event until then, so no
+               tracking call is lost; they only stop competing with the page for the main thread. */
+            (function (w, d) {
+                var queue = [], started = false, events = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+                function inject(src) {
+                    var s = d.createElement('script');
+                    s.async = true;
+                    s.src = src;
+                    d.head.appendChild(s);
+                }
+                function start() {
+                    if (started) return;
+                    started = true;
+                    events.forEach(function (e) { w.removeEventListener(e, start, { passive: true }); });
+                    queue.splice(0).forEach(inject);
+                }
+                w.bilaiLoadLater = function (src) { started ? inject(src) : queue.push(src); };
+                events.forEach(function (e) { w.addEventListener(e, start, { passive: true }); });
+                w.addEventListener('load', function () { setTimeout(start, 5000); });
+            })(window, document);
+        </script>
+        <script>
             window.dataLayer = window.dataLayer || [];
             dataLayer.push({
                 event:     'site_page_data',
-                page_type: {{ json_encode($dl_page_type) }},
-                page_url:  {{ json_encode(url()->current()) }},
+                {{-- @json, not {{ json_encode() }}: the escaped &quot; made this whole script a SyntaxError --}}
+                page_type: @json($dl_page_type),
+                page_url:  @json(url()->current()),
                 currency:  'BDT',
-                site_name: {{ json_encode(optional($generalsetting)->name ?? '') }}
+                site_name: @json(optional($generalsetting)->name ?? '')
             });
         </script>
         <!-- ========== Google Tag Manager ========== -->
@@ -503,10 +525,10 @@
                 ? trim($gtm->code)
                 : 'GTM-' . trim($gtm->code);
         @endphp
+        {{-- Standard GTM snippet; gtm.js itself is fetched via bilaiLoadLater (see top of <head>). --}}
         <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        new Date().getTime(),event:'gtm.js'});var dl=l!='dataLayer'?'&l='+l:'';
+        w.bilaiLoadLater('https://www.googletagmanager.com/gtm.js?id='+i+dl);
         })(window,document,'script','dataLayer','{{ $gtm_container_id }}');</script>
         @endforeach
         <!-- ========== End Google Tag Manager ========== -->
@@ -523,8 +545,7 @@
             ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};
             ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";
                 ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};
-                var o=d.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;
-                var a=d.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+                w.bilaiLoadLater(i+"?sdkid="+e+"&lib="+t)}; // events.js fetched later; ttq.* calls queue meanwhile
         }(window, document, 'ttq');
         @foreach($tiktok_pixels as $tiktokP)
         ttq.load('{{ $tiktokP->code }}');
@@ -536,15 +557,13 @@
         @include('frontEnd.layouts.partials.ecom-tracking-lib')
         @include('frontEnd.layouts.partials.traffic-attribution')
 
-        <!-- Meta Pixel Code -->
+        <!-- Meta Pixel Code (standard stub; fbevents.js is fetched via bilaiLoadLater, calls queue until then) -->
         <script>
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
             n.callMethod.apply(n,arguments):n.queue.push(arguments)};
             if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            n.queue=[];f.bilaiLoadLater(v)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
             fbq('init', '2646645895748988');
             </script>
@@ -1187,8 +1206,7 @@
   </div>
 </div>
 
-<!-- Font Awesome CDN -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{{-- Font Awesome: self-hosted 6.5.0 (public/frontEnd/css/all.min.css, font-display: swap) in <head>. --}}
 
 <style>
 /* Floating Container */
@@ -1361,10 +1379,10 @@
     background: rgba(0,0,0,0.4);
     z-index: 10010;
     opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
+    pointer-events: none; /* hidden = transparent and click-through; only opacity animates (GPU) */
+    transition: opacity 0.3s;
 }
-.sidebar-cart-overlay.active { opacity: 1; visibility: visible; }
+.sidebar-cart-overlay.active { opacity: 1; pointer-events: auto; }
 .sidebar-cart-drawer {
     position: fixed;
     top: 0; right: 0;
@@ -1495,7 +1513,9 @@ window.addEventListener('pageshow', function (e) {
 <script>
 /* BilaiGhor Nav Mega Menu — timer-based so gap between item and panel doesn't close menu */
 (function () {
-    if (window.innerWidth < 992) return;
+    // matchMedia instead of window.innerWidth: same breakpoint, but reading innerWidth here (mid-parse)
+    // forced the browser to lay out the whole page early.
+    if (!window.matchMedia('(min-width: 992px)').matches) return;
 
     var nav    = document.querySelector('.bilai-nav');
     var items  = nav ? nav.querySelectorAll('.bilai-nav__item--has-mega') : [];
@@ -1554,9 +1574,12 @@ window.addEventListener('pageshow', function (e) {
         <script src="{{ asset_v('public/frontEnd/js/jquery-3.6.3.min.js') }}"></script>
         <script>
             $(function() {
-                $("#loading").hide();
-                $(window).on("load", function() { $("#loading").hide(); });
-                setTimeout(function() { $("#loading").hide(); }, 3000);
+                // Plain style write: jQuery's .hide() runs its one-off CSS feature tests on first use,
+                // which forced a full-page layout before the first paint. Same result for #loading.
+                var hideLoading = function () { var l = document.getElementById("loading"); if (l) l.style.display = "none"; };
+                hideLoading();
+                $(window).on("load", hideLoading);
+                setTimeout(hideLoading, 3000);
             });
         </script>
         <script src="{{ asset_v('public/frontEnd/js/bootstrap.min.js') }}"></script>
@@ -1564,25 +1587,39 @@ window.addEventListener('pageshow', function (e) {
         <script src="{{ asset_v('public/frontEnd/js/mobile-menu.js') }}"></script>
         <script src="{{ asset_v('public/frontEnd/js/wsit-menu.js') }}"></script>
         <script src="{{ asset_v('public/frontEnd/js/mobile-menu-init.js') }}"></script>
-        <script src="{{ asset_v('public/frontEnd/js/wow.min.js') }}"></script>
-        <script>
-            new WOW().init();
-        </script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-        <!-- feather icon -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
-        <script>
-            feather.replace();
-        </script>
+        {{-- Page-specific libraries are pushed by the pages that use them: wow.js + animate.css
+             (brand, childcategory, hotdeals, vendor-shop), feather (customer/verify), select2
+             (customer address partials), sweetalert2 (order-limit modal below). flatpickr was
+             loaded here but never used. --}}
         <script src="{{ asset_v('public/backEnd/assets/js/toastr.min.js') }}"></script>
+        <script>
+            /* Start each Owl carousel only when it comes near the viewport (300px ahead).
+               Initialising every carousel at load measured and re-laid out the whole page
+               (forced reflows, long tasks). Until a carousel starts, bilai-header-footer.css
+               shows its first slides at their final size, so nothing shifts. */
+            function bilaiOwlWhenNear($els, options) {
+                $els.each(function () {
+                    var $el = $(this);
+                    var start = function () {
+                        if (!$el.hasClass('owl-loaded')) $el.owlCarousel(options);
+                    };
+                    if (!('IntersectionObserver' in window)) return start();
+                    var io = new IntersectionObserver(function (entries) {
+                        if (entries.some(function (e) { return e.isIntersecting; })) {
+                            io.disconnect();
+                            start();
+                        }
+                    }, { rootMargin: '300px 0px' });
+                    io.observe(this);
+                });
+            }
+        </script>
         {!! Toastr::message() !!} @stack('script')
 		
 		
 		<script>
     $(document).ready(function() {
-        $(".main_slider").owlCarousel({
+        bilaiOwlWhenNear($(".main_slider"), {
             items: 1,
             loop: true,
             dots: false,
@@ -1601,7 +1638,7 @@ window.addEventListener('pageshow', function (e) {
 </script>
 <script>
     $(document).ready(function() {
-        $(".hotdeals-slider").owlCarousel({
+        bilaiOwlWhenNear($(".hotdeals-slider"), {
             margin: 15,
             loop: true,
             dots: false,
@@ -1629,7 +1666,7 @@ window.addEventListener('pageshow', function (e) {
 </script>
 <script>
     $(document).ready(function() {
-        $(".category-slider").owlCarousel({
+        bilaiOwlWhenNear($(".category-slider"), {
             margin: 15,
             loop: true,
             dots: false,
@@ -1654,7 +1691,7 @@ window.addEventListener('pageshow', function (e) {
             },
         });
 
-        $(".product_slider").owlCarousel({
+        bilaiOwlWhenNear($(".product_slider"), {
             margin: 16,
             loop: true,
             dots: false,
@@ -1688,7 +1725,7 @@ window.addEventListener('pageshow', function (e) {
                 $testimonialSlider.addClass("is-centered");
             }
 
-            $testimonialSlider.owlCarousel({
+            bilaiOwlWhenNear($testimonialSlider, {
                 margin: 24,
                 loop: testimonialLoop,
                 dots: true,
@@ -1720,7 +1757,7 @@ window.addEventListener('pageshow', function (e) {
             });
         }
 
-		$(".customer-review").owlCarousel({
+		bilaiOwlWhenNear($(".customer-review"), {
             margin: 8,
             items: 6,
             loop: true,
@@ -2131,12 +2168,14 @@ window.addEventListener('pageshow', function (e) {
                 }, { passive: true });
             })();
 
+            /* Fade the back-to-top button in/out when crossing 50px. Remember the state instead of
+               asking jQuery for ":hidden" on every scroll event (that forced a layout each time). */
+            var scrollTopShown = false;
             $(window).scroll(function () {
-                if ($(this).scrollTop() > 50) {
-                    $(".scrolltop:hidden").stop(true, true).fadeIn();
-                } else {
-                    $(".scrolltop").stop(true, true).fadeOut();
-                }
+                var show = window.pageYOffset > 50;
+                if (show === scrollTopShown) return;
+                scrollTopShown = show;
+                $(".scrolltop").stop(true, true)[show ? 'fadeIn' : 'fadeOut']();
             });
             $(function () {
                 $(".scroll").click(function () {
@@ -2462,10 +2501,10 @@ window.addEventListener('pageshow', function (e) {
 @endif
 
         
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 @if(session('show_order_limit_modal'))
+{{-- sweetalert2 is only needed for this modal, so it only loads when the modal is shown. --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // ডাইনামিক হোয়াটসঅ্যাপ নাম্বার (ডাটাবেস থেকে)

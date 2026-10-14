@@ -130,7 +130,7 @@
                                         @php
                                             $status = strtolower($refund->status ?? 'pending');
                                             $statusIcons = [
-                                                'pending' => 'fa-clock-o',
+                                                'pending' => 'fa-clock',
                                                 'approved' => 'fa-check',
                                                 'rejected' => 'fa-times',
                                                 'processed' => 'fa-check-circle',
@@ -147,7 +147,7 @@
                                             <td class="bilai-refunds-amount">&#2547;{{ number_format($refund->amount + $refund->shipping_charge, 2) }}</td>
                                             <td>
                                                 <span class="bilai-refunds-status bilai-refunds-status--{{ in_array($status, ['pending', 'approved', 'rejected', 'processed']) ? $status : 'default' }}">
-                                                    <i class="fa {{ $statusIcons[$status] ?? 'fa-circle-o' }}" aria-hidden="true"></i>
+                                                    <i class="fa {{ $statusIcons[$status] ?? 'fa-circle' }}" aria-hidden="true"></i>
                                                     {{ ucfirst($status) }}
                                                 </span>
                                             </td>
@@ -182,7 +182,7 @@
                         @endif
                     @else
                         <div class="bilai-refunds-empty">
-                            <span class="bilai-refunds-empty-icon" aria-hidden="true"><i class="fa fa-file-text-o"></i></span>
+                            <span class="bilai-refunds-empty-icon" aria-hidden="true"><i class="fa fa-file-lines"></i></span>
                             <h2 class="bilai-refunds-empty-title">No refund requests yet</h2>
                             <p class="bilai-refunds-empty-copy">You have not submitted a refund request for any order.</p>
                             <a href="{{ route('customer.orders') }}" class="bilai-refunds-button">

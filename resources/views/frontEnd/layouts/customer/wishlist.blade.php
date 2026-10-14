@@ -188,7 +188,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
                         </a>
                         <a href="{{ route('customer.wishlist') }}" class="bilai-dash-nav-item active">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart-o"></i></span> Wishlist
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart"></i></span> Wishlist
                         </a>
                         <a href="{{ route('customer.addresses') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
@@ -196,7 +196,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
                         </a>
                         <a href="{{ route('customer.rewards') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-star"></i></span> Reward Points
                         </a>
                         <a href="{{ route('customer.order_track') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
@@ -296,7 +296,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
                                                     @endif
                                                     <button type="button" class="bilai-wl-remove" data-remove-id="{{ $p->id }}" aria-label="Remove from wishlist">
                                                         {{-- Replace trash SVG icon later --}}
-                                                        <i class="fa fa-trash-o"></i>
+                                                        <i class="fa fa-trash-can"></i>
                                                     </button>
                                                 </div>
                                             </td>
@@ -310,7 +310,7 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
                     {{-- Empty state --}}
                     <div class="bilai-wl-empty">
                         {{-- Replace empty-state SVG icon later --}}
-                        <div class="bilai-wl-empty-ic"><i class="fa fa-heart-o"></i></div>
+                        <div class="bilai-wl-empty-ic"><i class="fa fa-heart"></i></div>
                         <h4>Your wishlist is empty.</h4>
                         <p>Save products you love and find them here later.</p>
                         <a href="{{ route('shop') }}" class="bilai-wl-browse-btn">Browse Products <i class="fa fa-arrow-right"></i></a>

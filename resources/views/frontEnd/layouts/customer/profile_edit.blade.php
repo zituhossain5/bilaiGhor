@@ -204,7 +204,7 @@ $selectedThana    = old('thana_id', $profile_edit->thana_id);
                         </a>
                         <a href="{{ route('customer.wishlist') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart-o"></i></span> Wishlist
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart"></i></span> Wishlist
                         </a>
                         <a href="{{ route('customer.addresses') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
@@ -213,7 +213,7 @@ $selectedThana    = old('thana_id', $profile_edit->thana_id);
                         <!-- -->
                         <a href="{{ route('customer.rewards') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-star"></i></span> Reward Points
                         </a>
                         <a href="{{ route('customer.order_track') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}

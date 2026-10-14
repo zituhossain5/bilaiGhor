@@ -389,7 +389,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                         {{-- Wishlist â€” replace href when implemented --}}
                         <a href="{{ route('customer.wishlist') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart-o"></i></span>
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart"></i></span>
                             Wishlist
                         </a>
 
@@ -405,7 +405,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                         <a href="{{ route('customer.rewards') }}"
                            class="bilai-dash-nav-item {{ request()->is('customer/rewards') ? 'active' : '' }}">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span>
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-star"></i></span>
                             Reward Points
                         </a>
 
@@ -488,7 +488,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                                 <span class="bilai-dash-stat-label">Total Wishlist</span>
                                 <div class="bilai-dash-stat-icon-wrap">
                                     {{-- Replace SVG icon later --}}
-                                    <i class="fa fa-heart-o"></i>
+                                    <i class="fa fa-heart"></i>
                                 </div>
                             </div>
                             <p class="bilai-dash-stat-value">00</p>
@@ -501,7 +501,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                                 <span class="bilai-dash-stat-label">Delivered Order</span>
                                 <div class="bilai-dash-stat-icon-wrap">
                                     {{-- Replace SVG icon later --}}
-                                    <i class="fa fa-check-circle-o"></i>
+                                    <i class="fa fa-circle-check"></i>
                                 </div>
                             </div>
                             <p class="bilai-dash-stat-value">{{ $deliveredOrders }}</p>
@@ -537,7 +537,7 @@ $customerInitial = strtoupper(substr($customer->name ?? 'U', 0, 1));
                                 <span class="bilai-dash-stat-label">Active Coupon</span>
                                 <div class="bilai-dash-stat-icon-wrap">
                                     {{-- Replace SVG icon later --}}
-                                    <i class="fa fa-envelope-o"></i>
+                                    <i class="fa fa-envelope"></i>
                                 </div>
                             </div>
                             <p class="bilai-dash-stat-value">00</p>

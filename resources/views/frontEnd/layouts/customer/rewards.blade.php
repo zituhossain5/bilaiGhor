@@ -277,7 +277,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                         </a>
                         <a href="{{ route('customer.wishlist') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart-o"></i></span> Wishlist
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart"></i></span> Wishlist
                         </a>
                         <a href="{{ route('customer.addresses') }}" class="bilai-dash-nav-item {{ request()->is('customer/addresses') ? 'active' : '' }}">
                             {{-- Replace sidebar SVG icon later --}}
@@ -286,7 +286,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                         {{-- Gift Cards removed from sidebar UI per design (backend untouched) --}}
                         <a href="{{ route('customer.rewards') }}" class="bilai-dash-nav-item active">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-star"></i></span> Reward Points
                         </a>
                         <a href="{{ route('customer.order_track') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
@@ -365,7 +365,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                     <div class="bilai-rw-stages">
                         <div class="bilai-rw-stage active">
                             {{-- Replace membership SVG icon later --}}
-                            <div class="bilai-rw-stage-ic"><i class="fa fa-circle-o"></i></div>
+                            <div class="bilai-rw-stage-ic"><i class="fa fa-circle"></i></div>
                             <p class="bilai-rw-stage-name">New Member</p>
                             <p class="bilai-rw-stage-here">You are here</p>
                         </div>
@@ -432,7 +432,7 @@ a.bilai-rw-hist-tab { text-decoration: none; display: inline-block; }
                     <div class="bilai-rw-hist-sub">
                         <p class="bilai-rw-hist-sub-title">
                             {{-- Replace clock SVG icon later --}}
-                            <i class="fa fa-clock-o" style="color:var(--bilai-rw-muted);"></i> Transaction History
+                            <i class="fa fa-clock" style="color:var(--bilai-rw-muted);"></i> Transaction History
                         </p>
                         {{-- Server-side filter tabs --}}
                         <div class="bilai-rw-hist-tabs">

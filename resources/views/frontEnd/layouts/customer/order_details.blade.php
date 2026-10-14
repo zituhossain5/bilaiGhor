@@ -343,7 +343,7 @@ if ($trackingId) {
                         </a>
                         <a href="{{ route('customer.wishlist') }}" class="bilai-od-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-od-nav-icon"><i class="fa fa-heart-o"></i></span> Wishlist
+                            <span class="bilai-od-nav-icon"><i class="fa fa-heart"></i></span> Wishlist
                         </a>
                         <a href="{{ route('customer.addresses') }}" class="bilai-od-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
@@ -356,7 +356,7 @@ if ($trackingId) {
                         {{-- Gift Cards removed from sidebar UI per design (backend untouched) --}}
                         <a href="{{ route('customer.rewards') }}" class="bilai-od-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-od-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
+                            <span class="bilai-od-nav-icon"><i class="fa fa-star"></i></span> Reward Points
                         </a>
                         <a href="{{ route('customer.order_track') }}" class="bilai-od-nav-item {{ request()->is('customer/order-track*') ? 'active' : '' }}">
                             {{-- Replace sidebar SVG icon later --}}
@@ -419,7 +419,7 @@ if ($trackingId) {
                                 <div class="bilai-od-step {{ $stepClass }}">
                                     <span class="bilai-od-step-dot {{ $dotClass }}">
                                         {{-- Replace SVG icon later --}}
-                                        <i class="fa {{ $done ? 'fa-check' : 'fa-circle-o' }}"></i>
+                                        <i class="fa {{ $done ? 'fa-check' : 'fa-circle' }}"></i>
                                     </span>
                                     <span class="bilai-od-step-label">{{ $step['label'] }}</span>
                                     <span class="bilai-od-step-time">{{ $done ? $step['time']->format('M d, h:i A') : '--' }}</span>
@@ -585,7 +585,7 @@ if ($trackingId) {
                             </div>
                             <a href="{{ route('customer.invoice', ['id' => $order->id]) }}" class="bilai-od-btn bilai-od-btn--primary">
                                 {{-- Replace SVG icon later --}}
-                                <i class="fa fa-file-text-o"></i> View Invoice
+                                <i class="fa fa-file-lines"></i> View Invoice
                             </a>
                         </div>
                     </div>

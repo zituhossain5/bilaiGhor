@@ -1616,7 +1616,7 @@ textarea.form-control-custom {
                                                             data-thana="{{ $addr['thana_id'] ?? '' }}"
                                                             data-address="{{ $addr['address'] }}">
                                                         {{-- Replace edit SVG icon later --}}
-                                                        <i class="fa fa-pencil-square-o"></i> Edit
+                                                        <i class="fa fa-pen-to-square"></i> Edit
                                                     </button>
                                                 @endif
                                             </div>
@@ -1646,7 +1646,7 @@ textarea.form-control-custom {
                 <div class="bilai-addr-guest" role="dialog" aria-label="Login required">
                     <button type="button" class="bilai-addr-close" aria-label="Close">&times;</button>
                     {{-- Replace guest address SVG icon later --}}
-                    <div class="bilai-addr-guest-icon"><i class="fa fa-user-o"></i></div>
+                    <div class="bilai-addr-guest-icon"><i class="fa fa-user"></i></div>
                     <p>
                         <a href="{{ route('customer.login') }}">Login</a> or
                         <a href="{{ route('customer.register') }}">Register</a> to Select/Add<br>Your Address

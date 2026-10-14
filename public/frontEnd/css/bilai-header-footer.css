@@ -7354,6 +7354,14 @@ body .bilai-product-card .bilai-product-image img {
 .bilai-picture > source {
     display: none;
 }
+
+/* Sidebar-cart overlay: its full rules live in an inline <style> after the element in
+   master.blade.php. Hide it from the first paint, so it never animates from visible to hidden
+   while the page loads. */
+.sidebar-cart-overlay:not(.active) {
+    opacity: 0;
+    pointer-events: none;
+}
 /* ============================================================
    Core Web Vitals End
    ============================================================ */

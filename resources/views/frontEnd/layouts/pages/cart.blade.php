@@ -226,7 +226,7 @@
                                         <td>
                                             <button type="button" class="bilai-cart-remove" data-id="{{ $value->rowId }}" title="Remove item" aria-label="Remove item">
                                                 {{-- Replace SVG icon later --}}
-                                                <i class="fa fa-trash-o"></i>
+                                                <i class="fa fa-trash-can"></i>
                                             </button>
                                         </td>
                                     </tr>

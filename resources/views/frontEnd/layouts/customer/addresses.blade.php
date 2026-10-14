@@ -229,7 +229,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                         </a>
                         <a href="{{ route('customer.wishlist') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart-o"></i></span> Wishlist
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart"></i></span> Wishlist
                         </a>
                         <a href="{{ route('customer.addresses') }}" class="bilai-dash-nav-item active">
                             {{-- Replace sidebar SVG icon later --}}
@@ -237,7 +237,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                         </a>
                         <a href="{{ route('customer.rewards') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span> Reward Points
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-star"></i></span> Reward Points
                         </a>
                         <a href="{{ route('customer.order_track') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
@@ -287,7 +287,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                                             @csrf
                                             <button type="submit" class="bilai-adr-btn-delete">
                                                 {{-- Replace delete SVG icon later --}}
-                                                <i class="fa fa-trash-o"></i> Delete
+                                                <i class="fa fa-trash-can"></i> Delete
                                             </button>
                                         </form>
                                         <button type="button" class="bilai-adr-btn-edit bilai-afm-edit-open"
@@ -300,7 +300,7 @@ $defaultAddressId    = optional($addresses->firstWhere('is_default', true))->id;
                                                 data-thana="{{ $addr->thana_id }}"
                                                 data-address="{{ $addr->address }}">
                                             {{-- Replace edit SVG icon later --}}
-                                            <i class="fa fa-pencil-square-o"></i> Edit
+                                            <i class="fa fa-pen-to-square"></i> Edit
                                         </button>
                                     </div>
 

@@ -37,6 +37,9 @@
 </section>
 @endsection
 @push('script')
+{{-- feather icons (the "Resend OTP" icon); no longer loaded site-wide by the layout --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+<script>feather.replace();</script>
 <script src="{{ asset_v('public/frontEnd/js/parsley.min.js') }}"></script>
 <script src="{{ asset_v('public/frontEnd/js/form-validation.init.js') }}"></script>
 @endpush

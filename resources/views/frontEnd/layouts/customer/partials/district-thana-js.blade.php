@@ -1,4 +1,8 @@
 @once
+{{-- select2 styles: no longer in the layout <head> for every page, only where select2 is used --}}
+@push('css')
+<link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/select2.min.css') }}" />
+@endpush
 @push('script')
 <script src="{{ asset_v('public/frontEnd/js/select2.min.js') }}"></script>
 <script>

@@ -294,7 +294,7 @@ $activeTab = $activeTab ?? 'all';
 
                         <a href="{{ route('customer.wishlist') }}" class="bilai-dash-nav-item">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart-o"></i></span>
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-heart"></i></span>
                             Wishlist
                         </a>
 
@@ -310,7 +310,7 @@ $activeTab = $activeTab ?? 'all';
                         <a href="{{ route('customer.rewards') }}"
                            class="bilai-dash-nav-item {{ request()->is('customer/rewards') ? 'active' : '' }}">
                             {{-- Replace sidebar SVG icon later --}}
-                            <span class="bilai-dash-nav-icon"><i class="fa fa-star-o"></i></span>
+                            <span class="bilai-dash-nav-icon"><i class="fa fa-star"></i></span>
                             Reward Points
                         </a>
 
@@ -375,10 +375,10 @@ $activeTab = $activeTab ?? 'all';
                                     <tr>
                                         {{-- Replace SVG icons later --}}
                                         <th><i class="fa fa-list-alt" style="margin-right:5px;opacity:.6;"></i> Order</th>
-                                        <th><i class="fa fa-calendar-o" style="margin-right:5px;opacity:.6;"></i> Date</th>
+                                        <th><i class="fa fa-calendar" style="margin-right:5px;opacity:.6;"></i> Date</th>
                                         <th><i class="fa fa-cube" style="margin-right:5px;opacity:.6;"></i> Product</th>
                                         <th><i class="fa fa-info-circle" style="margin-right:5px;opacity:.6;"></i> Status</th>
-                                        <th><i class="fa fa-money" style="margin-right:5px;opacity:.6;"></i> Total</th>
+                                        <th><i class="fa fa-money-bill" style="margin-right:5px;opacity:.6;"></i> Total</th>
                                         <th><i class="fa fa-pencil" style="margin-right:5px;opacity:.6;"></i> Actions</th>
                                     </tr>
                                 </thead>
@@ -467,7 +467,7 @@ $activeTab = $activeTab ?? 'all';
                                                     <a href="{{ route('customer.order_note', ['id' => $value->id]) }}"
                                                        class="bilai-ord-btn-sm" style="background:#eff6ff; color:#1d4ed8;" title="Admin Note">
                                                         {{-- Replace SVG icon later --}}
-                                                        <i class="fa fa-sticky-note-o"></i>
+                                                        <i class="fa fa-note-sticky"></i>
                                                     </a>
                                                 @endif
 

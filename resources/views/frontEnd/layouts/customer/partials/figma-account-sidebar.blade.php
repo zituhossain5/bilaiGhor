@@ -45,11 +45,11 @@
                 @endif
             </a>
             <a href="{{ route('customer.profile_edit') }}" class="bilai-account-menu-link {{ request()->routeIs('customer.profile_edit') ? 'active' : '' }}">
-                <span class="bilai-account-menu-icon"><i class="fa fa-user-o"></i></span>
+                <span class="bilai-account-menu-icon"><i class="fa fa-user"></i></span>
                 Profile
             </a>
             <a href="{{ route('customer.wishlist') }}" class="bilai-account-menu-link {{ request()->routeIs('customer.wishlist') ? 'active' : '' }}">
-                <span class="bilai-account-menu-icon"><i class="fa fa-heart-o"></i></span>
+                <span class="bilai-account-menu-icon"><i class="fa fa-heart"></i></span>
                 Wishlist
             </a>
             <a href="{{ route('customer.addresses') }}" class="bilai-account-menu-link {{ request()->routeIs('customer.addresses') ? 'active' : '' }}">
@@ -57,7 +57,7 @@
                 Addresses
             </a>
             <a href="{{ route('customer.rewards') }}" class="bilai-account-menu-link {{ request()->routeIs('customer.rewards') ? 'active' : '' }}">
-                <span class="bilai-account-menu-icon"><i class="fa fa-star-o"></i></span>
+                <span class="bilai-account-menu-icon"><i class="fa fa-star"></i></span>
                 Reward Points
             </a>
             <a href="{{ route('customer.order_track') }}" class="bilai-account-menu-link {{ request()->routeIs('customer.order_track') ? 'active' : '' }}">

@@ -32,6 +32,8 @@
 @endpush
 
 @section('content')
+{{-- Page title for screen readers and search engines (the hero slides are images); not shown. --}}
+<h1 class="visually-hidden">{{ $seo->meta_title ?? (optional($generalsetting)->name ?? 'Bilai Ghor') }}</h1>
 {{-- HERO SLIDER --}}
 <section class="bilai-hero-section">
     <div class="main_slider owl-carousel bilai-hero-owl">
@@ -143,7 +145,7 @@
             <a href="{{ route('subcategory', $value->slug) }}" class="bilai-cat-card">
                 <div class="bilai-cat-img">
                     <x-picture :src="$subcategoryImage"
-                         alt="{{ $value->subcategoryName }}"
+                         alt=""
                          width="300" height="300" decoding="async"
                          loading="lazy" />
                 </div>
@@ -228,8 +230,8 @@
 
                 <div class="bilai-product-actions">
                     @if (!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
-                        <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn">
-                            <i class="fa-solid fa-cart-shopping"></i>
+                        <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn" aria-label="Choose options for {{ $value->name }}">
+                            <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                         </a>
                         <a href="{{ route('product', $value->slug) }}" class="bilai-buy-btn">Buy Now</a>
                     @else
@@ -237,8 +239,8 @@
                             @csrf
                             <input type="hidden" name="id" value="{{ $value->id }}" />
                             <input type="hidden" name="qty" value="1" />
-                            <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}">
-                                <i class="fa-solid fa-cart-shopping"></i>
+                            <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}" aria-label="Add {{ $value->name }} to cart">
+                                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                             </button>
                         </form>
                         <form action="{{ route('cart.store') }}" method="POST">
@@ -331,8 +333,8 @@
 
                 <div class="bilai-product-actions">
                     @if (!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
-                        <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn">
-                            <i class="fa-solid fa-cart-shopping"></i>
+                        <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn" aria-label="Choose options for {{ $value->name }}">
+                            <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                         </a>
                         <a href="{{ route('product', $value->slug) }}" class="bilai-buy-btn">Buy Now</a>
                     @else
@@ -340,8 +342,8 @@
                             @csrf
                             <input type="hidden" name="id" value="{{ $value->id }}" />
                             <input type="hidden" name="qty" value="1" />
-                            <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}">
-                                <i class="fa-solid fa-cart-shopping"></i>
+                            <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}" aria-label="Add {{ $value->name }} to cart">
+                                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                             </button>
                         </form>
                         <form action="{{ route('cart.store') }}" method="POST">
@@ -607,8 +609,8 @@
 
                         <div class="bilai-product-actions">
                             @if (!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
-                                <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn">
-                                    <i class="fa-solid fa-cart-shopping"></i>
+                                <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn" aria-label="Choose options for {{ $value->name }}">
+                                    <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                                 </a>
                                 <a href="{{ route('product', $value->slug) }}" class="bilai-buy-btn">Buy Now</a>
                             @else
@@ -616,8 +618,8 @@
                                     @csrf
                                     <input type="hidden" name="id" value="{{ $value->id }}" />
                                     <input type="hidden" name="qty" value="1" />
-                                    <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}">
-                                        <i class="fa-solid fa-cart-shopping"></i>
+                                    <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}" aria-label="Add {{ $value->name }} to cart">
+                                        <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                                     </button>
                                 </form>
                                 <form action="{{ route('cart.store') }}" method="POST">

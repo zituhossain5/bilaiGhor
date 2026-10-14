@@ -149,7 +149,7 @@
     width: 100%;
     height: 48px;
     background: var(--bilai-auth-primary);
-    color: #fff;
+    color: #3c2a1e; /* AA: dark text on orange */
     border: none;
     border-radius: 10px;
     font-size: 15px;

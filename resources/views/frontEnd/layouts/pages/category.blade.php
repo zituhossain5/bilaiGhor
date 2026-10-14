@@ -96,7 +96,7 @@
             <a href="{{ $subCardUrl }}" class="bilai-cat-sub-card {{ $isActiveSub ? 'active' : '' }}">
                 <div class="bilai-cat-sub-img-box">
                     @if($subcat->image)
-                    <x-picture :src="$subcat->image" alt="{{ $subcat->image_alt ?: $subcat->subcategoryName }}" loading="lazy" />
+                    <x-picture :src="$subcat->image" alt="{{ $subcat->image_alt !== $subcat->subcategoryName ? $subcat->image_alt : '' }}" loading="lazy" />
                     @else
                     <i class="fas fa-tag"></i>
                     @endif

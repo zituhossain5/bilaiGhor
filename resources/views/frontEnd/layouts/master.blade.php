@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}" />
         <title>@yield('title')</title>
         @php
@@ -38,6 +38,8 @@
         <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/main.css') }}" />
         <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bilai-container-system.css') }}" />
         @stack('css_after')
+        {{-- WCAG AA text-contrast adjustments; must stay the last stylesheet in <head> --}}
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bilai-a11y-contrast.css') }}" />
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
         <style>
             .float{
@@ -585,13 +587,13 @@
         {{-- ================================================================
              Existing mobile sidebar menu — keep this div for mobile-menu.js
              ================================================================ --}}
-        <div class="mobile-menu">
+        <div class="mobile-menu" role="navigation" aria-label="Categories">
             <div class="mobile-menu-logo">
                 <div class="logo-image">
                     <img src="{{asset($generalsetting->dark_logo)}}" alt="{{$generalsetting->name}}"{{ \App\Support\ImageSize::attrs($generalsetting->dark_logo) }} />
                 </div>
-                <div class="mobile-menu-close">
-                    <i class="fa fa-times"></i>
+                <div class="mobile-menu-close" role="button" tabindex="0" aria-label="Close menu">
+                    <i class="fa fa-times" aria-hidden="true"></i>
                 </div>
             </div>
             <ul class="first-nav">
@@ -599,7 +601,7 @@
                 @php $mobileCategoryMenuId = 'mobile-category-menu-' . $scategory->id; @endphp
                 <li class="parent-category">
                     <a href="{{url('category/'.$scategory->slug)}}" class="menu-category-name">
-                        <img src="{{asset($scategory->image)}}" alt="{{ $scategory->image_alt ?: $scategory->subcategoryName }}" class="side_cat_img" />
+                        <img src="{{asset($scategory->image)}}" alt="{{ $scategory->image_alt !== $scategory->name ? $scategory->image_alt : '' }}" class="side_cat_img" />
                         {{$scategory->name}}
                     </a>
                     @if($scategory->subcategories->count() > 0)
@@ -642,7 +644,7 @@
 
         {{-- BilaiGhor Figma Header Start --}}
         {{-- === TOP INFO BAR — outside sticky header so it scrolls away naturally === --}}
-        <div class="bilai-topbar">
+        <div class="bilai-topbar" role="region" aria-label="Contact and social links">
             <div class="bilai-topbar__inner">
                 <div class="bilai-topbar__left">
                     @php
@@ -665,8 +667,8 @@
                 </div>
                 <div class="bilai-topbar__right">
                     @foreach($socialicons as $si)
-                    <a href="{{ $si->link }}" target="_blank" rel="noopener" title="{{ $si->title }}" class="bilai-topbar__social-icon">
-                        <i class="{{ $si->icon }}"></i>
+                    <a href="{{ $si->link }}" target="_blank" rel="noopener" title="{{ $si->title }}" aria-label="{{ $si->title }}" class="bilai-topbar__social-icon">
+                        <i class="{{ $si->icon }}" aria-hidden="true"></i>
                     </a>
                     @endforeach
                 </div>
@@ -684,7 +686,7 @@
                     <img src="{{asset($generalsetting->dark_logo)}}" alt="{{$generalsetting->name}}"{{ \App\Support\ImageSize::attrs($generalsetting->dark_logo) }} />
                 </a>
                 <a href="{{route('cart.index')}}" class="bilai-mobile-header__icon-btn" style="position:relative;">
-                    <i class="fa-solid fa-cart-shopping"></i>
+                    <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i><span class="visually-hidden">Cart</span>
                     <span class="bilai-badge mobilecart-qty" style="position:absolute;top:-4px;right:-4px;font-size:10px;min-width:16px;height:16px;">{{ Cart::instance('shopping')->count() }}</span>
                 </a>
             </div>
@@ -693,7 +695,7 @@
             <div class="bilai-mobile-search">
                 <form action="{{route('search')}}">
                     <input type="text" placeholder="Search products..." value="" class="msearch_keyword msearch_click" name="keyword" autocomplete="off" />
-                    <button type="submit"><i class="fas fa-search"></i></button>
+                    <button type="submit" aria-label="Search"><i class="fas fa-search" aria-hidden="true"></i></button>
                 </form>
                 <div class="search_result"></div>
             </div>
@@ -711,7 +713,7 @@
                     <div class="bilai-main-header__search">
                         <form action="{{route('search')}}">
                             <input type="text" placeholder="Search for cat food, accessories and more..." class="search_keyword search_click" name="keyword" autocomplete="off" />
-                            <button type="submit"><img src="{{ asset('public/frontEnd/images/searchIcon.svg') }}" width="24" height="24" alt=""> </button>
+                            <button type="submit" aria-label="Search"><img src="{{ asset('public/frontEnd/images/searchIcon.svg') }}" width="24" height="24" alt=""> </button>
                         </form>
                         <div class="search_result"></div>
                     </div>
@@ -776,7 +778,7 @@
                             <li><a href="{{ route('customer.order_track') }}" class="{{ Route::is('customer.order_track') ? 'active' : '' }}">Track Order</a></li>
                         </ul>
                         <a href="{{ route('cart.index') }}" class="bilai-nav__cart-pill">
-                            <i class="fas fa-shopping-bag"></i>
+                            <i class="fas fa-shopping-bag" aria-hidden="true"></i><span class="visually-hidden">Cart</span>
                             <span class="bilai-nav__cart-count mobilecart-qty">{{ Cart::instance('shopping')->count() }}</span>
                         </a>
                     </div>
@@ -802,9 +804,16 @@
 
         </header>
         {{-- BilaiGhor Figma Header End --}}
+        @php
+            // The content area is the page's <main> landmark. Pages that already render their own
+            // <main> (customer account area, search, complaint) keep theirs: only one may exist.
+            $mainTag = str_contains($__env->yieldContent('content'), '<main') ? 'div' : 'main';
+        @endphp
+        <{{ $mainTag }} id="main">
         <div id="content">
             @yield('content')
         </div>
+        </{{ $mainTag }}>
             <!-- content end -->
 
 {{-- BilaiGhor Figma Footer Start --}}
@@ -859,14 +868,14 @@
                 </a>
 
                 <div class="bilai-footer__group">
-                    <h5 class="bilai-footer__title">Opening Hours</h5>
+                    <h2 class="bilai-footer__title">Opening Hours</h2>
                     <p class="bilai-footer__hours">
                         {{ optional($generalsetting)->opening_hours ?? 'Always Open' }}
                     </p>
                 </div>
 
                 <div class="bilai-footer__group bilai-footer__social-group">
-                    <h5 class="bilai-footer__title">Social Links</h5>
+                    <h2 class="bilai-footer__title">Social Links</h2>
                     <ul class="bilai-footer__social">
                         @foreach($socialicons as $si)
                         @php
@@ -892,7 +901,7 @@
 
             {{-- Column 2: Popular Categories --}}
             <div class="bilai-footer__col">
-                <h5 class="bilai-footer__title">Popular Categories</h5>
+                <h2 class="bilai-footer__title">Popular Categories</h2>
                 <ul class="bilai-footer__links">
                     @forelse($footerSubcats as $sub)
                     <li><a href="{{ route('subcategory', $sub->slug) }}">{{ $sub->subcategoryName ?? $sub->name }}</a></li>
@@ -906,7 +915,7 @@
 
             {{-- Column 3: Useful Link --}}
             <div class="bilai-footer__col">
-                <h5 class="bilai-footer__title">Useful Link</h5>
+                <h2 class="bilai-footer__title">Useful Link</h2>
                 <ul class="bilai-footer__links">
                     <li><a href="{{ $aboutPage ? route('page', ['slug' => $aboutPage->slug]) : url('/') }}">About Us</a></li>
                     <li><a href="{{ route('blogs') }}">Blog</a></li>
@@ -919,7 +928,7 @@
             {{-- Column 4: Contact + Address --}}
             <div class="bilai-footer__col bilai-footer__contact-col">
                 <div class="bilai-footer__group">
-                    <h5 class="bilai-footer__title">Contact</h5>
+                    <h2 class="bilai-footer__title">Contact</h2>
                     <ul class="bilai-footer__contacts">
                         @if($footerPhone)
                         <li>
@@ -944,7 +953,7 @@
 
                 @if(optional($contact)->address)
                 <div class="bilai-footer__group">
-                    <h5 class="bilai-footer__title">Address</h5>
+                    <h2 class="bilai-footer__title">Address</h2>
                     <p class="bilai-footer__address">{{ $contact->address }}</p>
                 </div>
                 @endif
@@ -971,8 +980,9 @@
 {{-- BilaiGhor Figma Footer End --}}
 
         {{-- Floating Cart - ক্লিক করলে সাইডবার কার্ট ওপেন হবে --}}
-        <a href="javascript:void(0)" class="floating-cart-widget" id="floatingCartBtn" title="কার্ট দেখুন">
-            <i class="fa-solid fa-cart-shopping"></i>
+        {{-- Real cart URL (crawlable, works without JS); the click handler opens the sidebar cart instead. --}}
+        <a href="{{ route('cart.index') }}" class="floating-cart-widget" id="floatingCartBtn" title="কার্ট দেখুন">
+            <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i><span class="visually-hidden">কার্ট দেখুন</span>
             <span class="floating-cart-badge mobilecart-qty">{{ Cart::instance('shopping')->count() }}</span>
         </a>
 
@@ -984,14 +994,14 @@
             </div>
         </div>
 
-<div class="mobile_bottom_nav">
+<div class="mobile_bottom_nav" role="navigation" aria-label="Quick links">
     <div class="nav_container">
-        <a href="javascript:void(0)" class="nav_item toggle">
+        <button type="button" class="nav_item toggle" aria-label="Open category menu">
             <div class="icon_box">
                 <i class="fa-solid fa-bars"></i>
             </div>
             <span class="nav_text">Category</span>
-        </a>
+        </button>
 
         <a href="{{route('customer.order_track')}}" class="nav_item {{ Route::is('customer.order_track') ? 'active' : '' }}">
             <div class="icon_box">
@@ -1001,8 +1011,8 @@
         </a>
 
         <div class="nav_item home_wrapper">
-            <a href="{{route('home')}}" class="home_fab {{ Route::is('home') ? 'active' : '' }}">
-                <i class="fa-solid fa-house"></i>
+            <a href="{{route('home')}}" class="home_fab {{ Route::is('home') ? 'active' : '' }}" aria-label="Home">
+                <i class="fa-solid fa-house" aria-hidden="true"></i>
             </a>
         </div>
 
@@ -1088,6 +1098,25 @@
     width: 20%;
 }
 
+/* "Category" is a <button> (it opens the menu, it is not a link): drop the browser's button
+   look so it renders exactly like the link items beside it. */
+button.nav_item {
+    -webkit-appearance: none;
+    appearance: none;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+    font-family: inherit;
+    font-style: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    text-align: inherit;
+    cursor: pointer;
+}
+
 .icon_box {
     position: relative;
     font-size: 20px;
@@ -1102,7 +1131,7 @@
 
 /* হোভার এবং একটিভ কালার */
 .nav_item:hover, .nav_item.active {
-    color: #FF6600; /* আপনার ব্র্যান্ড কালার এখানে দিন */
+    color: #c95000; /* AA on white (was #FF6600) */
 }
 
 .nav_item.active .icon_box {
@@ -1186,20 +1215,20 @@
 <!-- ЁЯМР Floating Chat Widget -->
 <div class="chat-widget">
   <!-- Main Toggle Button -->
-  <div class="chat-toggle" id="chatToggle">
-    <i class="fas fa-comment-dots"></i>
+  <div class="chat-toggle" id="chatToggle" role="button" tabindex="0" aria-label="Chat with us" aria-controls="chatOptions" aria-expanded="false">
+    <i class="fas fa-comment-dots" aria-hidden="true"></i>
   </div>
 
   <!-- Chat Options -->
   <div class="chat-options" id="chatOptions">
-          <a href="https://m.me/{{$generalsetting->facebook_page_username}}" target="_blank" class="chat-btn messenger" title="Messenger">
-      <i class="fab fa-facebook-messenger"></i>
+          <a href="https://m.me/{{$generalsetting->facebook_page_username}}" target="_blank" class="chat-btn messenger" title="Messenger" aria-label="Chat on Messenger">
+      <i class="fab fa-facebook-messenger" aria-hidden="true"></i>
     </a>
-          <a href="https://wa.me/{{ $contact->whatsapp }}" target="_blank" class="chat-btn whatsapp" title="WhatsApp">
-      <i class="fab fa-whatsapp"></i>
+          <a href="https://wa.me/{{ $contact->whatsapp }}" target="_blank" class="chat-btn whatsapp" title="WhatsApp" aria-label="Chat on WhatsApp">
+      <i class="fab fa-whatsapp" aria-hidden="true"></i>
     </a>
-    <a href="tel:{{$contact->hotline}}" class="chat-btn hotline" title="Hotline">
-      <i class="fas fa-phone"></i>
+    <a href="tel:{{$contact->hotline}}" class="chat-btn hotline" title="Hotline" aria-label="Call our hotline">
+      <i class="fas fa-phone" aria-hidden="true"></i>
     </a>
 
 
@@ -1473,7 +1502,18 @@
 <script>
 /* Chat Toggle Open/Close */
 document.getElementById("chatToggle").addEventListener("click", function() {
-  document.getElementById("chatOptions").classList.toggle("show");
+  var open = document.getElementById("chatOptions").classList.toggle("show");
+  this.setAttribute("aria-expanded", open ? "true" : "false");
+});
+
+/* Keyboard support for the non-<button> controls marked role="button" (chat toggle, mobile
+   menu close): Enter/Space run the same click handler a mouse click does. */
+document.addEventListener("keydown", function (e) {
+  var el = e.target;
+  if ((e.key === "Enter" || e.key === " ") && el.getAttribute && el.getAttribute("role") === "button" && el.tagName !== "BUTTON" && el.tagName !== "A") {
+    e.preventDefault();
+    el.click();
+  }
 });
 
 /* Sidebar Cart - খোলা/বন্ধ ও রিফ্রেশ */
@@ -1597,6 +1637,20 @@ window.addEventListener('pageshow', function (e) {
                Initialising every carousel at load measured and re-laid out the whole page
                (forced reflows, long tasks). Until a carousel starts, bilai-header-footer.css
                shows its first slides at their final size, so nothing shifts. */
+            /* Owl accessibility: its prev/next buttons are created as <button role="presentation">
+               (a focusable control with its role removed) and, like the dots, have no name.
+               Use plain buttons and label them for every carousel on the site. */
+            if ($.fn.owlCarousel) {
+                $.fn.owlCarousel.Constructor.Defaults.navElement = 'button type="button"';
+            }
+            $(document).on('initialized.owl.carousel refreshed.owl.carousel', function (e) {
+                var $c = $(e.target);
+                $c.find('.owl-prev').attr('aria-label', 'Previous slide');
+                $c.find('.owl-next').attr('aria-label', 'Next slide');
+                $c.find('.owl-prev i, .owl-next i').attr('aria-hidden', 'true');
+                $c.find('.owl-dot').each(function (i) { $(this).attr('aria-label', 'Go to slide ' + (i + 1)); });
+            });
+
             function bilaiOwlWhenNear($els, options) {
                 $els.each(function () {
                     var $el = $(this);
@@ -2211,9 +2265,16 @@ window.addEventListener('pageshow', function (e) {
             
             @if($isSimpleImagePopup)
                 {{-- শুধু ইমেজ পপআপ (FABRILIFE/bKash স্টাইল) --}}
-                <a href="{{ !empty(trim($popup->link ?? '')) ? $popup->link : 'javascript:void(0)' }}" {{ !empty(trim($popup->link ?? '')) ? 'target="_blank"' : '' }} class="popup-simple-link">
+                @if(!empty(trim($popup->link ?? '')))
+                <a href="{{ $popup->link }}" target="_blank" class="popup-simple-link">
                     <img src="{{ url('public/'.$popup->image) }}" alt="{{ $popup->image_alt ?: $popup->title }}" class="popup-simple-img">
                 </a>
+                @else
+                {{-- No link set: same box without a fake (uncrawlable) link --}}
+                <span class="popup-simple-link">
+                    <img src="{{ url('public/'.$popup->image) }}" alt="{{ $popup->image_alt ?: $popup->title }}" class="popup-simple-img">
+                </span>
+                @endif
             @else
                 {{-- পুরনো লেআউট (টেক্সট + ইমেজ) --}}
                 <div class="ps-layout">
@@ -2398,7 +2459,7 @@ window.addEventListener('pageshow', function (e) {
     .popup-simple-link:focus-visible {
         outline: none !important;
     }
-    .popup-simple-link[href="javascript:void(0)"] {
+    span.popup-simple-link {
         cursor: default;
     }
     .popup-simple-img {

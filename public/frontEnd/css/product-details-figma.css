@@ -48,7 +48,7 @@
 
 .bpd-breadcrumb a:hover,
 .bpd-breadcrumb .bpd-bc-current {
-    color: #e8861a;
+    color: #a86011; /* AA: was #e8861a */
 }
 
 .bpd-breadcrumb .bpd-bc-sep {
@@ -197,7 +197,7 @@
 }
 
 .bpd-meta-item a {
-    color: #e8861a;
+    color: #a86011; /* AA: was #e8861a */
     font-weight: 400;
 }
 
@@ -242,7 +242,7 @@
     margin-left: 20px;
     padding: 4px 10px;
     border-radius: 20px;
-    background: #c4552a;
+    background: #b95028; /* AA: was #c4552a */
     color: #fbf5e6;
     font-size: 14px;
     font-weight: 400;
@@ -296,7 +296,7 @@
     border: 1px solid #e8861a;
     border-radius: 30px;
     background: transparent;
-    color: #e8861a;
+    color: #a86011; /* AA text: was #e8861a (border stays) */
     font-size: 20px;
     font-weight: 400;
     line-height: 30px;
@@ -397,12 +397,12 @@
     gap: 6px;
     border: 1px solid #e8861a !important;
     background: transparent !important;
-    color: #e8861a !important;
+    color: #a86011 !important; /* AA text: was #e8861a (border stays) */
 }
 
 .bpd-btn-row .bpd-btn-wa {
     gap: 6px;
-    background: #16884d !important;
+    background: #157f48 !important; /* AA: was #16884d */
     color: #edf4f0 !important;
 }
 
@@ -453,7 +453,7 @@
 }
 
 .bpd-card-value strong {
-    color: #e8861a;
+    color: #a86011; /* AA: was #e8861a */
     font-weight: 700;
 }
 
@@ -577,7 +577,7 @@
 .bilai-product-tab.active {
     border-bottom-color: #e8861a;
     background: #fef6e8;
-    color: #e8861a;
+    color: #a86011; /* AA text: was #e8861a (underline stays) */
     font-weight: 600;
 }
 
@@ -927,7 +927,7 @@
     }
 
     .bpd-wishlist-label {
-        display: none;
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; /* visually hidden, still the button name */
     }
 
     .bpd-wishlist-icon {
@@ -1037,4 +1037,17 @@
     .bpd-info-cards {
         grid-template-columns: 1fr;
     }
+}
+
+/* Wishlist toggle is a <button> (it has aria-pressed): no browser button styling, so it looks
+   exactly like the link it replaced. */
+button.bpd-wishlist {
+    -webkit-appearance: none;
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font-family: inherit;
+    text-align: inherit;
+    cursor: pointer;
 }

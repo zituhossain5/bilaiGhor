@@ -1,6 +1,10 @@
 @extends('frontEnd.layouts.master')
 @section('title','Blog')
 
+@push('seo')
+    <meta name="description" content="What you should know as a cat parent: cat care guides from {{ optional($generalsetting)->name ?? 'Bilai Ghor' }} on food, health, vaccines and everyday care." />
+@endpush
+
 @push('css_after')
     {{-- Listing pagination styles (.bilai-cat-pagination), same as the product listing pages. --}}
     <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bilai-listing-figma.css') }}" />
@@ -24,7 +28,7 @@
         @if($blogs->count())
             <div class="bilai-blog-grid">
                 @foreach($blogs as $blog)
-                    <x-blog-card :blog="$blog" />
+                    <x-blog-card :blog="$blog" :heading-level="2" />
                 @endforeach
             </div>
 

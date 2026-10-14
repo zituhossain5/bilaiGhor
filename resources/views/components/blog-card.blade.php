@@ -1,5 +1,6 @@
 {{-- Blog card shared by the homepage blog section and the /blogs page. --}}
-@props(['blog'])
+{{-- headingLevel: 3 under a section h2 (homepage), 2 directly under the page h1 (/blogs) --}}
+@props(['blog', 'headingLevel' => 3])
 
 <div class="bilai-blog-card">
     <a href="{{ route('blog.details', $blog->slug) }}" class="bilai-blog-img-wrap">
@@ -26,9 +27,9 @@
             <span class="bilai-blog-cat">Blog</span>
             <span class="bilai-blog-date">{{ $blog->created_at->format('jS F, Y') }}</span>
         </div>
-        <h5 class="bilai-blog-title">
+        <h{{ $headingLevel }} class="bilai-blog-title">
             <a href="{{ route('blog.details', $blog->slug) }}">{{ Str::limit($blog->title, 55) }}</a>
-        </h5>
+        </h{{ $headingLevel }}>
         <p class="bilai-blog-desc">{{ Str::limit($blog->short_description, 100) }}</p>
         <a href="{{ route('blog.details', $blog->slug) }}" class="bilai-blog-read-btn">Continue Reading</a>
     </div>

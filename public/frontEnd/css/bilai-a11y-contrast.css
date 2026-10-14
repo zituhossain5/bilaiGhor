@@ -1,0 +1,55 @@
+/* ============================================================
+   WCAG AA text contrast (4.5:1, or 3:1 for large text)
+   Loaded last in <head> (master.blade.php), so these win over the shared rules they adjust,
+   which are spread over several layers of bilai-header-footer.css / bilai-listing-figma.css.
+   Only text colours that failed change; every background stays the brand colour except the
+   rust badges (a near-identical darker shade):
+     - text ON brand orange #e8861a        -> site dark brown #3c2a1e   (2.6:1 -> 5.1:1)
+     - brand-orange TEXT on light colours  -> #a86011                    (2.6:1 -> 4.7:1)
+     - rust badge / countdown bg #c4552a   -> #b95028                    (4.1:1 -> 4.6:1)
+     - tan caption #aa8453                 -> #8a6b43                    (3.1:1 -> 4.5:1)
+     - muted blog date #7a6a5e             -> #79695e                    (4.46  -> 4.52)
+   ============================================================ */
+
+/* Text on brand orange: badges, situation buttons, SEO "View Full Description" toggle */
+.bilai-stock-badge,
+.bilai-card-badge,
+.bilai-cat-grid .bilai-stock-badge,
+.bilai-cat-grid .bilai-card-badge,
+.bilai-situation-btn,
+.bilai-seo-toggle,
+.bilai-seo-toggle span {
+    color: #3c2a1e;
+}
+
+/* Brand-orange text on light backgrounds: current breadcrumb item */
+.bilai-cat-breadcrumb-current {
+    color: #a86011;
+}
+
+/* Rust badges and the Weekly Deals countdown cells */
+.bilai-discount-badge,
+.bilai-cat-grid .bilai-discount-badge,
+.bilai-na-discount,
+.bilai-new-arrivals-section .bilai-na-discount,
+.bilai-deal-timer .syotimer-cell {
+    background-color: #b95028;
+}
+
+/* Tan category captions on product cards */
+.bilai-product-category,
+.bilai-cat-grid .bilai-product-category,
+.bilai-na-category,
+.bilai-new-arrivals-section .bilai-na-category {
+    color: #8a6b43;
+}
+
+/* Blog card date */
+.bilai-blog-date {
+    color: #79695e;
+}
+
+/* Selected subcategory chip label (category / subcategory pages) */
+.bilai-cat-sub-card.active span {
+    color: #a86011;
+}

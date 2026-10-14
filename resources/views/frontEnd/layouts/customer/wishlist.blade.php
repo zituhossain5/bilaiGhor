@@ -385,8 +385,8 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
                     </div>
                     <div class="bilai-product-actions">
                         @if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
-                            <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn">
-                                <i class="fa-solid fa-cart-shopping"></i>
+                            <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn" aria-label="Choose options for {{ $value->name }}">
+                                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                             </a>
                             <a href="{{ route('product', $value->slug) }}" class="bilai-buy-btn">Buy Now</a>
                         @else
@@ -394,8 +394,8 @@ $customerInitial     = strtoupper(substr($customer->name ?? 'U', 0, 1));
                                 @csrf
                                 <input type="hidden" name="id" value="{{ $value->id }}" />
                                 <input type="hidden" name="qty" value="1" />
-                                <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}">
-                                    <i class="fa-solid fa-cart-shopping"></i>
+                                <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}" aria-label="Add {{ $value->name }} to cart">
+                                    <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                                 </button>
                             </form>
                             <form action="{{ route('cart.store') }}" method="POST">

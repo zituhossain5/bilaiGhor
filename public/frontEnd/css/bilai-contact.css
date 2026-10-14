@@ -294,7 +294,7 @@ a.bilai-contact__info-value:focus-visible {
     padding: 12px 28px;
     font-size: 17px;
     font-weight: 700;
-    color: #fff;
+    color: #3c2a1e; /* AA: dark text on orange */
     background: var(--bilai-primary);
     border: none;
     border-radius: var(--bilai-radius-lg);

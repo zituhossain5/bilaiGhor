@@ -19,7 +19,7 @@
             <input type="hidden" name="{{ $key }}" value="{{ $val }}">
             @endif
         @endforeach
-        <select name="sort" class="bilai-cat-sort-select" id="bilaiSortSelect">
+        <select name="sort" class="bilai-cat-sort-select" id="bilaiSortSelect" aria-label="Sort products">
             @if(!empty($relevanceSort))
             <option value="0" @if(!request('sort')) selected @endif>Best match</option>
             @endif

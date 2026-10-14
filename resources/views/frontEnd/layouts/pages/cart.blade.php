@@ -37,7 +37,7 @@
 .bilai-cart-bc a { color: var(--bcart-muted); text-decoration: none; }
 .bilai-cart-bc a:hover { color: var(--bcart-primary); }
 .bilai-cart-bc-sep { color: #c0b0a0; font-size: 11px; }
-.bilai-cart-bc-active { color: var(--bcart-primary); font-weight: 600; }
+.bilai-cart-bc-active { color: #a86011; /* AA: orange text */ font-weight: 600; }
 
 /* Layout */
 .bilai-cart-layout { display: grid; grid-template-columns: 1fr 340px; gap: 22px; align-items: start; }
@@ -109,7 +109,7 @@
 .bilai-cart-sum-sep { border: none; border-top: 1.5px dashed #d8c9b2; margin: 2px 0 18px; }
 .bilai-cart-sum-row.total { font-size: 20px; font-weight: 800; }
 .bilai-cart-sum-row.total span:first-child { color: var(--bcart-text); font-weight: 800; }
-.bilai-cart-sum-row.total span:last-child { color: var(--bcart-primary); }
+.bilai-cart-sum-row.total span:last-child { color: #a86011; /* AA: orange text */ }
 
 .bilai-cart-checkout-btn {
     display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -123,7 +123,7 @@
 
 .bilai-cart-continue-btn {
     display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px;
-    background: var(--bcart-primary); color: #fff !important; border-radius: 100px;
+    background: var(--bcart-primary); color: #3c2a1e !important; /* AA: dark text on orange */ border-radius: 100px;
     font-size: 13.5px; font-weight: 600; text-decoration: none; transition: 0.2s;
 }
 .bilai-cart-continue-btn:hover { background: var(--bcart-primary-dark); text-decoration: none; }
@@ -341,8 +341,8 @@
                     </div>
                     <div class="bilai-product-actions">
                         @if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
-                            <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn">
-                                <i class="fa-solid fa-cart-shopping"></i>
+                            <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn" aria-label="Choose options for {{ $value->name }}">
+                                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                             </a>
                             <a href="{{ route('product', $value->slug) }}" class="bilai-buy-btn">Buy Now</a>
                         @else
@@ -350,8 +350,8 @@
                                 @csrf
                                 <input type="hidden" name="id" value="{{ $value->id }}" />
                                 <input type="hidden" name="qty" value="1" />
-                                <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}">
-                                    <i class="fa-solid fa-cart-shopping"></i>
+                                <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}" aria-label="Add {{ $value->name }} to cart">
+                                    <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                                 </button>
                             </form>
                             <form action="{{ route('cart.store') }}" method="POST">

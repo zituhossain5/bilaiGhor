@@ -686,7 +686,8 @@ input.bpd-btn { cursor: pointer; }
     }
 
     .bpd-wishlist-label {
-        display: none;
+        /* visually hidden, still read as the button name (display:none removed it from screen readers) */
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
     }
 
     .bpd-wishlist-icon {
@@ -1088,12 +1089,12 @@ input.bpd-btn { cursor: pointer; }
                     <span class="bpd-old-price">৳{{ $formatProductPrice($details->old_price) }}</span>
                     <span class="bpd-disc-pill">{{ $discountPct }}% OFF</span>
                     @endif
-                    <a href="#" class="bpd-wishlist" data-product-id="{{ $details->id }}" aria-pressed="false">
+                    <button type="button" class="bpd-wishlist" data-product-id="{{ $details->id }}" aria-pressed="false">
                         <span class="bpd-wishlist-icon">
                             <img src="{{ asset('public/uploads/default/product-wishlist.svg') }}" alt="" aria-hidden="true">
                         </span>
                         <span class="bpd-wishlist-label">Add to Wishlist</span>
-                    </a>
+                    </button>
                 </div>
 
                 {{-- Weight: from product_weights relation (weight_id) --}}
@@ -1223,7 +1224,7 @@ input.bpd-btn { cursor: pointer; }
                                 }
                             @endphp
                             <input type="number" name="qty"
-                                   class="product-qty-input bpd-qty-input"
+                                   class="product-qty-input bpd-qty-input" aria-label="Quantity"
                                    value="{{ $defaultQty }}" min="1" step="1" />
                             <span class="plus" role="button" tabindex="0" aria-label="Increase quantity">
                                 <img src="{{ asset('public/uploads/default/product-plus.svg') }}" alt="" aria-hidden="true">
@@ -1351,7 +1352,7 @@ input.bpd-btn { cursor: pointer; }
 
         {{-- Description Tab --}}
         <div class="bpd-tab-pane active" id="tab-description">
-            <div class="bpd-description-content">
+            <div class="bpd-description-content" tabindex="0" role="region" aria-label="Product description">
                 {!! $details->description !!}
             </div>
             {{-- Video removed from frontend display; backend upload/fields remain intact --}}
@@ -1548,8 +1549,8 @@ input.bpd-btn { cursor: pointer; }
                 </div>
                 <div class="bilai-product-actions">
                     @if(!$value->prosizes->isEmpty() || !$value->procolors->isEmpty())
-                        <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn">
-                            <i class="fa-solid fa-cart-shopping"></i>
+                        <a href="{{ route('product', $value->slug) }}" class="bilai-cart-btn" aria-label="Choose options for {{ $value->name }}">
+                            <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                         </a>
                         <a href="{{ route('product', $value->slug) }}" class="bilai-buy-btn">Buy Now</a>
                     @else
@@ -1557,8 +1558,8 @@ input.bpd-btn { cursor: pointer; }
                             @csrf
                             <input type="hidden" name="id" value="{{ $value->id }}" />
                             <input type="hidden" name="qty" value="1" />
-                            <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}">
-                                <i class="fa-solid fa-cart-shopping"></i>
+                            <button type="submit" class="bilai-cart-btn cart_store" data-id="{{ $value->id }}" aria-label="Add {{ $value->name }} to cart">
+                                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                             </button>
                         </form>
                         <form action="{{ route('cart.store') }}" method="POST">

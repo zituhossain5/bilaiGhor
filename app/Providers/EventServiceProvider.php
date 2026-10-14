@@ -6,14 +6,18 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use App\Models\Banner;
+use App\Models\Blog;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Childcategory;
 use App\Models\KittenPack;
 use App\Models\Product;
+use App\Models\Productimage;
 use App\Models\Subcategory;
 use App\Observers\ProductObserver;
 use App\Observers\SearchIndexObserver;
+use App\Observers\WebpVariantObserver;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -40,6 +44,11 @@ class EventServiceProvider extends ServiceProvider
         // Keep storefront search in step with catalog text changes.
         foreach ([Product::class, Category::class, Subcategory::class, Childcategory::class, Brand::class, KittenPack::class] as $model) {
             $model::observe(SearchIndexObserver::class);
+        }
+
+        // Resized .webp copy of every newly uploaded storefront image.
+        foreach ([Productimage::class, Banner::class, Category::class, Subcategory::class, Blog::class] as $model) {
+            $model::observe(WebpVariantObserver::class);
         }
     }
 

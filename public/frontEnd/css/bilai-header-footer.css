@@ -7344,6 +7344,16 @@ body .bilai-product-card .bilai-product-image img {
 .logo-image img {
     width: auto;
 }
+
+/* <x-picture> wraps an <img> in <picture> to offer a WebP copy. The wrapper creates no box, so
+   the <img> is laid out exactly as before (flex/grid item, % sizes, object-fit). */
+.bilai-picture {
+    display: contents;
+}
+/* ...and the <source> must not become an (empty) grid/flex item. The browser still picks it. */
+.bilai-picture > source {
+    display: none;
+}
 /* ============================================================
    Core Web Vitals End
    ============================================================ */

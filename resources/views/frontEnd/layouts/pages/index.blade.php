@@ -10,8 +10,11 @@
 
 @push('seo')
 @if($sliders->isNotEmpty())
-{{-- LCP: start downloading the first hero slide before CSS/JS are parsed --}}
-<link rel="preload" as="image" href="{{ asset($sliders->first()->image) }}" fetchpriority="high">
+{{-- LCP: start downloading the first hero slide before CSS/JS are parsed (the same file <x-picture> will pick) --}}
+@php
+    $heroWebp = \App\Support\WebpVariant::src($sliders->first()->image);
+@endphp
+<link rel="preload" as="image" href="{{ str_replace([' ', ','], ['%20', '%2C'], asset($heroWebp ?? $sliders->first()->image)) }}" @if($heroWebp) type="image/webp" @endif fetchpriority="high">
 @endif
 <meta name="app-url" content="{{ url('/') }}" />
 <meta name="robots" content="index, follow" />
@@ -64,11 +67,12 @@
                     </div> -->
                 <div class="bilai-hero-image">
                     {{-- First slide is the LCP image: high priority, never lazy. CSS fixes its box size. --}}
-                    <img src="{{ asset($value->image) }}"
+                    <x-picture :src="$value->image"
                          alt="{{ $value->image_alt ?: ($value->title ?: 'Hero Slide') }}"
-                         {{ \App\Support\ImageSize::attrs($value->image, [1920, 675]) }}
+                         :size="\App\Support\ImageSize::of($value->image) ?? [1920, 675]"
                          decoding="async"
-                         @if($key === 0) fetchpriority="high" loading="eager" @else loading="lazy" @endif />
+                         :fetchpriority="$key === 0 ? 'high' : null"
+                         :loading="$key === 0 ? 'eager' : 'lazy'" />
                 </div>
             </div>
         </div>
@@ -109,10 +113,10 @@
                     @foreach ($sliderbottomads as $value)
                         <div class="ads_item">
                             <a href="{{ $value->link }}">
-                                <img src="{{ asset($value->image) }}"
+                                <x-picture :src="$value->image"
                                      alt="{{ $value->image_alt ?: ($value->title ?: (optional($generalsetting)->name ?? 'Bilai Ghor') . ' offer') }}"
                                      class="img-fluid"
-                                     {{ \App\Support\ImageSize::attrs($value->image) }}
+                                     :size="\App\Support\ImageSize::of($value->image)"
                                      loading="lazy" />
                             </a>
                         </div>
@@ -138,7 +142,7 @@
             @endphp
             <a href="{{ route('subcategory', $value->slug) }}" class="bilai-cat-card">
                 <div class="bilai-cat-img">
-                    <img src="{{ asset($subcategoryImage) }}"
+                    <x-picture :src="$subcategoryImage"
                          alt="{{ $value->subcategoryName }}"
                          width="300" height="300" decoding="async"
                          loading="lazy" />
@@ -173,7 +177,7 @@
 
                 <div class="bilai-product-image">
                     <a href="{{ route('product', $value->slug) }}">
-                        <img src="{{ asset($value->image ? $value->image->image : '') }}"
+                        <x-picture :src="$value->image ? $value->image->image : ''"
                              alt="{{ optional($value->image)->image_alt ?: $value->name }}"
                              width="170" height="156" decoding="async"
                              loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
@@ -273,7 +277,7 @@
 
                 <div class="bilai-product-image">
                     <a href="{{ route('product', $value->slug) }}">
-                        <img src="{{ asset($value->image ? $value->image->image : '') }}"
+                        <x-picture :src="$value->image ? $value->image->image : ''"
                              alt="{{ optional($value->image)->image_alt ?: $value->name }}"
                              width="170" height="156" decoding="async"
                              loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
@@ -363,10 +367,10 @@
             @foreach($homepageads as $homeads)
             <div class="bilai-home-banner__item">
                 <a href="{{ $homeads->link }}?sold=show">
-                    <img class="img-fluid w-100"
-                         src="{{ asset($homeads->image) }}"
+                    <x-picture class="img-fluid w-100"
+                         :src="$homeads->image"
                          alt="{{ $homeads->image_alt ?: ($homeads->title ?: (optional($generalsetting)->name ?? 'Bilai Ghor') . ' offer') }}"
-                         {{ \App\Support\ImageSize::attrs($homeads->image) }} decoding="async"
+                         :size="\App\Support\ImageSize::of($homeads->image)" decoding="async"
                          loading="lazy" />
                 </a>
             </div>
@@ -407,7 +411,7 @@
                     </button>
                     <a href="{{ route('product', $value->slug) }}" class="bilai-na-img-wrap">
                         @if($value->image)
-                        <img src="{{ asset($value->image->image) }}" alt="{{ optional($value->image)->image_alt ?: $value->name }}" width="140" height="180" decoding="async" loading="lazy">
+                        <x-picture :src="$value->image->image" alt="{{ optional($value->image)->image_alt ?: $value->name }}" width="140" height="180" decoding="async" loading="lazy" />
                         @else
                         <img src="{{ asset('public/no-image.png') }}" alt="{{ $value->name }}" width="140" height="180" decoding="async" loading="lazy">
                         @endif
@@ -567,7 +571,7 @@
 
                         <div class="bilai-product-image">
                             <a href="{{ route('product', $value->slug) }}">
-                                <img src="{{ asset($value->image ? $value->image->image : '') }}"
+                                <x-picture :src="$value->image ? $value->image->image : ''"
                                      alt="{{ optional($value->image)->image_alt ?: $value->name }}"
                                      width="170" height="156" decoding="async"
                                      loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
@@ -681,8 +685,8 @@
             </div>
         </div>
         <div class="bilai-why-photos">
-            <img src="{{ asset('public/frontEnd/images/bilaiparaImg1.png') }}" alt="Cat parent with cats" width="700" height="463" decoding="async" loading="lazy">
-            <img src="{{ asset('public/frontEnd/images/bilaiparaImg2.png') }}" alt="Cat parent with cats" width="700" height="463" decoding="async" loading="lazy">
+            <x-picture src="public/frontEnd/images/bilaiparaImg1.png" alt="Cat parent with cats" width="700" height="463" decoding="async" loading="lazy" />
+            <x-picture src="public/frontEnd/images/bilaiparaImg2.png" alt="Cat parent with cats" width="700" height="463" decoding="async" loading="lazy" />
         </div>
         <!-- <div class="bilai-why-cta">
             <a href="#" class="bilai-why-btn">Visit Our Bilai Para &rarr;</a>
@@ -697,10 +701,10 @@
             @foreach($homepageads2 as $homeads2)
             <div class="bilai-home-banner__item">
                 <a href="{{ $homeads2->link }}?sold=show">
-                    <img class="img-fluid w-100"
-                         src="{{ asset($homeads2->image) }}"
+                    <x-picture class="img-fluid w-100"
+                         :src="$homeads2->image"
                          alt="Homepage Ads 2"
-                         {{ \App\Support\ImageSize::attrs($homeads2->image) }} decoding="async"
+                         :size="\App\Support\ImageSize::of($homeads2->image)" decoding="async"
                          loading="lazy" />
                 </a>
             </div>
@@ -735,11 +739,11 @@
                                class="brand-item text-center">
 
                                 <div class="brand-img">
-                                    <img src="{{ asset($brand->image) }}"
+                                    <x-picture :src="$brand->image"
                                          alt="{{ $brand->image_alt ?: $brand->name }}"
                                          class="img-fluid"
-                                         {{ \App\Support\ImageSize::attrs($brand->image) }} decoding="async"
-                                         loading="lazy">
+                                         :size="\App\Support\ImageSize::of($brand->image)" decoding="async"
+                                         loading="lazy" />
                                 </div>
 
                                 <div class="brand-name">
@@ -801,10 +805,10 @@
                             data-bs-target="#bilaiTestimonialModal"
                             data-image="{{ asset('public/'.$t->image) }}"
                             aria-label="View customer review {{ $loop->iteration }} full size">
-                        <img src="{{ asset('public/'.$t->image) }}"
+                        <x-picture :src="'public/'.$t->image"
                              alt="{{ $t->image_alt ?: 'Customer review of Bilai Ghor ' . $loop->iteration }}"
-                             {{ \App\Support\ImageSize::attrs('public/'.$t->image, [360, 340]) }} decoding="async"
-                             loading="lazy">
+                             :size="\App\Support\ImageSize::of('public/'.$t->image) ?? [360, 340]" decoding="async"
+                             loading="lazy" />
                     </button>
                 </div>
                 @endforeach

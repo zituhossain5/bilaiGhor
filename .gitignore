@@ -18,3 +18,8 @@ yarn-error.log
 /.vscode
 /.claude
 /storage/framework/views/*
+
+# Generated WebP copies of uploads (php artisan images:optimize / upload hook) — built on each server
+/public/uploads/**/*.[jJ][pP][gG].webp
+/public/uploads/**/*.[jJ][pP][eE][gG].webp
+/public/uploads/**/*.[pP][nN][gG].webp

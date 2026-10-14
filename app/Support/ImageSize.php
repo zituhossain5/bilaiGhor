@@ -60,7 +60,8 @@ class ImageSize
         return new HtmlString($size ? sprintf(' width="%d" height="%d"', $size[0], $size[1]) : '');
     }
 
-    private static function resolve(string $path): ?string
+    /** Absolute file behind a view path ("public/uploads/x.png" or "uploads/x.png"), or null. */
+    public static function resolve(string $path): ?string
     {
         $path = ltrim(rawurldecode($path), '/');
         foreach ([base_path($path), public_path($path)] as $candidate) {

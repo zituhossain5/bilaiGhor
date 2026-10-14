@@ -85,8 +85,8 @@
                             {{-- Product image --}}
                             <div class="pro_img">
                                 <a href="{{ route('product', $value->slug) }}">
-                                    <img src="{{ asset($value->image ? $value->image->image : '') }}"
-                                         alt="{{ optional($value->image)->image_alt ?: $value->name }}">
+                                    <x-picture :src="$value->image ? $value->image->image : ''"
+                                         alt="{{ optional($value->image)->image_alt ?: $value->name }}" />
                                 </a>
                             </div>
 

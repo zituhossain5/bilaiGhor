@@ -37,7 +37,7 @@
         <span class="bilai-card-soldout">Sold out</span>
         @endif
         <a href="{{ route('product', $value->slug) }}">
-            <img src="{{ asset($value->image ? $value->image->image : '') }}"
+            <x-picture :src="$value->image ? $value->image->image : ''"
                  alt="{{ optional($value->image)->image_alt ?: $value->name }}"
                  loading="{{ $key === 0 ? 'eager' : 'lazy' }}" />
         </a>

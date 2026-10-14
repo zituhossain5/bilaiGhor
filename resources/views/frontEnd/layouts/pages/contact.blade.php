@@ -50,7 +50,7 @@
 @endphp
 
 @push('css_after')
-    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-contact.css') }}?v=2" />
+    <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bilai-contact.css') }}" />
 @endpush
 
 @section('content')

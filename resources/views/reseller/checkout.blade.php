@@ -4,7 +4,7 @@
 @section('page-title', 'চেকআউট')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/select2.min.css') }}" />
+<link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/select2.min.css') }}" />
 <style>
     /* ================================================================
        MODERN CHECKOUT STYLES - PROFESSIONAL E-COMMERCE LOOK
@@ -806,7 +806,7 @@
 
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="{{ asset('public/frontEnd/js/select2.min.js') }}"></script>
+<script src="{{ asset_v('public/frontEnd/js/select2.min.js') }}"></script>
 @if(!empty($__showResellerCheckoutOtpModal))
 <script>
 document.addEventListener('DOMContentLoaded', function () {

@@ -1,6 +1,6 @@
 @once
 @push('script')
-<script src="{{ asset('public/frontEnd/js/select2.min.js') }}"></script>
+<script src="{{ asset_v('public/frontEnd/js/select2.min.js') }}"></script>
 <script>
 (function (window, $) {
     'use strict';

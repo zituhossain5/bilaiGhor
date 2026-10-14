@@ -18,17 +18,17 @@
         <meta name="author" content="Super Ecommerce" />
         @stack('seo') 
         @stack('css')
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bootstrap.min.css')}}" />
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/animate.css')}}" />
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/all.min.css')}}" />
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/owl.carousel.min.css')}}" />
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/owl.theme.default.min.css')}}" />
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/mobile-menu.css')}}" />
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/select2.min.css')}}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bootstrap.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/animate.css') }}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/all.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/owl.carousel.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/owl.theme.default.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/mobile-menu.css') }}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/select2.min.css') }}" />
         <!-- toastr css -->
-        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/assets/css/toastr.min.css" />
+        <link rel="stylesheet" href="{{ asset_v('public/backEnd/assets/css/toastr.min.css') }}" />
 
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/wsit-menu.css')}}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/wsit-menu.css') }}" />
 <link rel="stylesheet" href="{{ url('/style.css') }}?v=4">
 <link rel="stylesheet" href="{{ url('/responsive.css') }}?v=5">
         {{-- BilaiGhor Figma — DM Sans + Mochiy Pop One fonts --}}
@@ -36,9 +36,9 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Hind+Siliguri:wght@400;500;600;700&family=Mochiy+Pop+One&display=swap">
         {{-- BilaiGhor Figma — header & footer CSS --}}
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-header-footer.css')}}?v=56">
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/main.css')}}" />
-        <link rel="stylesheet" href="{{asset('public/frontEnd/css/bilai-container-system.css')}}?v=2" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bilai-header-footer.css') }}">
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/main.css') }}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bilai-container-system.css') }}" />
         @stack('css_after')
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
         <meta name="facebook-domain-verification" content="38f1w8335btoklo88dyfl63ba3st2e" />
@@ -1551,7 +1551,7 @@ window.addEventListener('pageshow', function (e) {
         <div id="page-overlay"></div>
         <div id="loading"><div class="custom-loader"></div></div>
 
-        <script src="{{asset('public/frontEnd/js/jquery-3.6.3.min.js')}}"></script>
+        <script src="{{ asset_v('public/frontEnd/js/jquery-3.6.3.min.js') }}"></script>
         <script>
             $(function() {
                 $("#loading").hide();
@@ -1559,12 +1559,12 @@ window.addEventListener('pageshow', function (e) {
                 setTimeout(function() { $("#loading").hide(); }, 3000);
             });
         </script>
-        <script src="{{asset('public/frontEnd/js/bootstrap.min.js')}}"></script>
-        <script src="{{asset('public/frontEnd/js/owl.carousel.min.js')}}"></script>
-        <script src="{{asset('public/frontEnd/js/mobile-menu.js')}}"></script>
-        <script src="{{asset('public/frontEnd/js/wsit-menu.js')}}"></script>
-        <script src="{{asset('public/frontEnd/js/mobile-menu-init.js')}}"></script>
-        <script src="{{asset('public/frontEnd/js/wow.min.js')}}"></script>
+        <script src="{{ asset_v('public/frontEnd/js/bootstrap.min.js') }}"></script>
+        <script src="{{ asset_v('public/frontEnd/js/owl.carousel.min.js') }}"></script>
+        <script src="{{ asset_v('public/frontEnd/js/mobile-menu.js') }}"></script>
+        <script src="{{ asset_v('public/frontEnd/js/wsit-menu.js') }}"></script>
+        <script src="{{ asset_v('public/frontEnd/js/mobile-menu-init.js') }}"></script>
+        <script src="{{ asset_v('public/frontEnd/js/wow.min.js') }}"></script>
         <script>
             new WOW().init();
         </script>
@@ -1576,7 +1576,7 @@ window.addEventListener('pageshow', function (e) {
         <script>
             feather.replace();
         </script>
-        <script src="{{asset('public/backEnd/')}}/assets/js/toastr.min.js"></script>
+        <script src="{{ asset_v('public/backEnd/assets/js/toastr.min.js') }}"></script>
         {!! Toastr::message() !!} @stack('script')
 		
 		

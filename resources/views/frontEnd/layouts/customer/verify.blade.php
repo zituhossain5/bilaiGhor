@@ -37,6 +37,6 @@
 </section>
 @endsection
 @push('script')
-<script src="{{asset('public/frontEnd/')}}/js/parsley.min.js"></script>
-<script src="{{asset('public/frontEnd/')}}/js/form-validation.init.js"></script>
+<script src="{{ asset_v('public/frontEnd/js/parsley.min.js') }}"></script>
+<script src="{{ asset_v('public/frontEnd/js/form-validation.init.js') }}"></script>
 @endpush

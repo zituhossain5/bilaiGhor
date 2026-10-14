@@ -2,7 +2,7 @@
 @section('title', 'Sellers - All Verified Shops')
 
 @push('css')
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/jquery-ui.css') }}">
+<link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/jquery-ui.css') }}">
 <style>
     /* Custom Variables */
     :root {

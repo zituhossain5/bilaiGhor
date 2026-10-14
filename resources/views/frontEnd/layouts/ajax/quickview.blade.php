@@ -44,7 +44,7 @@
         </div>
 	</div>
 </div>
-<script src="{{asset('public/frontEnd/js/jquery-3.6.3.min.js')}}"></script>
+<script src="{{ asset_v('public/frontEnd/js/jquery-3.6.3.min.js') }}"></script>
 <script>
 	$('.close-modal').on('click',function(){
         $("#custom-modal").hide();

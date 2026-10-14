@@ -39,10 +39,10 @@
 @endphp
 @section('title', $seoTitle)
 @push('css')
-    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/jquery-ui.css') }}" />
+    <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/jquery-ui.css') }}" />
 @endpush
 @push('css_after')
-    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-listing-figma.css') }}?v=9" />
+    <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bilai-listing-figma.css') }}" />
 @endpush
 @push('seo')
     <meta name="app-url" content="{{ $canonicalUrl }}" />

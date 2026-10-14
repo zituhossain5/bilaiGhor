@@ -22,11 +22,11 @@
     <!-- SweetAlert2 - ডেমো মুড পপআপের জন্য -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <!-- custom css -->
-    <link href="{{asset('public/backEnd/')}}/assets/css/custom.css" rel="stylesheet" type="text/css" />
+    <link href="{{ asset_v('public/backEnd/assets/css/custom.css') }}" rel="stylesheet" type="text/css" />
     <!-- Head js -->
     @yield('css')
     <!-- Bilai Ghor admin brand theme -->
-    <link href="{{asset('public/backEnd/')}}/assets/css/admin-brand.css" rel="stylesheet" type="text/css" />
+    <link href="{{ asset_v('public/backEnd/assets/css/admin-brand.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{asset('public/backEnd/')}}/assets/css/admin-sidebar.css" rel="stylesheet" type="text/css" />
     <script src="{{asset('public/backEnd/')}}/assets/js/head.js"></script>
   </head>
@@ -707,7 +707,7 @@
     @auth('admin')
         @include('backEnd.layouts.partials.admin_order_live_notify')
     @endauth
-    <script src="{{ asset('public/backEnd/assets/js/admin-order-inline-status.js') }}"></script>
+    <script src="{{ asset_v('public/backEnd/assets/js/admin-order-inline-status.js') }}"></script>
     @yield('script')
   </body>
 </html>

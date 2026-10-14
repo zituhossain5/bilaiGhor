@@ -27,7 +27,7 @@
 @endpush
 
 @push('css')
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/zoomsl.css') }}">
+<link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/zoomsl.css') }}">
 <style>
 /* BilaiGhor Product Details Start */
 :root {
@@ -964,7 +964,7 @@ input.bpd-btn { cursor: pointer; }
 @endpush
 
 @push('css_after')
-<link rel="stylesheet" href="{{ asset('public/frontEnd/css/product-details-figma.css') }}?v=9">
+<link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/product-details-figma.css') }}">
 @endpush
 
 @section('content')
@@ -1579,8 +1579,8 @@ input.bpd-btn { cursor: pointer; }
 @endsection
 
 @push('script')
-<script src="{{ asset('public/frontEnd/js/owl.carousel.min.js') }}"></script>
-<script src="{{ asset('public/frontEnd/js/zoomsl.min.js') }}"></script>
+<script src="{{ asset_v('public/frontEnd/js/owl.carousel.min.js') }}"></script>
+<script src="{{ asset_v('public/frontEnd/js/zoomsl.min.js') }}"></script>
 
 <script>
     {{-- Variant price data + wholesale tiers --}}

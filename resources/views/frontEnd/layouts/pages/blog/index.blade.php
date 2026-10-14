@@ -3,7 +3,7 @@
 
 @push('css_after')
     {{-- Listing pagination styles (.bilai-cat-pagination), same as the product listing pages. --}}
-    <link rel="stylesheet" href="{{ asset('public/frontEnd/css/bilai-listing-figma.css') }}?v=9" />
+    <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bilai-listing-figma.css') }}" />
 @endpush
 
 @section('content')

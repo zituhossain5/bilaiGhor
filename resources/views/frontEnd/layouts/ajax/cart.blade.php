@@ -73,7 +73,7 @@
         </tfoot>
        </table>
 
-<script src="{{asset('public/frontEnd/js/jquery-3.6.3.min.js')}}"></script>
+<script src="{{ asset_v('public/frontEnd/js/jquery-3.6.3.min.js') }}"></script>
 <!-- cart js start -->
 <script>
     $('.cart_store').on('click',function(){

@@ -58,6 +58,57 @@ RedirectMatch 404 (?i)(\.(log|sql|sqlite|bak|old|swp)|/error_log)$
     RewriteRule ^ index.php [L]
 </IfModule>
 
+# =====================================================================================
+# --- Performance: compression and browser caching ---
+# Every block sits in an <IfModule> guard: a server without that module skips the block
+# instead of failing. These rules also apply to /public/* (public/.htaccess only replaces
+# the rewrite rules).
+# =====================================================================================
+
+# --- Content types for modern formats, so browsers accept them and compression-by-type
+#     below recognises them (older mime.types files may lack these) ---
+<IfModule mod_mime.c>
+    AddType image/webp .webp
+    AddType image/avif .avif
+    AddType image/svg+xml .svg
+    AddType font/woff2 .woff2
+    AddType font/woff .woff
+    AddType font/ttf .ttf
+    AddType font/otf .otf
+</IfModule>
+
+# --- Compression of text responses: Brotli when the server has it (smaller), gzip
+#     otherwise. Each encoder only runs when the browser asks for it (Accept-Encoding),
+#     and a response that is already compressed (e.g. PHP's zlib.output_compression) is
+#     left alone. JPG/PNG/WebP and woff/woff2 are already compressed, so they are not listed. ---
+<IfModule mod_filter.c>
+    <IfModule mod_brotli.c>
+        AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/xml text/javascript application/javascript application/x-javascript application/json application/ld+json application/manifest+json application/xml application/xhtml+xml application/rss+xml image/svg+xml image/x-icon image/vnd.microsoft.icon font/ttf font/otf application/x-font-ttf application/vnd.ms-fontobject
+    </IfModule>
+    <IfModule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml text/javascript application/javascript application/x-javascript application/json application/ld+json application/manifest+json application/xml application/xhtml+xml application/rss+xml image/svg+xml image/x-icon image/vnd.microsoft.icon font/ttf font/otf application/x-font-ttf application/vnd.ms-fontobject
+    </IfModule>
+</IfModule>
+
+# --- Browser caching of static files: 1 year, immutable (no revalidation requests) ---
+# Safe because these URLs change whenever the file changes:
+#   * CSS/JS are linked through asset_v(), which adds ?v=<file modification time>;
+#   * uploads get a timestamped name, and their .webp copies follow the original.
+# A theme image replaced under the SAME name would stay cached: give it a new name instead.
+# Matched by file extension on real files only, so HTML pages and Laravel routes (including
+# /style.css and /responsive.css) keep the headers Laravel sends: no long cache for HTML.
+<IfModule mod_expires.c>
+    <FilesMatch "(?i)\.(css|js|mjs|woff2?|ttf|otf|eot|webp|avif|png|jpe?g|gif|svg|ico)$">
+        ExpiresActive On
+        ExpiresDefault "access plus 1 year"
+    </FilesMatch>
+</IfModule>
+<IfModule mod_headers.c>
+    <FilesMatch "(?i)\.(css|js|mjs|woff2?|ttf|otf|eot|webp|avif|png|jpe?g|gif|svg|ico)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
 # BEGIN cPanel-generated php ini directives, do not edit
 # Manual editing of this file may result in unexpected behavior.
 # To make changes to this file, use the cPanel MultiPHP INI Editor (Home >> Software >> MultiPHP INI Editor)

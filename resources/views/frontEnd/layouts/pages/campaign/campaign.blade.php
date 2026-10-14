@@ -6,18 +6,18 @@
         <title>{{ $generalsetting->name }}</title>
         <link rel="shortcut icon" href="{{asset($generalsetting->favicon)}}" type="image/x-icon" />
         <!-- fot awesome -->
-        <link rel="stylesheet" href="{{ asset('public/frontEnd/campaign/css') }}/all.css" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/campaign/css/all.css') }}" />
         <!-- core css -->
-        <link rel="stylesheet" href="{{ asset('public/frontEnd/campaign/css') }}/bootstrap.min.css" />
-        <link rel="stylesheet" href="{{ asset('public/frontEnd/campaign/css') }}/animate.css" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/campaign/css/bootstrap.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/campaign/css/animate.css') }}" />
         <!-- owl carousel -->
-        <link rel="stylesheet" href="{{ asset('public/frontEnd/campaign/css') }}/owl.theme.default.css" />
-        <link rel="stylesheet" href="{{ asset('public/frontEnd/campaign/css') }}/owl.carousel.min.css" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/campaign/css/owl.theme.default.css') }}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/campaign/css/owl.carousel.min.css') }}" />
         <!-- owl carousel -->
-        <link rel="stylesheet" href="{{ asset('public/frontEnd/campaign/css') }}/select2.min.css" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/campaign/css/select2.min.css') }}" />
         <!-- common css -->
-        <link rel="stylesheet" href="{{ asset('public/frontEnd/campaign/css') }}/style.css" />
-        <link rel="stylesheet" href="{{ asset('public/frontEnd/campaign/css') }}/responsive.css" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/campaign/css/style.css') }}" />
+        <link rel="stylesheet" href="{{ asset_v('public/frontEnd/campaign/css/responsive.css') }}" />
         <!-- ========== DataLayer Initialization ========== -->
         @php
             $camp_name      = strip_tags($campaign_data->name ?? '');
@@ -819,12 +819,12 @@
         </div>
     </section>
 
-        <script src="{{ asset('public/frontEnd/campaign/js') }}/jquery-2.1.4.min.js"></script>
-        <script src="{{ asset('public/frontEnd/campaign/js') }}/all.js"></script>
-        <script src="{{ asset('public/frontEnd/campaign/js') }}/bootstrap.min.js"></script>
-        <script src="{{ asset('public/frontEnd/campaign/js') }}/owl.carousel.min.js"></script>
-        <script src="{{ asset('public/frontEnd/campaign/js') }}/select2.min.js"></script>
-        <script src="{{ asset('public/frontEnd/campaign/js') }}/script.js"></script>
+        <script src="{{ asset_v('public/frontEnd/campaign/js/jquery-2.1.4.min.js') }}"></script>
+        <script src="{{ asset_v('public/frontEnd/campaign/js/all.js') }}"></script>
+        <script src="{{ asset_v('public/frontEnd/campaign/js/bootstrap.min.js') }}"></script>
+        <script src="{{ asset_v('public/frontEnd/campaign/js/owl.carousel.min.js') }}"></script>
+        <script src="{{ asset_v('public/frontEnd/campaign/js/select2.min.js') }}"></script>
+        <script src="{{ asset_v('public/frontEnd/campaign/js/script.js') }}"></script>
         <!-- bootstrap js -->
         <script>
             $(document).ready(function () {

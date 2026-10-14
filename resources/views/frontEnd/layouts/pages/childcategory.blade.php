@@ -1,7 +1,7 @@
 @extends('frontEnd.layouts.master') 
 @section('title',$childcategory->childcategoryName) 
 @push('css')
-<link rel="stylesheet" href="{{asset('public/frontEnd/css/jquery-ui.css')}}" />
+<link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/jquery-ui.css') }}" />
 @endpush 
 @push('seo')
 <meta name="app-url" content="{{route('products',$childcategory->slug)}}" />

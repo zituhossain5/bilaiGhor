@@ -1237,7 +1237,7 @@
 
 
 @push('script')
-<script src="{{ asset('public/frontEnd/js/jquery.syotimer.min.js') }}"></script>
+<script src="{{ asset_v('public/frontEnd/js/jquery.syotimer.min.js') }}"></script>
 <script>
     $("#simple_timer").syotimer({
         date: new Date(2015, 0, 1),

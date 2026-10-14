@@ -11,6 +11,7 @@ use App\Models\OrderStatus;
 use App\Models\SocialMedia;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +24,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        // Live site is HTTPS-only: generated URLs (asset(), route(), url()) must never be http://,
+        // even if the request reaches PHP as plain HTTP behind a proxy.
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
 
         View::composer('*', function ($view) {
             $view->with($this->sharedViewData());

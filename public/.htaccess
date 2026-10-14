@@ -5,6 +5,17 @@
 
     RewriteEngine On
 
+    # --- Canonical URL for /public/* assets (same as the root .htaccess; this file's rules replace the root ones here) ---
+    # Never applied when served from this computer (local Laragon vhost with a hosts-file entry has no SSL).
+    RewriteCond %{SERVER_ADDR} !^(127\.|::1$)
+    RewriteCond %{HTTP_HOST} ^www\.bilaighor\.bd\.?(:[0-9]+)?$ [NC]
+    RewriteRule ^ https://bilaighor.bd%{REQUEST_URI} [L,R=301]
+    RewriteCond %{SERVER_ADDR} !^(127\.|::1$)
+    RewriteCond %{HTTP_HOST} ^bilaighor\.bd\.?(:[0-9]+)?$ [NC]
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+    RewriteRule ^ https://bilaighor.bd%{REQUEST_URI} [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

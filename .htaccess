@@ -31,6 +31,18 @@ RedirectMatch 404 (?i)(\.(log|sql|sqlite|bak|old|swp)|/error_log)$
 
     RewriteEngine On
 
+    # --- Canonical URL: https://bilaighor.bd (one 301 hop from http:// and from www.) ---
+    # Only the live hostnames are matched, so local/dev hosts and the server IP are never redirected.
+    # TLS is detected both directly (%{HTTPS}) and behind a proxy/CDN (X-Forwarded-Proto).
+    # 1) www.bilaighor.bd (http or https) -> https://bilaighor.bd
+    RewriteCond %{HTTP_HOST} ^www\.bilaighor\.bd\.?(:[0-9]+)?$ [NC]
+    RewriteRule ^ https://bilaighor.bd%{REQUEST_URI} [L,R=301]
+    # 2) http://bilaighor.bd -> https://bilaighor.bd
+    RewriteCond %{HTTP_HOST} ^bilaighor\.bd\.?(:[0-9]+)?$ [NC]
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+    RewriteRule ^ https://bilaighor.bd%{REQUEST_URI} [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -44,18 +56,6 @@ RedirectMatch 404 (?i)(\.(log|sql|sqlite|bak|old|swp)|/error_log)$
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
-    
-  RewriteCond %{HTTP_HOST} ^www.gomobd.com [NC]
-  RewriteRule ^(.*)$ https://gomobd.com/$1 [L,R=301]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^([^\.]+)$ $1.php [NC,L]
-  
-  RewriteCond %{HTTP_HOST} ^gomobd.com [NC]
-  RewriteRule ^(.*)$ https://gomobd.com/$1 [L,R=301]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^([^\.]+)$ $1.php [NC,L]
-  
-  
 </IfModule>
 
 # BEGIN cPanel-generated php ini directives, do not edit

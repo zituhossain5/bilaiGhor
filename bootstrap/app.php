@@ -19,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // =================================================================
         $middleware->use([
             \App\Http\Middleware\TrustProxies::class,
+            // 301s for retired URLs (config/seo_redirects.php), before routing
+            \App\Http\Middleware\SeoRedirects::class,
             \Illuminate\Http\Middleware\HandleCors::class,
             \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
             \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,

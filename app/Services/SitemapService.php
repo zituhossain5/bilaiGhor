@@ -9,11 +9,35 @@ use App\Models\Product;
 use App\Models\Subcategory;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
 
 class SitemapService
 {
+    private static bool $regenerationQueued = false;
+
+    /**
+     * Rebuild sitemap.xml once, after the response has been sent (admin saves stay fast).
+     * Several saves in one request still rebuild only once; a failure is logged, never shown.
+     */
+    public static function regenerateAfterResponse(): void
+    {
+        if (self::$regenerationQueued) {
+            return;
+        }
+        self::$regenerationQueued = true;
+
+        app()->terminating(function (): void {
+            self::$regenerationQueued = false;
+            try {
+                app(self::class)->generate();
+            } catch (\Throwable $e) {
+                Log::warning('Sitemap regeneration failed: ' . $e->getMessage());
+            }
+        });
+    }
+
     /**
      * Build the public ecommerce sitemap from explicitly approved database content.
      *
@@ -29,7 +53,8 @@ class SitemapService
             string $url,
             ?DateTimeInterface $lastModified = null,
             ?string $frequency = null,
-            ?float $priority = null
+            ?float $priority = null,
+            array $images = []
         ) use ($sitemap, &$seen): void {
             if (isset($seen[$url])) {
                 return;
@@ -46,13 +71,19 @@ class SitemapService
             if ($priority !== null) {
                 $tag->setPriority($priority);
             }
+            foreach ($images as $image) {
+                $tag->addImage($image);
+            }
 
             $sitemap->add($tag);
             $seen[$url] = true;
         };
 
-        $add($this->routeUrl('home'), null, Url::CHANGE_FREQUENCY_DAILY, 1.0);
-        $add($this->routeUrl('blogs'), null, Url::CHANGE_FREQUENCY_WEEKLY, 0.6);
+        $latestProduct = $this->latestUpdate(Product::query()->where('status', 1)->where('approval_status', 'approved'));
+        $latestBlog = $this->latestUpdate(Blog::query()->where('status', 1));
+
+        $add($this->routeUrl('home'), max($latestProduct, $latestBlog), Url::CHANGE_FREQUENCY_DAILY, 1.0);
+        $add($this->routeUrl('blogs'), $latestBlog, Url::CHANGE_FREQUENCY_WEEKLY, 0.6);
         $add($this->routeUrl('contact'), null, Url::CHANGE_FREQUENCY_YEARLY, 0.5);
 
         $excludedCategories = config('sitemap.excluded_category_slugs', []);
@@ -106,6 +137,7 @@ class SitemapService
                     ->when($excludedCategories, fn (Builder $categoryQuery) => $categoryQuery->whereNotIn('slug', $excludedCategories));
             })
             ->select('id', 'slug', 'category_id', 'updated_at')
+            ->with('images')
             ->orderBy('id')
             ->chunkById(500, function ($products) use ($add): void {
                 foreach ($products as $product) {
@@ -113,7 +145,9 @@ class SitemapService
                         $this->routeUrl('product', ['id' => $product->slug]),
                         $product->updated_at,
                         Url::CHANGE_FREQUENCY_WEEKLY,
-                        0.7
+                        0.7,
+                        $product->images->pluck('image')->filter()->unique()
+                            ->map(fn (string $path) => $this->fileUrl($path))->values()->all()
                     );
                 }
             });
@@ -155,9 +189,30 @@ class SitemapService
                 }
             });
 
-        $sitemap->writeToFile($path);
+        // Write to a temp file and swap it in, so a crawler never reads a half-written sitemap.
+        $tmp = $path . '.tmp';
+        $sitemap->writeToFile($tmp);
+        if (!@rename($tmp, $path)) {
+            copy($tmp, $path);
+            @unlink($tmp);
+        }
 
         return ['path' => $path, 'urls' => count($seen)];
+    }
+
+    private function latestUpdate(Builder $query): ?DateTimeInterface
+    {
+        $value = $query->max('updated_at');
+
+        return $value ? \Illuminate\Support\Carbon::parse($value) : null;
+    }
+
+    /** Absolute URL of a stored file such as "public/uploads/product/a b.webp" (segments encoded). */
+    private function fileUrl(string $path): string
+    {
+        $root = rtrim((string) config('sitemap.canonical_url'), '/');
+
+        return $root . '/' . implode('/', array_map('rawurlencode', explode('/', ltrim($path, '/'))));
     }
 
     private function routeUrl(string $name, array $parameters = []): string

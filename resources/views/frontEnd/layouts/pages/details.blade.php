@@ -1,13 +1,75 @@
 @extends('frontEnd.layouts.master')
-@section('title', $details->name)
-@push('seo')
 @php
-    $metaTitle = $details->meta_title ?? $details->name;
-    $metaDescription = $details->meta_description ?? Str::limit(strip_tags($details->description), 160);
-    $metaKeywords = $details->meta_keywords ?? $details->name;
+    // filled(): an empty meta field saved in admin falls back too
+    $metaTitle = filled($details->meta_title) ? trim($details->meta_title) : $details->name . ' Price in Bangladesh | Bilai Ghor';
+    $plainDescription = \App\Support\SeoText::plain($details->description);
+    $metaDescription = filled($details->meta_description)
+        ? trim($details->meta_description)
+        : (Str::limit((string) $plainDescription, 155, '…', preserveWords: true) ?: 'Buy ' . $details->name . ' at the best price in Bangladesh from Bilai Ghor.');
+    $metaKeywords = filled($details->meta_keywords) ? $details->meta_keywords : $details->name;
     $metaImage = $details->meta_image ? asset($details->meta_image) : asset(optional($details->image)->image);
+    $productUrl = route('product', $details->slug);
+
+    $productImages = $details->images->pluck('image')->prepend(optional($details->image)->image)
+        ->filter()->unique()->map(fn ($path) => \App\Support\JsonLd::fileUrl($path))->values()->all();
+    $productSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        'name' => $details->name,
+        'image' => $productImages,
+        'description' => $plainDescription ? Str::limit($plainDescription, 5000, '…', preserveWords: true) : null,
+        'sku' => $details->product_code,
+        'brand' => $details->brand ? ['@type' => 'Brand', 'name' => $details->brand->name] : null,
+        'category' => optional($details->category)->name,
+        'url' => $productUrl,
+        'offers' => [
+            '@type' => 'Offer',
+            'url' => $productUrl,
+            'price' => number_format((float) $details->new_price, 2, '.', ''),
+            'priceCurrency' => 'BDT',
+            'availability' => ((int) $details->stock > 0 || $details->is_digital) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            'itemCondition' => 'https://schema.org/NewCondition',
+            'seller' => ['@type' => 'Organization', 'name' => 'Bilai Ghor'],
+        ],
+    ];
+    // Ratings only from real approved reviews; never invented.
+    $ratedReviews = $reviews->filter(fn ($review) => (int) $review->ratting >= 1 && (int) $review->ratting <= 5);
+    if ($ratedReviews->isNotEmpty()) {
+        $productSchema['aggregateRating'] = [
+            '@type' => 'AggregateRating',
+            'ratingValue' => round($ratedReviews->avg('ratting'), 1),
+            'reviewCount' => $ratedReviews->count(),
+            'bestRating' => 5,
+            'worstRating' => 1,
+        ];
+        $productSchema['review'] = $ratedReviews->take(10)->map(fn ($review) => [
+            '@type' => 'Review',
+            'author' => ['@type' => 'Person', 'name' => filled($review->name) ? $review->name : 'Customer'],
+            'datePublished' => optional($review->created_at)->toDateString(),
+            'reviewBody' => \App\Support\SeoText::plain($review->review),
+            'reviewRating' => ['@type' => 'Rating', 'ratingValue' => (int) $review->ratting, 'bestRating' => 5, 'worstRating' => 1],
+        ])->values()->all();
+    }
+
+    $breadcrumbItems = [['name' => 'Home', 'item' => route('home')]];
+    if ($details->category) {
+        $breadcrumbItems[] = ['name' => $details->category->name, 'item' => route('category', $details->category->slug)];
+    }
+    if ($details->subcategory) {
+        $breadcrumbItems[] = ['name' => $details->subcategory->subcategoryName, 'item' => route('subcategory', $details->subcategory->slug)];
+    }
+    $breadcrumbItems[] = ['name' => $details->name, 'item' => $productUrl];
+    $breadcrumbSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => collect($breadcrumbItems)->values()
+            ->map(fn ($crumb, $i) => ['@type' => 'ListItem', 'position' => $i + 1] + $crumb)->all(),
+    ];
 @endphp
-<meta name="app-url" content="{{ route('product', $details->slug) }}" />
+@section('title', $metaTitle)
+@section('canonical', $productUrl)
+@push('seo')
+<meta name="app-url" content="{{ $productUrl }}" />
 <meta name="robots" content="index, follow" />
 <meta name="title" content="{{ $metaTitle }}" />
 <meta name="description" content="{{ $metaDescription }}" />
@@ -19,11 +81,13 @@
 <meta name="twitter:image:alt" content="{{ $details->meta_image_alt ?: $metaTitle }}" />
 <meta property="og:title" content="{{ $metaTitle }}" />
 <meta property="og:type" content="product" />
-<meta property="og:url" content="{{ route('product', $details->slug) }}" />
+<meta property="og:url" content="{{ $productUrl }}" />
 <meta property="og:image" content="{{ $metaImage }}" />
 <meta property="og:image:alt" content="{{ $details->meta_image_alt ?: $metaTitle }}" />
 <meta property="og:description" content="{{ $metaDescription }}" />
-<meta property="og:site_name" content="BilaiGhor" />
+<meta property="og:site_name" content="Bilai Ghor" />
+<script type="application/ld+json">{!! \App\Support\JsonLd::encode($productSchema) !!}</script>
+<script type="application/ld+json">{!! \App\Support\JsonLd::encode($breadcrumbSchema) !!}</script>
 @endpush
 
 @push('css')
@@ -992,11 +1056,11 @@ input.bpd-btn { cursor: pointer; }
 {{-- ─────────────────── BREADCRUMB ─────────────────── --}}
 <div class="bpd-breadcrumb-wrap">
     <div class="container">
-        <nav class="bpd-breadcrumb">
-            <a href="{{ url('/') }}">Home</a>
+        <nav class="bpd-breadcrumb" aria-label="breadcrumb">
+            <a href="{{ route('home') }}">Home</a>
             @if($details->category)
             <span class="bpd-bc-sep">›</span>
-            <a href="{{ url('/category/' . $details->category->slug) }}">{{ $details->category->name }}</a>
+            <a href="{{ route('category', $details->category->slug) }}">{{ $details->category->name }}</a>
             @endif
             @if($details->subcategory)
             <span class="bpd-bc-sep">›</span>

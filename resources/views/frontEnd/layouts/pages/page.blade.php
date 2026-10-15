@@ -1,5 +1,18 @@
 @extends('frontEnd.layouts.master')
-@section('title','Page')
+@php
+    $pageTitle = (filled($page->title) ? trim($page->title) : $page->name) . ' | ' . (optional($generalsetting)->name ?: 'Bilai Ghor');
+    $pageDescription = Str::limit((string) \App\Support\SeoText::plain($page->description), 155, '…', preserveWords: true);
+@endphp
+@section('title', $pageTitle)
+@section('canonical', route('page', $page->slug))
+@push('seo')
+    @if($pageDescription)
+    <meta name="description" content="{{ $pageDescription }}" />
+    @endif
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{{ $pageTitle }}" />
+    <meta property="og:url" content="{{ route('page', $page->slug) }}" />
+@endpush
 @section('content')
 
 <section class="comn_sec">

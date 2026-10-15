@@ -39,6 +39,9 @@ try {
     $courierCron = null;
 }
 
+// Daily sitemap rebuild; model saves also rebuild it (App\Observers\SitemapObserver).
+Schedule::command('sitemap:generate')->dailyAt('03:15')->withoutOverlapping();
+
 $courierEnabled = $courierCron ? (bool) $courierCron->is_enabled          : true;
 $courierFreq    = $courierCron ? (int) $courierCron->frequency_minutes    : 10;
 $courierLimit   = $courierCron ? (int) $courierCron->order_limit           : 50;

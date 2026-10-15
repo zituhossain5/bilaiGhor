@@ -23,3 +23,4 @@ yarn-error.log
 /public/uploads/**/*.[jJ][pP][gG].webp
 /public/uploads/**/*.[jJ][pP][eE][gG].webp
 /public/uploads/**/*.[pP][nN][gG].webp
+/sitemap.xml

@@ -1,6 +1,52 @@
 @extends('frontEnd.layouts.master')
 
-@section('title', $seo->meta_title ?? 'Home')
+@php
+    $siteName = filled(optional($generalsetting)->name) ? $generalsetting->name : 'Bilai Ghor';
+    $homeTitle = filled($seo->meta_title ?? null) ? trim($seo->meta_title) : $siteName . ' | Cat Food, Litter & Accessories in Bangladesh';
+    $homeDescription = filled($seo->meta_description ?? null)
+        ? trim($seo->meta_description)
+        : 'Buy cat food, cat litter, accessories and care products online in Bangladesh from ' . $siteName . '.';
+    $homeUrl = rtrim(route('home'), '/') . '/';
+
+    // Phone as +880 international format; settings first, then the known shop number.
+    $phone = preg_replace('/\D+/', '', (string) (optional($contact)->hotline ?: optional($contact)->phone ?: '01997900505'));
+    $phone = str_starts_with($phone, '880') ? '+' . $phone : (str_starts_with($phone, '0') ? '+88' . $phone : '+' . $phone);
+    $organizationSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        '@id' => $homeUrl . '#organization',
+        'name' => $siteName,
+        'url' => $homeUrl,
+        'logo' => \App\Support\JsonLd::fileUrl(optional($generalsetting)->white_logo ?: optional($generalsetting)->dark_logo),
+        'contactPoint' => [
+            '@type' => 'ContactPoint',
+            'telephone' => $phone,
+            'email' => filled(optional($contact)->email) ? $contact->email : 'info@bilaighor.bd',
+            'contactType' => 'customer service',
+            'areaServed' => 'BD',
+            'availableLanguage' => ['Bengali', 'English'],
+        ],
+        // Only real profile URLs (the WhatsApp entry in settings is a phone number).
+        'sameAs' => collect($socialicons ?? [])->pluck('link')
+            ->filter(fn ($link) => is_string($link) && preg_match('#^https?://#i', $link))->values()->all(),
+    ];
+    $websiteSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebSite',
+        '@id' => $homeUrl . '#website',
+        'name' => $siteName,
+        'url' => $homeUrl,
+        'inLanguage' => 'bn',
+        'publisher' => ['@id' => $homeUrl . '#organization'],
+        'potentialAction' => [
+            '@type' => 'SearchAction',
+            'target' => ['@type' => 'EntryPoint', 'urlTemplate' => route('search') . '?keyword={search_term_string}'],
+            'query-input' => 'required name=search_term_string',
+        ],
+    ];
+@endphp
+@section('title', $homeTitle)
+@section('canonical', $homeUrl)
 
 @push('css')
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,24 +62,29 @@
 @endphp
 <link rel="preload" as="image" href="{{ str_replace([' ', ','], ['%20', '%2C'], asset($heroWebp ?? $sliders->first()->image)) }}" @if($heroWebp) type="image/webp" @endif fetchpriority="high">
 @endif
-<meta name="app-url" content="{{ url('/') }}" />
+<meta name="app-url" content="{{ $homeUrl }}" />
 <meta name="robots" content="index, follow" />
 
-<meta name="description" content="{{ $seo->meta_description ?? '' }}" />
-<meta name="keywords" content="{{ $seo->meta_tags ?? '' }}" />
+<meta name="description" content="{{ $homeDescription }}" />
+@if(filled($seo->meta_tags ?? null))
+<meta name="keywords" content="{{ $seo->meta_tags }}" />
+@endif
 
 <!-- Open Graph data -->
-<meta property="og:title" content="{{ $seo->meta_title ?? '' }}" />
+<meta property="og:title" content="{{ $homeTitle }}" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="{{ url()->current() }}" />
+<meta property="og:url" content="{{ $homeUrl }}" />
+<meta property="og:site_name" content="{{ $siteName }}" />
 <meta property="og:image" content="{{ asset($generalsetting->og_baner ?? 'public/logo.png') }}" />
-<meta property="og:image:alt" content="{{ optional($generalsetting)->og_baner_alt ?: ($seo->meta_title ?? optional($generalsetting)->name) }}" />
-<meta property="og:description" content="{{ $seo->meta_description ?? '' }}" />
+<meta property="og:image:alt" content="{{ optional($generalsetting)->og_baner_alt ?: $homeTitle }}" />
+<meta property="og:description" content="{{ $homeDescription }}" />
+<script type="application/ld+json">{!! \App\Support\JsonLd::encode($organizationSchema) !!}</script>
+<script type="application/ld+json">{!! \App\Support\JsonLd::encode($websiteSchema) !!}</script>
 @endpush
 
 @section('content')
 {{-- Page title for screen readers and search engines (the hero slides are images); not shown. --}}
-<h1 class="visually-hidden">{{ $seo->meta_title ?? (optional($generalsetting)->name ?? 'Bilai Ghor') }}</h1>
+<h1 class="visually-hidden">{{ filled($seo->meta_title ?? null) ? $seo->meta_title : $siteName }}</h1>
 {{-- HERO SLIDER --}}
 <section class="bilai-hero-section">
     <div class="main_slider owl-carousel bilai-hero-owl">

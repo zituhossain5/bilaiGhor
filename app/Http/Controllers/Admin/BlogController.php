@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Blog;
 use App\Rules\RichTextImagesHaveAlt;
-use App\Services\SitemapService;
 use App\Support\BlogSlug;
 use Illuminate\Http\Request;
 
@@ -132,11 +131,6 @@ class BlogController extends Controller
             'image_alt'         => $request->image_alt,
             'status'            => $request->status ?? 1,
         ]);
-
-        // Keep sitemap.xml on the canonical URL (the old one now 301s). Never block the save.
-        if ($slugChanged) {
-            rescue(fn () => app(SitemapService::class)->generate(base_path('sitemap.xml')));
-        }
 
         return redirect()
             ->route('admin.blog.index')

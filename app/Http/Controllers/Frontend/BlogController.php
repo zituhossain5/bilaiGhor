@@ -11,6 +11,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class BlogController extends Controller
@@ -51,8 +52,10 @@ class BlogController extends Controller
             return redirect()->to($target->url, 301);
         }
 
-        // 👁️ view count increment
-        $blog->increment('views');
+        // 👁️ view count increment. updated_at is kept as is (the column is also ON UPDATE CURRENT_TIMESTAMP),
+        // so a page view doesn't change the post's dateModified / sitemap lastmod.
+        Blog::whereKey($blog->id)->toBase()->update(['views' => DB::raw('`views` + 1'), 'updated_at' => DB::raw('`updated_at`')]);
+        $blog->views++;
 
         // 🔹 Recent Blogs
         $recentBlogs = Blog::where('status', 1)

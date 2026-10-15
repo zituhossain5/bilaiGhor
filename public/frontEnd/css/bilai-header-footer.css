@@ -5738,7 +5738,8 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 }
 .bilai-seo-content {
     padding: 24px 28px;
-    font-family: var(--bilai-font-main);
+    /* English keeps DM Sans; Bangla characters use the site's Bangla font */
+    font-family: "DM Sans", "Hind Siliguri", "Li Ador Noirrit A-V1", sans-serif;
     font-size: 14px;
     color: var(--bilai-text, #4a3728);
     line-height: 1.85;
@@ -5747,7 +5748,7 @@ header#navbar_top.scrolled .bilai-main-header__logo img {
 .bilai-seo-content h1,
 .bilai-seo-content h2,
 .bilai-seo-content h3 {
-    font-family: var(--bilai-font-title);
+    font-family: "Mochiy Pop One", "Hind Siliguri", "Li Ador Noirrit A-V1", sans-serif;
     color: var(--bilai-body-title, #2a1505);
     margin-top: 20px;
     margin-bottom: 8px;

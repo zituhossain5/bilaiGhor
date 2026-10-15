@@ -1,12 +1,12 @@
 @extends('frontEnd.layouts.master')
 @section('title', $blog->title)
+@section('canonical', $seo['canonical'])
 
 @push('seo')
     <meta name="robots" content="index,follow" />
     @if($seo['description'])
     <meta name="description" content="{{ $seo['description'] }}" />
     @endif
-    <link rel="canonical" href="{{ $seo['canonical'] }}" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="{{ $seo['title'] }}" />
     @if($seo['description'])
@@ -28,28 +28,41 @@
     @if($seo['image'])
     <meta name="twitter:image" content="{{ $seo['image'] }}" />
     @endif
-    <script type="application/ld+json">{!! json_encode([
-        '@context' => 'https://schema.org',
-        '@type' => 'BlogPosting',
-        'headline' => Str::limit($blog->title, 110, ''),
-        'description' => $seo['description'],
-        'image' => $seo['image'] ? [$seo['image']] : null,
-        'datePublished' => $blog->created_at->toIso8601String(),
-        'dateModified' => $blog->updated_at->toIso8601String(),
-        'mainEntityOfPage' => $seo['canonical'],
-        'url' => $seo['canonical'],
-        'commentCount' => $commentCount,
-        'publisher' => ['@type' => 'Organization', 'name' => optional($generalsetting)->name ?? 'Bilai Ghor'],
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}</script>
-    <script type="application/ld+json">{!! json_encode([
-        '@context' => 'https://schema.org',
-        '@type' => 'BreadcrumbList',
-        'itemListElement' => [
-            ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
-            ['@type' => 'ListItem', 'position' => 2, 'name' => 'Blog', 'item' => route('blogs')],
-            ['@type' => 'ListItem', 'position' => 3, 'name' => $blog->title, 'item' => $seo['canonical']],
-        ],
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}</script>
+    @php
+        // Built in @php: inside {!! !!} Blade would compile the '@context' key as its @context directive.
+        $publisherName = optional($generalsetting)->name ?: 'Bilai Ghor';
+        $blogPostingSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'BlogPosting',
+            'headline' => Str::limit($blog->title, 110, ''),
+            'description' => $seo['description'],
+            'image' => $blog->image ? [\App\Support\JsonLd::fileUrl('public/' . $blog->image)] : null,
+            'datePublished' => $blog->created_at->toIso8601String(),
+            'dateModified' => $blog->updated_at->toIso8601String(),
+            'author' => ['@type' => 'Organization', 'name' => $publisherName, 'url' => route('home')],
+            'publisher' => [
+                '@type' => 'Organization',
+                'name' => $publisherName,
+                'url' => route('home'),
+                'logo' => ['@type' => 'ImageObject', 'url' => \App\Support\JsonLd::fileUrl(optional($generalsetting)->white_logo ?: optional($generalsetting)->dark_logo)],
+            ],
+            'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => $seo['canonical']],
+            'url' => $seo['canonical'],
+            'inLanguage' => 'bn',
+            'commentCount' => $commentCount,
+        ];
+        $breadcrumbSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => 'Blog', 'item' => route('blogs')],
+                ['@type' => 'ListItem', 'position' => 3, 'name' => $blog->title, 'item' => $seo['canonical']],
+            ],
+        ];
+    @endphp
+    <script type="application/ld+json">{!! \App\Support\JsonLd::encode($blogPostingSchema) !!}</script>
+    <script type="application/ld+json">{!! \App\Support\JsonLd::encode($breadcrumbSchema) !!}</script>
 @endpush
 
 @push('css')

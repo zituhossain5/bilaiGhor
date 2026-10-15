@@ -11,12 +11,14 @@ use App\Models\Blog;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Childcategory;
+use App\Models\CreatePage;
 use App\Models\KittenPack;
 use App\Models\Product;
 use App\Models\Productimage;
 use App\Models\Subcategory;
 use App\Observers\ProductObserver;
 use App\Observers\SearchIndexObserver;
+use App\Observers\SitemapObserver;
 use App\Observers\WebpVariantObserver;
 
 class EventServiceProvider extends ServiceProvider
@@ -49,6 +51,11 @@ class EventServiceProvider extends ServiceProvider
         // Resized .webp copy of every newly uploaded storefront image.
         foreach ([Productimage::class, Banner::class, Category::class, Subcategory::class, Blog::class] as $model) {
             $model::observe(WebpVariantObserver::class);
+        }
+
+        // Rebuild sitemap.xml (after the response) whenever a URL in it can appear, change or disappear.
+        foreach ([Product::class, Category::class, Subcategory::class, Blog::class, CreatePage::class] as $model) {
+            $model::observe(SitemapObserver::class);
         }
     }
 

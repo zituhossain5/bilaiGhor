@@ -1,12 +1,10 @@
 @extends('frontEnd.layouts.master')
 @php
     $seoTitle = \App\Support\SeoText::plain($subcategory->meta_title) ?: $subcategory->subcategoryName . ' | Bilai Ghor';
-    $seoDescription = \App\Support\SeoText::plain($subcategory->meta_description, 170);
-    $canonicalUrl = route('subcategory', $subcategory->slug);
-    $currentPage = (int) request('page', 1);
-    if ($currentPage > 1) {
-        $canonicalUrl .= '?page=' . $currentPage;
-    }
+    // Admin meta description, else the start of the SEO text shown below the products
+    $seoDescription = \App\Support\SeoText::plain($subcategory->meta_description, 170)
+        ?: Str::limit((string) \App\Support\SeoText::plain($subcategory->full_description), 155, '…', preserveWords: true);
+    $canonicalUrl = \App\Support\Canonical::current(route('subcategory', $subcategory->slug));
     $seoH1 = \App\Support\SeoText::plain($subcategory->seo_h1) ?: $subcategory->subcategoryName;
     $seoImage = $subcategory->image ? asset($subcategory->image) : null;
     $breadcrumbItems = [
@@ -38,6 +36,7 @@
     ];
 @endphp
 @section('title', $seoTitle)
+@section('canonical', $canonicalUrl)
 @push('css')
     <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/jquery-ui.css') }}" />
 @endpush
@@ -50,7 +49,6 @@
     @if($seoDescription)
     <meta name="description" content="{{ $seoDescription }}" />
     @endif
-    <link rel="canonical" href="{{ $canonicalUrl }}" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="{{ $seoTitle }}" />
     @if($seoDescription)
@@ -69,7 +67,7 @@
     @if($seoImage)
     <meta name="twitter:image" content="{{ $seoImage }}" />
     @endif
-    <script type="application/ld+json">{!! json_encode($breadcrumbJsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    <script type="application/ld+json">{!! \App\Support\JsonLd::encode($breadcrumbJsonLd) !!}</script>
 @endpush
 
 @section('content')

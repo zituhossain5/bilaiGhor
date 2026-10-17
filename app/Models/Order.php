@@ -95,6 +95,19 @@ class Order extends Model
         return $this->hasMany(OrderDetails::class, 'order_id');
     }
 
+    // কুরিয়ার পার্সেল (courier_parcels) — একটি অর্ডারে একাধিক থাকতে পারে (আবার পাঠানো হলে)
+    public function courierParcels()
+    {
+        return $this->hasMany(CourierParcel::class, 'order_id')->orderByDesc('id');
+    }
+
+    // বর্তমান পার্সেল
+    public function courierParcel()
+    {
+        return $this->hasOne(CourierParcel::class, 'order_id')
+            ->ofMany(['id' => 'max'], fn ($query) => $query->where('is_current', true));
+    }
+
     // 🔥 অর্ডার থেকে সরাসরি Products আনতে (hasManyThrough)
     public function products()
     {

@@ -206,6 +206,10 @@ Route::post('/api/redx/webhook', [\App\Http\Controllers\Admin\RedXWebhookControl
 Route::post('/api/steadfast/webhook', [\App\Http\Controllers\Admin\SteadfastWebhookController::class, 'handle'])
     ->name('steadfast.webhook');
 
+// Pathao Webhook (CSRF excluded) — secret in X-PATHAO-Signature
+Route::post('/api/pathao/webhook', [\App\Http\Controllers\Admin\PathaoWebhookController::class, 'handle'])
+    ->name('pathao.webhook');
+
 	
 Route::get('/style.css', function () {
     $css = view('frontEnd.assets.style')->render();   // Blade থেকে CSS রেন্ডার

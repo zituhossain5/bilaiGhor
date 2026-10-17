@@ -426,6 +426,27 @@
                                 <small class="text-muted small-hint d-block mt-1">Client ID ও সিক্রেট সেভের পর অথবা একইভাবে টোকেন তৈরি করা যায়।</small>
                             </div>
 
+                            {{-- Not form fields: shown to paste into Pathao → Developers API → Webhook integration --}}
+                            <div class="mb-3">
+                                <label class="form-label">Webhook URL <small class="text-muted fw-normal">(ঐচ্ছিক)</small></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" readonly
+                                           value="{{ \App\Http\Controllers\Admin\PathaoWebhookController::webhookUrl() }}" />
+                                    <button type="button" class="btn btn-outline-secondary js-copy-prev" title="কপি"><i class="fe-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Webhook Secret</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" readonly
+                                           value="{{ \App\Http\Controllers\Admin\PathaoWebhookController::secret() }}" />
+                                    <button type="button" class="btn btn-outline-secondary js-copy-prev" title="কপি"><i class="fe-copy"></i></button>
+                                </div>
+                                <small class="text-muted small-hint d-block mt-1">
+                                    এই URL ও Secret পাঠাও মার্চেন্ট প্যানেলে (Developers API → Webhook) বসান — পার্সেলের প্রতিটি আপডেট সাথে সাথে এখানে আসবে।
+                                </small>
+                            </div>
+
                             <div class="courier-status-row">
                                 <span><i class="fas fa-power-off text-muted me-1"></i> সার্ভিস চালু</span>
                                 <div class="form-check form-switch m-0">
@@ -613,6 +634,19 @@
                 $temp.remove();
                 toastr.success('Webhook URL কপি হয়েছে।', 'কপি', {timeOut: 3000});
             });
+        });
+
+        // Copy the read-only field just before the button (Pathao webhook URL / secret)
+        $('.js-copy-prev').on('click', function(){
+            var $input = $(this).prev('input');
+            $input.trigger('select');
+            var done = function(){ toastr.success('কপি হয়েছে।', 'কপি', {timeOut: 2000}); };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText($input.val()).then(done, function(){ document.execCommand('copy'); done(); });
+            } else {
+                document.execCommand('copy');
+                done();
+            }
         });
 
         $('#redx_webhook_url').on('focus', function(){

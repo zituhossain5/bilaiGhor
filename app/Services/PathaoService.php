@@ -82,6 +82,12 @@ class PathaoService
         ];
     }
 
+    /** Current state of one consignment (order_status_slug, updated_at …); null when Pathao can't be reached. */
+    public function orderInfo(string $consignmentId): ?\Illuminate\Http\Client\Response
+    {
+        return $this->request('get', '/aladdin/api/v1/orders/' . rawurlencode($consignmentId) . '/info', [], 15);
+    }
+
     /** Lists change rarely: keep good answers for hours, and a failure briefly so a down API can't slow every page. */
     private function cachedList(string $path): ?array
     {

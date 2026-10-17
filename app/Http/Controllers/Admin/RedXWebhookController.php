@@ -3,24 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\GeneralSetting;
 use App\Models\Order;
-use App\Models\OrderStatus;
-use App\Models\SmsGateway;
-use App\Models\User;
-use App\Models\VendorWallet;
-use App\Models\VendorWalletTransaction;
-use App\Services\RedXService;
+use App\Services\CourierTracking\OrderStatusGate;
+use App\Services\CourierTracking\ParcelRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class RedXWebhookController extends Controller
 {
-    /**
-     * Handle RedX webhook callbacks
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
+    public function __construct(
+        private readonly ParcelRecorder $recorder,
+        private readonly OrderStatusGate $gate,
+    ) {}
+
     /**
      * RedX can't send a custom header, so the webhook URL carries a secret (?token=…) derived from
      * APP_KEY. Without it anyone could mark orders delivered or cancelled.
@@ -36,6 +31,12 @@ class RedXWebhookController extends Controller
         return rtrim((string) config('app.url'), '/') . '/api/redx/webhook?token=' . self::secret();
     }
 
+    /**
+     * Every RedX update is stored on the parcel's tracking timeline. The order status changes only
+     * through OrderStatusGate: the existing RedX mapping (RedXService::mapStatusToOrderStatus) applied
+     * with the shared transition (payment, fund, vendor/reseller settlement, SMS), never to an order
+     * that is already Delivered/Cancelled, and never from an event older than the last one applied.
+     */
     public function handleWebhook(Request $request)
     {
         if (! hash_equals(self::secret(), (string) $request->query('token', ''))) {
@@ -45,96 +46,53 @@ class RedXWebhookController extends Controller
         }
 
         try {
-            // Log incoming webhook
             Log::info('RedX Webhook Received', [
                 'payload' => $request->all(),
-                'headers' => $request->headers->all(),
             ]);
 
-            // Validate required fields
-            $trackingNumber = $request->input('tracking_number');
-            $status = $request->input('status');
-            $invoiceNumber = $request->input('invoice_number');
+            $trackingNumber = trim((string) $request->input('tracking_number', ''));
+            $status = trim((string) $request->input('status', ''));
+            $invoiceNumber = trim((string) $request->input('invoice_number', ''));
 
-            if (! $trackingNumber || ! $status) {
+            if ($trackingNumber === '' || $status === '') {
                 return response()->json([
                     'success' => false,
                     'message' => 'Missing required fields: tracking_number or status',
                 ], 400);
             }
 
-            // Find order by tracking_id or invoice_id
+            // By tracking number first; the invoice only when one was sent (an empty invoice used to
+            // match any order whose invoice_id is NULL).
             $order = Order::where('courier_tracking_id', $trackingNumber)
-                ->orWhere('invoice_id', $invoiceNumber)
+                ->orWhere('consignment_id', $trackingNumber)
+                ->orderByDesc('id')
                 ->first();
-
-            if (! $order) {
-                Log::warning('RedX Webhook: Order not found', [
-                    'tracking_number' => $trackingNumber,
-                    'invoice_number' => $invoiceNumber,
-                ]);
-
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Order not found',
-                ], 404);
+            if (! $order && $invoiceNumber !== '') {
+                $order = Order::where('invoice_id', $invoiceNumber)->orderByDesc('id')->first();
             }
 
-            // Map RedX status to order status
-            $redxService = new RedXService;
-            $newOrderStatus = $redxService->mapStatusToOrderStatus($status);
+            $parcel = $order ? $this->recorder->forOrder($order) : null;
+            $parcel ??= $this->recorder->find('redx', $trackingNumber)
+                ?? $this->recorder->unlinked('redx', $trackingNumber, null, $invoiceNumber ?: null);
 
-            if ($newOrderStatus !== null) {
-                $oldStatus = (int) $order->order_status;
-                $newOrderStatus = (int) $newOrderStatus;
+            $this->recorder->record($parcel, [
+                'raw_status' => $status,
+                'message'    => $request->input('message_en') ?: $request->input('message_bn'),
+                'event_time' => $request->input('timestamp'),
+                'source'     => 'webhook',
+                'payload'    => $request->all(),
+            ]);
 
-                // Update order status
-                $order->order_status = $newOrderStatus;
-                $order->save();
+            $eventTime = ParcelRecorder::time($request->input('timestamp')) ?? now();
+            $changed = $this->gate->apply($parcel, $status, $eventTime, 'RedX');
 
-                // Handle stock change (same logic as OrderController)
-                $this->handleStockChange($order, $oldStatus, $newOrderStatus);
-
-                if ($newOrderStatus == 11) {
-                    \App\Helpers\ResellerOrderHelper::deductDeliveryChargeOnCancel($order);
-                }
-
-                // If order is delivered/completed (status = 6)
-                if ($newOrderStatus == 6 && $oldStatus != 6) {
-                    $paymentState = \App\Services\OrderPaymentService::updateFromAdminStatus($order, 'paid');
-                    $order = $paymentState['order'];
-
-                    // Add money to fund
-                    \App\Helpers\FundHelper::creditSale(
-                        $order,
-                        'Order complete via RedX webhook (#'.$order->invoice_id.')',
-                        1
-                    );
-
-                    // Credit vendors for their items
-                    $this->distributeVendorEarnings($order);
-
-                    // Credit reseller wallet if this is a reseller order
-                    $this->creditResellerWallet($order);
-                }
-
-                // Send SMS notification if configured
-                $this->sendStatusUpdateSMS($order, $newOrderStatus);
-
-                Log::info('RedX Webhook: Order status updated successfully', [
-                    'order_id' => $order->id,
-                    'invoice_id' => $order->invoice_id,
-                    'tracking_id' => $trackingNumber,
-                    'old_status' => $oldStatus,
-                    'new_status' => $newOrderStatus,
-                    'redx_status' => $status,
-                ]);
-            } else {
-                Log::warning('RedX Webhook: Status mapping not found', [
-                    'order_id' => $order->id,
-                    'redx_status' => $status,
-                ]);
-            }
+            Log::info('RedX Webhook processed', [
+                'order_id'       => $order?->id,
+                'tracking_id'    => $trackingNumber,
+                'redx_status'    => $status,
+                'status_changed' => $changed,
+                'linked'         => (bool) $parcel->order_id,
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -152,198 +110,6 @@ class RedXWebhookController extends Controller
                 'success' => false,
                 'message' => 'Internal server error',
             ], 500);
-        }
-    }
-
-    /**
-     * Handle stock change when order status changes
-     * Same logic as OrderController
-     */
-    private function handleStockChange(Order $order, int $oldStatus, int $newStatus)
-    {
-        // Intentionally empty: stock now flows through InventoryService via the
-        // Order::updated hook (idempotent ledger), so webhook-side stock math here
-        // would double-count. Kept as a no-op because call sites remain.
-    }
-
-    /**
-     * Distribute vendor earnings when order is completed
-     * Same logic as OrderController
-     */
-    private function distributeVendorEarnings(Order $order): void
-    {
-        if (! config('business.vendor_enabled')) {
-            return;
-        }
-
-        $details = $order->orderdetails()
-            ->with([
-                'product:id,vendor_id,name',
-                'product.vendor:id,commission_rate',
-            ])
-            ->get();
-
-        foreach ($details as $item) {
-            $product = $item->product;
-            if (! $product || ! $product->vendor_id) {
-                continue;
-            }
-
-            // Skip if already processed
-            if ($item->vendor_paid_at) {
-                continue;
-            }
-
-            $vendorId = $product->vendor_id;
-            $vendor = $product->vendor;
-
-            if (! $vendor) {
-                Log::warning('Vendor not loaded for product: '.$product->id);
-
-                continue;
-            }
-
-            $commissionRate = $vendor->commission_rate ?? config('app.vendor_commission', 10);
-            $lineTotal = (float) ($item->sale_price ?? 0) * (float) ($item->qty ?? 0);
-
-            $adminCommission = round($lineTotal * ($commissionRate / 100), 2);
-            $vendorEarning = max(0, round($lineTotal - $adminCommission, 2));
-
-            // Update order detail record
-            $item->update([
-                'vendor_id' => $vendorId,
-                'commission_rate' => $commissionRate,
-                'admin_commission' => $adminCommission,
-                'vendor_earning' => $vendorEarning,
-                'vendor_paid_at' => now(),
-            ]);
-
-            // Update wallet
-            $wallet = VendorWallet::firstOrCreate(['vendor_id' => $vendorId]);
-            $wallet->balance += $vendorEarning;
-            $wallet->total_earned += $vendorEarning;
-            $wallet->save();
-
-            VendorWalletTransaction::create([
-                'vendor_id' => $vendorId,
-                'type' => 'earning',
-                'status' => 'completed',
-                'amount' => $vendorEarning,
-                'source_type' => 'order',
-                'source_id' => $item->id,
-                'note' => 'Order #'.$order->invoice_id.' item earning (RedX)',
-            ]);
-
-        }
-    }
-
-    /**
-     * Credit reseller wallet when order is delivered
-     * Same logic as OrderController
-     */
-    private function creditResellerWallet(Order $order): void
-    {
-        if (! config('business.reseller_enabled')) {
-            return;
-        }
-
-        // Check if this is a reseller order
-        if (! $order->reseller_profit || $order->reseller_profit <= 0) {
-            return;
-        }
-
-        // Check if already credited
-        if ($order->reseller_wallet_credited) {
-            return;
-        }
-
-        // Get reseller user
-        $resellerUser = null;
-        if ($order->user_id) {
-            $resellerUser = User::find($order->user_id);
-            if ($resellerUser &&
-                ($resellerUser->hasRole('reseller') ||
-                 (isset($resellerUser->role) && strtolower($resellerUser->role) === 'reseller'))) {
-                // Reseller found
-            } else {
-                $resellerUser = null;
-            }
-        }
-
-        // Fallback: Check customer email (for old orders)
-        if (! $resellerUser && $order->customer && $order->customer->email) {
-            $resellerUser = User::where('email', $order->customer->email)
-                ->where(function ($query) {
-                    $query->where('role', 'reseller')
-                        ->orWhereHas('roles', function ($q) {
-                            $q->where('name', 'reseller');
-                        });
-                })
-                ->first();
-        }
-
-        if (! $resellerUser) {
-            return;
-        }
-
-        // Credit reseller wallet
-        $resellerUser->wallet_balance = ($resellerUser->wallet_balance ?? 0) + $order->reseller_profit;
-        $resellerUser->save();
-
-        \App\Models\ResellerWalletTransaction::log(
-            $resellerUser->id, 'order_profit', (float) $order->reseller_profit,
-            'Order', $order->id,
-            'অর্ডার #'.($order->invoice_id ?? $order->id).' প্রফিট'
-        );
-
-        // Mark as credited
-        $order->reseller_wallet_credited = true;
-        $order->save();
-
-        Log::info('Reseller wallet credited via RedX webhook', [
-            'order_id' => $order->id,
-            'reseller_id' => $resellerUser->id,
-            'amount' => $order->reseller_profit,
-        ]);
-    }
-
-    /**
-     * Send SMS notification when order status changes
-     */
-    private function sendStatusUpdateSMS(Order $order, int $newStatus)
-    {
-        try {
-            $sms_gateway = SmsGateway::where('status', 1)->first();
-            $site_setting = GeneralSetting::first();
-            $orderStatus = OrderStatus::find($newStatus);
-
-            if ($sms_gateway && $order->customer && $orderStatus) {
-                $url = $sms_gateway->url;
-                $data = [
-                    'api_key' => $sms_gateway->api_key,
-                    'number' => $order->customer->phone,
-                    'type' => 'text',
-                    'senderid' => $sms_gateway->serderid,
-                    'message' => "Dear {$order->customer->name},\r\n"
-                        ."Your order (Order ID: {$order->invoice_id}) status has been updated to: "
-                        ."{$orderStatus->name} via RedX Courier.\r\n"
-                        ."Thank you for using {$site_setting->name}!",
-                ];
-
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_POST, 1);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_exec($ch);
-                curl_close($ch);
-            }
-        } catch (\Exception $e) {
-            Log::error('RedX Webhook SMS sending failed', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage(),
-            ]);
         }
     }
 }

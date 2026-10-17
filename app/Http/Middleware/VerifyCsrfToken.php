@@ -34,6 +34,8 @@ class VerifyCsrfToken extends Middleware
         // Steadfast Webhook
         'api/steadfast/webhook',
         'steadfast/webhook',
+        // Pathao Webhook
+        'api/pathao/webhook',
     ];
 
     /**

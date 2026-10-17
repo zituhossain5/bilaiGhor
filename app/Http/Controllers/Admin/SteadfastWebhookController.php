@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Courierapi;
 use App\Models\Order;
+use App\Services\CourierTracking\OrderStatusGate;
+use App\Services\CourierTracking\ParcelRecorder;
 use App\Services\CourierWebhookOrderService;
 use App\Support\SteadfastWebhookStatus;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +16,9 @@ use Illuminate\Support\Facades\Log;
 class SteadfastWebhookController extends Controller
 {
     public function __construct(
-        private readonly CourierWebhookOrderService $webhookOrders
+        private readonly CourierWebhookOrderService $webhookOrders,
+        private readonly ParcelRecorder $recorder,
+        private readonly OrderStatusGate $gate,
     ) {}
 
     /**
@@ -64,15 +68,20 @@ class SteadfastWebhookController extends Controller
             return $this->jsonError('status is required', 400);
         }
 
+        $trackingMessage = trim((string) $request->input('tracking_message', ''));
         $order = $this->findOrder($consignmentId, $invoice);
 
         if (! $order) {
-            Log::warning('Steadfast Webhook: Order not found', [
+            // A parcel the site has no order for (e.g. entered in the Steadfast portal): keep its timeline
+            // so it can be linked to an order later. No order is touched.
+            $this->recordUnlinked($request, (string) $status, $trackingMessage);
+
+            Log::warning('Steadfast Webhook: Order not found (recorded as unlinked parcel)', [
                 'consignment_id' => $consignmentId,
                 'invoice'          => $invoice,
             ]);
 
-            return $this->jsonError('Invalid consignment ID or invoice.', 404);
+            return $this->jsonSuccess();
         }
 
         if ($consignmentId !== null && empty($order->consignment_id)) {
@@ -86,18 +95,43 @@ class SteadfastWebhookController extends Controller
         $order->courier_type = $order->courier_type ?: 'steadfast';
         $order->save();
 
-        $trackingMessage = trim((string) $request->input('tracking_message', ''));
         if ($trackingMessage !== '') {
             $this->webhookOrders->appendCourierNote($order, $trackingMessage);
             $order->refresh();
         }
 
-        $newStatusId = SteadfastWebhookStatus::toOrderStatusId((string) $status)
-            ?? SteadfastWebhookStatus::fromTrackingMessage($trackingMessage);
+        $parcel = $this->recorder->forOrder($order);
+        $eventTime = ParcelRecorder::time($request->input('updated_at')) ?? now();
 
-        $this->applyOrderStatusFromSteadfast($order, $newStatusId, (string) $status, [
-            'cod_amount'      => $request->input('cod_amount'),
-            'delivery_charge' => $request->input('delivery_charge'),
+        if ($parcel) {
+            $this->recorder->record($parcel, [
+                'raw_status' => (string) $status,
+                'message'    => $trackingMessage,
+                'event_time' => $request->input('updated_at'),
+                'source'     => 'webhook',
+                'payload'    => $request->all(),
+                'details'    => array_filter([
+                    'tracking_code'   => $request->input('tracking_code'),
+                    'courier_cod'     => $request->input('cod_amount'),
+                    'delivery_charge' => $request->input('delivery_charge'),
+                ], fn ($v) => $v !== null && $v !== ''),
+            ]);
+        }
+
+        // Only an explicit delivery_status may complete/cancel the order (never the free-text message),
+        // and never an order that is already Delivered/Cancelled or an event older than the last applied.
+        $changed = $parcel
+            ? $this->gate->apply($parcel, (string) $status, $eventTime, 'Steadfast')
+            : false;
+
+        Log::info('Steadfast Webhook: order status '.($changed ? 'updated' : 'unchanged'), [
+            'order_id'         => $order->id,
+            'invoice_id'       => $order->invoice_id,
+            'steadfast_status' => (string) $status,
+            'order_status_id'  => SteadfastWebhookStatus::toOrderStatusId((string) $status),
+            'status_changed'   => $changed,
+            'cod_amount'       => $request->input('cod_amount'),
+            'delivery_charge'  => $request->input('delivery_charge'),
         ]);
 
         return $this->jsonSuccess();
@@ -120,7 +154,9 @@ class SteadfastWebhookController extends Controller
         $order = $this->findOrder($consignmentId, $invoice);
 
         if (! $order) {
-            return $this->jsonError('Invalid consignment ID or invoice.', 404);
+            $this->recordUnlinked($request, null, $message);
+
+            return $this->jsonSuccess();
         }
 
         if ($consignmentId !== null && empty($order->consignment_id)) {
@@ -131,44 +167,47 @@ class SteadfastWebhookController extends Controller
         $this->webhookOrders->appendCourierNote($order, $message);
         $order->refresh();
 
-        $inferredStatus = SteadfastWebhookStatus::fromTrackingMessage($message);
-        if ($inferredStatus !== null) {
-            $this->applyOrderStatusFromSteadfast($order, $inferredStatus, 'tracking:'.$message);
-        } else {
-            Log::info('Steadfast Webhook: tracking_update (note only)', [
-                'order_id'   => $order->id,
-                'invoice_id' => $order->invoice_id,
+        // Timeline only: a tracking message never changes the order status
+        // (an "Assigned for delivery" message used to be read as Delivered).
+        if ($parcel = $this->recorder->forOrder($order)) {
+            $this->recorder->record($parcel, [
                 'message'    => $message,
+                'event_time' => $request->input('updated_at'),
+                'source'     => 'webhook',
+                'payload'    => $request->all(),
             ]);
         }
+
+        Log::info('Steadfast Webhook: tracking_update (timeline only)', [
+            'order_id'   => $order->id,
+            'invoice_id' => $order->invoice_id,
+            'message'    => $message,
+        ]);
 
         return $this->jsonSuccess();
     }
 
-    private function applyOrderStatusFromSteadfast(Order $order, ?int $newStatusId, string $steadfastLabel, array $extra = []): void
+    private function recordUnlinked(Request $request, ?string $status, string $message): void
     {
-        if ($newStatusId === null) {
-            Log::info('Steadfast Webhook: no order status map', [
-                'order_id' => $order->id,
-                'label'    => $steadfastLabel,
-            ]);
-
+        $cid = trim((string) $request->input('consignment_id', ''));
+        if ($cid === '') {
             return;
         }
 
-        $changed = $this->webhookOrders->applyStatusChange($order, $newStatusId, 'Steadfast');
+        $parcel = $this->recorder->find('steadfast', $cid, $request->input('tracking_code'))
+            ?? $this->recorder->unlinked('steadfast', $cid, $request->input('tracking_code'), $request->input('invoice'));
 
-        $statusName = SteadfastWebhookStatus::isCompleted($newStatusId) ? 'Completed'
-            : (SteadfastWebhookStatus::isCancelled($newStatusId) ? 'Cancelled' : (string) $newStatusId);
-
-        Log::info('Steadfast Webhook: order status '.($changed ? 'updated' : 'unchanged'), array_merge([
-            'order_id'         => $order->id,
-            'invoice_id'       => $order->invoice_id,
-            'steadfast_status' => $steadfastLabel,
-            'order_status_id'  => $newStatusId,
-            'order_status'     => $statusName,
-            'status_changed'   => $changed,
-        ], $extra));
+        $this->recorder->record($parcel, [
+            'raw_status' => $status,
+            'message'    => $message,
+            'event_time' => $request->input('updated_at'),
+            'source'     => 'webhook',
+            'payload'    => $request->all(),
+            'details'    => array_filter([
+                'courier_cod'     => $request->input('cod_amount'),
+                'delivery_charge' => $request->input('delivery_charge'),
+            ], fn ($v) => $v !== null && $v !== ''),
+        ]);
     }
 
     private function findOrder(mixed $consignmentId, mixed $invoice): ?Order

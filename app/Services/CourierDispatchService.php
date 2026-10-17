@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Courierapi;
+use App\Models\CourierParcel;
 use App\Models\DeliveryThana;
+use App\Services\CourierTracking\ParcelRecorder;
 use App\Models\Order;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
@@ -80,6 +82,16 @@ class CourierDispatchService
                     'courier_tracking_code' => $result['tracking_code'] ?? null,
                     'courier_sent_at'       => now(),
                 ])->save();
+
+                // Tracking timeline starts here. Never let it affect the booking itself.
+                rescue(function () use ($order) {
+                    $recorder = app(ParcelRecorder::class);
+                    $parcel = $recorder->forOrder($order, 'dispatch');
+                    if ($parcel) {
+                        CourierParcel::where('order_id', $order->id)->whereKeyNot($parcel->id)->update(['is_current' => false]);
+                        $recorder->record($parcel, ['normalized_status' => 'sent', 'message' => 'Sent to courier', 'source' => 'dispatch']);
+                    }
+                });
             }
 
             return $result;

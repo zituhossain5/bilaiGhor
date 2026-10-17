@@ -1109,6 +1109,14 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::get('products/short-names/suggest', [\App\Http\Controllers\Admin\ProductShortNameController::class, 'suggest'])->name('products.short_names.suggest');
     Route::get('products/short-names', [\App\Http\Controllers\Admin\ProductShortNameController::class, 'index'])->name('products.short_names');
     Route::post('products/short-names', [\App\Http\Controllers\Admin\ProductShortNameController::class, 'store'])->name('products.short_names.store');
+    // Bulk product import from Excel
+    Route::get('products/import', [\App\Http\Controllers\Admin\ProductImportController::class, 'index'])->name('products.import');
+    Route::get('products/import/template', [\App\Http\Controllers\Admin\ProductImportController::class, 'template'])->name('products.import.template');
+    Route::post('products/import', [\App\Http\Controllers\Admin\ProductImportController::class, 'upload'])->name('products.import.upload');
+    Route::get('products/import/{import}', [\App\Http\Controllers\Admin\ProductImportController::class, 'show'])->name('products.import.show');
+    Route::post('products/import/{import}/images', [\App\Http\Controllers\Admin\ProductImportController::class, 'images'])->name('products.import.images');
+    Route::post('products/import/{import}/run', [\App\Http\Controllers\Admin\ProductImportController::class, 'run'])->name('products.import.run');
+    Route::get('products/import/{import}/result', [\App\Http\Controllers\Admin\ProductImportController::class, 'result'])->name('products.import.result');
     Route::post('products/update-deals', [ProductController::class,'update_deals'])->name('products.update_deals');
     Route::post('products/update-status', [ProductController::class,'update_status'])->name('products.update_status');
     

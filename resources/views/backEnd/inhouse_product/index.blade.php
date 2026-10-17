@@ -215,6 +215,11 @@
             <p>শুধু অ্যাডমিনের নিজস্ব তালিকা — বাল্ক অ্যাকশন ও অনুসন্ধান একই ব্যবস্থাপনা টুলবার।</p>
         </div>
         <div class="pm-actions">
+            @can('product-create')
+                <a href="{{ route('products.import') }}" class="btn btn-pm btn-pm-outline text-decoration-none" title="Add or update many products from an Excel file">
+                    <i class="fe-upload"></i> Import Products
+                </a>
+            @endcan
             @can('product-edit')
                 <a href="{{ route('products.short_names') }}" class="btn btn-pm btn-pm-outline text-decoration-none" title="Generate short names for products that don't have one">
                     <i class="fe-scissors"></i> Short names

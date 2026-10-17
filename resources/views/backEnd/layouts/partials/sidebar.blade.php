@@ -243,6 +243,7 @@
       @endcan
       @can('product-create')
       <li><a href="{{ route('products.create') }}"><i data-feather="plus-circle"></i> Add Product</a></li>
+      <li><a href="{{ route('products.import') }}"><i data-feather="upload"></i> Import Products</a></li>
       @endcan
       <li><hr class="dropdown-divider"></li>
       @can('category-list')

@@ -108,6 +108,11 @@ class CourierDispatchService
         if (filled($order->courier_tracking_id)) {
             return 'আগেই ' . self::label($order->courier_type) . ' এ পাঠানো হয়েছে (ID: ' . $order->courier_tracking_id . ')';
         }
+        // A parcel made in a courier portal and linked to this order: never book a second one.
+        $linked = CourierParcel::where('order_id', $order->id)->where('is_current', true)->first();
+        if ($linked) {
+            return 'আগেই ' . self::label($linked->courier) . ' এ পাঠানো হয়েছে (ID: ' . $linked->consignment_id . ')';
+        }
         if (in_array((int) $order->order_status, [InventoryService::COMPLETE_STATUS, InventoryService::CANCEL_STATUS], true)) {
             return 'ডেলিভারড বা বাতিল অর্ডার কুরিয়ারে পাঠানো যায় না';
         }

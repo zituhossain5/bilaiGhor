@@ -327,6 +327,28 @@
     .oqv-tag-vendor { background: #ecfeff; color: #0e7490; }
     .oqv-tag-reseller { background: #fff7ed; color: #c2410c; }
     .oqv-courier-info { font-size: 12px; color: #64748b; }
+    /* Row selection: the whole first cell is the click target */
+    .oi-table td.oi-select-cell, .oi-table th.oi-select-cell { cursor: pointer; width: 44px; text-align: center; }
+    .oi-select-cell .form-check-input { width: 18px; height: 18px; margin: 0; cursor: pointer; float: none; }
+    @media (max-width: 767.98px) {
+        .oi-select-cell .form-check-input { width: 22px; height: 22px; }
+    }
+    .oi-table tbody tr.oi-row-selected { background: #eef4ff; }
+    .oi-selection-bar {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+        margin: 0 0 10px; padding: 8px 14px; border-radius: 8px;
+        background: #eef4ff; border: 1px solid #c7d7fe; color: #1e3a8a; font-size: 13px;
+    }
+    .oi-selection-bar[hidden] { display: none; }
+    .oi-sel-clear { font-size: 13px; text-decoration: underline; }
+    .oi-courier-confirm { text-align: left; font-size: 13px; }
+    .oi-courier-confirm table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; }
+    .oi-courier-confirm th, .oi-courier-confirm td { border-bottom: 1px solid #e5e7eb; padding: 5px 6px; text-align: left; }
+    .oi-courier-confirm th { background: #f8fafc; font-weight: 600; }
+    .oi-courier-confirm .oi-skip { color: #b45309; }
+    .oi-courier-confirm .oi-ok { color: #047857; }
+    .oi-courier-confirm .oi-err { color: #b91c1c; }
+
     /* Courier tracking box (quick view) */
     .cpt-box { font-size: 13px; }
     .cpt-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 6px; }

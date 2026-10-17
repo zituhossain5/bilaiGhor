@@ -51,13 +51,19 @@
                 </div>
             </div>
 
+            <div class="oi-selection-bar" id="oiSelectionBar" role="status" aria-live="polite" hidden>
+                <span><strong id="oiSelCount">0</strong> টি অর্ডার সিলেক্ট করা হয়েছে</span>
+                <span aria-hidden="true">·</span>
+                <button type="button" class="btn btn-link p-0 oi-sel-clear" id="oiSelClear">সিলেকশন মুছুন</button>
+            </div>
+
             <p class="d-lg-none oi-scroll-hint" role="note"><i class="fas fa-arrows-alt-h me-1"></i> বাকি কলাম দেখতে বাম–ডানে স্লাইড করুন</p>
 
             <div class="oi-table-rail order-table-rail table-responsive" role="region" aria-label="অর্ডার টেবিল">
                 <table id="datatable-buttons" class="table oi-table order-index-table w-100 mb-0">
                     <thead>
                         <tr>
-                            <th><input type="checkbox" class="form-check-input checkall" value="" aria-label="সব সিলেক্ট"></th>
+                            <th class="oi-select-cell"><input type="checkbox" class="form-check-input checkall" value="" autocomplete="off" aria-label="এই পেজের সব অর্ডার সিলেক্ট"></th>
                             <th>#</th>
                             <th>অ্যাকশন</th>
                             <th>ইনভয়েস</th>

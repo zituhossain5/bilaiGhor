@@ -10,12 +10,25 @@
 <tbody>
                                 @foreach($show_data as $key => $value)
                                     <tr>
-                                        <td>
-                                            @if($value->is_manual_order)
-                                                <input type="checkbox" class="form-check-input" disabled title="Manual invoices cannot be permanently deleted">
-                                            @else
-                                                <input type="checkbox" class="checkbox form-check-input" value="{{ $value->id }}">
-                                            @endif
+                                        @php
+                                            $paymentState = \App\Services\OrderPaymentService::state($value);
+                                            $rowParcel = $value->courierParcel;
+                                            $rowCourierId = $value->courier_tracking_id ?: ($rowParcel->consignment_id ?? '');
+                                            $rowCourier = $value->courier_tracking_id ? ($value->courier_type ?: 'steadfast') : ($rowParcel->courier ?? '');
+                                        @endphp
+                                        {{-- Every order can be selected (manual orders too). Deleting a manual order is still refused
+                                             by the server (PreventManualOrderDeletion) and by the bulk-delete button. --}}
+                                        <td class="oi-select-cell">
+                                            <input type="checkbox" class="checkbox form-check-input" value="{{ $value->id }}" autocomplete="off"
+                                                aria-label="অর্ডার #{{ $value->invoice_id }} সিলেক্ট"
+                                                data-invoice="{{ $value->invoice_id }}"
+                                                data-name="{{ $value->shipping->name ?? '' }}"
+                                                data-phone="{{ $value->shipping->phone ?? '' }}"
+                                                data-cod="{{ max(0, (float) $value->amount - (float) $paymentState['paid']) }}"
+                                                data-status="{{ (int) $value->order_status }}"
+                                                data-courier-id="{{ $rowCourierId }}"
+                                                data-courier="{{ $rowCourier ? \App\Services\CourierDispatchService::label($rowCourier) : '' }}"
+                                                data-manual="{{ $value->is_manual_order ? 1 : 0 }}">
                                         </td>
                                         <td>{{ $loop->iteration }}</td>
                                         <td class="oi-actions-cell">
@@ -93,7 +106,6 @@
                                         {{-- Amount (show remaining if partial paid) --}}
                                         <td>
                                             @php
-                                                $paymentState = \App\Services\OrderPaymentService::state($value);
                                                 $paid = (float) $paymentState['paid'];
                                                 $total = floatval($value->amount);
                                                 $showAmount = $total;
@@ -545,10 +557,62 @@ $(document).ready(function(){
         });
     });
 
-    // checkall
-    $(".checkall").on('change',function(){
-      $(".checkbox").prop('checked',$(this).is(":checked"));
+    // ── Row selection ──
+    // Every order row has an enabled checkbox; the whole first cell toggles it, the header box selects the
+    // current page (indeterminate when partly selected), Shift+click selects a range.
+    var oiLastIndex = null;
+    function oiBoxes() { return $('tbody input.checkbox'); }
+    function oiSyncSelection() {
+        var $all = oiBoxes(), n = $all.filter(':checked').length;
+        $all.each(function () { $(this).closest('tr').toggleClass('oi-row-selected', this.checked); });
+        var head = $('.checkall').get(0);
+        if (head) {
+            head.checked = n > 0 && n === $all.length;
+            head.indeterminate = n > 0 && n < $all.length;
+        }
+        $('#oiSelCount').text(n);
+        $('#oiSelectionBar').prop('hidden', n === 0);
+    }
+    window.oiClearSelection = function () {
+        oiBoxes().prop('checked', false);
+        oiLastIndex = null;
+        oiSyncSelection();
+    };
+    function oiToggleRow(box, checked, shiftKey) {
+        var $all = oiBoxes(), index = $all.index(box);
+        if (shiftKey && oiLastIndex !== null && oiLastIndex !== index) {
+            var from = Math.min(oiLastIndex, index), to = Math.max(oiLastIndex, index);
+            $all.slice(from, to + 1).prop('checked', checked);
+        } else {
+            box.checked = checked;
+        }
+        oiLastIndex = index;
+        oiSyncSelection();
+    }
+    // Click on the checkbox itself (the browser has already flipped it)
+    $(document).on('click', 'tbody input.checkbox', function (e) {
+        oiToggleRow(this, this.checked, e.shiftKey);
     });
+    // Click anywhere else in the checkbox cell
+    $(document).on('click', 'tbody td.oi-select-cell', function (e) {
+        if ($(e.target).is('input')) return;
+        var box = $(this).find('input.checkbox').get(0);
+        if (box) oiToggleRow(box, !box.checked, e.shiftKey);
+    });
+    $(document).on('click', 'thead th.oi-select-cell', function (e) {
+        if ($(e.target).is('input')) return;
+        var head = $(this).find('.checkall').get(0);
+        if (head) { head.checked = !head.checked; $(head).trigger('change'); }
+    });
+    $(document).on('change', '.checkall', function () {
+        oiBoxes().prop('checked', this.checked);
+        oiLastIndex = null;
+        oiSyncSelection();
+    });
+    $(document).on('click', '#oiSelClear', function () { window.oiClearSelection(); });
+    // A new page / filter / back-forward visit starts with nothing selected
+    window.addEventListener('pageshow', function () { window.oiClearSelection(); });
+    window.oiClearSelection();
 
     // ── অর্ডার কুইক ভিউ মডাল ──
     function oqvShowModal() {
@@ -784,6 +848,7 @@ $(document).ready(function(){
     $(document).on('click', '.oi-quick-pathao', function () {
         var orderId = $(this).data('order-id');
         $('#pathao_order_ids').val(orderId);
+        window.oiPathaoSingle = true;
         var qvEl = document.getElementById('orderQuickViewModal');
         if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
             bootstrap.Modal.getOrCreateInstance(qvEl).hide();
@@ -1074,6 +1139,12 @@ $(document).ready(function(){
             toastr.error('Please Select An Order First !');
             return;
         }
+        // Manual invoices are never deleted (the server refuses too) — cancel them instead.
+        var manual = $('input.checkbox:checked[data-manual="1"]').map(function(){ return '#' + $(this).data('invoice'); }).get();
+        if(manual.length){
+            toastr.error('ম্যানুয়াল ইনভয়েস ডিলিট করা যায় না, বাতিল (Cancel) করুন: ' + manual.join(', '));
+            return;
+        }
 
         $.ajax({
            type: 'GET',
@@ -1114,6 +1185,7 @@ $(document).ready(function(){
                if(res.status == 'success'){
                    var myWindow = window.open("", "_blank");
                    myWindow.document.write(res.view);
+                   window.oiClearSelection();
                } else {
                    toastr.error(res.message || 'Failed something wrong');
                }
@@ -1137,89 +1209,127 @@ $(document).ready(function(){
                 if(res.status == 'success'){
                     var w = window.open("","_blank");
                     w.document.write(res.view);
+                    window.oiClearSelection();
                 } else { toastr.error(res.message || 'Failed'); }
             },
             error: function(){ toastr.error('Something went wrong'); }
         });
     });
 
-    // multiple courier
+    // ── Bulk courier (Steadfast / RedX / Pathao) ──
+    // Same rules as the server (CourierDispatchService::cannotSend): never re-send an order that already has a
+    // courier id, never send Delivered (6) / Cancelled (11) orders, and the shipping phone must be 11 digits.
+    // ids: the orders about to be sent (default: the ticked rows)
+    function oiCourierPlan(ids) {
+        var send = [], skip = [];
+        var $boxes = ids ? oiBoxes().filter(function () { return ids.indexOf(String(this.value)) !== -1; })
+                         : oiBoxes().filter(':checked');
+        $boxes.each(function () {
+            var $b = $(this), status = parseInt($b.data('status'), 10);
+            var phone = String($b.data('phone') || '').replace(/\D+/g, '').slice(-11);
+            var row = {
+                id: $b.val(), invoice: String($b.data('invoice')), name: String($b.data('name') || ''),
+                phone: String($b.data('phone') || ''), cod: parseFloat($b.data('cod')) || 0
+            };
+            var reason = null;
+            if (String($b.data('courier-id') || '') !== '') {
+                reason = 'আগেই ' + ($b.data('courier') || 'কুরিয়ার') + ' এ পাঠানো (' + $b.data('courier-id') + ')';
+            } else if (status === 6) {
+                reason = 'ডেলিভারড অর্ডার';
+            } else if (status === 11) {
+                reason = 'বাতিল অর্ডার';
+            } else if (phone.length !== 11 || phone.charAt(0) !== '0') {
+                reason = 'ফোন নম্বর সঠিক নয় (১১ ডিজিট লাগবে)';
+            }
+            if (reason) { row.reason = reason; skip.push(row); } else { send.push(row); }
+        });
+        return { send: send, skip: skip };
+    }
+    function oiMoney(n) { return '৳' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function oiPlanHtml(courier, plan) {
+        var h = '<div class="oi-courier-confirm">';
+        if (plan.send.length) {
+            h += '<div><strong>' + plan.send.length + ' টি অর্ডার ' + cptEsc(courier) + ' এ যাবে:</strong></div>'
+               + '<table><thead><tr><th>ইনভয়েস</th><th>গ্রাহক</th><th>ফোন</th><th>COD</th></tr></thead><tbody>';
+            $.each(plan.send, function (_, r) {
+                h += '<tr><td>#' + cptEsc(r.invoice) + '</td><td>' + cptEsc(r.name) + '</td><td>' + cptEsc(r.phone) + '</td><td>' + oiMoney(r.cod) + '</td></tr>';
+            });
+            h += '</tbody></table>';
+        }
+        if (plan.skip.length) {
+            h += '<div class="oi-skip"><strong>' + plan.skip.length + ' টি বাদ যাবে:</strong><ul class="mb-0 ps-3">';
+            $.each(plan.skip, function (_, r) { h += '<li>#' + cptEsc(r.invoice) + ' — ' + cptEsc(r.reason) + '</li>'; });
+            h += '</ul></div>';
+        }
+        return h + '</div>';
+    }
+    // Ask before sending; resolves with the order ids to send (empty = cancelled / nothing to send).
+    function oiConfirmCourier(courier, ids) {
+        var plan = oiCourierPlan(ids);
+        if (!plan.send.length && !plan.skip.length) {
+            toastr.error('কমপক্ষে একটি অর্ডার সিলেক্ট করুন (Select at least one order first)');
+            return $.Deferred().resolve([]).promise();
+        }
+        if (!plan.send.length) {
+            Swal.fire({ title: cptEsc(courier) + ' — পাঠানোর মতো অর্ডার নেই', html: oiPlanHtml(courier, plan), icon: 'info', width: 640 });
+            return $.Deferred().resolve([]).promise();
+        }
+        var d = $.Deferred();
+        Swal.fire({
+            title: cptEsc(courier) + ' এ পাঠাবেন?',
+            html: oiPlanHtml(courier, plan),
+            icon: 'question', width: 640,
+            showCancelButton: true,
+            confirmButtonText: 'হ্যাঁ, ' + plan.send.length + ' টি পাঠান',
+            cancelButtonText: 'বাতিল'
+        }).then(function (r) { d.resolve(r.isConfirmed ? plan.send.map(function (x) { return x.id; }) : []); });
+        return d.promise();
+    }
+    // Per-order result, then reload so sent orders show their courier info.
+    function oiShowCourierResult(courier, res) {
+        var h = '<div class="oi-courier-confirm">';
+        var sent = res.sent || (res.success || []).map(function (inv) { return { order_id: inv }; });
+        $.each(sent, function (_, s) {
+            h += '<div class="oi-ok">✔ #' + cptEsc(s.order_id) + ' — পাঠানো হয়েছে' + (s.consignment_id ? ' (Consignment ' + cptEsc(s.consignment_id) + ')' : '') + '</div>';
+        });
+        $.each(res.failed || [], function (_, f) {
+            h += '<div class="oi-err">✖ #' + cptEsc(f.order_id) + ' — ' + cptEsc(f.message) + '</div>';
+        });
+        if (!sent.length && !(res.failed || []).length) { h += '<div>' + cptEsc(res.message || '') + '</div>'; }
+        h += '</div>';
+        window.oiClearSelection();
+        Swal.fire({ title: cptEsc(courier) + ' — ফলাফল', html: h, icon: sent.length ? 'success' : 'error', width: 640 })
+            .then(function () { window.location.reload(); });
+    }
+
+    var oiCourierBusy = false;
     $(document).on('click', '.multi_order_courier', function(e){
         e.preventDefault();
-        var url = $(this).attr('href');
-        var order = $('input.checkbox:checked').map(function(){
-          return $(this).val();
-        });
-        var order_ids = order.get();
+        if (oiCourierBusy) return;
+        var $btn = $(this), url = $btn.attr('href'), courier = $.trim($btn.text());
 
-        if(order_ids.length == 0){
-            toastr.error('Please Select An Order First !');
-            return;
-        }
-        
-        // Show loading
-        var $btn = $(this);
-        var originalHtml = $btn.html();
-        $btn.prop('disabled', true).html('<i class="fe-loader"></i> Sending...');
+        oiConfirmCourier(courier).then(function (ids) {
+            if (!ids.length) return;
+            oiCourierBusy = true;
+            var originalHtml = $btn.html();
+            $btn.addClass('disabled').attr('aria-disabled', 'true').html('<i class="fas fa-spinner fa-spin"></i> পাঠানো হচ্ছে...');
+            $('.multi_order_courier, .oi-btn-pathao').addClass('disabled');
 
-        $.ajax({
-           type: 'GET',
-           url: url,
-           data: { order_ids: order_ids },
-           success: function(res){
-               console.log('Courier Response:', res); // Debug log
-               
-               if(res.status == 'success'){
-                    if(res.success && res.success.length > 0){
-                        toastr.success('Orders sent to courier successfully!');
+            $.ajax({ type: 'GET', url: url, data: { order_ids: ids } })
+                .done(function (res) { oiShowCourierResult(courier, res); })
+                .fail(function (xhr) {
+                    var res = xhr.responseJSON || {};
+                    if ((res.failed && res.failed.length) || res.sent) {
+                        oiShowCourierResult(courier, res);
+                    } else {
+                        Swal.fire({ title: courier, text: res.message || 'সার্ভার এরর — আবার চেষ্টা করুন', icon: 'error' });
                     }
-                    if(res.failed && res.failed.length > 0){
-                        res.failed.forEach(function(fail){
-                            console.error('Failed order:', fail);
-                            toastr.warning('Order ' + fail.order_id + ': ' + fail.message);
-                        });
-                    }
-                    // Reload page to show courier information
-                    setTimeout(function(){
-                        window.location.reload();
-                    }, 1000);
-               } else {
-                    toastr.error(res.message || 'Failed something wrong');
-                    $btn.prop('disabled', false).html(originalHtml);
-               }
-           },
-           error: function(xhr){
-               console.error('Courier Error:', xhr);
-               var errorMsg = 'Something went wrong';
-               
-               if(xhr.responseJSON){
-                   // Check for failed orders with detailed messages
-                   if(xhr.responseJSON.failed && xhr.responseJSON.failed.length > 0){
-                       xhr.responseJSON.failed.forEach(function(fail){
-                           var msg = fail.message || 'Failed to send order';
-                           if(fail.status_code === 401){
-                               msg = 'Account is not active! Please check your Steadfast account status and API credentials.';
-                           } else if(fail.status_code === 403){
-                               msg = 'Access forbidden! Please check your API credentials.';
-                           } else if(fail.status_code === 404){
-                               msg = 'API endpoint not found! Please check the API URL.';
-                           }
-                           toastr.error('Order ' + fail.order_id + ': ' + msg);
-                       });
-                   } else if(xhr.responseJSON.message){
-                       errorMsg = xhr.responseJSON.message;
-                   }
-               } else if(xhr.status === 401){
-                   errorMsg = 'Account is not active! Please check your Steadfast account status and API credentials.';
-               } else if(xhr.status === 403){
-                   errorMsg = 'Access forbidden! Please check your API credentials.';
-               } else if(xhr.status === 404){
-                   errorMsg = 'API endpoint not found! Please check the API URL.';
-               }
-               
-               toastr.error(errorMsg);
-               $btn.prop('disabled', false).html(originalHtml);
-           }
+                })
+                .always(function () {
+                    oiCourierBusy = false;
+                    $btn.removeClass('disabled').removeAttr('aria-disabled').html(originalHtml);
+                    $('.multi_order_courier, .oi-btn-pathao').removeClass('disabled');
+                });
         });
     });
 
@@ -1272,19 +1382,22 @@ $(document).ready(function(){
     });
 
     // Pathao Modal Open - Set selected order IDs
-    $(document).on('click', '[data-bs-target="#pathao"]', function(e){
-        var order = $('input.checkbox:checked').map(function(){
-            return $(this).val();
-        });
-        var order_ids = order.get();
-        
-        if(order_ids.length == 0){
-            toastr.error('Please Select Atleast One Order First!');
+    // The toolbar button opens the dialog for the ticked orders; the quick view's single-order button
+    // fills #pathao_order_ids itself (oiPathaoSingle). Checked when the dialog is about to open.
+    window.oiPathaoSingle = false;
+    $(document).on('show.bs.modal', '#pathao', function (e) {
+        if (window.oiPathaoSingle) { window.oiPathaoSingle = false; return; }
+        var plan = oiCourierPlan();
+        if (!plan.send.length) {
             e.preventDefault();
-            return false;
+            if (!plan.skip.length) {
+                toastr.error('কমপক্ষে একটি অর্ডার সিলেক্ট করুন (Select at least one order first)');
+            } else {
+                Swal.fire({ title: 'Pathao — পাঠানোর মতো অর্ডার নেই', html: oiPlanHtml('Pathao', plan), icon: 'info', width: 640 });
+            }
+            return;
         }
-        
-        $('#pathao_order_ids').val(order_ids.join(','));
+        $('#pathao_order_ids').val(plan.send.map(function (x) { return x.id; }).join(','));
     });
 
     // Pathao City Change - Load Zones
@@ -1359,15 +1472,36 @@ $(document).ready(function(){
     });
 
     // Pathao Form Submit
+    var oiPathaoConfirmed = false;
     $(document).on('submit', '#order_sendto_pathao', function(e){
         e.preventDefault();
-        
+        var $form = $(this);
+
         var orderIds = $('#pathao_order_ids').val();
         if(!orderIds){
             toastr.error('Please select orders first');
             return;
         }
-        
+        if (oiCourierBusy) return;
+        // Same confirmation as Steadfast/RedX, once per submit
+        if (!oiPathaoConfirmed) {
+            if(!$('#pathaostore').val() || !$('#pathaocity').val() || !$('#pathaozone').val() || !$('#pathaoarea').val()){
+                toastr.error('Please fill all required fields (Store, City, Zone, Area)');
+                return;
+            }
+            var pending = String(orderIds).split(',').map(function (id) { return $.trim(id); }).filter(Boolean);
+            oiConfirmCourier('Pathao', pending).then(function (ids) {
+                if (!ids.length) return;
+                $('#pathao_order_ids').val(ids.join(','));
+                oiPathaoConfirmed = true;
+                $form.trigger('submit');
+            });
+            return;
+        }
+        oiPathaoConfirmed = false;
+        oiCourierBusy = true;
+        $form.find('[type=submit]').prop('disabled', true);
+
         var formData = $(this).serialize();
         formData += '&order_ids=' + orderIds.split(',').map(function(id){ return id.trim(); }).join(',');
         
@@ -1382,24 +1516,8 @@ $(document).ready(function(){
             type: "POST",
             data: formData,
             success: function(res){
-                if(res.status === 'success'){
-                    var successCount = res.result.success ? res.result.success.length : 0;
-                    var failedCount = res.result.failed ? res.result.failed.length : 0;
-                    
-                    if(successCount > 0){
-                        toastr.success(successCount + ' order(s) sent to Pathao successfully');
-                    }
-                    if(failedCount > 0){
-                        toastr.warning(failedCount + ' order(s) failed to send');
-                    }
-                    
-                    $('#pathao').modal('hide');
-                    setTimeout(function(){
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    toastr.error(res.message || 'Failed to send orders');
-                }
+                $('#pathao').modal('hide');
+                oiShowCourierResult('Pathao', res);
             },
             error: function(xhr){
                 var errorMsg = 'Failed to send orders';
@@ -1407,6 +1525,10 @@ $(document).ready(function(){
                     errorMsg = xhr.responseJSON.message;
                 }
                 toastr.error(errorMsg);
+            },
+            complete: function(){
+                oiCourierBusy = false;
+                $form.find('[type=submit]').prop('disabled', false);
             }
         });
     });

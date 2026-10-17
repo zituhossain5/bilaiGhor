@@ -880,6 +880,7 @@ class OrderController extends Controller
 
         $service = new CourierDispatchService();
         $success = [];
+        $sent = [];   // invoice + consignment id, for the per-order result dialog
         $failed = [];
 
         foreach (Order::whereIn('id', $ids)->get() as $order) {
@@ -902,6 +903,7 @@ class OrderController extends Controller
             }
 
             $success[] = $order->invoice_id;
+            $sent[] = ['order_id' => $order->invoice_id, 'consignment_id' => $order->fresh()->courier_tracking_id];
         }
 
         $name = CourierDispatchService::label($courier);
@@ -913,6 +915,7 @@ class OrderController extends Controller
                 'status'  => 'error',
                 'message' => count($failed) > 1 ? "{$name}: কোনো অর্ডার পাঠানো যায়নি — {$first}" : "{$name}: {$first}",
                 'success' => [],
+                'sent'    => [],
                 'failed'  => $failed,
             ]);
         }
@@ -921,6 +924,7 @@ class OrderController extends Controller
             'status'  => 'success',
             'message' => count($success) . " টি অর্ডার {$name} এ পাঠানো হয়েছে" . ($failed ? ', ' . count($failed) . ' টি ব্যর্থ' : ''),
             'success' => $success,
+            'sent'    => $sent,
             'failed'  => $failed,
         ]);
     }

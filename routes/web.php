@@ -1237,6 +1237,12 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::post('order/destroy', [OrderController::class,'destroy'])
         ->middleware(\App\Http\Middleware\PreventManualOrderDeletion::class)
         ->name('admin.order.destroy');
+    // Courier parcel tracking (light): link a parcel made in the courier portal, refresh its status
+    Route::middleware('can:order-list')->group(function () {
+        Route::get('courier-parcels/link-preview', [\App\Http\Controllers\Admin\CourierParcelController::class, 'preview'])->name('admin.courier_parcels.preview');
+        Route::post('courier-parcels/link', [\App\Http\Controllers\Admin\CourierParcelController::class, 'link'])->name('admin.courier_parcels.link');
+        Route::post('courier-parcels/{parcel}/refresh', [\App\Http\Controllers\Admin\CourierParcelController::class, 'refresh'])->name('admin.courier_parcels.refresh');
+    });
     Route::get('order-assign', [OrderController::class,'order_assign'])->name('admin.order.assign');
     Route::get('order-status', [OrderController::class,'order_status'])->name('admin.order.status');
     Route::get('order-bulk-destroy', [OrderController::class,'bulk_destroy'])

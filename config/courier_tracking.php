@@ -19,6 +19,7 @@ return [
         'sent'                => ['en' => 'Sent to courier',  'bn' => 'কুরিয়ারে পাঠানো',     'tone' => 'info',    'step' => 1, 'final' => false],
         'in_review'           => ['en' => 'In review',        'bn' => 'রিভিউতে',              'tone' => 'info',    'step' => 1, 'final' => false],
         'approved'            => ['en' => 'Approved',         'bn' => 'অনুমোদিত',             'tone' => 'info',    'step' => 2, 'final' => false],
+        'in_progress'         => ['en' => 'In progress',      'bn' => 'চলমান',                'tone' => 'info',    'step' => 2, 'final' => false],
         'pending_pickup'      => ['en' => 'Pending pickup',   'bn' => 'পিকআপের অপেক্ষায়',     'tone' => 'info',    'step' => 2, 'final' => false],
         'picked_up'           => ['en' => 'Picked up',        'bn' => 'পিকআপ হয়েছে',          'tone' => 'info',    'step' => 2, 'final' => false],
         'in_transit'          => ['en' => 'In transit',       'bn' => 'পথে আছে',              'tone' => 'info',    'step' => 2, 'final' => false],
@@ -37,7 +38,7 @@ return [
     'map' => [
         'steadfast' => [
             'in_review'                          => 'in_review',
-            'pending'                            => 'approved',      // approved by Steadfast, not delivered/cancelled yet
+            'pending'                            => 'in_progress',   // Steadfast: "not delivered or cancelled yet" (any stage)
             'hold'                               => 'on_hold',
             'delivered_approval_pending'         => 'delivered',
             'partial_delivered_approval_pending' => 'partially_delivered',
@@ -110,6 +111,13 @@ return [
         'redx'      => 'https://redx.com.bd/track-global-parcel/?trackingId=%s',
         'pathao'    => 'https://merchant.pathao.com/public-tracking?consignment_id=%s',
         'steadfast' => env('STEADFAST_PUBLIC_TRACK_URL_V2'),   // set only if Steadfast publishes a code-based URL again
+    ],
+
+    // Merchant portal entry pages (verified to load). Steadfast has no per-parcel URL to deep-link to.
+    'portal_url' => [
+        'steadfast' => 'https://steadfast.com.bd/login',
+        'pathao'    => 'https://merchant.pathao.com/',
+        'redx'      => 'https://redx.com.bd/',
     ],
 
     // Pathao's merchant panel expects this fixed value back when it tests the webhook (from Pathao's own plugin).

@@ -154,14 +154,14 @@
                     @endif
                 </div>
 
-                @if($courierType || $trackingId)
-                <div class="oqv-courier-info mt-2">
-                    <i class="fas fa-truck"></i> {{ ucfirst($courierType ?? 'Courier') }}
-                    @if($trackingId) · {{ $trackingId }}@endif
-                </div>
-                @endif
             </div>
         </div>
+    </div>
+
+    {{-- কুরিয়ার ট্র্যাকিং --}}
+    <div class="oqv-section">
+        <h6 class="oqv-section-title"><i class="fas fa-truck"></i> কুরিয়ার ট্র্যাকিং</h6>
+        @include('backEnd.order.partials.courier_tracking_box', ['order' => $order, 'parcel' => $order->courierParcel])
     </div>
 
     {{-- ফ্রড চেক --}}

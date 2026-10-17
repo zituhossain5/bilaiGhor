@@ -110,6 +110,7 @@
                                                 'type' => 'order',
                                                 'statuses' => $orderstatus,
                                             ])
+                                            @include('backEnd.order.partials.courier_badge', ['order' => $value])
                                         </td>
 
                                         <td>
@@ -601,6 +602,94 @@ $(document).ready(function(){
             }
         }).fail(function () {
             $('#orderQuickViewBody').html('<div class="alert alert-danger">সার্ভার এরর — আবার চেষ্টা করুন</div>');
+        });
+    });
+
+    // ── Courier tracking box (quick view) ──
+    var cptToken = $('meta[name="csrf-token"]').attr('content');
+    function cptEsc(s) { return $('<div>').text(s == null ? '' : String(s)).html(); }
+
+    $(document).on('click', '.cpt-copy', function () {
+        var text = String($(this).data('copy'));
+        var done = function () { toastr.success('কপি হয়েছে'); };
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(done);
+        } else {
+            var $t = $('<input>').val(text).appendTo('body').select();
+            document.execCommand('copy'); $t.remove(); done();
+        }
+    });
+
+    $(document).on('click', '.cpt-refresh', function () {
+        var $btn = $(this), $box = $btn.closest('.cpt-box');
+        $btn.prop('disabled', true).find('i').addClass('fa-spin');
+        $.post($btn.data('url'), { _token: cptToken }, function (res) {
+            if (res.html) { $box.replaceWith(res.html); }
+            (res.ok ? toastr.success : toastr.warning)(res.message);
+            if (res.order_status_changed) { toastr.info('অর্ডার স্ট্যাটাস আপডেট হয়েছে — পেজ রিফ্রেশ করুন'); }
+        }).fail(function (xhr) {
+            toastr.error((xhr.responseJSON && xhr.responseJSON.message) || 'রিফ্রেশ করা যায়নি');
+        }).always(function () {
+            $btn.prop('disabled', false).find('i').removeClass('fa-spin');
+        });
+    });
+
+    $(document).on('click', '.cpt-link-toggle', function () {
+        $(this).siblings('.cpt-link-form').slideToggle(150);
+    });
+
+    // Any change to the courier or code needs a fresh check before linking
+    $(document).on('input change', '.cpt-link-courier, .cpt-link-code', function () {
+        var $form = $(this).closest('.cpt-link-form');
+        $form.find('.cpt-link-confirm').hide();
+        $form.find('.cpt-link-result').empty();
+    });
+
+    function cptLinkData($form) {
+        return {
+            order_id: $form.closest('.cpt-box').data('order-id'),
+            courier: $form.find('.cpt-link-courier').val(),
+            code: $.trim($form.find('.cpt-link-code').val())
+        };
+    }
+
+    $(document).on('click', '.cpt-link-check', function () {
+        var $btn = $(this), $form = $btn.closest('.cpt-link-form'), data = cptLinkData($form);
+        if (!data.code) { toastr.error('Consignment ID দিন'); return; }
+        $btn.prop('disabled', true).text('যাচাই হচ্ছে...');
+        $form.find('.cpt-link-confirm').hide();
+        $.get($btn.data('url'), data, function (res) {
+            var html = '<div class="alert alert-light border">'
+                + '<strong>' + cptEsc(res.courier) + '</strong>: '
+                + (res.status ? '<span class="badge bg-' + cptEsc(res.tone) + '">' + cptEsc(res.status) + '</span>' : '<span class="text-muted">স্ট্যাটাস পাওয়া যায়নি</span>')
+                + (res.details.recipient ? '<br>প্রাপক: ' + cptEsc(res.details.recipient) : '')
+                + (res.details.cod ? '<br>কুরিয়ার COD: ' + cptEsc(res.details.cod) : '')
+                + (res.details.events ? '<br>আগে থেকে জমা থাকা আপডেট: ' + cptEsc(res.details.events) + ' টি' : '')
+                + '</div>';
+            $.each(res.warnings || [], function (_, w) { html += '<div class="alert alert-warning">' + cptEsc(w) + '</div>'; });
+            $form.find('.cpt-link-result').html(html);
+            $form.find('.cpt-link-confirm').show();
+        }).fail(function (xhr) {
+            $form.find('.cpt-link-result').html('<div class="alert alert-danger">' + cptEsc((xhr.responseJSON && xhr.responseJSON.message) || 'যাচাই করা যায়নি') + '</div>');
+        }).always(function () {
+            $btn.prop('disabled', false).text('যাচাই করুন');
+        });
+    });
+
+    $(document).on('click', '.cpt-link-confirm', function () {
+        var $btn = $(this), $form = $btn.closest('.cpt-link-form'), data = cptLinkData($form);
+        data._token = cptToken;
+        $btn.prop('disabled', true);
+        $.post($btn.data('url'), data, function (res) {
+            toastr.success(res.message);
+            var orderId = data.order_id;
+            // Reload the quick view so the box shows the linked parcel
+            $.get('{{ url("admin/order/quick-view") }}/' + orderId, function (r) {
+                if (r.status === 'success') { $('#orderQuickViewBody').html(r.html); }
+            });
+        }).fail(function (xhr) {
+            toastr.error((xhr.responseJSON && xhr.responseJSON.message) || 'লিংক করা যায়নি');
+            $btn.prop('disabled', false);
         });
     });
 

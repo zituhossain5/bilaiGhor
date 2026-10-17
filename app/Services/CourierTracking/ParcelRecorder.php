@@ -17,13 +17,14 @@ use Illuminate\Support\Facades\DB;
 class ParcelRecorder
 {
     /** Statuses too generic to replace a more specific in-progress status (e.g. Steadfast "pending"). */
-    private const WEAK = ['approved', 'unknown'];
-    private const REPLACEABLE_BY_WEAK = ['sent', 'in_review', 'unknown', 'pending_pickup'];
+    private const WEAK = ['in_progress', 'approved', 'unknown'];
+    private const REPLACEABLE_BY_WEAK = ['sent', 'in_review', 'unknown', 'pending_pickup', 'approved', 'in_progress'];
 
     private const STEP_COLUMNS = [
         'sent'                => 'entered_at',
         'in_review'           => 'entered_at',
         'approved'            => 'approved_at',
+        'in_progress'         => 'approved_at',
         'pending_pickup'      => 'approved_at',
         'picked_up'           => 'picked_at',
         'out_for_delivery'    => 'out_for_delivery_at',

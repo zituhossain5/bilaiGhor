@@ -76,7 +76,7 @@ class SteadfastWebhookController extends Controller
             // so it can be linked to an order later. No order is touched.
             $this->recordUnlinked($request, (string) $status, $trackingMessage);
 
-            Log::warning('Steadfast Webhook: Order not found (recorded as unlinked parcel)', [
+            Log::warning('Steadfast Webhook: no order with this consignment/invoice (recorded on its parcel)', [
                 'consignment_id' => $consignmentId,
                 'invoice'          => $invoice,
             ]);
@@ -208,6 +208,12 @@ class SteadfastWebhookController extends Controller
                 'delivery_charge' => $request->input('delivery_charge'),
             ], fn ($v) => $v !== null && $v !== ''),
         ]);
+
+        // A parcel linked to an order from the admin panel (the order has no courier columns of its own):
+        // the order follows the same rules as any other Steadfast order.
+        if ($status !== null && $parcel->order_id) {
+            $this->gate->apply($parcel, $status, ParcelRecorder::time($request->input('updated_at')) ?? now(), 'Steadfast');
+        }
     }
 
     private function findOrder(mixed $consignmentId, mixed $invoice): ?Order

@@ -77,7 +77,7 @@ class OrderController extends Controller
         $source = trim((string) $request->traffic_source);
 
         $show_data = Order::query()
-            ->with(['shipping', 'status', 'payment'])
+            ->with(['shipping', 'status', 'payment', 'courierParcel'])
             ->when($slug !== 'all', fn ($q) => $q->where('order_status', $order_status->id))
             ->when($keyword !== '', function ($q) use ($keyword) {
                 $like = '%' . addcslashes($keyword, '%_\\') . '%';
@@ -112,7 +112,7 @@ class OrderController extends Controller
     {
         $order = Order::with([
             'orderdetails.product.image', 'orderdetails.vendor', 'orderdetails.image',
-            'shipping', 'customer', 'payment', 'status',
+            'shipping', 'customer', 'payment', 'status', 'courierParcel',
         ])->find($id);
 
         if (!$order) {

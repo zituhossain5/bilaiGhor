@@ -327,6 +327,16 @@
     .oqv-tag-vendor { background: #ecfeff; color: #0e7490; }
     .oqv-tag-reseller { background: #fff7ed; color: #c2410c; }
     .oqv-courier-info { font-size: 12px; color: #64748b; }
+    /* Courier tracking box (quick view) */
+    .cpt-box { font-size: 13px; }
+    .cpt-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 6px; }
+    .cpt-courier { font-weight: 600; color: #1e293b; }
+    .cpt-row { margin-bottom: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+    .cpt-code { font-size: 12px; color: #0f172a; background: #f1f5f9; padding: 1px 6px; border-radius: 4px; }
+    .cpt-msg { background: #f8fafc; border-left: 3px solid #94a3b8; padding: 6px 10px; margin: 6px 0; border-radius: 4px; }
+    .cpt-warn { color: #b45309; font-size: 12px; margin: 4px 0; }
+    .cpt-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .cpt-link-result .alert { padding: 8px 10px; margin-bottom: 6px; font-size: 12px; }
     .oqv-note-text { font-size: 13px; color: #334155; min-height: 2em; }
     .oqv-items-table thead { background: #fff; }
     .oqv-items-table th {

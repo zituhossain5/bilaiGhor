@@ -922,7 +922,7 @@
                     <li><a href="{{ $aboutPage ? route('page', ['slug' => $aboutPage->slug]) : url('/') }}">About Us</a></li>
                     <li><a href="{{ route('blogs') }}">Blog</a></li>
                     <li><a href="{{ route('hotdeals') }}">Best Deals</a></li>
-                    <li><a href="{{ route('shop') }}">Brands</a></li>
+                    <li><a href="{{ route('brands') }}">Brands</a></li>
                     <li><a href="{{ $bilaiParaPage ? route('page', ['slug' => $bilaiParaPage->slug]) : route('blogs') }}">Bilai Para</a></li>
                 </ul>
             </div>

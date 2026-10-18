@@ -565,6 +565,7 @@ Route::post('/admin/sms/custom-send', [App\Http\Controllers\Admin\ApiIntegration
 Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']], function() {
     Route::get('/', [FrontendController::class, 'index'])->name('home');
 	
+    Route::get('brands', [FrontendController::class, 'brands'])->name('brands');
 	    Route::get('brand/{slug}', [FrontendController::class, 'brand'])
         ->name('brand.products');
     Route::get('shop/{slug}', [FrontendController::class, 'vendorShop'])->name('vendor.shop');

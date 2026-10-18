@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Blog;
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\CreatePage;
 use App\Models\Product;
@@ -126,6 +127,36 @@ class SitemapService
                     );
                 }
             });
+
+        // Brands with at least one product on sale; lastmod = newest of the brand and its products.
+        $brandUpdates = Product::query()
+            ->where('status', 1)
+            ->where('approval_status', 'approved')
+            ->whereNotNull('brand_id')
+            ->selectRaw('brand_id, MAX(updated_at) AS latest')
+            ->groupBy('brand_id')
+            ->pluck('latest', 'brand_id');
+
+        $activeBrands = Brand::query()
+            ->where('status', 1)
+            ->whereNotNull('slug')
+            ->where('slug', '!=', '')
+            ->whereIn('id', $brandUpdates->keys())
+            ->orderBy('name')
+            ->get(['id', 'slug', 'updated_at']);
+
+        if ($activeBrands->isNotEmpty()) {
+            $add($this->routeUrl('brands'), $activeBrands->max('updated_at'), Url::CHANGE_FREQUENCY_WEEKLY, 0.6);
+        }
+        foreach ($activeBrands as $brand) {
+            $productsAt = $brandUpdates[$brand->id] ? \Illuminate\Support\Carbon::parse($brandUpdates[$brand->id]) : null;
+            $add(
+                $this->routeUrl('brand.products', ['slug' => $brand->slug]),
+                collect([$brand->updated_at, $productsAt])->filter()->max(),
+                Url::CHANGE_FREQUENCY_WEEKLY,
+                0.7
+            );
+        }
 
         Product::query()
             ->where('status', 1)

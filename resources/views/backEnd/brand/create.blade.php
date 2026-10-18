@@ -3,6 +3,7 @@
 
 @section('css')
 <link href="{{asset('public/backEnd')}}/assets/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="{{asset('public/backEnd')}}/assets/libs/summernote/summernote-lite.min.css" rel="stylesheet" type="text/css" />
 
 <style>
     /* Global Styles */
@@ -159,6 +160,15 @@
 
                 <div class="card">
                     <div class="card-header">
+                        <h5 class="card-title">SEO (brand page)</h5>
+                    </div>
+                    <div class="card-body pt-0">
+                        @include('backEnd.brand.partials.seo_fields', ['brand' => null])
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
                         <h5 class="card-title">Publish</h5>
                     </div>
                     <div class="card-body">
@@ -217,6 +227,21 @@
 @section('script')
 <script src="{{asset('public/backEnd/')}}/assets/libs/parsleyjs/parsley.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/js/pages/form-validation.init.js"></script>
+<script src="{{asset('public/backEnd/')}}/assets/libs/summernote/summernote-lite.min.js"></script>
+@include('backEnd.partials.summernote-image-alt')
+<script>
+    $(function () {
+        $(".summernote").summernote({
+            placeholder: "Enter SEO description...",
+            height: 160,
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol']],
+                ['misc', ['fullscreen', 'codeview']]
+            ]
+        });
+    });
+</script>
 
 <script>
     function readURL(input) {

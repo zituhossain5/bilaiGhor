@@ -54,7 +54,7 @@ class EventServiceProvider extends ServiceProvider
         }
 
         // Rebuild sitemap.xml (after the response) whenever a URL in it can appear, change or disappear.
-        foreach ([Product::class, Category::class, Subcategory::class, Blog::class, CreatePage::class] as $model) {
+        foreach ([Product::class, Category::class, Subcategory::class, Brand::class, Blog::class, CreatePage::class] as $model) {
             $model::observe(SitemapObserver::class);
         }
     }

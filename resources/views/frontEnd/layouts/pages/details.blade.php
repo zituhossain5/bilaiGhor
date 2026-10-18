@@ -1,7 +1,10 @@
 @extends('frontEnd.layouts.master')
 @php
     // filled(): an empty meta field saved in admin falls back too
-    $metaTitle = filled($details->meta_title) ? trim($details->meta_title) : $details->name . ' Price in Bangladesh | Bilai Ghor';
+    // No admin meta title: "{name} Price in BD | Bilai Ghor", name shortened so the title stays within ~65 characters
+    $metaTitle = filled($details->meta_title)
+        ? trim($details->meta_title)
+        : Str::limit(trim($details->name), 40, '', preserveWords: true) . ' Price in BD | Bilai Ghor';
     $plainDescription = \App\Support\SeoText::plain($details->description);
     $metaDescription = filled($details->meta_description)
         ? trim($details->meta_description)
@@ -1121,7 +1124,11 @@ input.bpd-btn { cursor: pointer; }
                 <div class="bpd-meta-line">
                     @if($details->brand)
                     <span class="bpd-meta-item">Brand:
-                        <a href="{{ url('/brand/' . $details->brand->slug) }}">{{ $details->brand->name }}</a>
+                        @if($details->brand->status)
+                        <a href="{{ route('brand.products', $details->brand->slug) }}">{{ $details->brand->name }}</a>
+                        @else
+                        {{ $details->brand->name }}
+                        @endif
                     </span>
                     @endif
                     @if($details->category)

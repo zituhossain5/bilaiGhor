@@ -200,7 +200,7 @@ class ProductController extends Controller
         }
 
         // Slug & video
-        $input['slug']      = strtolower(preg_replace('/[\/\s]+/', '-', $request->name.'-'.$last_id));
+        $input['slug']      = \App\Support\ProductSlug::make($request->name, $last_id);
         $input['pro_video'] = $this->getYouTubeVideoId($request->pro_video);
 
         // Status flags
@@ -484,7 +484,8 @@ class ProductController extends Controller
         $input['stock']          = $request->filled('stock') ? (int) $request->stock : 0;
 
         // Slug & flags
-        $input['slug']            = strtolower(preg_replace('/[\/\s]+/', '-', $request->name.'-'.$product->id));
+        $oldSlug                  = $product->slug;
+        $input['slug']            = \App\Support\ProductSlug::make($request->name, $product->id);
         $input['status']          = $request->status ? 1 : 0;
         $input['topsale']         = $request->topsale ? 1 : 0;
         $input['feature_product'] = $request->feature_product ? 1 : 0;
@@ -537,6 +538,9 @@ class ProductController extends Controller
 
         // PRODUCT UPDATE
         $product->update($input);
+        // A renamed product keeps its old URL working (301 to the new one).
+        \App\Support\ProductSlug::remember($product, $oldSlug, $product->slug);
+        Cache::forget('product_details_' . $oldSlug);
         Cache::forget('product_details_' . $product->slug);
 
         // SIZE & COLOR

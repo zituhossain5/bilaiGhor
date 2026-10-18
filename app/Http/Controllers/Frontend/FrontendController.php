@@ -515,53 +515,97 @@ $brands = Brand::where('status', 1)
 
 
 
-	public function brand($slug, Request $request)
-{
-    $brand = Brand::where('slug', $slug)
-        ->where('status', 1)
-        ->firstOrFail();
+    /** All active brands that have at least one product on sale (/brands). */
+    public function brands()
+    {
+        $brands = Brand::where('status', 1)
+            ->withCount(['products as products_count' => fn ($q) => $q->where('status', 1)->where('approval_status', 'approved')])
+            ->orderBy('name')
+            ->get()
+            ->filter(fn ($brand) => $brand->products_count > 0)
+            ->values();
 
-    $products = Product::where('brand_id', $brand->id)
-        ->where('status', 1)
-        ->where('approval_status', 'approved')
-        ->select('id', 'name', 'slug', 'new_price', 'old_price', 'stock');
-
-    // sorting (same pattern as category/shop)
-    if ($request->sort == 1) {
-        $products = $products->orderBy('created_at', 'desc');
-    } elseif ($request->sort == 2) {
-        $products = $products->orderBy('created_at', 'asc');
-    } elseif ($request->sort == 3) {
-        $products = $products->orderBy('new_price', 'desc');
-    } elseif ($request->sort == 4) {
-        $products = $products->orderBy('new_price', 'asc');
-    } elseif ($request->sort == 5) {
-        $products = $products->orderBy('name', 'asc');
-    } elseif ($request->sort == 6) {
-        $products = $products->orderBy('name', 'desc');
-    } else {
-        $products = $products->latest();
+        return view('frontEnd.layouts.pages.brands', compact('brands'));
     }
 
-    $min_price = $products->min('new_price');
-    $max_price = $products->max('new_price');
+    /** One brand's products, with the same listing (filters, sort, cards) as the category pages. */
+    public function brand($slug, Request $request)
+    {
+        $brand = Brand::where('slug', $slug)
+            ->where('status', 1)
+            ->firstOrFail();
 
-    if ($request->min_price && $request->max_price) {
-        $products = $products->whereBetween('new_price', [
-            $request->min_price,
-            $request->max_price
-        ]);
+        $brandBase = ['status' => 1, 'approval_status' => 'approved', 'brand_id' => $brand->id];
+
+        // Sidebar attribute counts (from all of this brand's products, before filters)
+        $weightCountMap = Product::where($brandBase)->whereNotNull('weight_id')
+            ->select('weight_id', DB::raw('count(*) as cnt'))->groupBy('weight_id')->pluck('cnt', 'weight_id');
+        $weights = ProductWeight::whereIn('id', $weightCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $lifeStageCountMap = Product::where($brandBase)->whereNotNull('life_stage_id')
+            ->select('life_stage_id', DB::raw('count(*) as cnt'))->groupBy('life_stage_id')->pluck('cnt', 'life_stage_id');
+        $lifeStages = ProductLifeStage::whereIn('id', $lifeStageCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $flavorCountMap = Product::where($brandBase)->whereNotNull('flavor_id')
+            ->select('flavor_id', DB::raw('count(*) as cnt'))->groupBy('flavor_id')->pluck('cnt', 'flavor_id');
+        $flavors = ProductFlavor::whereIn('id', $flavorCountMap->keys())->orderBy('sort_order')->orderBy('name')->get();
+
+        $productCount = Product::where($brandBase)->count();
+        $inStockCount = Product::where($brandBase)->where(fn ($q) => $q->where('stock', '>', 0)->orWhere('is_digital', 1))->count();
+
+        $products = Product::where($brandBase)
+            ->select('id', 'name', 'slug', 'new_price', 'old_price', 'category_id', 'subcategory_id', 'sold', 'stock', 'is_digital', 'brand_id', 'weight_id', 'life_stage_id', 'flavor_id', 'product_badge')
+            ->with(['image', 'reviews', 'prosizes', 'procolors', 'category', 'subcategory', 'brand']);
+
+        // sorting (same as category/shop)
+        if ($request->sort == 1) {
+            $products = $products->orderBy('created_at', 'desc');
+        } elseif ($request->sort == 2) {
+            $products = $products->orderBy('created_at', 'asc');
+        } elseif ($request->sort == 3) {
+            $products = $products->orderBy('new_price', 'desc');
+        } elseif ($request->sort == 4) {
+            $products = $products->orderBy('new_price', 'asc');
+        } elseif ($request->sort == 5) {
+            $products = $products->orderBy('name', 'asc');
+        } elseif ($request->sort == 6) {
+            $products = $products->orderBy('name', 'desc');
+        } else {
+            $products = $products->latest();
+        }
+
+        $min_price = $products->min('new_price');
+        $max_price = $products->max('new_price');
+        if ($request->min_price && $request->max_price) {
+            $products = $products->where('new_price', '>=', $request->min_price);
+            $products = $products->where('new_price', '<=', $request->max_price);
+        }
+
+        $selectedWeights = $request->input('weight', []);
+        $products = $products->when($selectedWeights, fn ($q) => $q->whereIn('weight_id', $selectedWeights));
+
+        $selectedLifeStages = $request->input('life_stage', []);
+        $products = $products->when($selectedLifeStages, fn ($q) => $q->whereIn('life_stage_id', $selectedLifeStages));
+
+        $selectedFlavors = $request->input('flavor', []);
+        $products = $products->when($selectedFlavors, fn ($q) => $q->whereIn('flavor_id', $selectedFlavors));
+
+        $products = $products->paginate(24)->withQueryString();
+
+        // The sidebar's brand filter is pointless on a brand page
+        $brands = collect();
+        $brandCountMap = collect();
+        $activeBrandId = null;
+        $activeSubcatSlug = null;
+
+        return view('frontEnd.layouts.pages.brand', compact(
+            'brand', 'products', 'min_price', 'max_price', 'productCount', 'inStockCount',
+            'brands', 'brandCountMap', 'activeBrandId', 'activeSubcatSlug',
+            'weights', 'weightCountMap', 'selectedWeights',
+            'lifeStages', 'lifeStageCountMap', 'selectedLifeStages',
+            'flavors', 'flavorCountMap', 'selectedFlavors'
+        ));
     }
-
-    $products = $products->paginate(24);
-
-    return view('frontEnd.layouts.pages.brand', compact(
-        'brand',
-        'products',
-        'min_price',
-        'max_price'
-    ));
-}
 
     public function vendorShop($slug, Request $request)
     {
@@ -1156,6 +1200,14 @@ $brands = Brand::where('status', 1)
 
     public function details($slug)
     {
+        // An old slug (renamed / cleaned product) answers with a 301 to the current URL.
+        if (!Product::where('slug', $slug)->exists()) {
+            $moved = rescue(fn () => \App\Models\ProductSlugRedirect::where('old_slug', $slug)->with('product:id,slug')->first(), null, false);
+            if ($moved && $moved->product && $moved->product->slug !== $slug) {
+                return redirect()->route('product', $moved->product->slug, 301);
+            }
+        }
+
         $cacheKey = 'product_details_' . $slug;
         $details = Cache::remember($cacheKey, 600, function () use ($slug) {
             return Product::where(['slug' => $slug, 'status' => 1, 'approval_status' => 'approved'])

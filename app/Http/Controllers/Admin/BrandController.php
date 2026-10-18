@@ -26,6 +26,10 @@ class BrandController extends Controller
             'name' => 'required',
             'status' => 'required',
             'image_alt' => 'nullable|string|max:255',
+            'seo_title' => 'nullable|string|max:255',
+            'seo_h1' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:500',
+            'seo_content' => 'nullable|string',
         ]);
         // image with intervention 
         $image = $request->file('image');
@@ -68,6 +72,10 @@ class BrandController extends Controller
         $this->validate($request, [
             'name' => 'required',
             'image_alt' => 'nullable|string|max:255',
+            'seo_title' => 'nullable|string|max:255',
+            'seo_h1' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:500',
+            'seo_content' => 'nullable|string',
         ]);
         $update_data = Brand::find($request->id);
         $input = $request->all();

@@ -49,7 +49,7 @@ class ProductImportTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->assertSame('mystore_testing', DB::connection()->getDatabaseName(), 'Tests must use the separate testing database.');
+        $this->assertStringEndsWith('_testing', DB::connection()->getDatabaseName(), 'Tests must use the separate testing database.');
 
         ImportImages::$checkHosts = false;
         Http::preventStrayRequests();

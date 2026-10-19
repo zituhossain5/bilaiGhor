@@ -348,6 +348,22 @@
     .oi-courier-confirm .oi-skip { color: #b45309; }
     .oi-courier-confirm .oi-ok { color: #047857; }
     .oi-courier-confirm .oi-err { color: #b91c1c; }
+    /* Steadfast send dialog: weight / packages per order */
+    .oi-sf-wrap { overflow-x: auto; }
+    .oi-sf-table td { vertical-align: top; }
+    .oi-sf-weight { width: 78px; padding: 3px 6px; border: 1px solid #94a3b8; border-radius: 6px; font-size: 13px; }
+    .oi-sf-weight:focus, .oi-sf-lot:focus { outline: 2px solid #2563eb; outline-offset: 1px; border-color: #2563eb; }
+    .oi-sf-weight.is-bad { border-color: #dc2626; background: #fef2f2; }
+    .oi-sf-lot { width: 56px; padding: 3px 6px; border: 1px solid #94a3b8; border-radius: 6px; font-size: 13px; }
+    .oi-sf-picks { display: flex; gap: 3px; margin-top: 4px; flex-wrap: wrap; }
+    .oi-sf-picks button { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 5px; font-size: 11.5px; padding: 1px 6px; color: #334155; }
+    .oi-sf-picks button:hover { background: #e2e8f0; }
+    .oi-sf-area-ok { color: #047857; font-size: 12px; }
+    .oi-sf-area-warn { color: #b45309; font-size: 12px; }
+    .oi-sf-err { color: #b91c1c; font-size: 11.5px; margin-top: 2px; }
+    .oi-sf-info { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; color: #475569; margin-top: 8px; }
+    .oi-sf-warn { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; color: #78350f; margin-top: 8px; }
+    .oi-pickup { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 10px; margin-top: 10px; color: #1e3a8a; }
 
     /* Courier tracking box (quick view) */
     .cpt-box { font-size: 13px; }

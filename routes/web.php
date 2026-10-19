@@ -1251,6 +1251,17 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
         Route::get('courier-parcels/link-preview', [\App\Http\Controllers\Admin\CourierParcelController::class, 'preview'])->name('admin.courier_parcels.preview');
         Route::post('courier-parcels/link', [\App\Http\Controllers\Admin\CourierParcelController::class, 'link'])->name('admin.courier_parcels.link');
         Route::post('courier-parcels/{parcel}/refresh', [\App\Http\Controllers\Admin\CourierParcelController::class, 'refresh'])->name('admin.courier_parcels.refresh');
+        // Steadfast send dialog (preview only, nothing is sent), parcel weight, pickup reminder tick
+        Route::get('courier-send/preview', [\App\Http\Controllers\Admin\CourierSendController::class, 'preview'])->name('admin.courier_send.preview');
+        Route::post('order/{order}/parcel-weight', [\App\Http\Controllers\Admin\CourierSendController::class, 'saveWeight'])->name('admin.order.parcel_weight');
+        Route::post('steadfast/pickup-done', [\App\Http\Controllers\Admin\CourierSendController::class, 'pickupDone'])->name('admin.steadfast.pickup_done');
+    });
+    // Steadfast settings + thana → Steadfast area mapping
+    Route::middleware('can:api-manage')->group(function () {
+        Route::get('steadfast/settings', [\App\Http\Controllers\Admin\SteadfastSettingsController::class, 'index'])->name('admin.steadfast.settings');
+        Route::post('steadfast/settings', [\App\Http\Controllers\Admin\SteadfastSettingsController::class, 'update'])->name('admin.steadfast.settings.update');
+        Route::post('steadfast/sync-areas', [\App\Http\Controllers\Admin\SteadfastSettingsController::class, 'sync'])->name('admin.steadfast.sync');
+        Route::post('steadfast/area-mapping', [\App\Http\Controllers\Admin\SteadfastSettingsController::class, 'saveMapping'])->name('admin.steadfast.mapping');
     });
     Route::get('order-assign', [OrderController::class,'order_assign'])->name('admin.order.assign');
     Route::get('order-status', [OrderController::class,'order_status'])->name('admin.order.status');

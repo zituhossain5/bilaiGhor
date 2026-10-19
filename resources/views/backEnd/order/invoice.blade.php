@@ -401,6 +401,9 @@
                             @if($order->courier_tracking_id) · {{ $order->courier_tracking_id }}@endif
                         </small>
                         @endif
+                        @if($order->parcel_weight_kg !== null)
+                        <small class="text-muted d-block mt-1"><i class="fas fa-weight-hanging"></i> পার্সেলের ওজন: {{ \App\Services\CourierDispatchService::formatWeight((float) $order->parcel_weight_kg) }} kg</small>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -650,6 +653,9 @@
         <div class="fl"><span>Courier &nbsp;&nbsp;:</span><span><strong>{{ ucfirst($courier) }}</strong></span></div>
         @if($trkId)<div class="fl"><span>Tracking &nbsp;:</span><span>{{ $trkId }}</span></div>@endif
         @if($order->courier_sent_at)<div class="fl"><span>Sent &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</span><span>{{ \Carbon\Carbon::parse($order->courier_sent_at)->format('d M Y') }}</span></div>@endif
+        @endif
+        @if($order->parcel_weight_kg !== null)
+        <div class="fl"><span>Weight &nbsp;&nbsp;&nbsp;:</span><span>{{ \App\Services\CourierDispatchService::formatWeight((float) $order->parcel_weight_kg) }} kg</span></div>
         @endif
         <div class="ptotal"><span>Total Paid</span><span>&#2547; {{ number_format($ftotal,2) }}</span></div>
     </div>

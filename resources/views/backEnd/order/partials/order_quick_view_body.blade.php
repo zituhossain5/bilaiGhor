@@ -162,6 +162,9 @@
     <div class="oqv-section">
         <h6 class="oqv-section-title"><i class="fas fa-truck"></i> কুরিয়ার ট্র্যাকিং</h6>
         @include('backEnd.order.partials.courier_tracking_box', ['order' => $order, 'parcel' => $order->courierParcel])
+        @if(\App\Services\CourierDispatchService::hasWeightColumn())
+            <div class="mt-3">@include('backEnd.order.partials.parcel_weight_box', ['order' => $order])</div>
+        @endif
     </div>
 
     {{-- ফ্রড চেক --}}

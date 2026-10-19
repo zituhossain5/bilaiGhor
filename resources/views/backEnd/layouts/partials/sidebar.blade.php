@@ -878,7 +878,7 @@
 
 {{-- API Integration --}}
 @canany(['api-manage'])
-@php $act = $on('paymentgeteway.*', 'manual-payment-gateway.*', 'smsgeteway.*', 'courierapi.*', 'admin.facebook_capi.*'); @endphp
+@php $act = $on('paymentgeteway.*', 'manual-payment-gateway.*', 'smsgeteway.*', 'courierapi.*', 'admin.steadfast.*', 'admin.facebook_capi.*'); @endphp
 <li @class(['menuitem-active' => $act])>
   <a href="#sidebar-api-integration" data-bs-toggle="collapse">
     <i data-feather="save"></i>
@@ -891,6 +891,7 @@
       <li><a href="{{ route('manual-payment-gateway.manage') }}"><i data-feather="credit-card"></i> Manual Payment</a></li>
       <li><a href="{{ route('smsgeteway.manage') }}"><i data-feather="file-plus"></i> SMS Gateway</a></li>
       <li><a href="{{ route('courierapi.manage') }}"><i data-feather="file-plus"></i> Courier API</a></li>
+      <li><a href="{{ route('admin.steadfast.settings') }}"><i data-feather="truck"></i> Steadfast Settings</a></li>
       <li><a href="{{ route('admin.facebook_capi.edit') }}"><i data-feather="facebook"></i> Facebook CAPI</a></li>
     </ul>
   </div>

@@ -15,7 +15,9 @@ class PruneCourierPayloads extends Command
     {
         $days = max(1, (int) config('courier_tracking.payload_retention_days', 90));
 
+        // Dispatch events hold what was sent to the courier (address, note, weight, total_lot): kept.
         $cleared = CourierTrackingEvent::whereNotNull('raw_payload')
+            ->where('source', '!=', 'dispatch')
             ->where('created_at', '<', now()->subDays($days))
             ->update(['raw_payload' => null]);
 

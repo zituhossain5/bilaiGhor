@@ -434,6 +434,17 @@
                         </div>
                     </div>
 
+                    @if(\App\Services\CourierDispatchService::hasWeightColumn())
+                    <div class="oe-card">
+                        <div class="oe-card-head">
+                            <h6><i class="fas fa-box"></i> পার্সেল</h6>
+                        </div>
+                        <div class="oe-card-body">
+                            @include('backEnd.order.partials.parcel_weight_box', ['order' => $order])
+                        </div>
+                    </div>
+                    @endif
+
                     <div class="oe-card">
                         <div class="oe-card-head">
                             <h6><i class="fas fa-receipt"></i> অর্ডার সারাংশ</h6>

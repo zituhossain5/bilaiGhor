@@ -26,7 +26,7 @@
                         <li><a href="{{ route('admin.order.order_print') }}" class="oi-btn-tool oi-btn-print multi_order_print"><i class="fas fa-print"></i> প্রিন্ট</a></li>
                         <li><a href="{{ route('admin.order.order_print') }}" class="oi-btn-tool oi-btn-label multi_label_print"><i class="fas fa-tag"></i> লেবেল</a></li>
                         @if($steadfast)
-                            <li><a href="{{ route('admin.bulk_courier', 'steadfast') }}?status=5" class="oi-btn-tool oi-btn-courier multi_order_courier"><i class="fas fa-truck"></i> Steadfast</a></li>
+                            <li><a href="{{ route('admin.bulk_courier', 'steadfast') }}?status=5" data-courier="steadfast" class="oi-btn-tool oi-btn-courier multi_order_courier"><i class="fas fa-truck"></i> Steadfast</a></li>
                         @endif
                         @if($pathao_info)
                             <li><a data-bs-toggle="modal" data-bs-target="#pathao" class="oi-btn-tool oi-btn-pathao"><i class="fas fa-truck"></i> Pathao</a></li>

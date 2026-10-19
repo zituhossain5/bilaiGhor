@@ -775,7 +775,10 @@ class OrderController extends Controller
     // Courier booking (Steadfast, Pathao, RedX)
     // =========================================================
 
-    /** Steadfast / RedX: send the ticked orders (GET ?order_ids[]=…&status=5). */
+    /**
+     * Steadfast / RedX: send the ticked orders (GET ?order_ids[]=…&status=5).
+     * Steadfast also takes weights[order id] (kg) and lots[order id] from the send dialog.
+     */
     public function bulk_courier(Request $request, $slug = null): JsonResponse
     {
         if (!in_array($slug, ['steadfast', 'redx'], true)) {
@@ -785,7 +788,24 @@ class OrderController extends Controller
             return response()->json(['status' => 'error', 'message' => CourierDispatchService::label($slug) . ' API সেটিংস চালু/পূরণ করা নেই']);
         }
 
-        return $this->dispatchToCourier($request, $this->orderIds($request), $slug);
+        $options = [];
+        if ($slug === 'steadfast') {
+            $weights = (array) $request->input('weights', []);
+            $lots = (array) $request->input('lots', []);
+            foreach ($this->orderIds($request) as $id) {
+                $options[$id] = ['weight' => $weights[$id] ?? null, 'lot' => $lots[$id] ?? null];
+            }
+        }
+
+        $response = $this->dispatchToCourier($request, $this->orderIds($request), $slug, [], $options);
+
+        if ($slug === 'steadfast') {
+            $data = $response->getData(true);
+            $data['pickup'] = \App\Support\SteadfastPickup::reminder();
+            $response->setData($data);
+        }
+
+        return $response;
     }
 
     /** Pathao: the dialog posts comma-separated order_ids plus store/city/zone/area. */
@@ -867,7 +887,7 @@ class OrderController extends Controller
      * Book each order, then move the booked ones to the requested status (In Courier by default).
      * Answers with the lists the order page shows: success[] and failed[{order_id, message, status_code}].
      */
-    private function dispatchToCourier(Request $request, array $ids, string $courier, array $pathao = []): JsonResponse
+    private function dispatchToCourier(Request $request, array $ids, string $courier, array $pathao = [], array $options = []): JsonResponse
     {
         if (!$ids) {
             return response()->json(['status' => 'error', 'message' => 'Please Select An Order First !']);
@@ -884,7 +904,7 @@ class OrderController extends Controller
         $failed = [];
 
         foreach (Order::whereIn('id', $ids)->get() as $order) {
-            $result = $service->send($order, $courier, $pathao);
+            $result = $service->send($order, $courier, $pathao, $options[$order->id] ?? []);
 
             if (!$result['ok']) {
                 $failed[] = [

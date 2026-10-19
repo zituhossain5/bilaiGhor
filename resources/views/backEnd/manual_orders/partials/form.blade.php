@@ -10,6 +10,10 @@
     $selectedDistrictId = old('district_id', $isEdit ? optional($order->shipping)->district_id : null);
     $selectedThanaId = old('thana_id', $isEdit ? optional($order->shipping)->thana_id : null);
     $postCode = old('post_code', $isEdit ? optional($order->shipping)->post_code : '');
+    // Typed by the admin only — never calculated from the products.
+    $parcelWeight = old('parcel_weight_kg', $isEdit && $order->parcel_weight_kg !== null
+        ? \App\Services\CourierDispatchService::formatWeight((float) $order->parcel_weight_kg) : '');
+    $showWeight = \App\Services\CourierDispatchService::hasWeightColumn();
 @endphp
 
 @if(isset($errors) && $errors->any())
@@ -118,6 +122,20 @@
                             <label>Notes</label>
                             <input type="text" name="notes" value="{{ old('notes', $isEdit ? ($order->note ?: $order->order_note) : '') }}" maxlength="1000" class="form-control">
                         </div>
+                        @if($showWeight)
+                            <div class="col-md-6">
+                                <label for="parcel_weight_kg">Parcel weight (kg)</label>
+                                <input type="text" inputmode="decimal" name="parcel_weight_kg" id="parcel_weight_kg" value="{{ $parcelWeight }}" maxlength="6"
+                                       placeholder="e.g. 1.5" autocomplete="off" class="form-control @error('parcel_weight_kg') is-invalid @enderror">
+                                <div class="d-flex gap-1 mt-1 flex-wrap">
+                                    @foreach(['0.5', '1', '1.5', '2'] as $w)
+                                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="document.getElementById('parcel_weight_kg').value='{{ $w }}'">{{ $w }}</button>
+                                    @endforeach
+                                </div>
+                                @error('parcel_weight_kg')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                <small class="text-muted">Needed before sending to Steadfast. Not calculated from products.</small>
+                            </div>
+                        @endif
                         @if($isEdit)
                             <div class="col-md-6">
                                 <label>Order Status *</label>

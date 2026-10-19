@@ -829,6 +829,12 @@ $(document).ready(function(){
         var orderId = $(this).data('order-id');
         var $btn = $(this);
         if (!orderId || !slug) return;
+        if (slug === 'steadfast') {
+            var qv = document.getElementById('orderQuickViewModal');
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) { bootstrap.Modal.getOrCreateInstance(qv).hide(); } else { $(qv).modal('hide'); }
+            oiSteadfastSend([String(orderId)], null);
+            return;
+        }
         if (!confirm('এই অর্ডার ' + slug.toUpperCase() + ' কুরিয়ারে পাঠাতে চান?')) return;
         $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
         $.get('{{ url("admin/bulk-courier") }}/' + slug + '?status=5', { order_ids: [orderId] }, function (res) {
@@ -1296,10 +1302,147 @@ $(document).ready(function(){
             h += '<div class="oi-err">✖ #' + cptEsc(f.order_id) + ' — ' + cptEsc(f.message) + '</div>';
         });
         if (!sent.length && !(res.failed || []).length) { h += '<div>' + cptEsc(res.message || '') + '</div>'; }
+        if (sent.length && res.pickup && !res.pickup.done) {
+            h += '<div class="oi-pickup">আজ ' + res.pickup.count + ' টি পার্সেল Steadfast এ পাঠানো হয়েছে — Steadfast পোর্টালে পিকআপ রিকোয়েস্ট দিন।'
+               + (res.pickup.portal_url ? ' <a href="' + cptEsc(res.pickup.portal_url) + '" target="_blank" rel="noopener">Steadfast পোর্টাল খুলুন ↗</a>' : '') + '</div>';
+        }
         h += '</div>';
         window.oiClearSelection();
         Swal.fire({ title: cptEsc(courier) + ' — ফলাফল', html: h, icon: sent.length ? 'success' : 'error', width: 640 })
             .then(function () { window.location.reload(); });
+    }
+
+    // ── Steadfast: send dialog with parcel weight (+ number of packages) per order ──
+    // The server checks everything again (CourierDispatchService); this only collects and pre-checks the inputs.
+    var OI_SF_PREVIEW = @json(route('admin.courier_send.preview'));
+    var OI_SF_SEND = @json(route('admin.bulk_courier', 'steadfast')) + '?status=5';
+    function oiSfDigits(v) {
+        return String(v == null ? '' : v).trim().replace(/[০-৯]/g, function (d) { return '০১২৩৪৫৬৭৮৯'.indexOf(d); }).replace(',', '.');
+    }
+    function oiSfWeightError(v, st) {
+        v = oiSfDigits(v);
+        if (v === '') { return st.weight_required ? 'ওজন দিন' : null; }
+        if (!/^\d+(\.\d{1,2})?$/.test(v)) { return 'সংখ্যা দিন, যেমন 1.5'; }
+        if (parseFloat(v) <= 0) { return '০ এর বেশি দিন'; }
+        if (parseFloat(v) > st.weight_max) { return 'সর্বোচ্চ ' + st.weight_max + ' kg'; }
+        return null;
+    }
+    function oiSfHtml(res, send, skip) {
+        var st = res.settings, packages = st.lot_mode === 'packages';
+        var unmatched = send.filter(function (o) { return st.area_on && !o.area; }).length;
+        var h = '<div class="oi-courier-confirm"><div><strong>' + send.length + ' টি অর্ডার Steadfast এ যাবে:</strong></div>'
+              + '<div class="oi-sf-wrap"><table class="oi-sf-table"><thead><tr><th>ইনভয়েস</th><th>গ্রাহক</th><th>COD</th>'
+              + (st.area_on ? '<th>Steadfast এরিয়া</th>' : '')
+              + '<th>ওজন (kg)' + (st.weight_required ? ' *' : '') + '</th><th>' + (packages ? 'প্যাকেজ' : 'আইটেম (total_lot)') + '</th></tr></thead><tbody>';
+        $.each(send, function (_, o) {
+            h += '<tr data-id="' + o.id + '"><td>#' + cptEsc(o.invoice) + '</td><td>' + cptEsc(o.name) + '<br><small>' + cptEsc(o.phone) + '</small></td><td>' + oiMoney(o.cod) + '</td>';
+            if (st.area_on) {
+                h += o.area
+                    ? '<td class="oi-sf-area-ok">✓ ' + cptEsc(o.area) + '</td>'
+                    : '<td class="oi-sf-area-warn">⚠ ' + (o.area_problem === 'close' ? 'যাচাই বাকি' : (o.area_problem === 'not_synced' ? 'এরিয়া সিঙ্ক হয়নি' : 'মেলানো হয়নি'))
+                      + '<br><small>আগের মতো যাবে: ' + cptEsc(o.local_area || '—') + '</small></td>';
+            }
+            h += '<td><input type="text" inputmode="decimal" class="oi-sf-weight" aria-label="ওজন (kg) #' + cptEsc(o.invoice) + '" value="' + cptEsc(o.weight || '') + '" placeholder="kg">'
+               + '<div class="oi-sf-picks">' + ['0.5', '1', '1.5', '2'].map(function (w) { return '<button type="button" data-w="' + w + '">' + w + '</button>'; }).join('') + '</div>'
+               + '<div class="oi-sf-err"></div></td>';
+            h += packages
+                ? '<td><input type="number" class="oi-sf-lot" min="1" max="999" step="1" value="1" aria-label="প্যাকেজ #' + cptEsc(o.invoice) + '"></td>'
+                : '<td>' + o.qty + '</td>';
+            h += '</tr>';
+        });
+        h += '</tbody></table></div>';
+        if (skip.length) {
+            h += '<div class="oi-skip"><strong>' + skip.length + ' টি বাদ যাবে:</strong><ul class="mb-0 ps-3">';
+            $.each(skip, function (_, o) { h += '<li>#' + cptEsc(o.invoice) + ' — ' + cptEsc(o.reason) + '</li>'; });
+            h += '</ul></div>';
+        }
+        if (unmatched) {
+            h += '<div class="oi-sf-warn">⚠ ' + unmatched + ' টি অর্ডারের থানা Steadfast এরিয়ার সাথে মেলানো হয়নি — এগুলো আগের মতো বাংলা ঠিকানায় যাবে। পাঠানো যাবে। '
+               + '<a href="' + cptEsc(res.areas_url) + '" target="_blank" rel="noopener">এরিয়া মেলান ↗</a></div>';
+        }
+        h += '<div class="oi-sf-info">' + (st.weight_in_note ? 'ওজন নোটের শেষে যাবে ("Wt: 1.5 kg") — Steadfast API তে ওজনের আলাদা ঘর নেই। ' : '')
+           + (packages ? 'total_lot = প্যাকেজ সংখ্যা।' : 'total_lot = মোট আইটেম সংখ্যা।') + '</div>';
+        return h + '</div>';
+    }
+    function oiSteadfastSend(ids, $btn) {
+        if (!ids.length) {
+            toastr.error('কমপক্ষে একটি অর্ডার সিলেক্ট করুন (Select at least one order first)');
+            return;
+        }
+        if (oiCourierBusy) return;
+        $.get(OI_SF_PREVIEW, { order_ids: ids }).done(function (res) {
+            var send = (res.orders || []).filter(function (o) { return !o.reason; });
+            var skip = (res.orders || []).filter(function (o) { return o.reason; });
+            if (!send.length) {
+                var h = '<div class="oi-courier-confirm"><ul class="mb-0 ps-3">';
+                $.each(skip, function (_, o) { h += '<li>#' + cptEsc(o.invoice) + ' — ' + cptEsc(o.reason) + '</li>'; });
+                Swal.fire({ title: 'Steadfast — পাঠানোর মতো অর্ডার নেই', html: h + '</ul></div>', icon: 'info', width: 640 });
+                return;
+            }
+            var st = res.settings;
+            Swal.fire({
+                title: 'Steadfast এ পাঠাবেন?',
+                html: oiSfHtml(res, send, skip),
+                width: 920,
+                showCancelButton: true,
+                focusConfirm: false,
+                confirmButtonText: 'হ্যাঁ, ' + send.length + ' টি পাঠান',
+                cancelButtonText: 'বাতিল',
+                didOpen: function (popup) {
+                    var $p = $(popup);
+                    $p.on('click', '.oi-sf-picks button', function () {
+                        $(this).closest('td').find('.oi-sf-weight').val($(this).data('w')).removeClass('is-bad').trigger('input');
+                    });
+                    $p.on('input', '.oi-sf-weight', function () {
+                        $(this).removeClass('is-bad').closest('td').find('.oi-sf-err').text('');
+                    });
+                    var $first = $p.find('.oi-sf-weight').filter(function () { return !this.value; }).first();
+                    if ($first.length) { $first.trigger('focus'); }
+                },
+                preConfirm: function () {
+                    var weights = {}, lots = {}, bad = 0;
+                    $(Swal.getPopup()).find('tr[data-id]').each(function () {
+                        var $tr = $(this), id = $tr.data('id'), $w = $tr.find('.oi-sf-weight');
+                        var err = oiSfWeightError($w.val(), st);
+                        $w.toggleClass('is-bad', !!err);
+                        $tr.find('.oi-sf-err').text(err || '');
+                        if (err) { bad++; return; }
+                        if (oiSfDigits($w.val()) !== '') { weights[id] = oiSfDigits($w.val()); }
+                        var $lot = $tr.find('.oi-sf-lot');
+                        if ($lot.length) {
+                            var n = parseInt($lot.val(), 10);
+                            if (!(n >= 1 && n <= 999)) { $lot.addClass('is-bad'); bad++; return; }
+                            lots[id] = n;
+                        }
+                    });
+                    if (bad) {
+                        Swal.showValidationMessage(bad + ' টি অর্ডারের ওজন/প্যাকেজ ঠিক করুন');
+                        return false;
+                    }
+                    return { weights: weights, lots: lots };
+                }
+            }).then(function (r) {
+                if (!r.isConfirmed) return;
+                oiCourierBusy = true;
+                var originalHtml = $btn ? $btn.html() : null;
+                if ($btn) { $btn.addClass('disabled').attr('aria-disabled', 'true').html('<i class="fas fa-spinner fa-spin"></i> পাঠানো হচ্ছে...'); }
+                $('.multi_order_courier, .oi-btn-pathao').addClass('disabled');
+                $.ajax({ type: 'GET', url: OI_SF_SEND, data: { order_ids: send.map(function (o) { return o.id; }), weights: r.value.weights, lots: r.value.lots } })
+                    .done(function (out) { oiShowCourierResult('Steadfast', out); })
+                    .fail(function (xhr) {
+                        var out = xhr.responseJSON || {};
+                        if ((out.failed && out.failed.length) || out.sent) { oiShowCourierResult('Steadfast', out); }
+                        else { Swal.fire({ title: 'Steadfast', text: out.message || 'সার্ভার এরর — আবার চেষ্টা করুন', icon: 'error' }); }
+                    })
+                    .always(function () {
+                        oiCourierBusy = false;
+                        if ($btn) { $btn.removeClass('disabled').removeAttr('aria-disabled').html(originalHtml); }
+                        $('.multi_order_courier, .oi-btn-pathao').removeClass('disabled');
+                    });
+            });
+        }).fail(function (xhr) {
+            toastr.error((xhr.responseJSON && xhr.responseJSON.message) || 'অর্ডারের তথ্য লোড করা যায়নি');
+        });
     }
 
     var oiCourierBusy = false;
@@ -1307,6 +1450,10 @@ $(document).ready(function(){
         e.preventDefault();
         if (oiCourierBusy) return;
         var $btn = $(this), url = $btn.attr('href'), courier = $.trim($btn.text());
+        if ($btn.data('courier') === 'steadfast') {
+            oiSteadfastSend(oiBoxes().filter(':checked').map(function () { return String(this.value); }).get(), $btn);
+            return;
+        }
 
         oiConfirmCourier(courier).then(function (ids) {
             if (!ids.length) return;

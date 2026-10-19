@@ -232,6 +232,38 @@ table.clean tbody tr:hover td { background: #fafafa; }
                 <div id="sf-main" style="font-size:17px;font-weight:700;color:#111827;margin-top:2px;line-height:1.25;">—</div>
                 <div id="sf-detail" style="font-size:12px;color:#6b7280;margin-top:6px;line-height:1.45;white-space:pre-line;"></div>
                 <span id="sf-msg" style="font-size:11px;display:block;margin-top:4px;"></span>
+                @php $sfPickup = rescue(fn () => \App\Support\SteadfastPickup::reminder(), null, false); @endphp
+                @if($sfPickup && !$sfPickup['done'])
+                    {{-- Pickup is requested by hand in the Steadfast portal; the tick hides this for today. --}}
+                    <div id="sf-pickup" style="margin-top:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 10px;font-size:12.5px;color:#1e3a8a;line-height:1.5;">
+                        আজ <strong>{{ $sfPickup['count'] }}</strong> টি পার্সেল Steadfast এ পাঠানো হয়েছে — Steadfast এ পিকআপ রিকোয়েস্ট দিন।
+                        @if($sfPickup['portal_url'])
+                            <a href="{{ $sfPickup['portal_url'] }}" target="_blank" rel="noopener" style="font-weight:600;">Steadfast পোর্টাল ↗</a>
+                        @endif
+                        <label style="display:flex;align-items:center;gap:6px;margin:6px 0 0;cursor:pointer;font-weight:600;">
+                            <input type="checkbox" id="sf-pickup-done" style="width:16px;height:16px;"> পিকআপ রিকোয়েস্ট দিয়েছি (আজকের জন্য লুকান)
+                        </label>
+                    </div>
+                    <script>
+                    document.getElementById('sf-pickup-done').addEventListener('change', function () {
+                        var box = this;
+                        if (!box.checked) return;
+                        box.disabled = true;
+                        fetch(@json(route('admin.steadfast.pickup_done')), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                            body: JSON.stringify({ done: true })
+                        }).then(function (r) {
+                            if (!r.ok) throw new Error();
+                            document.getElementById('sf-pickup').remove();
+                        }).catch(function () {
+                            box.checked = false; box.disabled = false;
+                            if (window.toastr) toastr.error('সেভ করা যায়নি — আবার চেষ্টা করুন');
+                        });
+                    });
+                    </script>
+                @endif
             </div>
         </div>
         <button type="button" onclick="fetchSteadfastWidget()" id="sf-btn"

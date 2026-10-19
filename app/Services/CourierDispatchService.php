@@ -7,10 +7,13 @@ use App\Models\CourierParcel;
 use App\Models\DeliveryThana;
 use App\Services\CourierTracking\ParcelRecorder;
 use App\Models\Order;
+use App\Services\Steadfast\SteadfastArea;
+use App\Support\CourierSettings;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 /**
@@ -19,6 +22,10 @@ use Illuminate\Support\Str;
  * the columns the status cron, the courier webhooks, the invoice and the customer's tracking page read.
  *
  * The cash to collect is what the customer still owes (order total minus anything already paid).
+ *
+ * Steadfast extras, each behind a switch in CourierSettings (all off = the original payload, byte for byte):
+ * the matched Steadfast area at the end of recipient_address, the admin-typed parcel weight as "Wt: X kg"
+ * in the note (the API has no weight field), and total_lot as item quantity or number of packages.
  */
 class CourierDispatchService
 {
@@ -46,11 +53,20 @@ class CourierDispatchService
         return $ready ? $config : null;
     }
 
+    /** Steadfast API base (".../api/v1") from the saved URL; an old ".../create_order" URL also works. */
+    public static function steadfastBase(Courierapi $config): string
+    {
+        $base = rtrim(trim((string) $config->url), '/') ?: 'https://portal.packzy.com/api/v1';
+
+        return rtrim(preg_replace('#/create_order/?$#i', '', $base), '/');
+    }
+
     /**
-     * @param  array  $pathao  store_id, city_id, zone_id, area_id chosen in the Pathao dialog
+     * @param  array  $pathao   store_id, city_id, zone_id, area_id chosen in the Pathao dialog
+     * @param  array  $options  Steadfast: weight (kg, typed in the send dialog), lot (number of packages)
      * @return array{ok: bool, message: string, status_code?: int}
      */
-    public function send(Order $order, string $courier, array $pathao = []): array
+    public function send(Order $order, string $courier, array $pathao = [], array $options = []): array
     {
         // Two clicks (or two admins) must not book the same parcel twice.
         $lock = Cache::lock('courier-send:' . $order->id, 60);
@@ -67,8 +83,16 @@ class CourierDispatchService
 
             $parcel = $this->parcel($order);
 
+            $steadfast = null;
+            if ($courier === 'steadfast') {
+                $steadfast = $this->steadfastPayload($order, $options);
+                if ($steadfast['error']) {
+                    return ['ok' => false, 'message' => $steadfast['error']];
+                }
+            }
+
             $result = match ($courier) {
-                'steadfast' => $this->steadfast($parcel),
+                'steadfast' => $this->steadfast($steadfast['body']),
                 'pathao'    => $this->pathao($parcel, $pathao),
                 'redx'      => $this->redx($order, $parcel),
                 default     => ['ok' => false, 'message' => 'অজানা কুরিয়ার'],
@@ -81,15 +105,35 @@ class CourierDispatchService
                     'courier_tracking_id'   => $result['consignment_id'],
                     'courier_tracking_code' => $result['tracking_code'] ?? null,
                     'courier_sent_at'       => now(),
-                ])->save();
+                ]);
+                // The weight typed in the send dialog is the order's parcel weight from now on.
+                if ($steadfast && $steadfast['weight'] !== null && self::hasWeightColumn()) {
+                    $order->forceFill(['parcel_weight_kg' => $steadfast['weight']]);
+                }
+                $order->save();
 
                 // Tracking timeline starts here. Never let it affect the booking itself.
-                rescue(function () use ($order) {
+                rescue(function () use ($order, $steadfast) {
                     $recorder = app(ParcelRecorder::class);
                     $parcel = $recorder->forOrder($order, 'dispatch');
                     if ($parcel) {
                         CourierParcel::where('order_id', $order->id)->whereKeyNot($parcel->id)->update(['is_current' => false]);
-                        $recorder->record($parcel, ['normalized_status' => 'sent', 'message' => 'Sent to courier', 'source' => 'dispatch']);
+                        $event = ['normalized_status' => 'sent', 'message' => 'Sent to courier', 'source' => 'dispatch'];
+                        if ($steadfast) {
+                            // What was actually sent (kept: the payload prune skips dispatch events).
+                            $event['payload'] = [
+                                'sent'       => $steadfast['body'],
+                                'weight_kg'  => $steadfast['weight'],
+                                'total_lot'  => $steadfast['body']['total_lot'],
+                                'area_label' => $steadfast['area']['label'] ?? null,
+                            ];
+                            $event['details'] = [
+                                'items_in_lot'      => $steadfast['body']['total_lot'],
+                                'recipient_address' => $steadfast['body']['recipient_address'],
+                                'note'              => $steadfast['body']['note'],
+                            ];
+                        }
+                        $recorder->record($parcel, $event);
                     }
                 });
             }
@@ -100,7 +144,8 @@ class CourierDispatchService
         }
     }
 
-    private function cannotSend(?Order $order): ?string
+    /** Why an order can't be booked at all (same rules for every courier), or null. */
+    public function cannotSend(?Order $order): ?string
     {
         if (!$order) {
             return 'অর্ডার পাওয়া যায়নি';
@@ -153,32 +198,145 @@ class CourierDispatchService
         ];
     }
 
-    private function steadfast(array $p): array
+    /**
+     * The create_order body for an order, plus what went into it. Only documented fields are sent
+     * (and total_lot, which the code always sent).
+     *
+     * @param  array  $options  weight (kg) typed in the send dialog — falls back to the order's saved weight; lot
+     * @return array{body: array, weight: ?float, area: ?array, error: ?string}
+     */
+    public function steadfastPayload(Order $order, array $options = []): array
+    {
+        $p = $this->parcel($order);
+
+        $typed = $options['weight'] ?? null;
+        $weight = self::parseWeight(filled($typed) ? $typed : $order->parcel_weight_kg);
+        $error = null;
+        if (filled($typed) && ($why = self::weightError($typed))) {
+            $error = $why;
+        } elseif ($weight === null && CourierSettings::bool('weight_required')) {
+            $error = 'পার্সেলের ওজন (kg) দিন — ওজন ছাড়া Steadfast এ পাঠানো বন্ধ আছে';
+        }
+
+        $area = CourierSettings::bool('steadfast_area_in_address') ? SteadfastArea::forThana((int) $order->shipping->thana_id) : null;
+        $address = $area ? self::addressWithArea((string) $order->shipping->address, $area['label']) : $p['address'];
+
+        $note = $p['note'];
+        if ($weight !== null && CourierSettings::bool('weight_in_note')) {
+            $note = self::noteWithWeight($note, $weight);
+        }
+
+        $lot = CourierSettings::lotMode() === 'packages'
+            ? max(1, min(999, (int) ($options['lot'] ?? 1)))
+            : $p['qty'];
+
+        return [
+            'body' => [
+                'invoice'           => $p['invoice'],
+                'recipient_name'    => $p['name'],
+                'recipient_phone'   => $p['phone'],
+                'recipient_address' => $address,
+                'cod_amount'        => $p['cod'],
+                'note'              => $note,
+                'item_description'  => $p['items'],
+                'total_lot'         => $lot,
+            ],
+            'weight' => $weight,
+            'area'   => $area,
+            'error'  => $error,
+        ];
+    }
+
+    /** "Road 5, Baharchara" + "Cox's Bazar Sadar, Cox's Bazar" (customer text first, never cut off the area). */
+    public static function addressWithArea(string $street, string $areaLabel): string
+    {
+        $areaParts = collect(explode(',', $areaLabel))->map(fn ($x) => mb_strtolower(trim($x)))->all();
+        $street = collect(explode(',', $street))
+            ->map(fn ($part) => trim($part))
+            ->filter()
+            ->unique(fn ($part) => mb_strtolower($part))
+            ->reject(fn ($part) => in_array(mb_strtolower($part), $areaParts, true))
+            ->implode(', ');
+
+        $room = 220 - mb_strlen(', ' . $areaLabel);
+        $street = trim(mb_substr($street, 0, max(0, $room)), ' ,');
+
+        return $street !== '' ? $street . ', ' . $areaLabel : mb_substr($areaLabel, 0, 220);
+    }
+
+    /** The order note with "Wt: 1.5 kg" at the end, within Steadfast's 250 characters. */
+    public static function noteWithWeight(string $note, float $weight): string
+    {
+        $tag = 'Wt: ' . self::formatWeight($weight) . ' kg';
+        $note = trim($note);
+        if ($note === '') {
+            return $tag;
+        }
+
+        return rtrim(mb_substr($note, 0, 250 - mb_strlen(' | ' . $tag))) . ' | ' . $tag;
+    }
+
+    /** 1.50 → "1.5", 2.00 → "2". */
+    public static function formatWeight(float $weight): string
+    {
+        return rtrim(rtrim(number_format($weight, 2, '.', ''), '0'), '.');
+    }
+
+    /** A typed weight as kg (Bangla digits and "," accepted), or null when empty / not a number. */
+    public static function parseWeight(mixed $value): ?float
+    {
+        $text = self::weightText($value);
+
+        return $text !== '' && is_numeric($text) ? round((float) $text, 2) : null;
+    }
+
+    /** Why a typed weight is not accepted, or null. More than 0, at most 2 decimals, up to the set maximum. */
+    public static function weightError(mixed $value): ?string
+    {
+        $text = self::weightText($value);
+        $max = CourierSettings::weightMax();
+
+        if (!preg_match('/^\d+(\.\d{1,2})?$/', $text)) {
+            return 'ওজন সংখ্যায় দিন (kg, সর্বোচ্চ ২ দশমিক ঘর), যেমন 1.5';
+        }
+        if ((float) $text <= 0) {
+            return 'ওজন ০ এর বেশি হতে হবে';
+        }
+        if ((float) $text > $max) {
+            return 'ওজন সর্বোচ্চ ' . self::formatWeight($max) . ' kg হতে পারে';
+        }
+
+        return null;
+    }
+
+    private static function weightText(mixed $value): string
+    {
+        return strtr(trim((string) $value), ['০' => '0', '১' => '1', '২' => '2', '৩' => '3', '৪' => '4',
+            '৫' => '5', '৬' => '6', '৭' => '7', '৮' => '8', '৯' => '9', ',' => '.']);
+    }
+
+    /** orders.parcel_weight_kg exists (false only between deploying the code and running the migration). */
+    public static function hasWeightColumn(): bool
+    {
+        static $has = null;
+
+        return $has ??= rescue(fn () => Schema::hasColumn('orders', 'parcel_weight_kg'), false, false);
+    }
+
+    private function steadfast(array $body): array
     {
         $config = self::config('steadfast');
         if (!$config) {
             return ['ok' => false, 'message' => 'Steadfast API সেটিংস চালু/পূরণ করা নেই'];
         }
 
-        $base = rtrim(trim((string) $config->url), '/') ?: 'https://portal.packzy.com/api/v1';
-        $base = rtrim(preg_replace('#/create_order/?$#i', '', $base), '/');
-
         try {
             $response = Http::withHeaders([
                 'Api-Key'    => $config->api_key,
                 'Secret-Key' => $config->secret_key,
-            ])->acceptJson()->asJson()->connectTimeout(5)->timeout(30)->post($base . '/create_order', [
-                'invoice'           => $p['invoice'],
-                'recipient_name'    => $p['name'],
-                'recipient_phone'   => $p['phone'],
-                'recipient_address' => $p['address'],
-                'cod_amount'        => $p['cod'],
-                'note'              => $p['note'],
-                'item_description'  => $p['items'],
-                'total_lot'         => $p['qty'],
-            ]);
+            ])->acceptJson()->asJson()->connectTimeout(5)->timeout(30)->post(self::steadfastBase($config) . '/create_order', $body);
         } catch (\Throwable $e) {
-            Log::warning('Steadfast create order failed', ['invoice' => $p['invoice'], 'error' => $e->getMessage()]);
+            Log::warning('Steadfast create order failed', ['invoice' => $body['invoice'], 'error' => $e->getMessage()]);
 
             return ['ok' => false, 'message' => 'Steadfast সার্ভারে সংযোগ করা যায়নি'];
         }
@@ -195,7 +353,7 @@ class CourierDispatchService
             ];
         }
 
-        Log::warning('Steadfast create order rejected', ['invoice' => $p['invoice'], 'status' => $response->status(), 'response' => $json ?: $response->body()]);
+        Log::warning('Steadfast create order rejected', ['invoice' => $body['invoice'], 'status' => $response->status(), 'response' => $json ?: $response->body()]);
 
         return [
             'ok'          => false,

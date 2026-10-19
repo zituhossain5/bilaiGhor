@@ -234,6 +234,9 @@
                 @if($order->courier_sent_at)
                     <div class="c-id" style="color:#888;">Sent: {{ \Carbon\Carbon::parse($order->courier_sent_at)->format('d M Y') }}</div>
                 @endif
+                @if($order->parcel_weight_kg !== null)
+                    <div class="c-id">Wt: {{ \App\Services\CourierDispatchService::formatWeight((float) $order->parcel_weight_kg) }} kg</div>
+                @endif
             </div>
             <div class="lbl-amount">
                 <div class="a-tag">Total</div>

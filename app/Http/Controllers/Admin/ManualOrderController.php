@@ -14,6 +14,7 @@ use App\Models\OrderStatus;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Shipping;
+use App\Services\CourierDispatchService;
 use App\Services\InventoryService;
 use App\Services\OrderPaymentService;
 use App\Services\ReceiptLayout;
@@ -105,6 +106,7 @@ class ManualOrderController extends Controller
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
             'update_customer' => ['nullable', 'boolean'],
             'save_as_customer' => ['nullable', 'boolean'],
+            'parcel_weight_kg' => $this->weightRules(),
         ]);
 
         $this->validateThana($validated);
@@ -164,7 +166,7 @@ class ManualOrderController extends Controller
                     'order_note' => $validated['notes'] ?? null,
                     'created_by' => Auth::guard('admin')->id(),
                     'public_token' => $this->uniquePublicToken(),
-                ]);
+                ] + $this->weightColumn($validated));
 
                 foreach ($items as $item) {
                     OrderDetails::create([
@@ -280,7 +282,7 @@ class ManualOrderController extends Controller
                     'note' => $validated['notes'] ?? null,
                     'order_note' => $validated['notes'] ?? null,
                     'updated_by' => $adminId,
-                ])->save();
+                ] + $this->weightColumn($validated))->save();
 
                 Shipping::updateOrCreate(
                     ['order_id' => $lockedOrder->id],
@@ -462,6 +464,26 @@ class ManualOrderController extends Controller
         return $items;
     }
 
+    /** Parcel weight in kg, typed by the admin (optional here; Steadfast sending may require it). */
+    private function weightRules(): array
+    {
+        return ['nullable', 'string', 'max:10', function ($attribute, $value, $fail) {
+            if (filled($value) && ($error = CourierDispatchService::weightError($value))) {
+                $fail($error);
+            }
+        }];
+    }
+
+    /** ['parcel_weight_kg' => …] once the column exists; an empty field clears the weight. */
+    private function weightColumn(array $validated): array
+    {
+        if (!CourierDispatchService::hasWeightColumn()) {
+            return [];
+        }
+
+        return ['parcel_weight_kg' => CourierDispatchService::parseWeight($validated['parcel_weight_kg'] ?? null)];
+    }
+
     private function validateOrder(Request $request, bool $updating = false): array
     {
         $rules = [
@@ -490,6 +512,7 @@ class ManualOrderController extends Controller
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
             'update_customer' => ['nullable', 'boolean'],
             'save_as_customer' => ['nullable', 'boolean'],
+            'parcel_weight_kg' => $this->weightRules(),
         ];
 
         if ($updating) {

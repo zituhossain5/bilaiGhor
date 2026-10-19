@@ -55,6 +55,23 @@
         @endif
     @endif
 
+    @php
+        // What this panel sent (dispatch event) vs what the courier reports. Order data is never changed from here.
+        $sentInfo = $parcel->events()->where('source', 'dispatch')->first()?->raw_payload ?? [];
+        $sentWeight = $sentInfo['weight_kg'] ?? null;
+        $courierWeight = filled($parcel->weight) ? (float) preg_replace('/[^0-9.]/', '', (string) $parcel->weight) : null;
+    @endphp
+    @if($sentWeight !== null || $parcel->items_in_lot !== null || $courierWeight)
+        <div class="cpt-row">
+            @if($sentWeight !== null)<span>পাঠানো ওজন: <strong>{{ \App\Services\CourierDispatchService::formatWeight((float) $sentWeight) }} kg</strong></span>@endif
+            @if($courierWeight)<span class="ms-2">{{ $courierLabel($parcel->courier) }} এর ওজন: <strong>{{ $parcel->weight }}</strong></span>@endif
+            @if($parcel->items_in_lot !== null)<span class="ms-2">total_lot: {{ $parcel->items_in_lot }}</span>@endif
+        </div>
+        @if($sentWeight !== null && $courierWeight && abs((float) $sentWeight - $courierWeight) >= 0.01)
+            <div class="cpt-warn">⚠ ওজন মেলেনি: আপনার {{ \App\Services\CourierDispatchService::formatWeight((float) $sentWeight) }} kg, {{ $courierLabel($parcel->courier) }} {{ $parcel->weight }} (অর্ডার বদলানো হয়নি)</div>
+        @endif
+    @endif
+
     @if($parcel->last_sync_error)
         <div class="cpt-warn">⚠ {{ $courierLabel($parcel->courier) }} থেকে শেষবার আপডেট আনা যায়নি ({{ $parcel->last_sync_error_at?->diffForHumans() }}) — আগের তথ্য দেখানো হচ্ছে।</div>
     @endif

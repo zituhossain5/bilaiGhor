@@ -22,8 +22,9 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
         <!-- <env name="DB_CONNECTION" value="sqlite"/> -->
-        <!-- Tests use their own copy of the database, never the working one (mystore). -->
-        <env name="DB_DATABASE" value="mystore_testing" force="true"/>
+        <!-- Tests use their own copy of the database (schema only), never the working one (bilaigho_web).
+             tests/TestCase.php refuses to run against a database whose name doesn't end in "_testing". -->
+        <env name="DB_DATABASE" value="bilaigho_web_testing" force="true"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

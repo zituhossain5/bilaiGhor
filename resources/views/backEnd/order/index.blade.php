@@ -778,6 +778,7 @@ $(document).ready(function(){
             timeout: 60000,
             success: function (res) {
                 $btn.prop('disabled', false);
+                if (res && res.warning) { toastr.warning(res.warning); }
                 if (res && res.status === 'success') {
                     if (res.data && res.data.is_fraud === true) {
                         oqvUpdateFraudBadge(0, true);
@@ -902,7 +903,7 @@ $(document).ready(function(){
                 `);
             },
             success: function(res) {
-                
+                if (res && res.warning) { toastr.warning(res.warning); }
                 if (res && res.status === "success") {
                     let apiData = {};
                     

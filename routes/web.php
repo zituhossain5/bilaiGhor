@@ -539,8 +539,9 @@ Route::prefix('admin')->middleware(['auth:admin', 'admin', 'demo_mode'])->group(
 });
 
 // Manual Fraud Check Routes
-Route::get('admin/manual-fraud-check', [App\Http\Controllers\Admin\OrderController::class, 'manualFraudCheckPage'])->middleware(['auth:admin', 'admin'])->name('manualFraud.page');
-Route::post('admin/manual-fraud-check', [App\Http\Controllers\Admin\OrderController::class, 'manualFraudCheck'])->middleware(['auth:admin', 'admin', 'demo_mode'])->name('manualFraud.check');
+Route::get('admin/manual-fraud-check', [App\Http\Controllers\Admin\ManualFraudCheckController::class, 'index'])->middleware(['auth:admin', 'admin'])->name('manualFraud.page');
+Route::post('admin/manual-fraud-check', [App\Http\Controllers\Admin\ManualFraudCheckController::class, 'check'])->middleware(['auth:admin', 'admin', 'demo_mode'])->name('manualFraud.check');
+Route::post('admin/manual-fraud-check/settings', [App\Http\Controllers\Admin\ManualFraudCheckController::class, 'updateSettings'])->middleware(['auth:admin', 'admin', 'demo_mode', 'permission:fraud-setting-edit'])->name('manualFraud.settings');
 
 // Duplicate Order Check Routes
 Route::post('/admin/duplicate-order-check', [App\Http\Controllers\Admin\OrderController::class, 'duplicateOrderCheck'])

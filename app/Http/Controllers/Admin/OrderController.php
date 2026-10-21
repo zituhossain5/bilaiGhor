@@ -17,13 +17,14 @@ use App\Models\ProductVariantPrice;
 use App\Models\Shipping;
 use App\Models\Size;
 use App\Models\User;
-use App\Services\BdCourierService;
 use App\Services\CouponService;
 use App\Services\CourierDispatchService;
+use App\Services\FraudCheck\FraudCheckLookup;
 use App\Services\InventoryService;
 use App\Services\PathaoService;
 use App\Services\RedXService;
 use App\Services\RewardPointService;
+use App\Support\FraudPhone;
 use App\Support\TrafficSourceDetector;
 use Brian2694\Toastr\Facades\Toastr;
 use Gloudemans\Shoppingcart\Facades\Cart;
@@ -953,43 +954,31 @@ class OrderController extends Controller
     // Fraud and duplicate-order checks
     // =========================================================
 
-    /** Order-list "ফ্রড চেক" button: BD Courier history for a phone, saved onto that phone's orders. */
+    /**
+     * Order-list / quick-view "ফ্রড চেক" button: BD Courier history for a phone, saved onto that
+     * phone's orders. Shares Manual Fraud Check's cache, so a recently checked number costs no search.
+     */
     public function fraudCheck(Request $request): JsonResponse
     {
-        $mobile = trim((string) $request->mobile);
-        if ($mobile === '') {
+        if (trim((string) $request->mobile) === '') {
             return response()->json(['status' => 'error', 'message' => 'মোবাইল নম্বর নেই'], 422);
         }
-
-        $check = BdCourierService::fetchCourierCheck($mobile, true);
-
-        return $check['success']
-            ? response()->json(['status' => 'success', 'data' => $check['payload']])
-            : response()->json(['status' => 'error', 'message' => $check['message']]);
-    }
-
-    public function manualFraudCheckPage()
-    {
-        return view('backEnd.fraud.manual_check');
-    }
-
-    public function manualFraudCheck(Request $request)
-    {
-        $mobile = trim((string) $request->mobile);
-        if ($mobile === '') {
-            return back()->with('error', 'দয়া করে একটি মোবাইল নাম্বার লিখুন');
+        $phone = FraudPhone::normalize((string) $request->mobile);
+        if ($phone === null) {
+            return response()->json(['status' => 'error', 'message' => 'সঠিক মোবাইল নম্বর নেই (01XXXXXXXXX)'], 422);
         }
 
-        $check = BdCourierService::fetchCourierCheck($mobile, true);
-        if (!$check['success']) {
-            return back()->withInput()->with('error', $check['message']);
+        $lookup = FraudCheckLookup::bdCourier($phone, false, (int) Auth::guard('admin')->id());
+        if (!$lookup['ok']) {
+            return response()->json(['status' => 'error', 'message' => $lookup['error']]);
         }
 
-        return view('backEnd.fraud.manual_check', [
-            'mobile'  => $mobile,
-            'data'    => $check['payload']['data'] ?? [],
-            'reports' => $check['payload']['reports'] ?? [],
-        ]);
+        return response()->json(array_filter([
+            'status'  => 'success',
+            'data'    => $lookup['payload'],
+            'warning' => $lookup['stale'] ? 'BD Courier থেকে নতুন তথ্য আনা যায়নি (' . $lookup['error'] . ')। '
+                . $lookup['checked_at']->format('d M Y, h:i A') . ' এর সংরক্ষিত ফল দেখানো হচ্ছে।' : null,
+        ]));
     }
 
     /** JSON: open orders already placed with this phone (also flagged on those orders). */

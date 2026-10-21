@@ -39,7 +39,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash as HashFacade;
 use Illuminate\Support\Facades\File;
 use App\Helpers\OrderHelper;
-use App\Services\BdCourierService;
+use App\Services\FraudCheck\FraudCheckLookup;
+use App\Support\FraudPhone;
 use App\Services\FacebookCapiService;
 use App\Http\Controllers\Concerns\HandlesCheckoutOtp;
 
@@ -908,10 +909,11 @@ public function order_save(Request $request)
         $shipping->save();
 
         // BD Courier — ফোন অনুযায়ী সফলতার হার অর্ডার লিস্টে দেখাতে (চেকআউট রেসপন্স ব্লক না করে রিকোয়েস্ট শেষ হওয়ার পর রান)
-        $fraudSyncPhone = trim((string) ($shipping->phone ?? ''));
-        if ($fraudSyncPhone !== '' && config('services.bdcourier.api_key')) {
+        // A number checked in the last few hours (Manual Fraud Check / order list) reuses that answer: no new search.
+        $fraudSyncPhone = FraudPhone::normalize($shipping->phone ?? '');
+        if ($fraudSyncPhone !== null && config('services.bdcourier.api_key')) {
             dispatch(static function () use ($fraudSyncPhone): void {
-                BdCourierService::fetchAndSyncOrders($fraudSyncPhone);
+                FraudCheckLookup::bdCourier($fraudSyncPhone, false, null);
             })->afterResponse();
         }
 

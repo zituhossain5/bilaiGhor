@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\GeneralSetting;
 use App\Models\Order;
+use App\Support\FraudPhone;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -90,10 +91,14 @@ class BdCourierService
         return self::fetchCourierCheck($phone, true);
     }
 
-    protected static function applyCourierPayloadToOrders(string $phone, array $cData): void
+    /** Writes the courier figures onto every order for this phone, however the number was saved (01…, 8801…, +8801…). */
+    public static function applyCourierPayloadToOrders(string $phone, array $cData): void
     {
-        $orders = Order::whereHas('shipping', static function ($q) use ($phone): void {
-            $q->where('phone', $phone);
+        $normalized = FraudPhone::normalize($phone);
+        $phones = array_values(array_unique(array_merge([$phone], $normalized ? FraudPhone::variants($normalized) : [])));
+
+        $orders = Order::whereHas('shipping', static function ($q) use ($phones): void {
+            $q->whereIn('phone', $phones);
         })->get();
 
         foreach ($orders as $order) {

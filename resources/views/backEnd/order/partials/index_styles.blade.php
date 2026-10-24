@@ -358,11 +358,8 @@
     .oi-sf-picks { display: flex; gap: 3px; margin-top: 4px; flex-wrap: wrap; }
     .oi-sf-picks button { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 5px; font-size: 11.5px; padding: 1px 6px; color: #334155; }
     .oi-sf-picks button:hover { background: #e2e8f0; }
-    .oi-sf-area-ok { color: #047857; font-size: 12px; }
-    .oi-sf-area-warn { color: #b45309; font-size: 12px; }
     .oi-sf-err { color: #b91c1c; font-size: 11.5px; margin-top: 2px; }
     .oi-sf-info { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; color: #475569; margin-top: 8px; }
-    .oi-sf-warn { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; color: #78350f; margin-top: 8px; }
     .oi-pickup { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 10px; margin-top: 10px; color: #1e3a8a; }
 
     /* Courier tracking box (quick view) */

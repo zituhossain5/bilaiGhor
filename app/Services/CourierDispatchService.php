@@ -7,7 +7,6 @@ use App\Models\CourierParcel;
 use App\Models\DeliveryThana;
 use App\Services\CourierTracking\ParcelRecorder;
 use App\Models\Order;
-use App\Services\Steadfast\SteadfastArea;
 use App\Support\CourierSettings;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
@@ -23,9 +22,8 @@ use Illuminate\Support\Str;
  *
  * The cash to collect is what the customer still owes (order total minus anything already paid).
  *
- * Steadfast extras, each behind a switch in CourierSettings (all off = the original payload, byte for byte):
- * the matched Steadfast area at the end of recipient_address, the admin-typed parcel weight as "Wt: X kg"
- * in the note (the API has no weight field), and total_lot as item quantity or number of packages.
+ * Steadfast uses the saved shipping address, the admin-typed parcel weight in the note
+ * (the API has no weight field), and total_lot as item quantity or number of packages.
  */
 class CourierDispatchService
 {
@@ -125,7 +123,6 @@ class CourierDispatchService
                                 'sent'       => $steadfast['body'],
                                 'weight_kg'  => $steadfast['weight'],
                                 'total_lot'  => $steadfast['body']['total_lot'],
-                                'area_label' => $steadfast['area']['label'] ?? null,
                             ];
                             $event['details'] = [
                                 'items_in_lot'      => $steadfast['body']['total_lot'],
@@ -203,7 +200,7 @@ class CourierDispatchService
      * (and total_lot, which the code always sent).
      *
      * @param  array  $options  weight (kg) typed in the send dialog — falls back to the order's saved weight; lot
-     * @return array{body: array, weight: ?float, area: ?array, error: ?string}
+     * @return array{body: array, weight: ?float, error: ?string}
      */
     public function steadfastPayload(Order $order, array $options = []): array
     {
@@ -217,9 +214,6 @@ class CourierDispatchService
         } elseif ($weight === null && CourierSettings::bool('weight_required')) {
             $error = 'পার্সেলের ওজন (kg) দিন — ওজন ছাড়া Steadfast এ পাঠানো বন্ধ আছে';
         }
-
-        $area = CourierSettings::bool('steadfast_area_in_address') ? SteadfastArea::forThana((int) $order->shipping->thana_id) : null;
-        $address = $area ? self::addressWithArea((string) $order->shipping->address, $area['label']) : $p['address'];
 
         $note = $p['note'];
         if ($weight !== null && CourierSettings::bool('weight_in_note')) {
@@ -235,39 +229,21 @@ class CourierDispatchService
                 'invoice'           => $p['invoice'],
                 'recipient_name'    => $p['name'],
                 'recipient_phone'   => $p['phone'],
-                'recipient_address' => $address,
+                'recipient_address' => $p['address'],
                 'cod_amount'        => $p['cod'],
                 'note'              => $note,
                 'item_description'  => $p['items'],
                 'total_lot'         => $lot,
             ],
             'weight' => $weight,
-            'area'   => $area,
             'error'  => $error,
         ];
     }
 
-    /** "Road 5, Baharchara" + "Cox's Bazar Sadar, Cox's Bazar" (customer text first, never cut off the area). */
-    public static function addressWithArea(string $street, string $areaLabel): string
-    {
-        $areaParts = collect(explode(',', $areaLabel))->map(fn ($x) => mb_strtolower(trim($x)))->all();
-        $street = collect(explode(',', $street))
-            ->map(fn ($part) => trim($part))
-            ->filter()
-            ->unique(fn ($part) => mb_strtolower($part))
-            ->reject(fn ($part) => in_array(mb_strtolower($part), $areaParts, true))
-            ->implode(', ');
-
-        $room = 220 - mb_strlen(', ' . $areaLabel);
-        $street = trim(mb_substr($street, 0, max(0, $room)), ' ,');
-
-        return $street !== '' ? $street . ', ' . $areaLabel : mb_substr($areaLabel, 0, 220);
-    }
-
-    /** The order note with "Wt: 1.5 kg" at the end, within Steadfast's 250 characters. */
+    /** The order note with "Weight: 1.5 kg" at the end, within Steadfast's 250 characters. */
     public static function noteWithWeight(string $note, float $weight): string
     {
-        $tag = 'Wt: ' . self::formatWeight($weight) . ' kg';
+        $tag = 'Weight: ' . self::formatWeight($weight) . ' kg';
         $note = trim($note);
         if ($note === '') {
             return $tag;

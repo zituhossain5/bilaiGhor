@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\CourierDispatchService;
 use App\Services\OrderPaymentService;
-use App\Services\Steadfast\SteadfastArea;
 use App\Support\CourierSettings;
 use App\Support\SteadfastPickup;
 use Illuminate\Http\JsonResponse;
@@ -24,14 +23,9 @@ class CourierSendController extends Controller
         }
 
         $service = new CourierDispatchService();
-        $areaOn = CourierSettings::bool('steadfast_area_in_address');
-
         $orders = Order::with(['shipping', 'orderdetails', 'payment'])->whereIn('id', $ids)->get()
             ->sortBy(fn ($o) => $ids->search($o->id))
-            ->map(function (Order $order) use ($service, $areaOn) {
-                $thanaId = (int) optional($order->shipping)->thana_id;
-                $area = $areaOn && $order->shipping ? SteadfastArea::forThana($thanaId) : null;
-
+            ->map(function (Order $order) use ($service) {
                 return [
                     'id'      => $order->id,
                     'invoice' => (string) $order->invoice_id,
@@ -41,9 +35,6 @@ class CourierSendController extends Controller
                     'qty'     => max(1, (int) $order->orderdetails->sum('qty')),
                     // Only what an admin saved on the order — never calculated from products.
                     'weight'  => $order->parcel_weight_kg !== null ? CourierDispatchService::formatWeight((float) $order->parcel_weight_kg) : null,
-                    'area'    => $area['label'] ?? null,
-                    'area_problem' => $areaOn && $order->shipping && !$area ? SteadfastArea::problem($thanaId) : null,
-                    'local_area'   => (string) optional($order->shipping)->area,
                     'reason'  => $service->cannotSend($order),
                 ];
             })
@@ -57,9 +48,7 @@ class CourierSendController extends Controller
                 'weight_in_note'  => CourierSettings::bool('weight_in_note'),
                 'weight_max'      => CourierSettings::weightMax(),
                 'lot_mode'        => CourierSettings::lotMode(),
-                'area_on'         => $areaOn,
             ],
-            'areas_url' => route('admin.steadfast.settings', ['filter' => 'review']),
         ]);
     }
 

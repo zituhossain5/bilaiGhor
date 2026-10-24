@@ -13,12 +13,8 @@ use App\Models\Order;
 use App\Models\OrderDetails;
 use App\Models\OrderStatus;
 use App\Models\Shipping;
-use App\Models\SteadfastPoliceStation;
-use App\Models\ThanaSteadfastPoliceStation;
 use App\Models\User;
 use App\Services\CourierDispatchService;
-use App\Services\Steadfast\AreaMatcher;
-use App\Services\Steadfast\SteadfastArea;
 use App\Support\CourierSettings;
 use App\Support\SteadfastPickup;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -30,7 +26,7 @@ use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
- * Steadfast parcel sending: area in the address, typed parcel weight, total_lot and the pickup reminder.
+ * Steadfast parcel sending: saved address, typed parcel weight, total_lot and pickup reminder.
  * Steadfast is never called for real (Http::fake + preventStrayRequests).
  */
 class SteadfastParcelSendingTest extends TestCase
@@ -58,13 +54,8 @@ class SteadfastParcelSendingTest extends TestCase
         $this->coxsBazar = DeliveryDistrict::forceCreate(['name' => 'কক্সবাজার', 'division_id' => $division->id]);
         $this->sadar = DeliveryThana::forceCreate(['name' => 'কক্সবাজার সদর', 'district_id' => $this->coxsBazar->id]);
 
-        foreach ([[900001, "Cox's Bazar Sadar"], [900002, 'Teknaf,টেকনাফ'], [900003, 'Ramu']] as [$id, $name]) {
-            SteadfastPoliceStation::forceCreate(['id' => $id, 'district_id' => 77, 'district_name' => "Cox's Bazar", 'name' => $name, 'status' => true]);
-        }
-
         // Every switch at its default unless a test says otherwise.
         CourierSettings::set(CourierSettings::DEFAULTS);
-        SteadfastArea::forget();
     }
 
     protected function tearDown(): void
@@ -74,82 +65,26 @@ class SteadfastParcelSendingTest extends TestCase
         parent::tearDown();
     }
 
-    // ── Area mapping ─────────────────────────────────────────────
-
-    public function test_bangla_thanas_are_matched_to_steadfast_areas_in_the_same_district(): void
-    {
-        $matcher = app(AreaMatcher::class);
-        $candidates = $matcher->candidates($matcher->stationsByDistrict(), 'কক্সবাজার');
-
-        [$station, $score] = $matcher->best('কক্সবাজার সদর', $candidates);
-        $this->assertSame("Cox's Bazar Sadar", $station['name']);
-        $this->assertGreaterThanOrEqual(AreaMatcher::EXACT, $score);
-
-        // "Teknaf,টেকনাফ": every part of Steadfast's name counts.
-        [$station, $score] = $matcher->best('টেকনাফ', $candidates);
-        $this->assertSame('Teknaf,টেকনাফ', $station['name']);
-        $this->assertGreaterThanOrEqual(AreaMatcher::EXACT, $score);
-
-        // য় stored decomposed (য + ়) must compare equal to the precomposed letter.
-        $this->assertSame(AreaMatcher::skeleton("পটুয\u{09BC}াখালী"), AreaMatcher::skeleton("পটু\u{09DF}াখালী"));
-    }
-
-    public function test_equal_skeletons_are_left_for_an_admin_to_confirm(): void
-    {
-        $candidates = [
-            ['id' => 1, 'name' => 'Demra', 'keys' => [AreaMatcher::skeleton('Demra')], 'tags' => [], 'sadar' => false],
-            ['id' => 2, 'name' => 'Dhamrai', 'keys' => [AreaMatcher::skeleton('Dhamrai')], 'tags' => [], 'sadar' => false],
-        ];
-
-        [$station, $score] = app(AreaMatcher::class)->best('ধামরাই', $candidates);
-
-        $this->assertSame('Dhamrai', $station['name']);
-        $this->assertLessThan(AreaMatcher::EXACT, $score);
-    }
-
-    public function test_auto_matching_never_overwrites_an_admin_choice(): void
-    {
-        ThanaSteadfastPoliceStation::create(['thana_id' => $this->sadar->id, 'steadfast_police_station_id' => 900003, 'match_type' => 'manual']);
-
-        app(AreaMatcher::class)->matchAll(true);
-
-        $row = ThanaSteadfastPoliceStation::where('thana_id', $this->sadar->id)->first();
-        $this->assertSame('manual', $row->match_type);
-        $this->assertSame(900003, $row->steadfast_police_station_id);
-    }
-
     // ── Address string ──────────────────────────────────────────
 
-    public function test_matched_thana_ends_the_address_with_the_english_steadfast_area(): void
+    public function test_steadfast_uses_the_saved_bangla_shipping_location(): void
     {
-        $this->mapSadar('exact');
         $order = $this->makeOrder(['address' => 'Road 5, Baharchara']);
 
         $body = (new CourierDispatchService())->steadfastPayload($order, ['weight' => '1'])['body'];
 
-        $this->assertSame("Road 5, Baharchara, Cox's Bazar Sadar, Cox's Bazar", $body['recipient_address']);
+        $this->assertSame('Road 5, Baharchara, কক্সবাজার সদর, কক্সবাজার, চট্টগ্রাম', $body['recipient_address']);
+        $this->assertStringNotContainsString("Cox's Bazar Sadar", $body['recipient_address']);
+        $this->assertStringNotContainsString('Sharsha', $body['recipient_address']);
     }
 
-    public function test_long_address_is_cut_from_the_customer_text_not_from_the_area(): void
+    public function test_long_saved_address_stays_within_220_characters(): void
     {
-        $this->mapSadar('exact');
         $order = $this->makeOrder(['address' => str_repeat('Lane ', 50)]);
 
         $address = (new CourierDispatchService())->steadfastPayload($order, ['weight' => '1'])['body']['recipient_address'];
 
         $this->assertLessThanOrEqual(220, mb_strlen($address));
-        $this->assertStringEndsWith(", Cox's Bazar Sadar, Cox's Bazar", $address);
-    }
-
-    public function test_unconfirmed_or_missing_match_keeps_the_old_address(): void
-    {
-        $this->mapSadar('close');   // a suggestion only
-        $order = $this->makeOrder(['address' => 'Road 5, Baharchara']);
-
-        $address = (new CourierDispatchService())->steadfastPayload($order, ['weight' => '1'])['body']['recipient_address'];
-
-        $this->assertSame('Road 5, Baharchara, কক্সবাজার সদর, কক্সবাজার, চট্টগ্রাম', $address);
-        $this->assertSame('close', SteadfastArea::problem($this->sadar->id));
     }
 
     // ── Weight ──────────────────────────────────────────────────
@@ -194,14 +129,15 @@ class SteadfastParcelSendingTest extends TestCase
         $data = $response->getData(true);
         $this->assertCount(2, $data['success'], json_encode($data['failed'] ?? []));
         $notes = collect($bodies())->pluck('note', 'invoice');
-        $this->assertSame('Call before delivery | Wt: 1.5 kg', $notes[$first->invoice_id]);
-        $this->assertSame('Wt: 2 kg', $notes[$second->invoice_id]);
+        $this->assertSame('Call before delivery | Weight: 1.5 kg', $notes[$first->invoice_id]);
+        $this->assertSame('Weight: 2 kg', $notes[$second->invoice_id]);
 
         // Kept on the order and with the parcel's "sent" record.
         $this->assertEquals(1.5, (float) $first->fresh()->parcel_weight_kg);
         $event = CourierTrackingEvent::where('order_id', $first->id)->where('source', 'dispatch')->first();
         $this->assertEquals(1.5, $event->raw_payload['weight_kg']);
-        $this->assertSame('Call before delivery | Wt: 1.5 kg', $event->raw_payload['sent']['note']);
+        $this->assertSame('Call before delivery | Weight: 1.5 kg', $event->raw_payload['sent']['note']);
+        $this->assertArrayNotHasKey('area_label', $event->raw_payload);
     }
 
     public function test_one_bad_weight_fails_only_that_order(): void
@@ -222,10 +158,13 @@ class SteadfastParcelSendingTest extends TestCase
 
     public function test_weight_in_note_stays_within_250_characters_and_can_be_switched_off(): void
     {
+        $this->assertSame('Weight: 0.42 kg', CourierDispatchService::noteWithWeight('', 0.42));
+        $this->assertSame('Original note | Weight: 1.5 kg', CourierDispatchService::noteWithWeight('Original note', 1.5));
+
         $order = $this->makeOrder(['note' => str_repeat('n', 260)]);
         $note = (new CourierDispatchService())->steadfastPayload($order, ['weight' => '12.75'])['body']['note'];
         $this->assertSame(250, mb_strlen($note));
-        $this->assertStringEndsWith(' | Wt: 12.75 kg', $note);
+        $this->assertStringEndsWith(' | Weight: 12.75 kg', $note);
 
         CourierSettings::set(['weight_in_note' => '0']);
         $plain = $this->makeOrder(['note' => 'Fragile']);
@@ -240,6 +179,14 @@ class SteadfastParcelSendingTest extends TestCase
         $preview = app(CourierSendController::class)->preview($request)->getData(true);
 
         $this->assertNull($preview['orders'][0]['weight']);
+        $this->assertSame(
+            ['id', 'invoice', 'name', 'phone', 'cod', 'qty', 'weight', 'reason'],
+            array_keys($preview['orders'][0])
+        );
+        $this->assertSame(
+            ['weight_required', 'weight_in_note', 'weight_max', 'lot_mode'],
+            array_keys($preview['settings'])
+        );
         $this->assertNull($order->fresh()->parcel_weight_kg);
         $this->assertNull((new CourierDispatchService())->steadfastPayload($order)['weight']);
     }
@@ -312,10 +259,9 @@ class SteadfastParcelSendingTest extends TestCase
 
     // ── Old behaviour ───────────────────────────────────────────
 
-    public function test_with_the_new_switches_off_the_payload_is_exactly_the_old_one(): void
+    public function test_without_required_weight_the_payload_uses_the_saved_address(): void
     {
-        CourierSettings::set(['steadfast_area_in_address' => '0', 'weight_required' => '0', 'steadfast_total_lot' => 'items']);
-        $this->mapSadar('exact');
+        CourierSettings::set(['weight_required' => '0', 'steadfast_total_lot' => 'items']);
         $bodies = $this->fakeSteadfast();
         $order = $this->makeOrder(['address' => 'Road 5, Baharchara', 'note' => 'Fragile']);
 
@@ -347,14 +293,6 @@ class SteadfastParcelSendingTest extends TestCase
     }
 
     // ── Helpers ─────────────────────────────────────────────────
-
-    private function mapSadar(string $type): void
-    {
-        ThanaSteadfastPoliceStation::updateOrCreate(['thana_id' => $this->sadar->id], [
-            'steadfast_police_station_id' => 900001, 'match_type' => $type, 'score' => 1,
-        ]);
-        SteadfastArea::forget();
-    }
 
     private function makeOrder(array $o = []): Order
     {

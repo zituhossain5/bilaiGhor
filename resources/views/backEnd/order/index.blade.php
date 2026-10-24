@@ -1330,19 +1330,11 @@ $(document).ready(function(){
     }
     function oiSfHtml(res, send, skip) {
         var st = res.settings, packages = st.lot_mode === 'packages';
-        var unmatched = send.filter(function (o) { return st.area_on && !o.area; }).length;
         var h = '<div class="oi-courier-confirm"><div><strong>' + send.length + ' টি অর্ডার Steadfast এ যাবে:</strong></div>'
               + '<div class="oi-sf-wrap"><table class="oi-sf-table"><thead><tr><th>ইনভয়েস</th><th>গ্রাহক</th><th>COD</th>'
-              + (st.area_on ? '<th>Steadfast এরিয়া</th>' : '')
               + '<th>ওজন (kg)' + (st.weight_required ? ' *' : '') + '</th><th>' + (packages ? 'প্যাকেজ' : 'আইটেম (total_lot)') + '</th></tr></thead><tbody>';
         $.each(send, function (_, o) {
             h += '<tr data-id="' + o.id + '"><td>#' + cptEsc(o.invoice) + '</td><td>' + cptEsc(o.name) + '<br><small>' + cptEsc(o.phone) + '</small></td><td>' + oiMoney(o.cod) + '</td>';
-            if (st.area_on) {
-                h += o.area
-                    ? '<td class="oi-sf-area-ok">✓ ' + cptEsc(o.area) + '</td>'
-                    : '<td class="oi-sf-area-warn">⚠ ' + (o.area_problem === 'close' ? 'যাচাই বাকি' : (o.area_problem === 'not_synced' ? 'এরিয়া সিঙ্ক হয়নি' : 'মেলানো হয়নি'))
-                      + '<br><small>আগের মতো যাবে: ' + cptEsc(o.local_area || '—') + '</small></td>';
-            }
             h += '<td><input type="text" inputmode="decimal" class="oi-sf-weight" aria-label="ওজন (kg) #' + cptEsc(o.invoice) + '" value="' + cptEsc(o.weight || '') + '" placeholder="kg">'
                + '<div class="oi-sf-picks">' + ['0.5', '1', '1.5', '2'].map(function (w) { return '<button type="button" data-w="' + w + '">' + w + '</button>'; }).join('') + '</div>'
                + '<div class="oi-sf-err"></div></td>';
@@ -1357,11 +1349,7 @@ $(document).ready(function(){
             $.each(skip, function (_, o) { h += '<li>#' + cptEsc(o.invoice) + ' — ' + cptEsc(o.reason) + '</li>'; });
             h += '</ul></div>';
         }
-        if (unmatched) {
-            h += '<div class="oi-sf-warn">⚠ ' + unmatched + ' টি অর্ডারের থানা Steadfast এরিয়ার সাথে মেলানো হয়নি — এগুলো আগের মতো বাংলা ঠিকানায় যাবে। পাঠানো যাবে। '
-               + '<a href="' + cptEsc(res.areas_url) + '" target="_blank" rel="noopener">এরিয়া মেলান ↗</a></div>';
-        }
-        h += '<div class="oi-sf-info">' + (st.weight_in_note ? 'ওজন নোটের শেষে যাবে ("Wt: 1.5 kg") — Steadfast API তে ওজনের আলাদা ঘর নেই। ' : '')
+        h += '<div class="oi-sf-info">' + (st.weight_in_note ? 'ওজন নোটের শেষে যাবে ("Weight: 1.5 kg") — Steadfast API তে ওজনের আলাদা ঘর নেই। ' : '')
            + (packages ? 'total_lot = প্যাকেজ সংখ্যা।' : 'total_lot = মোট আইটেম সংখ্যা।') + '</div>';
         return h + '</div>';
     }

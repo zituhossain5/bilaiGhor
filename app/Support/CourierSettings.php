@@ -15,11 +15,9 @@ class CourierSettings
     private const CACHE_KEY = 'courier_settings.all';
 
     public const DEFAULTS = [
-        // Add Steadfast's English area name to the end of recipient_address (only for matched thanas).
-        'steadfast_area_in_address' => '1',
         // A parcel weight must be entered before an order can be sent to Steadfast.
         'weight_required'           => '1',
-        // Steadfast's API has no weight field: write "Wt: 1.5 kg" at the end of the note.
+        // Steadfast's API has no weight field: write "Weight: 1.5 kg" at the end of the note.
         'weight_in_note'            => '1',
         'weight_max_kg'             => '30',
         // total_lot: "items" = total item quantity (old behaviour), "packages" = number of packages (default 1).

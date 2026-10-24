@@ -1257,12 +1257,10 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
         Route::post('order/{order}/parcel-weight', [\App\Http\Controllers\Admin\CourierSendController::class, 'saveWeight'])->name('admin.order.parcel_weight');
         Route::post('steadfast/pickup-done', [\App\Http\Controllers\Admin\CourierSendController::class, 'pickupDone'])->name('admin.steadfast.pickup_done');
     });
-    // Steadfast settings + thana → Steadfast area mapping
+    // Steadfast sending settings
     Route::middleware('can:api-manage')->group(function () {
         Route::get('steadfast/settings', [\App\Http\Controllers\Admin\SteadfastSettingsController::class, 'index'])->name('admin.steadfast.settings');
         Route::post('steadfast/settings', [\App\Http\Controllers\Admin\SteadfastSettingsController::class, 'update'])->name('admin.steadfast.settings.update');
-        Route::post('steadfast/sync-areas', [\App\Http\Controllers\Admin\SteadfastSettingsController::class, 'sync'])->name('admin.steadfast.sync');
-        Route::post('steadfast/area-mapping', [\App\Http\Controllers\Admin\SteadfastSettingsController::class, 'saveMapping'])->name('admin.steadfast.mapping');
     });
     Route::get('order-assign', [OrderController::class,'order_assign'])->name('admin.order.assign');
     Route::get('order-status', [OrderController::class,'order_status'])->name('admin.order.status');

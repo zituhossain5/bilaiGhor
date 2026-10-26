@@ -12,8 +12,19 @@ class Order extends Model
     // সব ফিল্ড mass assign করতে পারবে
     protected $guarded = [];
 
+    // Public tracking is a bearer credential; never serialize it accidentally.
+    protected $hidden = ['public_token'];
+
     protected static function booted(): void
     {
+        // The same unique public_token used by manual invoices also protects guest
+        // tracking for orders created by the web and mobile checkout paths.
+        static::creating(function (self $order) {
+            if (blank($order->public_token)) {
+                $order->public_token = bin2hex(random_bytes(32));
+            }
+        });
+
         // Reward points react to order-status transitions. Hooking the model event
         // covers every Eloquent write site (admin panel, courier webhooks, delivery
         // boy app, refunds) without touching each controller. The service methods

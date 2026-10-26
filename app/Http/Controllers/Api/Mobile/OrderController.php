@@ -11,6 +11,7 @@ use App\Models\OrderDetails;
 use App\Models\Product;
 use App\Support\DeliveryLocation;
 use App\Helpers\OrderHelper;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -281,25 +282,48 @@ class OrderController extends Controller
      * Track Order
      * 
      * GET /api/v1/mobile/orders/track/{invoiceId}
+     * Requires X-Order-Tracking-Token; the invoice is a reference, not a credential.
      */
-    public function track($invoiceId, Request $request)
+    public function track($invoiceId, Request $request): JsonResponse
     {
-        $order = Order::where('invoice_id', $invoiceId)
-            ->with(['orderdetails.product.image', 'status', 'payment', 'shipping'])
+        $token = $request->header('X-Order-Tracking-Token');
+        if (!is_string($token) || !preg_match('/\A(?:[A-Za-z0-9]{48}|[a-f0-9]{64})\z/D', $token)) {
+            return $this->trackingUnavailable();
+        }
+
+        // public_token has a unique index. Check the exact bytes too: some MySQL
+        // collations compare tokens case-insensitively.
+        $order = Order::query()
+            ->where('public_token', $token)
+            ->with(['status', 'courierParcel'])
             ->first();
 
-        if (!$order) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Order not found'
-            ], 404);
+        if (!$order
+            || !hash_equals((string) $order->public_token, $token)
+            || !hash_equals((string) $order->invoice_id, (string) $invoiceId)) {
+            return $this->trackingUnavailable();
         }
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Order retrieved successfully',
-            'data' => $this->formatOrder($order, true)
-        ], 200);
+            'message' => 'Order tracking retrieved successfully',
+            'data' => [
+                'order_reference' => $order->invoice_id,
+                'order_status' => $order->status?->name ?? 'Unknown',
+                'courier_status' => $order->courierParcel?->status,
+                'order_date' => $order->created_at?->toIso8601String(),
+            ],
+        ])->header('Cache-Control', 'no-store, private')
+            ->header('Referrer-Policy', 'no-referrer');
+    }
+
+    private function trackingUnavailable(): JsonResponse
+    {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Tracking information unavailable.',
+        ], 404)->header('Cache-Control', 'no-store, private')
+            ->header('Referrer-Policy', 'no-referrer');
     }
 
     /**
@@ -330,6 +354,9 @@ class OrderController extends Controller
         ];
 
         if ($detailed) {
+            // Only authenticated, ownership-checked order details and checkout use
+            // this formatter. The public tracking response above never calls it.
+            $data['tracking_token'] = $order->public_token;
             $data['items'] = $order->orderdetails->map(function($item) {
                 return [
                     'id' => $item->id,

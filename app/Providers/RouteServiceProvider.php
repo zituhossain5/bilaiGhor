@@ -46,6 +46,12 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Guest tracking uses a bearer secret. Limit guesses independently of other API routes.
+        RateLimiter::for('mobile-order-track', fn (Request $request) => [
+            Limit::perMinute(5)->by('mobile-order-track:minute:' . $request->ip()),
+            Limit::perHour(20)->by('mobile-order-track:hour:' . $request->ip()),
+        ]);
+
         // Public blog comment form: at most 3 per minute and 10 per hour from one IP.
         RateLimiter::for('blog-comments', function (Request $request) {
             return [

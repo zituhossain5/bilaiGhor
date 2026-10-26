@@ -51,7 +51,8 @@ Route::prefix('v1/mobile')->group(function () {
     });
 
     // Order Tracking (Public)
-    Route::get('orders/track/{invoiceId}', [OrderController::class, 'track']);
+    Route::get('orders/track/{invoiceId}', [OrderController::class, 'track'])
+        ->middleware('throttle:mobile-order-track');
 });
 
 // Protected Routes (Require Authentication)

@@ -711,7 +711,7 @@ $brands = Brand::where('status', 1)
 
             $first = $lineItems[0] ?? [];
 
-            $incomplete = IncompleteOrder::updateOrCreate(
+            IncompleteOrder::updateOrCreate(
                 ['phone' => $phone],
                 [
                     'name'          => $validated['name'] ?? null,
@@ -726,14 +726,13 @@ $brands = Brand::where('status', 1)
             return response()->json([
                 'status'  => 'success',
                 'message' => 'Incomplete order saved.',
-                'data'    => ['id' => $incomplete->id],
             ]);
         } catch (\Throwable $e) {
             \Log::error('Incomplete order save failed: '.$e->getMessage());
 
             return response()->json([
                 'status'  => 'error',
-                'message' => 'Failed to save incomplete order: '.$e->getMessage(),
+                'message' => 'Failed to save incomplete order.',
             ], 500);
         }
     }

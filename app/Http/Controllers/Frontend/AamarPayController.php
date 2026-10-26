@@ -328,8 +328,7 @@ class AamarPayController extends Controller
             Session::forget(['payable_amount', 'aamarpay_tran_id', 'aamarpay_order_id']);
 
             Toastr::success('Thanks, Your payment was successful!', 'Success!');
-            $redirectRoute = ($order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-            return redirect()->route($redirectRoute, $order->id);
+            return redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order));
 
         } else {
             // Payment failed, pending, or not confirmed by aamarPay
@@ -338,8 +337,7 @@ class AamarPayController extends Controller
             Session::forget(['payable_amount', 'aamarpay_tran_id', 'aamarpay_order_id']);
 
             Toastr::error('Payment failed or incomplete.', 'Failed!');
-            $redirectRoute = ($order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-            return redirect()->route($redirectRoute, $order->id);
+            return redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order));
         }
     }
 
@@ -366,8 +364,7 @@ class AamarPayController extends Controller
         Toastr::error('Payment failed. Please try again.', 'Failed!');
 
         if ($orderId && $order) {
-            $redirectRoute = ($order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-            return redirect()->route($redirectRoute, $orderId);
+            return redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order));
         }
 
         return redirect()->route('customer.account');
@@ -397,8 +394,7 @@ class AamarPayController extends Controller
         Toastr::error('Payment cancelled by user.', 'Cancelled!');
         
         if ($orderId && $order) {
-            $redirectRoute = ($order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-            return redirect()->route($redirectRoute, $orderId);
+            return redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order));
         }
         
         return redirect()->route('customer.account');

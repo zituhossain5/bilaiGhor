@@ -173,14 +173,12 @@ class BkashController extends Controller
         if(isset($allRequest['status']) && $allRequest['status'] == 'failure'){
             Toastr::error('Opps, Your bkash payment failed', 'Failed!');
             $order = Order::find($allRequest['orderId']);
-            $redirectRoute = ($order && $order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-            return redirect()->route($redirectRoute, $allRequest['orderId']);
+            return $order ? redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order)) : redirect()->route('customer.order_track');
 
         }else if(isset($allRequest['status']) && $allRequest['status'] == 'cancel'){
             Toastr::error('Opps, Your bkash payment cancelled', 'Cancelled!');
             $order = Order::find($allRequest['orderId']);
-            $redirectRoute = ($order && $order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-            return redirect()->route($redirectRoute, $allRequest['orderId']);
+            return $order ? redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order)) : redirect()->route('customer.order_track');
 
         }else{
             
@@ -190,15 +188,13 @@ class BkashController extends Controller
             if(array_key_exists("statusCode",$arr) && $arr['statusCode'] != '0000'){
                 Toastr::error('Opps, Your bkash payment failed', 'Failed!');
                 $order = Order::find($allRequest['orderId']);
-                $redirectRoute = ($order && $order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-                return redirect()->route($redirectRoute, $allRequest['orderId']);
+                return $order ? redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order)) : redirect()->route('customer.order_track');
 
             }else if(array_key_exists("message",$arr)){
                 sleep(1);
                 $queryResponse = $this->query($allRequest['paymentID']);
                 $order = Order::find($allRequest['orderId']);
-                $redirectRoute = ($order && $order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-                return redirect()->route($redirectRoute, $allRequest['orderId']);
+                return $order ? redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order)) : redirect()->route('customer.order_track');
             }
             
             // Payment Successful Logic
@@ -301,8 +297,7 @@ if($order) {
             
             Toastr::success('Thanks, Your bkash payment successfully done', 'Success!');
             $order = Order::find($allRequest['orderId']);
-            $redirectRoute = ($order && $order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-            return redirect()->route($redirectRoute, $allRequest['orderId']);
+            return $order ? redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order)) : redirect()->route('customer.order_track');
         }
     }
  

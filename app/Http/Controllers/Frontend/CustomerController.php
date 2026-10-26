@@ -957,16 +957,20 @@ public function order_save(Request $request)
             return redirect()->route('checkout')->withInput();
         }
 
+        session()->put('public_order_success_id', $order->id);
+        session()->put('public_order_success_token', $order->public_token);
+
         // === Customer SMS ===
         try {
             $customerPhone = isset($shipping) && $shipping->phone ? $shipping->phone : ($request->phone ?? ($order->customer->phone ?? null));
             $customerName  = isset($shipping) && $shipping->name ? $shipping->name : ($request->name ?? ($order->customer->name ?? 'Customer'));
             $site_setting  = GeneralSetting::where('status', 1)->first();
+            $trackingSuffix = Auth::guard('customer')->check() ? '' : " Tracking code: {$order->public_token}";
             if ($customerPhone) {
-                SmsHelper::send($customerPhone, "প্রিয় {$customerName}! আপনার অর্ডার #{$order->invoice_id} সফলভাবে গ্রহণ করা হয়েছে। মোট: {$order->amount} Tk. {$site_setting->name}", ['order' => 1]);
+                SmsHelper::send($customerPhone, "প্রিয় {$customerName}! আপনার অর্ডার #{$order->invoice_id} সফলভাবে গ্রহণ করা হয়েছে। মোট: {$order->amount} Tk. {$site_setting->name}{$trackingSuffix}", ['order' => 1]);
             }
         } catch (\Exception $e) {
-            \Log::error("Customer SMS error for order {$order->id}: " . $e->getMessage());
+            \Log::warning('Customer order SMS failed', ['order_id' => $order->id]);
         }
 
         // === Admin SMS ===
@@ -1119,7 +1123,7 @@ public function order_save(Request $request)
 
             Session::forget('coupon_code');
             Session::forget('discount');
-            return redirect('customer/order-success/'.$order->id);
+            return redirect(\App\Support\PublicOrderAccess::successUrl($order));
 
         } else {
             Toastr::error('পেমেন্ট মেথড সঠিক নয়।', 'Failed!');
@@ -1467,12 +1471,37 @@ public function order_save(Request $request)
         return view('frontEnd.layouts.customer.order_details', compact('order', 'recentOrders'));
     }
 
-    public function order_success($id)
+    public function order_success($id, Request $request)
     {
-        $order = Order::with(['orderdetails.size', 'orderdetails.color', 'shipping'])
-            ->where('id', $id)
-            ->firstOrFail();
-        return view('frontEnd.layouts.customer.order_success', compact('order'));
+        $ownerId = Auth::guard('customer')->id();
+        if ($ownerId) {
+            $order = Order::whereKey($id)->where('customer_id', $ownerId)
+                ->with(['orderdetails.size', 'orderdetails.color', 'shipping'])->first();
+            if ($order) {
+                if ($request->has('token')) {
+                    return \App\Support\PublicOrderAccess::noStore(
+                        redirect()->route('customer.order_success', ['id' => $order->id])
+                    );
+                }
+
+                return \App\Support\PublicOrderAccess::noStore(
+                    response()->view('frontEnd.layouts.customer.order_success', compact('order'))
+                );
+            }
+        }
+
+        $order = \App\Support\PublicOrderAccess::find($request, (string) $id, 'id');
+        abort_unless($order, 404);
+        $order->load(['status', 'courierParcel']);
+        $downloads = \App\Services\OrderPaymentService::state($order)['due'] <= 0
+            ? DigitalDownload::where('order_id', $order->id)->get()
+            : collect();
+
+        return \App\Support\PublicOrderAccess::noStore(response()->view(
+            'frontEnd.layouts.customer.public_order_status',
+            ['order' => $order, 'success' => true, 'trackAction' => route('customer.order_track_result'),
+                'downloads' => $downloads]
+        ));
     }
 
     public function invoice(Request $request)
@@ -1608,47 +1637,15 @@ public function order_save(Request $request)
 
    public function order_track_result(Request $request)
     {
-        $phone = $request->phone;
-        $invoice_id = $request->invoice_id;
+        $order = \App\Support\PublicOrderAccess::find($request, (string) $request->input('invoice_id'));
+        abort_unless($order, 404);
+        $order->load(['status', 'courierParcel']);
 
-        // ১. ভ্যালিডেশন: অন্তত একটি ইনপুট থাকতে হবে
-        if (!$phone && !$invoice_id) {
-            Toastr::error('অনুগ্রহ করে মোবাইল নাম্বার অথবা ইনভয়েস আইডি দিন', 'Error');
-            return redirect()->back();
-        }
-
-        // ২. কুয়েরি শুরু (Order মডেল ব্যবহার করে)
-        $query = Order::query();
-
-        // যদি ইনভয়েস আইডি দেওয়া থাকে
-        if ($invoice_id) {
-            $query->where('invoice_id', $invoice_id);
-        }
-
-        // যদি ফোন নম্বর দেওয়া থাকে
-        if ($phone) {
-            // আমরা Shipping টেবিল চেক করব কারণ অর্ডারের ফোন নম্বর সেখানেই থাকে
-            $query->whereHas('shipping', function($q) use ($phone){
-                $q->where('phone', $phone);
-            });
-        }
-
-        // ৩. ডাটা নিয়ে আসা (Eager Loading সহ)
-        // latest() দিলে নতুন অর্ডার আগে দেখাবে
-        $order = $query->with(['shipping', 'status', 'orderdetails'])->latest()->get();
-
-        // ৪. যদি কোনো অর্ডার না পাওয়া যায়
-        if ($order->count() == 0) {
-            Toastr::error('দুঃখিত! কোনো অর্ডার পাওয়া যায়নি।', 'Failed');
-            return redirect()->back();
-        }
-
-        // ৫. ভিউতে ডাটা পাঠানো
-        // আপনার কন্ট্রোলারে ভিউয়ের নাম 'tracking_result' দেওয়া আছে, তাই সেটিই রাখলাম।
-        // কিন্তু নিশ্চিত হোন আপনার ব্লেড ফাইলের নাম tracking_result.blade.php নাকি track_order.blade.php
-        return view('frontEnd.layouts.customer.tracking_result', compact('order'));
+        return \App\Support\PublicOrderAccess::noStore(response()->view(
+            'frontEnd.layouts.customer.public_order_status',
+            ['order' => $order, 'success' => false, 'trackAction' => null]
+        ));
     }
-// এই ফাংশনটি মিসিং থাকার কারণেই এরর আসছিল
     public function order_track()
     {
         return view('frontEnd.layouts.customer.order_track');

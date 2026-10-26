@@ -213,50 +213,27 @@
             <div class="track-right">
                 <div>
                     <h3 class="form-title">অর্ডার স্ট্যাটাস</h3>
-                    <p class="form-subtitle">ট্র্যাক করতে আপনার ফোন নাম্বার অথবা ইনভয়েস আইডি দিন</p>
+                    <p class="form-subtitle">Use the order reference and private tracking code from your confirmation link.</p>
                 </div>
                 
                 {{-- আপনার আগের রাউট এবং মেথড ঠিক রাখা হয়েছে --}}
-                <form action="{{route('customer.order_track_result')}}" method="GET">
-                    
-                    {{-- Phone Input --}}
+                <form action="{{ route('customer.order_track_result') }}" method="POST">
+                    @csrf
                     <div>
-                        <label class="input-label">মোবাইল নাম্বার</label>
+                        <label class="input-label">Invoice / order reference</label>
                         <div class="input-wrapper">
-                            <input type="number" name="phone" 
-                                   class="modern-input @error('phone') is-invalid @enderror" 
-                                   value="{{ old('phone') }}" 
-                                   placeholder="017xxxxxxxx">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        @error('phone')
-                            <small class="text-danger d-block mb-3 ms-2">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-                    {{-- OR Divider --}}
-                    <div class="or-divider"><span>অথবা</span></div>
-
-                    {{-- Invoice Input --}}
-                    <div>
-                        <label class="input-label">ইনভয়েস আইডি</label>
-                        <div class="input-wrapper">
-                            <input type="text" name="invoice_id" 
-                                   class="modern-input @error('invoice_id') is-invalid @enderror" 
-                                   value="{{ old('invoice_id') }}" 
-                                   placeholder="যেমন: 54321">
+                            <input type="text" name="invoice_id" class="modern-input" required value="{{ old('invoice_id') }}" placeholder="Order reference">
                             <i class="fas fa-receipt"></i>
                         </div>
-                        @error('invoice_id')
-                            <small class="text-danger d-block mb-3 ms-2">{{ $message }}</small>
-                        @enderror
                     </div>
-
-                    {{-- Submit Button --}}
-                    <button type="submit" class="modern-btn mt-4">
-                        ট্র্যাক করুন <i class="fas fa-search ms-2"></i>
-                    </button>
-
+                    <div>
+                        <label class="input-label">Private tracking code from your confirmation link</label>
+                        <div class="input-wrapper">
+                            <input type="text" name="token" class="modern-input" required autocomplete="off" value="{{ old('token') }}" placeholder="Tracking code">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="modern-btn mt-4">Track order <i class="fas fa-search ms-2"></i></button>
                 </form>
             </div>
 

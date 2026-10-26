@@ -36,26 +36,20 @@
             <div class="bg-blue-600 text-white p-6 sm:p-8 text-center">
                 <i class="fa-solid fa-truck-fast text-5xl mb-4 opacity-90"></i>
                 <h1 class="text-xl md:text-2xl font-bold">অর্ডার ট্রাকিং</h1>
-                <p class="text-sm mt-2 opacity-90">ঘরে বসেই জানুন আপনার অর্ডারের অবস্থান। মোবাইল নাম্বার অথবা ইনভয়েস আইডি দিন।</p>
+                <p class="text-sm mt-2 opacity-90">Use the order reference and private tracking code from your confirmation link.</p>
             </div>
             <div class="p-6 sm:p-8">
-                <form action="{{ route('reseller.landing.order-track.result', $landing->slug) }}" method="GET" class="space-y-5">
+                <form action="{{ route('reseller.landing.order-track.result', $landing->slug) }}" method="POST" class="space-y-5">
+                    @csrf
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">মোবাইল নাম্বার</label>
-                        <input type="text" name="phone" value="{{ old('phone') }}" placeholder="017xxxxxxxx" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition">
-                    </div>
-                    <div class="flex items-center gap-2 text-gray-400 text-sm">
-                        <span class="flex-1 h-px bg-gray-200"></span>
-                        <span>অথবা</span>
-                        <span class="flex-1 h-px bg-gray-200"></span>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Invoice / order reference</label>
+                        <input type="text" name="invoice_id" required value="{{ old('invoice_id') }}" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl" placeholder="Order reference">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">ইনভয়েস আইডি</label>
-                        <input type="text" name="invoice_id" value="{{ old('invoice_id') }}" placeholder="যেমন: 54321" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Private tracking code from your confirmation link</label>
+                        <input type="text" name="token" required autocomplete="off" value="{{ old('token') }}" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl" placeholder="Tracking code">
                     </div>
-                    <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-search"></i> ট্র্যাক করুন
-                    </button>
+                    <button type="submit" class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl">Track order</button>
                 </form>
             </div>
         </div>

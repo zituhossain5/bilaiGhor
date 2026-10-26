@@ -84,7 +84,7 @@ use App\Http\Controllers\Admin\KittenPackController as AdminKittenPackController
 use App\Http\Controllers\Admin\PopupController;
 
 Route::get('/invoice/verify/{token}', [ManualOrderController::class, 'verify'])
-    ->name('manual.invoice.verify');
+    ->middleware('throttle:public-order-pages')->name('manual.invoice.verify');
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Vendor\ProductController as VendorProductController;
 use App\Http\Controllers\Vendor\SettingsController as VendorSettingsController;
@@ -308,9 +308,9 @@ Route::get('/r/{slug}/cart/remove/{productId}', [\App\Http\Controllers\Reseller\
 Route::get('/r/{slug}/order', [\App\Http\Controllers\Reseller\LandingOrderController::class, 'orderForm'])->name('reseller.landing.order');
 Route::post('/r/{slug}/order', [\App\Http\Controllers\Reseller\LandingOrderController::class, 'storeOrder'])->name('reseller.landing.order.store');
 Route::post('/r/{slug}/order/resend-otp', [\App\Http\Controllers\Reseller\LandingOrderController::class, 'resendCheckoutOtp'])->name('reseller.landing.order.resend_otp');
-Route::get('/r/{slug}/order/success/{orderId}', [\App\Http\Controllers\Reseller\LandingOrderController::class, 'orderSuccess'])->name('reseller.landing.order.success');
+Route::get('/r/{slug}/order/success/{orderId}', [\App\Http\Controllers\Reseller\LandingOrderController::class, 'orderSuccess'])->middleware('throttle:public-order-pages')->name('reseller.landing.order.success');
 Route::get('/r/{slug}/order-track', [\App\Http\Controllers\Reseller\LandingOrderController::class, 'orderTrack'])->name('reseller.landing.order-track');
-Route::get('/r/{slug}/order-track/result', [\App\Http\Controllers\Reseller\LandingOrderController::class, 'orderTrackResult'])->name('reseller.landing.order-track.result');
+Route::post('/r/{slug}/order-track/result', [\App\Http\Controllers\Reseller\LandingOrderController::class, 'orderTrackResult'])->middleware('throttle:mobile-order-track')->name('reseller.landing.order-track.result');
 Route::get('/r/{slug}/contact', [\App\Http\Controllers\Reseller\LandingContactController::class, 'show'])->name('reseller.landing.contact');
 Route::post('/r/{slug}/contact', [\App\Http\Controllers\Reseller\LandingContactController::class, 'store'])->name('reseller.landing.contact.store');
 Route::post('/r/{slug}/newsletter/subscribe', [\App\Http\Controllers\Reseller\LandingNewsletterController::class, 'subscribe'])->name('reseller.landing.newsletter.subscribe');
@@ -501,7 +501,7 @@ Route::get('/aamarpay/cancel', [AamarPayController::class, 'cancel'])->name('aam
 
 // ✅ অর্ডার সফলতার রাউট (CustomerController থেকে)
 Route::get('customer/order-success/{id}', [CustomerController::class, 'order_success'])
-     ->name('customer.order_success');
+     ->middleware('throttle:public-order-pages')->name('customer.order_success');
 	 
 	 // ✅ Manual Payment Status Change
 Route::post('admin/order/update-payment-status', [OrderPaymentController::class, 'updateStatus'])
@@ -646,10 +646,10 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ip
     Route::get('/checkout', [CustomerController::class, 'checkout'])->name('customer.checkout');
     Route::post('/order-save', [CustomerController::class, 'order_save'])->name('customer.ordersave');
     Route::post('/checkout-resend-otp', [CustomerController::class, 'checkout_resend_otp'])->middleware('throttle:checkout-otp-resend')->name('customer.checkout.resend_otp');
-    Route::get('/order-success/{id}', [CustomerController::class, 'order_success'])->name('customer.order_success');
+    Route::get('/order-success/{id}', [CustomerController::class, 'order_success'])->middleware('throttle:public-order-pages')->name('customer.order_success');
 
    Route::get('/order-track', [CustomerController::class, 'order_track'])->name('customer.order_track');
-    Route::get('/order-track/result', [CustomerController::class, 'order_track_result'])->name('customer.order_track_result');
+    Route::post('/order-track/result', [CustomerController::class, 'order_track_result'])->middleware('throttle:mobile-order-track')->name('customer.order_track_result');
 
     // Social auth (Google / Facebook via Laravel Socialite)
     Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])

@@ -237,8 +237,7 @@ class UddoktaPayController extends Controller
                 // সেশন ক্লিয়ার
                 Session::forget('payable_amount');
 
-                $redirectRoute = ($order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-                return redirect()->route($redirectRoute, $order->id)
+                return redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order))
                                  ->with('success', 'Payment Successful! Your digital downloads are ready.');
             } else {
                 // ❌ ব্যর্থ পেমেন্ট
@@ -246,8 +245,7 @@ class UddoktaPayController extends Controller
                 $order->payment_gateway = 'uddoktapay';
                 $order->save();
 
-                $redirectRoute = ($order->reseller_profit) ? 'reseller.order.success' : 'customer.order_success';
-                return redirect()->route($redirectRoute, $order->id)
+                return redirect(\App\Support\PublicOrderAccess::checkoutSuccessUrl($order))
                                  ->with('error', 'Payment Failed!');
             }
 

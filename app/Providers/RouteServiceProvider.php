@@ -52,6 +52,18 @@ class RouteServiceProvider extends ServiceProvider
             Limit::perHour(20)->by('mobile-order-track:hour:' . $request->ip()),
         ]);
 
+        RateLimiter::for('public-order-pages', function (Request $request) {
+            if (\Illuminate\Support\Facades\Auth::guard('customer')->check()
+                || \Illuminate\Support\Facades\Auth::guard('admin')->check()) {
+                return Limit::perMinute(60)->by('public-order-pages:auth:' . $request->ip());
+            }
+
+            return [
+                Limit::perMinute(10)->by('public-order-pages:minute:' . $request->ip()),
+                Limit::perHour(50)->by('public-order-pages:hour:' . $request->ip()),
+            ];
+        });
+
         // Public blog comment form: at most 3 per minute and 10 per hour from one IP.
         RateLimiter::for('blog-comments', function (Request $request) {
             return [

@@ -404,15 +404,15 @@ class ManualOrderController extends Controller
 
     public function verify(string $token)
     {
-        $order = Order::where('public_token', $token)
-            ->where('is_manual_order', 1)
-            ->with(['payment', 'shipping'])
-            ->firstOrFail();
+        $order = \App\Support\PublicOrderAccess::findToken($token);
+        abort_unless($order && $order->is_manual_order, 404);
+        $order->load(['status', 'courierParcel']);
 
-        $generalsetting = GeneralSetting::where('status', 1)->first();
-        $paymentState = OrderPaymentService::state($order);
-
-        return view('frontEnd.layouts.invoice_verify', compact('order', 'generalsetting', 'paymentState'));
+        return \App\Support\PublicOrderAccess::noStore(response()->view(
+            'frontEnd.layouts.customer.public_order_status',
+            ['order' => $order, 'success' => false, 'trackAction' => null,
+                'heading' => 'Verified invoice']
+        ));
     }
 
     private function normalizeItems(array $rows): array

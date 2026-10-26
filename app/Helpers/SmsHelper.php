@@ -107,7 +107,11 @@ class SmsHelper
             return false;
         }
 
-        \Log::info('SmsHelper [' . ($gateway->gateway_name ?? 'Gateway') . '] response: ' . $response);
+        // Providers may echo the submitted message. Never persist a private
+        // order tracking credential through response logging.
+        if (stripos($message, 'tracking code:') === false) {
+            \Log::info('SmsHelper [' . ($gateway->gateway_name ?? 'Gateway') . '] response: ' . $response);
+        }
 
         // ── Success check ──
         $successKey = $gateway->success_check ?: '202';

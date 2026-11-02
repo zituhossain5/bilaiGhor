@@ -102,17 +102,17 @@ class DriveBackupRunner
             return ['log' => $log->fresh(), 'warning' => $warnings !== [] ? implode(' ', $warnings) : null];
         } catch (Throwable $e) {
             $safeDriveMessages = [
-                'Backup folder not found or not shared with the service account.',
+                'Connect Google Drive before creating an off-server backup.',
+                'Google Drive authorization expired. Reconnect Google Drive from Backup Management.',
+                'Google Drive token refresh failed.',
+                'Google Drive access token was rejected. Retry the connection test.',
+                'Backup folder is unavailable to this app. Clear the configured folder ID or disconnect and reconnect to create a new folder.',
                 'Configured Google Drive ID is not an active folder.',
-                'Backup folder is in My Drive; use a Google Workspace Shared Drive.',
-                'Service account cannot add files to the backup folder.',
-                'Service account lacks write permission in Google Drive.',
+                'Google Drive cannot add files to the backup folder.',
+                'Google Drive lacks write permission for the backup folder.',
                 'Google Drive API is not enabled for this project.',
-                'Google Drive authentication failed.',
-                'Google Drive service account credentials are invalid.',
-                'Google Drive service account key could not sign the request.',
                 'Google Drive storage quota or item limit exceeded.',
-                'Google Drive denied access; check service account folder permissions and API access.',
+                'Google Drive denied access to the backup folder.',
             ];
             $safe = match (true) {
                 in_array($e->getMessage(), $safeDriveMessages, true) => $e->getMessage(),

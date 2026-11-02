@@ -6,7 +6,9 @@ return [
     'drive' => [
         'enabled' => (bool) env('GOOGLE_DRIVE_BACKUP_ENABLED', false),
         'folder_id' => env('GOOGLE_DRIVE_BACKUP_FOLDER_ID'),
-        'credentials' => env('GOOGLE_DRIVE_BACKUP_CREDENTIALS'),
+        'client_id' => env('GOOGLE_DRIVE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_DRIVE_CLIENT_SECRET'),
+        'redirect_uri' => env('GOOGLE_DRIVE_REDIRECT_URI'),
     ],
     'retention_days' => max(1, (int) env('BACKUP_RETENTION_DAYS', 14)),
     'daily_time' => env('BACKUP_DAILY_TIME', '02:00'),

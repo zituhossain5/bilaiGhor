@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\GoogleDriveBackupConnection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class GoogleDriveBackupService
 {
-    private const TOKEN_URL = 'https://oauth2.googleapis.com/token';
     private const FILES_URL = 'https://www.googleapis.com/drive/v3/files';
     private const UPLOAD_URL = 'https://www.googleapis.com/upload/drive/v3/files';
     private ?string $accessToken = null;
@@ -16,39 +16,92 @@ class GoogleDriveBackupService
     public function configured(): bool
     {
         try {
+            if (! app(GoogleDriveOAuthService::class)->configured()
+                || ! GoogleDriveBackupConnection::find(1)?->isConnected()) return false;
             $this->folderId();
-            $this->credentialsPath();
             return true;
         } catch (RuntimeException) {
             return false;
         }
     }
 
-    /** Check access without creating a backup or modifying Drive. */
-    public function checkAccess(): void
+    /** @return array{folder_id:string,email:?string} */
+    public function prepareConnection(string $accessToken): array
     {
+        $folder = (string) (config('backups.drive.folder_id') ?: GoogleDriveBackupConnection::find(1)?->folder_id);
+        if ($folder === '') {
+            // With drive.file, the app can manage folders it creates. A folder made
+            // manually in My Drive is not granted to the app by its ID alone.
+            $response = Http::withToken($accessToken)->timeout(30)->post(self::FILES_URL.'?fields=id,name,mimeType,trashed', [
+                'name' => 'Bilai Ghor Backups',
+                'mimeType' => 'application/vnd.google-apps.folder',
+                'appProperties' => ['bilaighor_backup' => 'folder'],
+            ]);
+            if (! $response->successful()) $this->failForResponse($response->status(), $response->json());
+            $folder = (string) $response->json('id');
+        }
+        $this->assertFolder($accessToken, $folder);
+
+        $about = Http::withToken($accessToken)->timeout(30)->get('https://www.googleapis.com/drive/v3/about', [
+            'fields' => 'user(emailAddress)',
+        ]);
+        if (! $about->successful()) $this->failForResponse($about->status(), $about->json());
+        $email = $about->json('user.emailAddress');
+        return ['folder_id' => $folder, 'email' => is_string($email) ? $email : null];
+    }
+
+    /** Verify the folder; optionally create and remove a disposable file. */
+    public function checkAccess(bool $probe = false): void
+    {
+        $token = $this->token();
         $folder = $this->folderId();
-        $response = Http::withToken($this->token())->timeout(30)->get(self::FILES_URL.'/'.$folder, [
-            'fields' => 'id,mimeType,driveId,trashed,capabilities(canAddChildren)',
-            'supportsAllDrives' => 'true',
+        $this->assertFolder($token, $folder);
+        if (! $probe) return;
+
+        $create = Http::withToken($token)->timeout(30)->post(self::FILES_URL.'?fields=id,parents,trashed', [
+            'name' => 'bilaighor-backup-connection-test',
+            'mimeType' => 'text/plain',
+            'parents' => [$folder],
+            'appProperties' => ['bilaighor_backup_test' => '1'],
+        ]);
+        if (! $create->successful()) $this->failForResponse($create->status(), $create->json());
+        $id = $create->json('id');
+        if (! is_string($id) || ! preg_match('/^[A-Za-z0-9_-]+$/', $id)) {
+            throw new RuntimeException('Google Drive test file could not be verified.');
+        }
+        $valid = false;
+        try {
+            $file = $this->metadata($id);
+            $valid = ($file['id'] ?? null) === $id
+                && in_array($folder, $file['parents'] ?? [], true)
+                && ($file['trashed'] ?? true) === false;
+        } finally {
+            $deleted = Http::withToken($token)->timeout(30)->delete(self::FILES_URL.'/'.$id);
+            if (! $deleted->successful()) throw new RuntimeException('Google Drive test file could not be removed.');
+        }
+        if (! $valid) throw new RuntimeException('Google Drive test file could not be verified.');
+    }
+
+    private function assertFolder(string $token, string $folder): void
+    {
+        if (! preg_match('/^[A-Za-z0-9_-]+$/', $folder)) {
+            throw new RuntimeException('Google Drive backup folder is not configured.');
+        }
+        $response = Http::withToken($token)->timeout(30)->get(self::FILES_URL.'/'.$folder, [
+            'fields' => 'id,mimeType,trashed,capabilities(canAddChildren)',
         ]);
         if ($response->status() === 404) {
-            throw new RuntimeException('Backup folder not found or not shared with the service account.');
+            throw new RuntimeException('Backup folder is unavailable to this app. Clear the configured folder ID or disconnect and reconnect to create a new folder.');
         }
-        if (! $response->successful()) {
-            $this->failForResponse($response->status(), $response->json());
-        }
+        if (! $response->successful()) $this->failForResponse($response->status(), $response->json());
 
         $folderInfo = $response->json();
         if (($folderInfo['id'] ?? null) !== $folder || ($folderInfo['trashed'] ?? true) !== false
             || ($folderInfo['mimeType'] ?? null) !== 'application/vnd.google-apps.folder') {
             throw new RuntimeException('Configured Google Drive ID is not an active folder.');
         }
-        if (empty($folderInfo['driveId'])) {
-            throw new RuntimeException('Backup folder is in My Drive; use a Google Workspace Shared Drive.');
-        }
         if (($folderInfo['capabilities']['canAddChildren'] ?? false) !== true) {
-            throw new RuntimeException('Service account cannot add files to the backup folder.');
+            throw new RuntimeException('Google Drive cannot add files to the backup folder.');
         }
     }
 
@@ -167,7 +220,7 @@ class GoogleDriveBackupService
 
     private function folderId(): string
     {
-        $id = (string) config('backups.drive.folder_id');
+        $id = (string) (GoogleDriveBackupConnection::find(1)?->folder_id ?: config('backups.drive.folder_id'));
         if (! preg_match('/^[A-Za-z0-9_-]+$/', $id)) {
             throw new RuntimeException('Drive backup folder is not configured');
         }
@@ -177,74 +230,29 @@ class GoogleDriveBackupService
     private function token(): string
     {
         if ($this->accessToken !== null) return $this->accessToken;
-
-        $real = $this->credentialsPath();
-        $credentials = json_decode(file_get_contents($real), true);
-        if (! is_array($credentials) || ($credentials['type'] ?? null) !== 'service_account'
-            || ! is_string($credentials['client_email'] ?? null)
-            || ! is_string($credentials['private_key'] ?? null)) {
-            throw new RuntimeException('Google Drive service account credentials are invalid.');
-        }
-
-        $issued = time();
-        $header = $this->base64Url(json_encode(['alg' => 'RS256', 'typ' => 'JWT'], JSON_THROW_ON_ERROR));
-        $claims = $this->base64Url(json_encode([
-            'iss' => $credentials['client_email'],
-            'scope' => 'https://www.googleapis.com/auth/drive',
-            'aud' => self::TOKEN_URL,
-            'iat' => $issued,
-            'exp' => $issued + 3600,
-        ], JSON_THROW_ON_ERROR));
-        $unsigned = $header.'.'.$claims;
-        $key = openssl_pkey_get_private($credentials['private_key']);
-        if ($key === false || ! openssl_sign($unsigned, $signature, $key, OPENSSL_ALGO_SHA256)) {
-            throw new RuntimeException('Google Drive service account key could not sign the request.');
-        }
-        $assertion = $unsigned.'.'.$this->base64Url($signature);
-        $response = Http::asForm()->timeout(30)->post(self::TOKEN_URL, [
-            'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-            'assertion' => $assertion,
-        ]);
-        if (! $response->successful() || ! is_string($response->json('access_token'))) {
-            throw new RuntimeException('Google Drive authentication failed.');
-        }
-        return $this->accessToken = $response->json('access_token');
-    }
-
-    private function base64Url(string $bytes): string
-    {
-        return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
-    }
-
-    private function credentialsPath(): string
-    {
-        $path = (string) config('backups.drive.credentials');
-        $real = $path !== '' ? realpath($path) : false;
-        $project = realpath(base_path());
-        if ($real === false || ! is_file($real) || ! is_readable($real)
-            || ($project !== false && str_starts_with(strtolower($real), strtolower($project.DIRECTORY_SEPARATOR)))) {
-            throw new RuntimeException('Drive credentials are unavailable or inside the application directory');
-        }
-        return $real;
+        return $this->accessToken = app(GoogleDriveOAuthService::class)->accessToken();
     }
 
     private function failForResponse(int $status, mixed $body): never
     {
-        $reason = is_array($body) ? ($body['error']['errors'][0]['reason'] ?? '') : '';
+        $error = is_array($body) ? ($body['error'] ?? null) : null;
+        $reason = is_array($error) ? ($error['errors'][0]['reason'] ?? '') : '';
         if (in_array($reason, ['storageQuotaExceeded', 'teamDriveFileLimitExceeded'], true)) {
             throw new RuntimeException('Google Drive storage quota or item limit exceeded.');
         }
         if ($reason === 'insufficientFilePermissions') {
-            throw new RuntimeException('Service account lacks write permission in Google Drive.');
+            throw new RuntimeException('Google Drive lacks write permission for the backup folder.');
         }
         if ($reason === 'accessNotConfigured') {
             throw new RuntimeException('Google Drive API is not enabled for this project.');
         }
         if ($status === 401) {
-            throw new RuntimeException('Google Drive authentication failed.');
+            $this->accessToken = null;
+            GoogleDriveBackupConnection::find(1)?->update(['access_token' => null, 'token_expires_at' => null]);
+            throw new RuntimeException('Google Drive access token was rejected. Retry the connection test.');
         }
         if ($status === 403) {
-            throw new RuntimeException('Google Drive denied access; check service account folder permissions and API access.');
+            throw new RuntimeException('Google Drive denied access to the backup folder.');
         }
         throw new RuntimeException('Drive API request failed (HTTP '.$status.')');
     }

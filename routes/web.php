@@ -463,6 +463,14 @@ Route::prefix('admin')->middleware(['auth:admin', 'admin', 'demo_mode'])->group(
         ->middleware(['permission:database-backup-download', 'throttle:3,10'])->name('admin.backups.database');
     Route::post('/backups/google-drive', [\App\Http\Controllers\Admin\BackupController::class, 'backupNow'])
         ->middleware(['permission:database-backup-download', 'throttle:3,10'])->name('admin.backups.google-drive');
+    Route::get('/backups/google/connect', [\App\Http\Controllers\Admin\BackupController::class, 'connect'])
+        ->middleware(['permission:database-backup-download', 'throttle:5,10'])->name('admin.backups.google.connect');
+    Route::get('/backups/google/callback', [\App\Http\Controllers\Admin\BackupController::class, 'callback'])
+        ->middleware(['permission:database-backup-download', 'throttle:10,10'])->name('admin.backups.google.callback');
+    Route::post('/backups/google/test', [\App\Http\Controllers\Admin\BackupController::class, 'testConnection'])
+        ->middleware(['permission:database-backup-download', 'throttle:5,10'])->name('admin.backups.google.test');
+    Route::post('/backups/google/disconnect', [\App\Http\Controllers\Admin\BackupController::class, 'disconnect'])
+        ->middleware(['permission:database-backup-download', 'throttle:5,10'])->name('admin.backups.google.disconnect');
 
     // Fund Routes
     Route::get('/fund', [FundController::class, 'index'])->name('admin.fund.index');

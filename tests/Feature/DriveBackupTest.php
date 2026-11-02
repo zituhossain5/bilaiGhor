@@ -3,14 +3,17 @@
 namespace Tests\Feature;
 
 use App\Models\BackupLog;
+use App\Models\GoogleDriveBackupConnection;
 use App\Models\User;
 use App\Services\BackupEncryptionService;
 use App\Services\DatabaseBackupService;
 use App\Services\DriveBackupRunner;
 use App\Services\GoogleDriveBackupService;
+use App\Services\GoogleDriveOAuthService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Mockery;
 use Spatie\Permission\Models\Role;
@@ -26,6 +29,9 @@ class DriveBackupTest extends TestCase
         Http::preventStrayRequests();
         config()->set('backups.drive.enabled', true);
         config()->set('backups.drive.folder_id', 'test-folder');
+        config()->set('backups.drive.client_id', 'test-client-id');
+        config()->set('backups.drive.client_secret', 'test-client-secret');
+        config()->set('backups.drive.redirect_uri', 'https://bilaighor.bd/admin/backups/google/callback');
         config()->set('backups.encryption.enabled', false);
         config()->set('backups.retention_days', 14);
     }
@@ -259,32 +265,13 @@ class DriveBackupTest extends TestCase
         Http::assertSent(fn ($request) => $request->method() === 'DELETE' && str_contains($request->url(), '/old-file'));
     }
 
-    public function test_drive_check_rejects_personal_my_drive_without_creating_a_backup(): void
+    public function test_drive_check_accepts_personal_my_drive_folder(): void
     {
         $service = new GoogleDriveBackupService;
         (new \ReflectionProperty($service, 'accessToken'))->setValue($service, 'test-token');
         Http::fake(['https://www.googleapis.com/drive/v3/files/test-folder*' => Http::response([
             'id' => 'test-folder', 'mimeType' => 'application/vnd.google-apps.folder',
             'trashed' => false, 'capabilities' => ['canAddChildren' => true],
-        ], 200)]);
-
-        try {
-            $service->checkAccess();
-            $this->fail('Personal My Drive folder was accepted.');
-        } catch (\RuntimeException $e) {
-            $this->assertSame('Backup folder is in My Drive; use a Google Workspace Shared Drive.', $e->getMessage());
-        }
-        Http::assertSentCount(1);
-    }
-
-    public function test_drive_check_accepts_writable_shared_drive_folder(): void
-    {
-        $service = new GoogleDriveBackupService;
-        (new \ReflectionProperty($service, 'accessToken'))->setValue($service, 'test-token');
-        Http::fake(['https://www.googleapis.com/drive/v3/files/test-folder*' => Http::response([
-            'id' => 'test-folder', 'mimeType' => 'application/vnd.google-apps.folder',
-            'driveId' => 'shared-drive-id', 'trashed' => false,
-            'capabilities' => ['canAddChildren' => true],
         ], 200)]);
 
         $service->checkAccess();
@@ -297,11 +284,11 @@ class DriveBackupTest extends TestCase
         (new \ReflectionProperty($service, 'accessToken'))->setValue($service, 'test-token');
         Http::fake(['https://www.googleapis.com/drive/v3/files/test-folder*' => Http::response([
             'id' => 'test-folder', 'mimeType' => 'application/vnd.google-apps.folder',
-            'driveId' => 'shared-drive-id', 'trashed' => false,
+            'trashed' => false,
             'capabilities' => ['canAddChildren' => false],
         ], 200)]);
 
-        $this->expectExceptionMessage('Service account cannot add files to the backup folder.');
+        $this->expectExceptionMessage('Google Drive cannot add files to the backup folder.');
         $service->checkAccess();
     }
 
@@ -315,6 +302,7 @@ class DriveBackupTest extends TestCase
         $admin = $create();
         if ($admin->id === 1) $admin = $create();
         $admin->assignRole(Role::findOrCreate('Admin', 'admin'));
+        $this->connection();
         $runner = Mockery::mock(DriveBackupRunner::class);
         $runner->shouldReceive('run')->once()->with($admin->id)->andReturn(['log' => new BackupLog, 'warning' => null]);
         $this->app->instance(DriveBackupRunner::class, $runner);
@@ -327,14 +315,13 @@ class DriveBackupTest extends TestCase
     public function test_drive_upload_requires_verified_metadata_before_reporting_success(): void
     {
         $backup = $this->fakeBackup();
-        $credentials = $this->fakeCredentials();
-        config()->set('backups.drive.credentials', $credentials);
+        $this->connection(token: 'expired-token', expires: now()->subMinute());
         $metadata = [
             'id' => 'uploaded-file', 'name' => $backup['filename'], 'size' => (string) $backup['size'],
             'createdTime' => now()->toIso8601String(), 'parents' => ['test-folder'], 'trashed' => false,
         ];
         Http::fake([
-            'https://oauth2.googleapis.com/token' => Http::response(['access_token' => 'test-token'], 200),
+            'https://oauth2.googleapis.com/token' => Http::response(['access_token' => 'refreshed-token', 'expires_in' => 3600], 200),
             'https://www.googleapis.com/upload/drive/v3/files*' => function ($request) use ($metadata) {
                 return $request->method() === 'POST'
                     ? Http::response([], 200, ['Location' => 'https://www.googleapis.com/upload/drive/v3/files?upload_id=fake'])
@@ -349,8 +336,9 @@ class DriveBackupTest extends TestCase
             );
             $this->assertSame('uploaded-file', $result['id']);
             $this->assertSame($backup['size'], $result['size']);
+            $this->assertSame('refreshed-token', GoogleDriveBackupConnection::find(1)->access_token);
             Http::assertSentCount(4);
-        } finally { @unlink($backup['path']); @unlink($credentials); }
+        } finally { @unlink($backup['path']); }
     }
 
     public function test_drive_metadata_mismatch_rejects_upload_and_preserves_local_file(): void
@@ -387,6 +375,7 @@ class DriveBackupTest extends TestCase
         $admin = $create();
         if ($admin->id === 1) $admin = $create();
         $admin->assignRole(Role::findOrCreate('Admin', 'admin'));
+        $this->connection();
         $runner = Mockery::mock(DriveBackupRunner::class);
         $runner->shouldReceive('run')->once()->andThrow(new \RuntimeException('private-key-marker'));
         $this->app->instance(DriveBackupRunner::class, $runner);
@@ -395,6 +384,245 @@ class DriveBackupTest extends TestCase
             ->post(route('admin.backups.google-drive'))
             ->assertSessionHas('error', 'Backup failed. Check backup logs.');
         $this->assertStringNotContainsString('private-key-marker', $response->getContent());
+    }
+
+    public function test_only_authorized_admin_can_start_google_connection(): void
+    {
+        $this->get(route('admin.backups.google.connect'))->assertRedirect();
+        $staff = User::create([
+            'name' => 'Backup Staff', 'email' => 'backup-staff-'.Str::uuid().'@example.test',
+            'password' => bcrypt(Str::random(20)), 'status' => 1,
+        ]);
+        $this->actingAs($staff, 'admin')->get(route('admin.backups.google.connect'))->assertForbidden();
+    }
+
+    public function test_connect_uses_offline_scoped_oauth_and_stores_state_in_session(): void
+    {
+        $admin = $this->backupAdmin();
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.backups.google.connect'));
+        $response->assertRedirect();
+        $url = $response->headers->get('Location');
+        $this->assertSame('accounts.google.com', parse_url($url, PHP_URL_HOST));
+        parse_str(parse_url($url, PHP_URL_QUERY), $query);
+        $this->assertSame(GoogleDriveOAuthService::SCOPE, $query['scope']);
+        $this->assertSame('offline', $query['access_type']);
+        $this->assertSame('consent', $query['prompt']);
+        $this->assertSame('https://bilaighor.bd/admin/backups/google/callback', $query['redirect_uri']);
+        $this->assertSame($query['state'], session('backup_google_oauth.state'));
+        $this->assertSame($admin->id, session('backup_google_oauth.admin_id'));
+        Http::assertNothingSent();
+    }
+
+    public function test_callback_rejects_invalid_oauth_state_before_token_exchange(): void
+    {
+        $admin = $this->backupAdmin();
+        $this->actingAs($admin, 'admin')->withSession([
+            'backup_google_oauth' => ['state' => 'expected', 'admin_id' => $admin->id],
+        ])->get(route('admin.backups.google.callback', ['state' => 'wrong', 'code' => 'fake-code']))->assertForbidden();
+        Http::assertNothingSent();
+        $this->assertDatabaseMissing('google_drive_backup_connections', ['id' => 1]);
+    }
+
+    public function test_callback_creates_private_app_folder_and_encrypts_tokens_at_rest(): void
+    {
+        config()->set('backups.drive.folder_id', null);
+        $admin = $this->backupAdmin();
+        Http::fake([
+            'https://oauth2.googleapis.com/token' => Http::response([
+                'access_token' => 'access-secret-marker', 'refresh_token' => 'refresh-secret-marker',
+                'expires_in' => 3600, 'scope' => GoogleDriveOAuthService::SCOPE,
+            ], 200),
+            'https://www.googleapis.com/drive/v3/about*' => Http::response(['user' => ['emailAddress' => 'owner@example.test']], 200),
+            'https://www.googleapis.com/drive/v3/files*' => function ($request) {
+                return $request->method() === 'POST'
+                    ? Http::response(['id' => 'app-folder'], 200)
+                    : Http::response([
+                        'id' => 'app-folder', 'mimeType' => 'application/vnd.google-apps.folder',
+                        'trashed' => false, 'capabilities' => ['canAddChildren' => true],
+                    ], 200);
+            },
+        ]);
+        $response = $this->actingAs($admin, 'admin')->withSession([
+            'backup_google_oauth' => ['state' => 'valid-state', 'admin_id' => $admin->id],
+        ])->get(route('admin.backups.google.callback', ['state' => 'valid-state', 'code' => 'fake-code']))
+            ->assertRedirect(route('admin.backups.index'))
+            ->assertSessionHas('success');
+
+        $connection = GoogleDriveBackupConnection::find(1);
+        $this->assertSame('app-folder', $connection->folder_id);
+        $this->assertSame('owner@example.test', $connection->google_email);
+        $this->assertSame('refresh-secret-marker', $connection->refresh_token);
+        $this->assertNotSame('refresh-secret-marker', DB::table('google_drive_backup_connections')->where('id', 1)->value('refresh_token'));
+        $this->assertNotSame('access-secret-marker', DB::table('google_drive_backup_connections')->where('id', 1)->value('access_token'));
+        $this->assertStringNotContainsString('refresh-secret-marker', $response->getContent());
+        $this->assertStringNotContainsString('access-secret-marker', $response->getContent());
+        Http::assertSent(fn ($request) => $request->method() === 'POST'
+            && str_contains($request->url(), '/drive/v3/files')
+            && $request['name'] === 'Bilai Ghor Backups');
+    }
+
+    public function test_callback_without_refresh_token_does_not_claim_connection(): void
+    {
+        $admin = $this->backupAdmin();
+        Http::fake(['https://oauth2.googleapis.com/token' => Http::response([
+            'access_token' => 'access-only', 'expires_in' => 3600,
+            'scope' => GoogleDriveOAuthService::SCOPE,
+        ], 200)]);
+        $this->actingAs($admin, 'admin')->withSession([
+            'backup_google_oauth' => ['state' => 'valid-state', 'admin_id' => $admin->id],
+        ])->get(route('admin.backups.google.callback', ['state' => 'valid-state', 'code' => 'fake-code']))
+            ->assertRedirect(route('admin.backups.index'))
+            ->assertSessionHas('error', 'Google did not return offline Drive access. Reconnect and approve access.');
+        $this->assertDatabaseMissing('google_drive_backup_connections', ['id' => 1]);
+        Http::assertSentCount(1);
+    }
+
+    public function test_callback_respects_a_folder_id_when_the_app_can_access_it(): void
+    {
+        $admin = $this->backupAdmin();
+        Http::fake([
+            'https://oauth2.googleapis.com/token' => Http::response([
+                'access_token' => 'test-access', 'refresh_token' => 'test-refresh',
+                'expires_in' => 3600, 'scope' => GoogleDriveOAuthService::SCOPE,
+            ], 200),
+            'https://www.googleapis.com/drive/v3/about*' => Http::response(['user' => ['emailAddress' => 'owner@example.test']], 200),
+            'https://www.googleapis.com/drive/v3/files/test-folder*' => Http::response([
+                'id' => 'test-folder', 'mimeType' => 'application/vnd.google-apps.folder',
+                'trashed' => false, 'capabilities' => ['canAddChildren' => true],
+            ], 200),
+        ]);
+        $this->actingAs($admin, 'admin')->withSession([
+            'backup_google_oauth' => ['state' => 'valid-state', 'admin_id' => $admin->id],
+        ])->get(route('admin.backups.google.callback', ['state' => 'valid-state', 'code' => 'fake-code']))
+            ->assertSessionHas('success');
+        $this->assertSame('test-folder', GoogleDriveBackupConnection::find(1)->folder_id);
+        Http::assertSentCount(3);
+        Http::assertNotSent(fn ($request) => $request->method() === 'POST'
+            && str_contains($request->url(), '/drive/v3/files'));
+    }
+
+    public function test_manually_created_folder_without_app_access_is_rejected_safely(): void
+    {
+        Http::fake(['https://www.googleapis.com/drive/v3/files/test-folder*' => Http::response([], 404)]);
+        try {
+            app(GoogleDriveBackupService::class)->prepareConnection('short-lived-test-token');
+            $this->fail('An inaccessible My Drive folder was accepted.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Backup folder is unavailable to this app. Clear the configured folder ID or disconnect and reconnect to create a new folder.', $e->getMessage());
+        }
+        Http::assertSentCount(1);
+        Http::assertNotSent(fn ($request) => $request->method() === 'POST');
+    }
+
+    public function test_revoked_refresh_token_marks_connection_for_reauthorization(): void
+    {
+        $this->connection(token: 'expired-token', expires: now()->subMinute());
+        Http::fake(['https://oauth2.googleapis.com/token' => Http::response(['error' => 'invalid_grant'], 400)]);
+        try {
+            app(GoogleDriveOAuthService::class)->accessToken();
+            $this->fail('A revoked refresh token was accepted.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Google Drive authorization expired. Reconnect Google Drive from Backup Management.', $e->getMessage());
+        }
+        $connection = GoogleDriveBackupConnection::find(1);
+        $this->assertTrue($connection->requires_reauth);
+        $this->assertNull($connection->refresh_token);
+        $this->assertNull($connection->access_token);
+    }
+
+    public function test_scheduled_job_refreshes_stored_token_and_uploads_without_browser_session(): void
+    {
+        config()->set('backups.drive.folder_id', null);
+        $this->connection(token: 'expired-token', expires: now()->subMinute());
+        $backup = $this->fakeBackup();
+        $dump = Mockery::mock(DatabaseBackupService::class);
+        $dump->shouldReceive('generate')->once()->with(true)->andReturn($backup);
+        $this->app->instance(DatabaseBackupService::class, $dump);
+        $metadata = [
+            'id' => 'uploaded-file', 'name' => $backup['filename'],
+            'size' => (string) $backup['size'], 'parents' => ['test-folder'],
+            'trashed' => false, 'createdTime' => now()->toIso8601String(),
+        ];
+        Http::fake([
+            'https://oauth2.googleapis.com/token' => Http::response([
+                'access_token' => 'new-token', 'refresh_token' => 'rotated-refresh-token', 'expires_in' => 3600,
+            ], 200),
+            'https://www.googleapis.com/upload/drive/v3/files*' => function ($request) use ($metadata) {
+                return $request->method() === 'POST'
+                    ? Http::response([], 200, ['Location' => 'https://www.googleapis.com/upload/drive/v3/files?upload_id=fake'])
+                    : Http::response($metadata, 200);
+            },
+            'https://www.googleapis.com/drive/v3/files/test-folder*' => Http::response([
+                'id' => 'test-folder', 'mimeType' => 'application/vnd.google-apps.folder',
+                'trashed' => false, 'capabilities' => ['canAddChildren' => true],
+            ], 200),
+            'https://www.googleapis.com/drive/v3/files/uploaded-file*' => Http::response($metadata, 200),
+            'https://www.googleapis.com/drive/v3/files*' => Http::response(['files' => []], 200),
+        ]);
+        try {
+            $this->assertSame(0, $this->artisan('backup:database-to-drive')->run());
+            $this->assertDatabaseHas('backup_logs', [
+                'destination' => 'google_drive', 'drive_file_id' => 'uploaded-file',
+                'status' => 'success', 'created_by' => null,
+            ]);
+            $this->assertSame('new-token', GoogleDriveBackupConnection::find(1)->access_token);
+            $this->assertSame('rotated-refresh-token', GoogleDriveBackupConnection::find(1)->refresh_token);
+            $this->assertFileDoesNotExist($backup['path']);
+            Http::assertSent(fn ($request) => $request->url() === 'https://oauth2.googleapis.com/token'
+                && $request['grant_type'] === 'refresh_token');
+        } finally { @unlink($backup['path']); }
+    }
+
+    public function test_connection_test_creates_and_removes_a_disposable_file(): void
+    {
+        $this->connection();
+        $admin = $this->backupAdmin();
+        Http::fake(['https://www.googleapis.com/drive/v3/files*' => function ($request) {
+            return match ($request->method()) {
+                'GET' => str_contains($request->url(), '/temporary-marker')
+                    ? Http::response(['id' => 'temporary-marker', 'parents' => ['test-folder'], 'trashed' => false], 200)
+                    : Http::response([
+                        'id' => 'test-folder', 'mimeType' => 'application/vnd.google-apps.folder',
+                        'trashed' => false, 'capabilities' => ['canAddChildren' => true],
+                    ], 200),
+                'POST' => Http::response(['id' => 'temporary-marker'], 200),
+                default => Http::response([], 204),
+            };
+        }]);
+        $this->actingAs($admin, 'admin')->from(route('admin.backups.index'))
+            ->post(route('admin.backups.google.test'))
+            ->assertSessionHas('success', 'Google Drive connection successful.');
+        Http::assertSentCount(4);
+        Http::assertSent(fn ($request) => $request->method() === 'DELETE'
+            && str_contains($request->url(), '/temporary-marker'));
+    }
+
+    public function test_disconnect_removes_tokens_but_keeps_history_and_remote_files(): void
+    {
+        $this->connection();
+        $admin = $this->backupAdmin();
+        $log = BackupLog::create([
+            'type' => 'database', 'destination' => 'google_drive', 'filename' => 'old.sql.gz',
+            'status' => 'success', 'drive_file_id' => 'old-drive-file',
+        ]);
+        $this->actingAs($admin, 'admin')->from(route('admin.backups.index'))
+            ->post(route('admin.backups.google.disconnect'))
+            ->assertSessionHas('success');
+        $this->assertDatabaseMissing('google_drive_backup_connections', ['id' => 1]);
+        $this->assertDatabaseHas('backup_logs', ['id' => $log->id]);
+        Http::assertNothingSent();
+    }
+
+    private function backupAdmin(): User
+    {
+        $create = fn () => User::create([
+            'name' => 'Backup Admin', 'email' => 'backup-oauth-'.Str::uuid().'@example.test',
+            'password' => bcrypt(Str::random(20)), 'status' => 1,
+        ]);
+        $admin = $create();
+        if ($admin->id === 1) $admin = $create();
+        $admin->assignRole(Role::findOrCreate('Admin', 'admin'));
+        return $admin;
     }
 
     private function fakeBackup(): array
@@ -407,24 +635,15 @@ class DriveBackupTest extends TestCase
         return ['path' => $path, 'filename' => $filename, 'size' => filesize($path)];
     }
 
-    private function fakeCredentials(): string
+    private function connection(string $token = 'test-token', mixed $expires = null): GoogleDriveBackupConnection
     {
-        $opensslConfig = tempnam(sys_get_temp_dir(), 'openssl-test-');
-        file_put_contents($opensslConfig, "[req]\ndistinguished_name=req_dn\n[req_dn]\n");
-        try {
-            $private = openssl_pkey_new([
-                'private_key_type' => OPENSSL_KEYTYPE_RSA, 'private_key_bits' => 2048,
-                'config' => $opensslConfig,
-            ]);
-            $this->assertNotFalse($private);
-            $this->assertTrue(openssl_pkey_export($private, $pem, null, ['config' => $opensslConfig]));
-        } finally { @unlink($opensslConfig); }
-
-        $path = tempnam(sys_get_temp_dir(), 'drive-test-');
-        file_put_contents($path, json_encode([
-            'type' => 'service_account', 'client_email' => 'test@example.test', 'private_key' => $pem,
-        ]));
-        return $path;
+        return GoogleDriveBackupConnection::create([
+            'id' => 1, 'google_email' => 'owner@example.test',
+            'access_token' => $token, 'refresh_token' => 'encrypted-refresh-marker',
+            'token_expires_at' => $expires ?? now()->addHour(),
+            'scope' => GoogleDriveOAuthService::SCOPE,
+            'folder_id' => 'test-folder', 'connected_at' => now(),
+        ]);
     }
 
 }

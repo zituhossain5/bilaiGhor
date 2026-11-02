@@ -1,24 +1,26 @@
-# Google Drive database backups
+# Google Drive database backups (personal My Drive)
 
-The admin **Backup Management** page keeps the existing database download and adds **Backup Now to Google Drive**. The same `backup:database-to-drive` workflow runs nightly at 02:00 Asia/Dhaka. It dumps the configured MySQL database, compresses it, optionally encrypts it, uploads it, verifies Drive metadata, deletes the local copy, and prunes old Drive backups.
+The admin Backup Management page retains **Download Database Backup** and adds a Google user OAuth connection for private backups in a personal My Drive. The same runner serves the **Backup Now to Google Drive** button and the nightly `backup:database-to-drive` command. It creates a MySQL dump, compresses it, optionally encrypts it, uploads and verifies it, removes the temporary file, and prunes old app-created backups.
 
-## Required Google setup
+## Google Cloud setup
 
-1. Enable the Google Drive API in a Google Cloud project and create a service account with a JSON key.
-2. Create a private backup folder **inside a Google Workspace Shared Drive**. Grant the service account a role that can upload and remove files in that folder (typically Content manager). Keep access limited to backup operators.
-3. Copy the JSON key to a path outside `public_html`, for example `/home/bilaigho/.credentials/google-drive-backup.json`. Protect its directory with mode `0700` and the JSON file with `0600`. The application rejects credential files inside the project directory.
-4. Copy the Shared Drive folder ID into the environment configuration. Do not use a public link or add public Drive permissions.
+1. Create or select a Google Cloud project and enable the **Google Drive API**.
+2. Configure the OAuth consent screen for an **External** user. Add your Google account as a test user while setting up. Before relying on unattended backups, set the OAuth app publishing status to **In production**: Google says refresh tokens for external apps in **Testing** normally expire after seven days. A personal-use app with fewer than 100 users may be exempt from verification but can show an unverified-app warning. See [Google OAuth token guidance](https://developers.google.com/identity/protocols/oauth2) and [personal-use verification guidance](https://support.google.com/cloud/answer/13464323).
+3. Create an **OAuth 2.0 Client ID** with application type **Web application**. Add this exact authorized redirect URI: `https://bilaighor.bd/admin/backups/google/callback`.
+4. Copy the Client ID and Client Secret into the production `.env`. Do not commit them or paste them into support messages.
 
-Google states that service accounts have no personal Drive storage quota and cannot own files. A folder merely shared from someone's **My Drive** may fail with a storage quota error; use a Shared Drive. See [Google's Shared Drive documentation](https://developers.google.com/workspace/drive/api/guides/about-shareddrives).
+The app requests only `https://www.googleapis.com/auth/drive.file` and offline access. This scope can manage files and folders created by the app, but **a folder you created manually in My Drive is not accessible to the app from its ID alone**. Leave `GOOGLE_DRIVE_BACKUP_FOLDER_ID` empty on first connection. The app creates its own private **Bilai Ghor Backups** folder in your My Drive and stores its ID in the connection record. Only OAuth tokens are encrypted in that record. If you previously configured a manually created folder ID, remove that value before connecting. The existing manual folder is not deleted. Google's [Drive scope guide](https://developers.google.com/workspace/drive/api/guides/api-specific-auth) explains this limit. No Google Workspace or service-account JSON is required.
 
 ## Environment settings
 
-Set these on the server's `.env`; do not commit real values:
+Set these on the production server and run `php artisan optimize:clear` after changing them:
 
 ```dotenv
 GOOGLE_DRIVE_BACKUP_ENABLED=true
-GOOGLE_DRIVE_BACKUP_FOLDER_ID=YOUR_PRIVATE_SHARED_DRIVE_FOLDER_ID
-GOOGLE_DRIVE_BACKUP_CREDENTIALS=/home/bilaigho/.credentials/google-drive-backup.json
+GOOGLE_DRIVE_CLIENT_ID=YOUR_OAUTH_WEB_CLIENT_ID
+GOOGLE_DRIVE_CLIENT_SECRET=YOUR_OAUTH_WEB_CLIENT_SECRET
+GOOGLE_DRIVE_REDIRECT_URI=https://bilaighor.bd/admin/backups/google/callback
+GOOGLE_DRIVE_BACKUP_FOLDER_ID=
 BACKUP_RETENTION_DAYS=14
 BACKUP_DAILY_TIME=02:00
 BACKUP_TIMEZONE=Asia/Dhaka
@@ -26,24 +28,31 @@ BACKUP_ENCRYPTION_ENABLED=false
 BACKUP_ENCRYPTION_KEY=
 ```
 
-`MYSQLDUMP_PATH` remains optional when the dump binary is on the server's PATH. If encryption is enabled, set `BACKUP_ENCRYPTION_KEY` to `base64:` followed by the base64 encoding of **32 random bytes**. Generate the key on a trusted machine, keep an offline copy, and never upload it with the backup. Losing the key makes encrypted backups unrecoverable. A backup contains database data, including any secrets stored in database settings; `.env`, uploads and application files are not included.
+`GOOGLE_DRIVE_BACKUP_CREDENTIALS` and the old service-account JSON are no longer used. OAuth tokens are **not** stored in `.env`. The `google_drive_backup_connections` table stores access and refresh tokens with Laravel encrypted casts, using the server's `APP_KEY`. Keep `APP_KEY` stable and protect database backups; losing it prevents decrypting the stored tokens.
 
-Encryption uses libsodium's authenticated XChaCha20-Poly1305 secretstream. The `.sql.gz.enc` file contains the ASCII magic `BILAI-GHOR-DB-BACKUP-1\n`, followed by the secretstream header, then repeated four-byte big-endian ciphertext lengths and ciphertext chunks. The final chunk carries the secretstream final tag. This describes the format for manual recovery tooling; there is no dashboard restore or import feature.
+`MYSQLDUMP_PATH` remains optional if the dump binary is on PATH. If backup encryption is enabled, use `BACKUP_ENCRYPTION_KEY=base64:` followed by the base64 encoding of 32 random bytes. Keep a separate offline copy of the encryption key. Losing it makes encrypted backups unrecoverable. The encryption format is libsodium authenticated XChaCha20-Poly1305 secretstream; the `.sql.gz.enc` file begins with `BILAI-GHOR-DB-BACKUP-1\n`, the secretstream header, and length-prefixed ciphertext chunks. No dashboard restore is provided.
 
-## cPanel schedule
+## Deploy and connect
 
-After deployment, run `php artisan migrate --force` and `php artisan optimize:clear`. Check `which mysqldump` and `mysqldump --version`. Add this cPanel cron entry (the path matches this installation):
+1. Deploy the code, then run `php artisan migrate --force` and `php artisan optimize:clear`.
+2. Open `/admin/backups` while signed in as a high-level backup-authorized admin and click **Connect Google Drive**.
+3. Choose your personal Google account and approve access. The callback checks an admin-bound session state before exchanging the authorization code. It stores encrypted tokens and creates/verifies the private My Drive folder.
+4. Click **Test Google Drive Connection**. The test refreshes the token if necessary, verifies the folder, creates a disposable test file, verifies its parent, and removes it.
+5. Click **Backup Now to Google Drive**. Verify the file exists in the app-created My Drive folder, check its size and success record in `/admin/backups`, and confirm the new local temporary file was removed.
+6. Run `php artisan backup:database-to-drive` from the server once to verify scheduled-style operation without an interactive browser session.
+
+The cPanel cron should run Laravel's scheduler once per minute. In cPanel's **Command** field, enter only the command after the five schedule fields:
 
 ```cron
 * * * * * cd /home/bilaigho/public_html && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-If cron does not find `php`, replace it with the absolute executable returned by `which php`. Check `php artisan schedule:list` for the 02:00 backup entry. For an initial live verification, run `php artisan backup:drive-check` first. This read-only check verifies authentication, folder access, Shared Drive membership, and upload permission without creating a database dump. Then run `php artisan backup:database-to-drive` manually and confirm the file in the private Shared Drive folder, its size and ID in `/admin/backups`, and that the newly generated local temporary file was removed. Run a second backup to exercise retention. Keep cPanel/provider backups as a separate layer.
+If cPanel has separate Minute/Hour/Day/Month/Weekday inputs, set all five to `*` and enter `cd /home/bilaigho/public_html && php artisan schedule:run >> /dev/null 2>&1` in **Command**. If cron cannot find `php`, substitute the full executable path from `which php`. `php artisan schedule:list` should show the 02:00 Asia/Dhaka backup. Keep cPanel/provider backups as an additional layer.
 
-If either command reports a Drive failure after changing `.env`, run `php artisan optimize:clear` to reload configuration, then rerun `php artisan backup:drive-check`. The check prints safe categories without disclosing credentials or API response bodies. If it reports that the folder is in My Drive, move backups to a private Google Workspace Shared Drive; a service account cannot own files in personal My Drive. If the check succeeds but the upload still fails, inspect the backup history status and the safe error category, and confirm the service account has permission to create and delete files. Do not paste the service-account JSON, private key, access token, or full `.env` into a support conversation.
+## Retention, failure, and disconnection
 
-## Retention and failures
+Retention operates only within the connected app folder and deletes only files matching `bilaighor-db-YYYY-MM-DD-HH-mm-ss.sql.gz` (or `.enc`) with the `bilaighor_backup=database` app property and an age beyond `BACKUP_RETENTION_DAYS`. Metadata is rechecked before deletion. Unrelated files and folders are ignored.
 
-Drive retention deletes only files in the configured folder whose names match `bilaighor-db-YYYY-MM-DD-HH-mm-ss.sql.gz` (optionally `.enc`), whose app property is `bilaighor_backup=database`, and whose Drive creation time is older than the configured period. It rechecks metadata before deletion. Unrelated files are not touched.
+An upload failure leaves the local private compressed or encrypted file for a short retry window and records a safe error in `backup_logs`. The hourly `backup:prune-local` task removes generated backup files older than 48 hours; temporary SQL and dump credential files are removed sooner. If Google reports `invalid_grant` when refreshing, the connection is marked **Reconnect required** and new backups stop until an admin reconnects. A retention failure is a warning on an otherwise verified successful upload.
 
-On failed upload, the private temporary file remains available for a short retry window. `backup:prune-local` runs hourly and removes generated backup files older than 48 hours; temporary SQL and credential files are removed sooner. A retention error is recorded as a warning without changing the verified upload's success status. The admin page shows configuration status and audit history without exposing credential paths or tokens.
+**Disconnect Google Drive** removes the stored OAuth tokens and connection record. It keeps backup history and existing files in My Drive. It does not revoke the Google consent grant; you may also revoke it in your Google Account's security settings. No backup download or restore from Drive is included in this phase.

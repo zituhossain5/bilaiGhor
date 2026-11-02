@@ -407,7 +407,8 @@
                 </a>
             </div>
         </div>
-        <div class="card-body table-responsive">
+        <div class="card-body">
+            <div class="table-responsive">
             <table class="table table-bordered table-hover align-middle">
                 <thead class="table-light">
                 <tr>
@@ -464,8 +465,11 @@
                 @endforelse
                 </tbody>
             </table>
+            </div>
 
-            {{ $expenses->links() }}
+            <div class="mt-3">
+                {{ $expenses->links('pagination::bootstrap-5') }}
+            </div>
         </div>
     </div>
 

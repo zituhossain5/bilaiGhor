@@ -839,8 +839,8 @@
 <x-admin.menu-group group="settings" label="Settings" :collapsed="true">
 
 {{-- Site Setting --}}
-@canany(['setting-list', 'social-list', 'contact-list'])
-@php $act = $on('settings.*', 'socialmedias.*', 'contact.*', 'pages.*'); @endphp
+@canany(['setting-list', 'social-list', 'contact-list', 'database-backup-download'])
+@php $act = $on('settings.*', 'socialmedias.*', 'contact.*', 'pages.*', 'admin.backups.*'); @endphp
 <li @class(['menuitem-active' => $act])>
   <a href="#siebar-sitesetting" data-bs-toggle="collapse">
     <i data-feather="settings"></i>
@@ -851,6 +851,9 @@
     <ul class="nav-second-level">
       @can('setting-list')
       <li><a href="{{ route('settings.index') }}"><i data-feather="file-plus"></i> General Setting</a></li>
+      @endcan
+      @can('database-backup-download')
+      <li><a href="{{ route('admin.backups.index') }}"><i data-feather="database"></i> Backup Management</a></li>
       @endcan
       @can('social-list')
       <li><a href="{{ route('socialmedias.index') }}"><i data-feather="file-plus"></i> Social Media</a></li>

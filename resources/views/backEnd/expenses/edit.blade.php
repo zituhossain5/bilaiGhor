@@ -234,7 +234,7 @@
                     </div>
 
                     <div class="p-2">
-                        {{ $expenses->links() }}
+                        {{ $expenses->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>

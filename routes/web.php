@@ -580,6 +580,12 @@ Route::post('/admin/sms/custom-send', [App\Http\Controllers\Admin\ApiIntegration
 
 Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']], function() {
     Route::get('/', [FrontendController::class, 'index'])->name('home');
+
+    Route::view('/privacy-policy', 'frontEnd.layouts.pages.legal', ['legalPage' => 'privacy'])
+        ->name('privacy.policy');
+    Route::redirect('/privay-policy', '/privacy-policy', 301);
+    Route::view('/terms', 'frontEnd.layouts.pages.legal', ['legalPage' => 'terms'])
+        ->name('terms');
 	
     Route::get('brands', [FrontendController::class, 'brands'])->name('brands');
 	    Route::get('brand/{slug}', [FrontendController::class, 'brand'])

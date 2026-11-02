@@ -309,8 +309,8 @@
                         <div>
                             <h4 class="text-white font-semibold mb-5 text-sm uppercase tracking-widest">দ্রুত লিংক</h4>
                             <ul class="space-y-3">
-                                <li><a href="{{ route('page', 'terms-and-conditions') }}" class="text-gray-400 hover:text-indigo-400 hover:pl-2 transition-all inline-block">টার্মস অ্যান্ড কন্ডিশন</a></li>
-                                <li><a href="{{ route('page', 'privacy-policy') }}" class="text-gray-400 hover:text-indigo-400 hover:pl-2 transition-all inline-block">প্রাইভেসি পলিসি</a></li>
+                                <li><a href="{{ route('terms') }}" class="text-gray-400 hover:text-indigo-400 hover:pl-2 transition-all inline-block">টার্মস অ্যান্ড কন্ডিশন</a></li>
+                                <li><a href="{{ route('privacy.policy') }}" class="text-gray-400 hover:text-indigo-400 hover:pl-2 transition-all inline-block">প্রাইভেসি পলিসি</a></li>
                                 <li><a href="{{ route('contact') }}" class="text-gray-400 hover:text-indigo-400 hover:pl-2 transition-all inline-block">কন্টাক্ট পেইজ</a></li>
                             </ul>
                         </div>

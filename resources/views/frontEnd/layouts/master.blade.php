@@ -924,6 +924,8 @@
                     <li><a href="{{ route('hotdeals') }}">Best Deals</a></li>
                     <li><a href="{{ route('brands') }}">Brands</a></li>
                     <li><a href="{{ $bilaiParaPage ? route('page', ['slug' => $bilaiParaPage->slug]) : route('blogs') }}">Bilai Para</a></li>
+                    <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
+                    <li><a href="{{ route('terms') }}">Terms &amp; Conditions</a></li>
                 </ul>
             </div>
 

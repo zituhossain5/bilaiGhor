@@ -38,7 +38,9 @@ After deployment, run `php artisan migrate --force` and `php artisan optimize:cl
 * * * * * cd /home/bilaigho/public_html && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-If cron does not find `php`, replace it with the absolute executable returned by `which php`. Check `php artisan schedule:list` for the 02:00 backup entry. For an initial live verification, run `php artisan backup:database-to-drive` manually, then confirm the file in the private Shared Drive folder, its size and ID in `/admin/backups`, and that the newly generated local temporary file was removed. Run a second backup to exercise retention. Keep cPanel/provider backups as a separate layer.
+If cron does not find `php`, replace it with the absolute executable returned by `which php`. Check `php artisan schedule:list` for the 02:00 backup entry. For an initial live verification, run `php artisan backup:drive-check` first. This read-only check verifies authentication, folder access, Shared Drive membership, and upload permission without creating a database dump. Then run `php artisan backup:database-to-drive` manually and confirm the file in the private Shared Drive folder, its size and ID in `/admin/backups`, and that the newly generated local temporary file was removed. Run a second backup to exercise retention. Keep cPanel/provider backups as a separate layer.
+
+If either command reports a Drive failure after changing `.env`, run `php artisan optimize:clear` to reload configuration, then rerun `php artisan backup:drive-check`. The check prints safe categories without disclosing credentials or API response bodies. If it reports that the folder is in My Drive, move backups to a private Google Workspace Shared Drive; a service account cannot own files in personal My Drive. If the check succeeds but the upload still fails, inspect the backup history status and the safe error category, and confirm the service account has permission to create and delete files. Do not paste the service-account JSON, private key, access token, or full `.env` into a support conversation.
 
 ## Retention and failures
 

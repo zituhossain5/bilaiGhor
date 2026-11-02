@@ -38,6 +38,7 @@ class DriveBackupTest extends TestCase
         $this->app->instance(DatabaseBackupService::class, $dump);
         $drive = Mockery::mock(GoogleDriveBackupService::class);
         $drive->shouldReceive('configured')->once()->andReturn(true);
+        $drive->shouldReceive('checkAccess')->once();
         $drive->shouldReceive('uploadAndVerify')->once()->with($backup['path'], $backup['filename'], $backup['size'])
             ->andReturn(['id' => 'drive-file-123', 'size' => $backup['size'], 'created_at' => now()->toIso8601String()]);
         $drive->shouldReceive('pruneOldBackups')->once()->with(14, 'drive-file-123')->andReturn(2);
@@ -60,6 +61,7 @@ class DriveBackupTest extends TestCase
         $this->app->instance(DatabaseBackupService::class, $dump);
         $drive = Mockery::mock(GoogleDriveBackupService::class);
         $drive->shouldReceive('configured')->once()->andReturn(true);
+        $drive->shouldReceive('checkAccess')->once();
         $drive->shouldNotReceive('uploadAndVerify');
         $this->app->instance(GoogleDriveBackupService::class, $drive);
 
@@ -82,7 +84,7 @@ class DriveBackupTest extends TestCase
         $this->assertSame(1, $this->artisan('backup:database-to-drive')->run());
         $this->assertDatabaseHas('backup_logs', [
             'destination' => 'google_drive', 'status' => 'failed',
-            'error_message' => 'Google Drive backup is not configured.',
+            'error_message' => 'Google Drive backup is not configured or accessible.',
         ]);
     }
 
@@ -108,6 +110,7 @@ class DriveBackupTest extends TestCase
         $this->app->instance(DatabaseBackupService::class, $dump);
         $drive = Mockery::mock(GoogleDriveBackupService::class);
         $drive->shouldReceive('configured')->once()->andReturn(true);
+        $drive->shouldReceive('checkAccess')->once();
         $drive->shouldReceive('uploadAndVerify')->once()->andThrow(new \RuntimeException('secret remote response'));
         $drive->shouldNotReceive('pruneOldBackups');
         $this->app->instance(GoogleDriveBackupService::class, $drive);
@@ -156,6 +159,7 @@ class DriveBackupTest extends TestCase
         $this->app->instance(DatabaseBackupService::class, $dump);
         $drive = Mockery::mock(GoogleDriveBackupService::class);
         $drive->shouldReceive('configured')->once()->andReturn(true);
+        $drive->shouldReceive('checkAccess')->once();
         $drive->shouldReceive('uploadAndVerify')->once()->andReturn([
             'id' => 'drive-file-456', 'size' => $backup['size'], 'created_at' => now()->toIso8601String(),
         ]);
@@ -209,6 +213,7 @@ class DriveBackupTest extends TestCase
         $encryptedPath = null;
         $drive = Mockery::mock(GoogleDriveBackupService::class);
         $drive->shouldReceive('configured')->once()->andReturn(true);
+        $drive->shouldReceive('checkAccess')->once();
         $drive->shouldReceive('uploadAndVerify')->once()->andReturnUsing(function ($path, $name, $size) use (&$encryptedPath) {
             $encryptedPath = $path;
             $this->assertStringEndsWith('.sql.gz.enc', $name);
@@ -252,6 +257,52 @@ class DriveBackupTest extends TestCase
         $this->assertSame(1, $service->pruneOldBackups(14));
         Http::assertSentCount(3); // list, re-check, delete
         Http::assertSent(fn ($request) => $request->method() === 'DELETE' && str_contains($request->url(), '/old-file'));
+    }
+
+    public function test_drive_check_rejects_personal_my_drive_without_creating_a_backup(): void
+    {
+        $service = new GoogleDriveBackupService;
+        (new \ReflectionProperty($service, 'accessToken'))->setValue($service, 'test-token');
+        Http::fake(['https://www.googleapis.com/drive/v3/files/test-folder*' => Http::response([
+            'id' => 'test-folder', 'mimeType' => 'application/vnd.google-apps.folder',
+            'trashed' => false, 'capabilities' => ['canAddChildren' => true],
+        ], 200)]);
+
+        try {
+            $service->checkAccess();
+            $this->fail('Personal My Drive folder was accepted.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Backup folder is in My Drive; use a Google Workspace Shared Drive.', $e->getMessage());
+        }
+        Http::assertSentCount(1);
+    }
+
+    public function test_drive_check_accepts_writable_shared_drive_folder(): void
+    {
+        $service = new GoogleDriveBackupService;
+        (new \ReflectionProperty($service, 'accessToken'))->setValue($service, 'test-token');
+        Http::fake(['https://www.googleapis.com/drive/v3/files/test-folder*' => Http::response([
+            'id' => 'test-folder', 'mimeType' => 'application/vnd.google-apps.folder',
+            'driveId' => 'shared-drive-id', 'trashed' => false,
+            'capabilities' => ['canAddChildren' => true],
+        ], 200)]);
+
+        $service->checkAccess();
+        Http::assertSentCount(1);
+    }
+
+    public function test_drive_check_reports_missing_write_permission(): void
+    {
+        $service = new GoogleDriveBackupService;
+        (new \ReflectionProperty($service, 'accessToken'))->setValue($service, 'test-token');
+        Http::fake(['https://www.googleapis.com/drive/v3/files/test-folder*' => Http::response([
+            'id' => 'test-folder', 'mimeType' => 'application/vnd.google-apps.folder',
+            'driveId' => 'shared-drive-id', 'trashed' => false,
+            'capabilities' => ['canAddChildren' => false],
+        ], 200)]);
+
+        $this->expectExceptionMessage('Service account cannot add files to the backup folder.');
+        $service->checkAccess();
     }
 
     public function test_admin_only_backup_now_route_uses_shared_runner(): void

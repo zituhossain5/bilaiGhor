@@ -48,6 +48,7 @@ class DriveBackupRunner
             if (! $drive->configured()) {
                 throw new RuntimeException('Drive backup configuration is incomplete');
             }
+            $drive->checkAccess();
             $stage = 'dump';
 
             $compressed = app(DatabaseBackupService::class)->generate(true);
@@ -100,13 +101,26 @@ class DriveBackupRunner
 
             return ['log' => $log->fresh(), 'warning' => $warnings !== [] ? implode(' ', $warnings) : null];
         } catch (Throwable $e) {
-            $safe = $stage === 'configuration' ? 'Google Drive backup is not configured.' : (
-                $stage === 'dump' ? 'Database dump failed.' : (
-                $stage === 'encryption' ? 'Backup encryption failed.' : (
-                    $e->getMessage() === 'Drive storage quota exceeded'
-                        ? 'Google Drive storage quota exceeded.' : 'Google Drive upload or verification failed.'
-                )
-            ));
+            $safeDriveMessages = [
+                'Backup folder not found or not shared with the service account.',
+                'Configured Google Drive ID is not an active folder.',
+                'Backup folder is in My Drive; use a Google Workspace Shared Drive.',
+                'Service account cannot add files to the backup folder.',
+                'Service account lacks write permission in Google Drive.',
+                'Google Drive API is not enabled for this project.',
+                'Google Drive authentication failed.',
+                'Google Drive service account credentials are invalid.',
+                'Google Drive service account key could not sign the request.',
+                'Google Drive storage quota or item limit exceeded.',
+                'Google Drive denied access; check service account folder permissions and API access.',
+            ];
+            $safe = match (true) {
+                in_array($e->getMessage(), $safeDriveMessages, true) => $e->getMessage(),
+                $stage === 'configuration' => 'Google Drive backup is not configured or accessible.',
+                $stage === 'dump' => 'Database dump failed.',
+                $stage === 'encryption' => 'Backup encryption failed.',
+                default => 'Google Drive upload or verification failed.',
+            };
             Log::error('Drive database backup failed', [
                 'backup_log_id' => $log?->id, 'stage' => $stage,
                 'exception' => get_class($e), 'category' => $safe,

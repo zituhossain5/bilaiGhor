@@ -24,6 +24,34 @@ class GoogleDriveBackupService
         }
     }
 
+    /** Check access without creating a backup or modifying Drive. */
+    public function checkAccess(): void
+    {
+        $folder = $this->folderId();
+        $response = Http::withToken($this->token())->timeout(30)->get(self::FILES_URL.'/'.$folder, [
+            'fields' => 'id,mimeType,driveId,trashed,capabilities(canAddChildren)',
+            'supportsAllDrives' => 'true',
+        ]);
+        if ($response->status() === 404) {
+            throw new RuntimeException('Backup folder not found or not shared with the service account.');
+        }
+        if (! $response->successful()) {
+            $this->failForResponse($response->status(), $response->json());
+        }
+
+        $folderInfo = $response->json();
+        if (($folderInfo['id'] ?? null) !== $folder || ($folderInfo['trashed'] ?? true) !== false
+            || ($folderInfo['mimeType'] ?? null) !== 'application/vnd.google-apps.folder') {
+            throw new RuntimeException('Configured Google Drive ID is not an active folder.');
+        }
+        if (empty($folderInfo['driveId'])) {
+            throw new RuntimeException('Backup folder is in My Drive; use a Google Workspace Shared Drive.');
+        }
+        if (($folderInfo['capabilities']['canAddChildren'] ?? false) !== true) {
+            throw new RuntimeException('Service account cannot add files to the backup folder.');
+        }
+    }
+
     /** @return array{id: string, size: int, created_at: string} */
     public function uploadAndVerify(string $path, string $filename, int $size): array
     {
@@ -155,7 +183,7 @@ class GoogleDriveBackupService
         if (! is_array($credentials) || ($credentials['type'] ?? null) !== 'service_account'
             || ! is_string($credentials['client_email'] ?? null)
             || ! is_string($credentials['private_key'] ?? null)) {
-            throw new RuntimeException('Drive credentials are invalid');
+            throw new RuntimeException('Google Drive service account credentials are invalid.');
         }
 
         $issued = time();
@@ -170,7 +198,7 @@ class GoogleDriveBackupService
         $unsigned = $header.'.'.$claims;
         $key = openssl_pkey_get_private($credentials['private_key']);
         if ($key === false || ! openssl_sign($unsigned, $signature, $key, OPENSSL_ALGO_SHA256)) {
-            throw new RuntimeException('Drive service account signing failed');
+            throw new RuntimeException('Google Drive service account key could not sign the request.');
         }
         $assertion = $unsigned.'.'.$this->base64Url($signature);
         $response = Http::asForm()->timeout(30)->post(self::TOKEN_URL, [
@@ -178,7 +206,7 @@ class GoogleDriveBackupService
             'assertion' => $assertion,
         ]);
         if (! $response->successful() || ! is_string($response->json('access_token'))) {
-            throw new RuntimeException('Drive authentication failed');
+            throw new RuntimeException('Google Drive authentication failed.');
         }
         return $this->accessToken = $response->json('access_token');
     }
@@ -204,7 +232,19 @@ class GoogleDriveBackupService
     {
         $reason = is_array($body) ? ($body['error']['errors'][0]['reason'] ?? '') : '';
         if (in_array($reason, ['storageQuotaExceeded', 'teamDriveFileLimitExceeded'], true)) {
-            throw new RuntimeException('Drive storage quota exceeded');
+            throw new RuntimeException('Google Drive storage quota or item limit exceeded.');
+        }
+        if ($reason === 'insufficientFilePermissions') {
+            throw new RuntimeException('Service account lacks write permission in Google Drive.');
+        }
+        if ($reason === 'accessNotConfigured') {
+            throw new RuntimeException('Google Drive API is not enabled for this project.');
+        }
+        if ($status === 401) {
+            throw new RuntimeException('Google Drive authentication failed.');
+        }
+        if ($status === 403) {
+            throw new RuntimeException('Google Drive denied access; check service account folder permissions and API access.');
         }
         throw new RuntimeException('Drive API request failed (HTTP '.$status.')');
     }

@@ -20,6 +20,7 @@ class DatabaseBackupTest extends TestCase
     {
         $this->get(route('admin.backups.index'))->assertRedirect();
         $this->post(route('admin.backups.database'))->assertRedirect();
+        $this->post(route('admin.backups.google-drive'))->assertRedirect();
         $this->get(route('admin.backups.database'))->assertMethodNotAllowed();
     }
 
@@ -31,6 +32,7 @@ class DatabaseBackupTest extends TestCase
 
         $this->actingAs($staff, 'admin')->get(route('admin.backups.index'))->assertForbidden();
         $this->actingAs($staff, 'admin')->post(route('admin.backups.database'))->assertForbidden();
+        $this->actingAs($staff, 'admin')->post(route('admin.backups.google-drive'))->assertForbidden();
     }
 
     public function test_admin_sees_backup_page_and_post_download_is_private_audited_and_deleted(): void

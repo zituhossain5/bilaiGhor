@@ -20,8 +20,14 @@ class DatabaseBackupService
         return (string) DB::connection()->getDatabaseName();
     }
 
+    public function pruneStaleDriveFiles(): int
+    {
+        $directory = storage_path('app/private/backups/tmp');
+        return is_dir($directory) ? $this->removeStaleTemporaryFiles($directory, true) : 0;
+    }
+
     /** @return array{path: string, filename: string, size: int} */
-    public function generate(): array
+    public function generate(bool $forDrive = false): array
     {
         $connection = DB::connection();
         if ($connection->getDriverName() !== 'mysql') {
@@ -34,11 +40,12 @@ class DatabaseBackupService
         }
 
         $config = $connection->getConfig();
-        $directory = storage_path('app/private/backups');
+        $directory = storage_path('app/private/backups'.($forDrive ? '/tmp' : ''));
         if (! is_dir($directory) && ! mkdir($directory, 0700, true) && ! is_dir($directory)) {
             throw new RuntimeException('Private backup directory unavailable');
         }
-        $this->removeStaleTemporaryFiles($directory);
+        @chmod($directory, 0700);
+        $this->removeStaleTemporaryFiles($directory, $forDrive);
 
         $nonce = Str::random(20);
         $credentials = $directory.'/'.$nonce.'.cnf';
@@ -105,6 +112,7 @@ class DatabaseBackupService
                 throw new RuntimeException('Compressed database backup is empty');
             }
             $completed = true;
+            @chmod($compressed, 0600);
 
             return ['path' => $compressed, 'filename' => $filename, 'size' => $size];
         } finally {
@@ -127,17 +135,20 @@ class DatabaseBackupService
         ).'"';
     }
 
-    private function removeStaleTemporaryFiles(string $directory): void
+    private function removeStaleTemporaryFiles(string $directory, bool $forDrive): int
     {
+        $removed = 0;
         foreach (scandir($directory) ?: [] as $name) {
-            if (! preg_match('/^[A-Za-z0-9]{20}(?:\\.cnf|\\.sql|-bilaighor-db-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.sql\\.gz)$/', $name)) {
+            if (! preg_match('/^[A-Za-z0-9]{20}(?:\\.cnf|\\.sql|-bilaighor-db-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.sql\\.gz(?:\\.enc)?)$/', $name)) {
                 continue;
             }
             $path = $directory.'/'.$name;
-            if (is_file($path) && filemtime($path) < time() - 7200) {
-                @unlink($path);
+            $maxAge = $forDrive && ! str_ends_with($name, '.cnf') && ! str_ends_with($name, '.sql') ? 172800 : 7200;
+            if (is_file($path) && filemtime($path) < time() - $maxAge) {
+                if (@unlink($path)) $removed++;
             }
         }
+        return $removed;
     }
 
     private function dumpBinary(): ?string

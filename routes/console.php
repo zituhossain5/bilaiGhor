@@ -42,6 +42,20 @@ try {
 // Daily sitemap rebuild; model saves also rebuild it (App\Observers\SitemapObserver).
 Schedule::command('sitemap:generate')->dailyAt('03:15')->withoutOverlapping();
 
+if (config('backups.drive.enabled')) {
+    Schedule::command('backup:database-to-drive')
+        ->dailyAt(config('backups.daily_time', '02:00'))
+        ->timezone(config('backups.timezone', 'Asia/Dhaka'))
+        ->withoutOverlapping(30);
+}
+
+Artisan::command('backup:prune-local', function () {
+    $removed = app(\App\Services\DatabaseBackupService::class)->pruneStaleDriveFiles();
+    $this->info("Removed {$removed} stale private backup file(s).");
+})->purpose('Remove old temporary database backups and credentials');
+
+Schedule::command('backup:prune-local')->hourly()->withoutOverlapping();
+
 // Courier tracking: drop raw webhook/API payloads after the retention period (events stay).
 Schedule::command('courier:prune-payloads')->dailyAt('03:45')->withoutOverlapping();
 

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BackupLog;
 use App\Services\DatabaseBackupService;
+use App\Services\DriveBackupRunner;
+use App\Services\GoogleDriveBackupService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -14,16 +16,34 @@ use Throwable;
 
 class BackupController extends Controller
 {
-    public function index(DatabaseBackupService $backups)
+    public function index(DatabaseBackupService $backups, GoogleDriveBackupService $drive)
     {
         $this->authorizeBackup();
 
         return view('backEnd.backups.index', [
             'database' => $backups->databaseName(),
             'dumpAvailable' => $backups->dumpAvailable(),
-            'lastSuccess' => BackupLog::where('type', 'database')->where('status', 'success')->latest()->first(),
-            'logs' => BackupLog::where('type', 'database')->latest()->limit(20)->get(),
+            'lastSuccess' => BackupLog::where('type', 'database')->where('destination', 'download')->where('status', 'success')->latest()->first(),
+            'lastDriveSuccess' => BackupLog::where('destination', 'google_drive')->where('status', 'success')->latest()->first(),
+            'lastDriveFailure' => BackupLog::where('destination', 'google_drive')->where('status', 'failed')->latest()->first(),
+            'driveEnabled' => (bool) config('backups.drive.enabled'),
+            'driveConfigured' => $drive->configured(),
+            'logs' => BackupLog::where('type', 'database')->with('creator:id,name')->latest()->limit(20)->get(),
         ]);
+    }
+
+    public function backupNow(DriveBackupRunner $runner): RedirectResponse
+    {
+        $this->authorizeBackup();
+
+        try {
+            $result = $runner->run(Auth::guard('admin')->id());
+            return back()->with('success', $result['warning']
+                ? 'Backup uploaded successfully, but '.$result['warning']
+                : 'Backup completed and uploaded to Google Drive.');
+        } catch (Throwable) {
+            return back()->with('error', 'Backup failed. Check backup logs.');
+        }
     }
 
     public function download(DatabaseBackupService $backups): BinaryFileResponse|RedirectResponse

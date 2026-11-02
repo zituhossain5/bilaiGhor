@@ -461,6 +461,8 @@ Route::prefix('admin')->middleware(['auth:admin', 'admin', 'demo_mode'])->group(
         ->middleware('permission:database-backup-download')->name('admin.backups.index');
     Route::post('/backups/database', [\App\Http\Controllers\Admin\BackupController::class, 'download'])
         ->middleware(['permission:database-backup-download', 'throttle:3,10'])->name('admin.backups.database');
+    Route::post('/backups/google-drive', [\App\Http\Controllers\Admin\BackupController::class, 'backupNow'])
+        ->middleware(['permission:database-backup-download', 'throttle:3,10'])->name('admin.backups.google-drive');
 
     // Fund Routes
     Route::get('/fund', [FundController::class, 'index'])->name('admin.fund.index');

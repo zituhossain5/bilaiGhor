@@ -7,6 +7,7 @@
     <p class="text-muted mb-4">Create and download a fresh database backup.</p>
 
     @if(session('error'))<div class="alert alert-danger" role="alert">{{ session('error') }}</div>@endif
+    @if(session('success'))<div class="alert alert-success" role="status">{{ session('success') }}</div>@endif
 
     <div class="card mb-4" style="background:var(--bilai-surface,#fffdf8);border:1px solid var(--bilai-border,#ead8be)">
         <div class="card-body">
@@ -27,17 +28,41 @@
         </div>
     </div>
 
+    <div class="card mb-4" style="background:var(--bilai-surface,#fffdf8);border:1px solid var(--bilai-border,#ead8be)">
+        <div class="card-body">
+            <h4 class="mb-3">Automatic Google Drive Backup</h4>
+            <dl class="row mb-3">
+                <dt class="col-sm-4">Automatic backup</dt><dd class="col-sm-8">{{ $driveEnabled ? 'Enabled' : 'Disabled' }}</dd>
+                <dt class="col-sm-4">Destination</dt><dd class="col-sm-8">Private Google Shared Drive folder</dd>
+                <dt class="col-sm-4">Schedule</dt><dd class="col-sm-8">Daily at {{ config('backups.daily_time') }} ({{ config('backups.timezone') }})</dd>
+                <dt class="col-sm-4">Retention</dt><dd class="col-sm-8">{{ config('backups.retention_days') }} days</dd>
+                <dt class="col-sm-4">Encryption</dt><dd class="col-sm-8">{{ config('backups.encryption.enabled') ? 'Enabled' : 'Disabled' }}</dd>
+                <dt class="col-sm-4">Drive status</dt><dd class="col-sm-8">{{ $driveConfigured ? 'Configured (not live tested)' : 'Needs setup' }}</dd>
+                <dt class="col-sm-4">Last successful upload</dt><dd class="col-sm-8">{{ $lastDriveSuccess?->completed_at?->format('d M Y, h:i A') ?? 'Never' }}</dd>
+                <dt class="col-sm-4">Last failed attempt</dt><dd class="col-sm-8">{{ $lastDriveFailure?->completed_at?->format('d M Y, h:i A') ?? 'None' }}</dd>
+                <dt class="col-sm-4">Last uploaded file</dt><dd class="col-sm-8">{{ $lastDriveSuccess?->filename ?? '—' }}</dd>
+                <dt class="col-sm-4">Backup size</dt><dd class="col-sm-8">{{ $lastDriveSuccess?->size_bytes !== null ? number_format($lastDriveSuccess->size_bytes / 1024 / 1024, 2).' MB' : '—' }}</dd>
+            </dl>
+            @if($lastDriveSuccess?->warning_message)<div class="alert alert-warning">{{ $lastDriveSuccess->warning_message }}</div>@endif
+            <form method="POST" action="{{ route('admin.backups.google-drive') }}" id="drive-backup-form">
+                @csrf
+                <button type="submit" class="btn btn-primary" id="drive-backup-button" @disabled(!$driveEnabled || !$driveConfigured || !$dumpAvailable)>Backup Now to Google Drive</button>
+            </form>
+            <p class="small text-muted mt-3 mb-0">Google Drive backups are an off-server backup layer. Continue keeping cPanel/provider backups as an additional safety layer. No public Drive links are created.</p>
+        </div>
+    </div>
+
     <div class="card" style="background:var(--bilai-surface,#fffdf8);border:1px solid var(--bilai-border,#ead8be)">
         <div class="card-body">
             <h4 class="mb-3">Recent backup attempts</h4>
             <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0">
-                    <thead><tr><th>Date</th><th>Filename</th><th>Size</th><th>Status</th><th>Created by</th></tr></thead>
+                    <thead><tr><th>Date</th><th>Filename</th><th>Destination</th><th>Size</th><th>Encrypted</th><th>Status</th><th>Triggered by</th></tr></thead>
                     <tbody>
                     @forelse($logs as $log)
-                        <tr><td>{{ $log->created_at?->format('d M Y, h:i A') }}</td><td>{{ $log->filename }}</td><td>{{ $log->size_bytes !== null ? number_format($log->size_bytes / 1024, 1).' KB' : '—' }}</td><td>{{ ucfirst($log->status) }}</td><td>{{ $log->created_by ?? '—' }}</td></tr>
+                        <tr><td>{{ $log->created_at?->format('d M Y, h:i A') }}</td><td>{{ $log->filename }}</td><td>{{ $log->destination === 'google_drive' ? 'Google Drive' : 'Download' }}</td><td>{{ $log->size_bytes !== null ? number_format($log->size_bytes / 1024, 1).' KB' : '—' }}</td><td>{{ $log->encrypted ? 'Yes' : 'No' }}</td><td>{{ ucfirst($log->status) }}@if($log->warning_message)<span class="text-warning"> (warning)</span>@endif</td><td>{{ $log->created_by ? ($log->creator?->name ?? 'Admin') : 'Scheduler' }}</td></tr>
                     @empty
-                        <tr><td colspan="5" class="text-muted">No backup attempts yet.</td></tr>
+                        <tr><td colspan="7" class="text-muted">No backup attempts yet.</td></tr>
                     @endforelse
                     </tbody>
                 </table>
@@ -52,6 +77,11 @@ document.getElementById('database-backup-form').addEventListener('submit', funct
     button.textContent = 'Generating backup...';
     // A downloaded response leaves the page open; allow another request later.
     setTimeout(function () { button.disabled = false; button.textContent = 'Download Database Backup'; }, 30000);
+});
+document.getElementById('drive-backup-form').addEventListener('submit', function () {
+    const button = document.getElementById('drive-backup-button');
+    button.disabled = true;
+    button.textContent = 'Generating and uploading backup...';
 });
 </script>
 @endsection

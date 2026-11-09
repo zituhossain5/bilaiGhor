@@ -20,6 +20,7 @@ class Subcategory extends Model
         'seo_h1',
         'full_description',
         'status',
+        'show_on_homepage',
         'sort_order',
     ];
 

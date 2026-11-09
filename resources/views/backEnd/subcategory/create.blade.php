@@ -265,6 +265,18 @@
                             </label>
                         </div>
 
+                        <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded border border-light">
+                            <div class="me-3">
+                                <h6 class="mb-1 text-dark fw-bold">Show in &quot;Shop by Category&quot;</h6>
+                                <p class="text-muted font-size-12 mb-0">Controls whether this subcategory appears in the homepage &quot;Shop by Category&quot; section. It does not affect the navigation menu.</p>
+                            </div>
+                            <label class="switch flex-shrink-0">
+                                <input type="hidden" name="show_on_homepage" value="0">
+                                <input type="checkbox" name="show_on_homepage" value="1" aria-label="Show in Shop by Category" {{ old('show_on_homepage', 1) == 1 ? 'checked' : '' }}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
                         <button type="submit" class="btn btn-submit w-100 rounded-pill">
                             <i class="fe-save me-1"></i> Save Subcategory
                         </button>

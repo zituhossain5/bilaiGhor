@@ -93,6 +93,7 @@ class FrontendController extends Controller
             ->get();
 
         $homeSubcategories = Subcategory::where('status', 1)
+            ->where('show_on_homepage', 1)
             ->select('id', 'subcategoryName', 'slug', 'image', 'image_alt', 'category_id')
             ->with(['category:id,name,slug,status'])
             ->displayOrdered()

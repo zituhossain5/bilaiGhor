@@ -92,6 +92,7 @@
                                 <th>Subcategory Name</th>
                                 <th>Order</th>
                                 <th>Status</th>
+                                <th>Homepage</th>
                                 <th class="text-end" style="width: 150px;">Action</th>
                             </tr>
                         </thead>                
@@ -124,6 +125,14 @@
                                     @endif
                                 </td>
 
+                                <td>
+                                    @if($value->show_on_homepage == 1)
+                                        <span class="badge badge-pill badge-soft-success">Visible</span>
+                                    @else
+                                        <span class="badge badge-pill badge-soft-secondary">Hidden</span>
+                                    @endif
+                                </td>
+
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2">
                                         {{-- Status Toggle --}}
@@ -131,7 +140,7 @@
                                             <form method="post" action="{{route('subcategories.inactive')}}" class="d-inline"> 
                                                 @csrf
                                                 <input type="hidden" value="{{$value->id}}" name="hidden_id">        
-                                                <button type="submit" class="action-btn btn-inactive" title="Deactivate">
+                                                <button type="submit" class="action-btn btn-inactive" title="Deactivate globally">
                                                     <i class="fe-eye-off"></i>
                                                 </button>
                                             </form>
@@ -139,7 +148,7 @@
                                             <form method="post" action="{{route('subcategories.active')}}" class="d-inline">
                                                 @csrf
                                                 <input type="hidden" value="{{$value->id}}" name="hidden_id">        
-                                                <button type="submit" class="action-btn btn-active" title="Activate">
+                                                <button type="submit" class="action-btn btn-active" title="Activate globally">
                                                     <i class="fe-eye"></i>
                                                 </button>
                                             </form>

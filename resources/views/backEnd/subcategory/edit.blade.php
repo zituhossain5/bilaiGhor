@@ -267,7 +267,8 @@
                                 <p class="text-muted font-size-12 mb-0">Enable or disable subcategory</p>
                             </div>
                             <label class="switch">
-                                <input type="checkbox" name="status" value="1" {{ $edit_data->status == 1 ? 'checked' : '' }}>
+                                <input type="hidden" name="status" value="0">
+                                <input type="checkbox" name="status" value="1" {{ old('status', $edit_data->status) == 1 ? 'checked' : '' }}>
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -297,13 +298,13 @@
 
 @section('script')
 <script src="{{asset('public/backEnd/')}}/assets/libs/parsleyjs/parsley.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/assets/js/pages/form-validation.init.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs/select2/js/select2.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/assets/libs/summernote/summernote-lite.min.js"></script>
 @include('backEnd.partials.summernote-image-alt')
 
 <script>
     $(document).ready(function(){
+        $('form[data-parsley-validate]').parsley();
         // Summernote Setup
         $(".summernote").summernote({
             placeholder: "Enter SEO description...",

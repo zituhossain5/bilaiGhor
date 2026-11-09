@@ -45,7 +45,7 @@ class SubcategoryController extends Controller
         $this->validate($request, [
             'category_id' => 'required',
             'subcategoryName' => 'required',
-            'status' => 'required',
+            'status' => 'required|in:0,1',
             'sort_order' => 'nullable|integer|min:0',
             'seo_h1' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:255',
@@ -81,6 +81,7 @@ class SubcategoryController extends Controller
         $input['slug'] = str_replace('/', '', $input['slug']);
 
         $input['image'] = $imageUrl;
+        $input['status'] = (int) $request->input('status');
         $input['sort_order'] = $request->filled('sort_order') ? (int) $request->sort_order : 0;
         $input['seo_h1'] = SeoText::plain($request->seo_h1);
         $input['meta_title'] = SeoText::plain($request->meta_title);
@@ -103,7 +104,7 @@ class SubcategoryController extends Controller
         $this->validate($request, [
             'category_id' => 'required',
             'subcategoryName' => 'required',
-            'status' => 'required',
+            'status' => 'required|in:0,1',
             'sort_order' => 'nullable|integer|min:0',
             'seo_h1' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:255',
@@ -141,7 +142,7 @@ class SubcategoryController extends Controller
         
         $input['slug'] = strtolower(preg_replace('/\s+/', '-', $request->subcategoryName));
         $input['slug'] = str_replace('/', '', $input['slug']);
-        $input['status'] = $request->status?1:0;
+        $input['status'] = (int) $request->input('status');
         $input['sort_order'] = $request->filled('sort_order') ? (int) $request->sort_order : 0;
         $input['seo_h1'] = SeoText::plain($request->seo_h1);
         $input['meta_title'] = SeoText::plain($request->meta_title);

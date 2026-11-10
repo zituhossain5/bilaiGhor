@@ -45,14 +45,23 @@
     margin-bottom: 24px !important;
 }
 
-.bilai-legal ul {
+.bilai-legal ul,
+.bilai-legal ol {
     display: block;
-    list-style: disc outside;
     padding-left: 24px;
     margin: 4px 0 16px;
 }
 
-.bilai-legal li {
+.bilai-legal ul {
+    list-style: disc outside;
+}
+
+.bilai-legal ol {
+    list-style: decimal outside;
+}
+
+.bilai-legal ul li,
+.bilai-legal ol li {
     display: list-item;
     margin: 0 0 4px;
 }

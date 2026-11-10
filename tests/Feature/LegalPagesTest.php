@@ -61,4 +61,21 @@ class LegalPagesTest extends TestCase
             ->assertStatus(301)
             ->assertRedirect('/privacy-policy');
     }
+
+    public function test_return_policy_is_public_and_has_requested_canonical_and_clear_terms(): void
+    {
+        foreach (['/return-policy', '/return-refund-policy'] as $path) {
+            $html = $this->get($path)->assertOk()->getContent();
+
+            $this->assertStringContainsString('<title>Return &amp; Refund Policy | Bilai Ghor</title>', $html);
+            $this->assertStringContainsString('<link rel="canonical" href="https://bilaighor.bd/return-refund-policy"', $html);
+            $this->assertSame(1, preg_match_all('/<h1\b/i', $html));
+            $this->assertStringContainsString('3 calendar days of receiving the order', $html);
+            $this->assertStringContainsString('7 calendar days of delivery', $html);
+            $this->assertStringContainsString('5–7 business days', $html);
+            $this->assertStringContainsString('href="' . route('return.policy') . '"', $html);
+            $this->assertStringContainsString('href="' . route('contact') . '"', $html);
+            $this->assertStringNotContainsString('name="robots" content="noindex', $html);
+        }
+    }
 }

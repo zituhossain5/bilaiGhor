@@ -26,6 +26,10 @@
             'areaServed' => 'BD',
             'availableLanguage' => ['Bengali', 'English'],
         ],
+        'hasMerchantReturnPolicy' => [
+            '@type' => 'MerchantReturnPolicy',
+            'merchantReturnLink' => 'https://bilaighor.bd/return-refund-policy',
+        ],
         // Only real profile URLs (the WhatsApp entry in settings is a phone number).
         'sameAs' => collect($socialicons ?? [])->pluck('link')
             ->filter(fn ($link) => is_string($link) && preg_match('#^https?://#i', $link))->values()->all(),

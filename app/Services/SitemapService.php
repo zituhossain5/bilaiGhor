@@ -86,6 +86,7 @@ class SitemapService
         $add($this->routeUrl('home'), max($latestProduct, $latestBlog), Url::CHANGE_FREQUENCY_DAILY, 1.0);
         $add($this->routeUrl('blogs'), $latestBlog, Url::CHANGE_FREQUENCY_WEEKLY, 0.6);
         $add($this->routeUrl('contact'), null, Url::CHANGE_FREQUENCY_YEARLY, 0.5);
+        $add($this->routeUrl('return.refund.policy.canonical'), null, Url::CHANGE_FREQUENCY_YEARLY, 0.5);
 
         $excludedCategories = config('sitemap.excluded_category_slugs', []);
 

@@ -869,12 +869,12 @@
                     <img src="{{ asset('public/frontEnd/images/footer-figma/bilai-ghor-logo.png') }}" alt="{{ optional($generalsetting)->name ?? 'Bilai Ghor' }}" width="349" height="108" loading="lazy" decoding="async">
                 </a>
 
-                <div class="bilai-footer__group">
-                    <h2 class="bilai-footer__title">Opening Hours</h2>
-                    <p class="bilai-footer__hours">
-                        {{ optional($generalsetting)->opening_hours ?? 'Always Open' }}
-                    </p>
-                </div>
+                @if(filled(optional($generalsetting)->opening_hours))
+                    <div class="bilai-footer__group">
+                        <h2 class="bilai-footer__title">Opening Hours</h2>
+                        <p class="bilai-footer__hours">{{ $generalsetting->opening_hours }}</p>
+                    </div>
+                @endif
 
                 <div class="bilai-footer__group bilai-footer__social-group">
                     <h2 class="bilai-footer__title">Social Links</h2>
@@ -926,6 +926,7 @@
                     <li><a href="{{ $bilaiParaPage ? route('page', ['slug' => $bilaiParaPage->slug]) : route('blogs') }}">Bilai Para</a></li>
                     <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
                     <li><a href="{{ route('terms') }}">Terms &amp; Conditions</a></li>
+                    <li><a href="{{ route('return.policy') }}">Return &amp; Refund Policy</a></li>
                 </ul>
             </div>
 

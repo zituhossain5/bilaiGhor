@@ -32,8 +32,5 @@ return [
         'shipping-policy',
         'delivery-policy',
         'delivery-rules',
-        'return-policy',
-        'refund-policy',
-        'return-refund-policy',
     ],
 ];

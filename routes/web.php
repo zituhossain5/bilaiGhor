@@ -586,6 +586,10 @@ Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']
     Route::redirect('/privay-policy', '/privacy-policy', 301);
     Route::view('/terms', 'frontEnd.layouts.pages.legal', ['legalPage' => 'terms'])
         ->name('terms');
+    Route::view('/return-policy', 'frontEnd.layouts.pages.return-policy')
+        ->name('return.policy');
+    Route::view('/return-refund-policy', 'frontEnd.layouts.pages.return-policy')
+        ->name('return.refund.policy.canonical');
 	
     Route::get('brands', [FrontendController::class, 'brands'])->name('brands');
 	    Route::get('brand/{slug}', [FrontendController::class, 'brand'])

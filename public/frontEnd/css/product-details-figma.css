@@ -150,6 +150,16 @@
     transform: translate(-50%, -50%);
 }
 
+.bpd-thumbs-col .indicator-item.bpd-video-thumb {
+    padding: 0;
+}
+
+.bpd-thumbs-col .indicator-item.bpd-video-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .bpd-thumbs-col .indicator-item img {
     width: 100%;
     height: 100%;

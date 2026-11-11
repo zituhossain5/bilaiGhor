@@ -30,5 +30,8 @@ class ProductVideoTest extends TestCase
         $this->assertNull(ProductVideo::uploadPath('public/uploads/product/videos/../../private.mp4'));
         $this->assertNull(ProductVideo::uploadPath('https://example.com/video.mp4'));
         $this->assertNull(ProductVideo::uploadPath('public/uploads/product/videos/shell.php'));
+        $this->assertSame('public/uploads/product/video-posters/poster-123.webp', ProductVideo::posterPath('public/uploads/product/video-posters/poster-123.webp'));
+        $this->assertNull(ProductVideo::posterPath('public/uploads/product/video-posters/../../private.png'));
+        $this->assertNull(ProductVideo::posterPath('public/uploads/product/video-posters/shell.php'));
     }
 }

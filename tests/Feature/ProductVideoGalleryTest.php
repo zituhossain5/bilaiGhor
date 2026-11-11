@@ -47,9 +47,50 @@ class ProductVideoGalleryTest extends TestCase
             $this->assertStringContainsString('<video controls playsinline preload="metadata"', $html);
             $this->assertStringContainsString('<source src="'.asset($path).'" type="video/mp4">', $html);
             $this->assertLessThan(strpos($html, 'bpd-video-thumb'), strpos($html, 'aria-label="Show product image 1"'));
+            $this->assertMatchesRegularExpression('/<button[^>]*bpd-video-thumb[^>]*>\s*<span class="bpd-video-thumb-play"/s', $html);
+            $this->assertStringNotContainsString(' poster="', $html);
         } finally {
             Cache::forget('product_details_'.$product->slug);
             unlink(base_path($path));
+        }
+    }
+
+    public function test_uploaded_video_poster_is_used_by_thumbnail_and_player(): void
+    {
+        $product = $this->makeProduct();
+        $videoPath = 'public/uploads/product/videos/video-test-'.Str::lower(Str::random(12)).'.mp4';
+        $posterPath = 'public/uploads/product/video-posters/poster-test-'.Str::lower(Str::random(12)).'.png';
+        if (!is_dir(base_path('public/uploads/product/video-posters'))) mkdir(base_path('public/uploads/product/video-posters'), 0755, true);
+        file_put_contents(base_path($videoPath), "\x00\x00\x00\x18ftypisom");
+        file_put_contents(base_path($posterPath), base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lZkAAAAASUVORK5CYII='));
+        try {
+            $product->update(['pro_video_type' => 'upload', 'pro_video_path' => $videoPath, 'video_poster' => $posterPath]);
+            $html = $this->get('/product/'.$product->slug)->assertOk()->getContent();
+            $this->assertMatchesRegularExpression('/<button[^>]*bpd-video-thumb[^>]*>\s*<img src="'.preg_quote(asset($posterPath), '/').'"[^>]*>\s*<span class="bpd-video-thumb-play"/s', $html);
+            $this->assertMatchesRegularExpression('/<video controls playsinline preload="metadata"\s+poster="'.preg_quote(asset($posterPath), '/').'"/s', $html);
+            $this->assertStringContainsString('aria-label="Show product image 1"', $html);
+        } finally {
+            Cache::forget('product_details_'.$product->slug);
+            unlink(base_path($videoPath));
+            unlink(base_path($posterPath));
+        }
+    }
+
+    public function test_main_product_image_is_the_thumbnail_fallback_when_no_poster_exists(): void
+    {
+        $product = $this->makeProduct();
+        $videoPath = 'public/uploads/product/videos/video-test-'.Str::lower(Str::random(12)).'.mp4';
+        file_put_contents(base_path($videoPath), "\x00\x00\x00\x18ftypisom");
+        try {
+            $imagePath = 'public/uploads/product/1759499529-61nhot+9ffl.jpg';
+            $product->images()->update(['image' => $imagePath]);
+            $product->update(['pro_video_type' => 'upload', 'pro_video_path' => $videoPath]);
+            $html = $this->get('/product/'.$product->slug)->assertOk()->getContent();
+            $this->assertMatchesRegularExpression('/<button[^>]*bpd-video-thumb[^>]*>\s*<img src="'.preg_quote(asset($imagePath), '/').'"[^>]*>\s*<span class="bpd-video-thumb-play"/s', $html);
+            $this->assertStringNotContainsString(' poster="', $html);
+        } finally {
+            Cache::forget('product_details_'.$product->slug);
+            unlink(base_path($videoPath));
         }
     }
 
@@ -104,6 +145,54 @@ class ProductVideoGalleryTest extends TestCase
             $remove = [];
             $method->invokeArgs($controller, [Request::create('/', 'POST', ['pro_video_remove' => '1']), &$remove, $product]);
             $this->assertSame(['pro_video' => null, 'pro_video_type' => null, 'pro_video_path' => null], $remove);
+        } finally {
+            foreach ([$oldPath, $newPath] as $path) {
+                if ($path && is_file(base_path($path))) unlink(base_path($path));
+            }
+        }
+    }
+
+    public function test_poster_edit_keeps_replaces_and_removes_without_changing_video(): void
+    {
+        $product = $this->makeProduct();
+        $oldPath = 'public/uploads/product/video-posters/poster-test-'.Str::lower(Str::random(12)).'.png';
+        if (!is_dir(base_path('public/uploads/product/video-posters'))) mkdir(base_path('public/uploads/product/video-posters'), 0755, true);
+        file_put_contents(base_path($oldPath), base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lZkAAAAASUVORK5CYII='));
+        $product->update(['pro_video_type' => 'upload', 'pro_video_path' => 'public/uploads/product/videos/1773056301-video.mp4', 'video_poster' => $oldPath]);
+        $otherProduct = $this->makeProduct();
+        $otherProduct->update(['video_poster' => $oldPath]);
+        $method = new \ReflectionMethod(ProductController::class, 'handleVideoPosterInput');
+        $controller = new ProductController();
+        $newPath = null;
+        try {
+            $input = [];
+            $method->invokeArgs($controller, [Request::create('/', 'POST'), &$input, $product]);
+            $this->assertSame([], $input);
+            $this->assertSame($oldPath, $product->fresh()->video_poster);
+
+            $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lZkAAAAASUVORK5CYII=');
+            $file = UploadedFile::fake()->createWithContent('new-poster.png', $png);
+            $request = Request::create('/', 'POST', [], [], ['video_poster_file' => $file]);
+            $method->invokeArgs($controller, [$request, &$input, $product]);
+            $newPath = $input['video_poster'];
+            $this->assertNotSame($oldPath, $newPath);
+            $this->assertFileExists(base_path($newPath));
+
+            $product->update($input);
+            ProductVideo::deleteUnusedPoster($oldPath);
+            $this->assertFileExists(base_path($oldPath));
+            $otherProduct->update(['video_poster' => null]);
+            ProductVideo::deleteUnusedPoster($oldPath);
+            $this->assertFileDoesNotExist(base_path($oldPath));
+            $this->assertSame($newPath, $product->fresh()->video_poster);
+
+            $remove = [];
+            $method->invokeArgs($controller, [Request::create('/', 'POST', ['video_poster_remove' => '1']), &$remove, $product]);
+            $this->assertSame(['video_poster' => null], $remove);
+            $product->update($remove);
+            ProductVideo::deleteUnusedPoster($newPath);
+            $this->assertFileDoesNotExist(base_path($newPath));
+            $this->assertSame('public/uploads/product/videos/1773056301-video.mp4', $product->fresh()->pro_video_path);
         } finally {
             foreach ([$oldPath, $newPath] as $path) {
                 if ($path && is_file(base_path($path))) unlink(base_path($path));

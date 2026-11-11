@@ -56,6 +56,23 @@ class ProductVideo
         };
     }
 
+    public static function posterPath(?string $path): ?string
+    {
+        return is_string($path) && preg_match('~^public/uploads/product/video-posters/[A-Za-z0-9_-]+\.(?:jpg|jpeg|png|webp)$~iD', $path)
+            ? $path : null;
+    }
+
+    public static function deleteUnusedPoster(?string $path): void
+    {
+        $path = self::posterPath($path);
+        if ($path && !Product::where('video_poster', $path)->exists()) {
+            $absolutePath = base_path($path);
+            if (is_file($absolutePath)) {
+                unlink($absolutePath);
+            }
+        }
+    }
+
     public static function deleteUnusedUpload(?string $path): void
     {
         $path = self::uploadPath($path);

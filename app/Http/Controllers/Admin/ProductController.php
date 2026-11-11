@@ -147,6 +147,7 @@ class ProductController extends Controller
             'pro_video_source'    => 'nullable|in:youtube,upload',
             'pro_video'           => 'nullable|string|max:512',
             'pro_video_file'      => 'nullable|file|mimetypes:video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v|max:51200',
+            'video_poster_file'   => 'nullable|file|mimetypes:image/jpeg,image/png,image/webp|max:5120',
             'download_limit'      => 'nullable|integer|min:1',
             'download_expire_days'=> 'nullable|integer|min:1',
             
@@ -183,6 +184,9 @@ class ProductController extends Controller
             'pro_video_source',
             'pro_video_file',
             'pro_video_remove',
+            'video_poster_file',
+            'video_poster_remove',
+            'video_poster',
         ]);
 
         foreach ($input as $key => $val) {
@@ -212,6 +216,7 @@ class ProductController extends Controller
 
         // VIDEO — YouTube or local upload
         $this->handleVideoInput($request, $input, null);
+        $this->handleVideoPosterInput($request, $input, null);
 
         // Price & stock optional – না দিলে ০ ধরা হবে
         $input['new_price']      = $request->filled('new_price') ? $request->new_price : 0;
@@ -442,7 +447,9 @@ class ProductController extends Controller
             'pro_video_source'    => 'nullable|in:youtube,upload',
             'pro_video'           => 'nullable|string|max:512',
             'pro_video_file'      => 'nullable|file|mimetypes:video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v|max:51200',
-            'pro_video_remove'    => 'nullable|boolean|prohibited_with:pro_video_file',
+            'pro_video_remove'    => 'nullable|boolean|prohibited_with:pro_video_file,video_poster_file',
+            'video_poster_file'   => 'nullable|file|mimetypes:image/jpeg,image/png,image/webp|max:5120',
+            'video_poster_remove' => 'nullable|boolean|prohibited_with:video_poster_file',
             'download_limit'      => 'nullable|integer|min:1',
             'download_expire_days'=> 'nullable|integer|min:1',
             
@@ -478,6 +485,9 @@ class ProductController extends Controller
             'pro_video_source',
             'pro_video_file',
             'pro_video_remove',
+            'video_poster_file',
+            'video_poster_remove',
+            'video_poster',
         ]);
 
         foreach ($input as $key => $val) {
@@ -520,6 +530,7 @@ class ProductController extends Controller
 
         // VIDEO — YouTube or local upload
         $this->handleVideoInput($request, $input, $product);
+        $this->handleVideoPosterInput($request, $input, $product);
         
         // Wholesale settings
         $input['is_wholesale'] = $request->is_wholesale ? 1 : 0;
@@ -574,6 +585,7 @@ class ProductController extends Controller
 
         // PRODUCT UPDATE
         $oldVideoPath = $product->pro_video_path;
+        $oldPosterPath = $product->video_poster;
         $product->update($input);
         \App\Services\InventoryService::applyProductStockEdit($product, $targetStock, Auth::id());
         // A renamed product keeps its old URL working (301 to the new one).
@@ -683,6 +695,9 @@ class ProductController extends Controller
         if ($oldVideoPath !== $product->pro_video_path) {
             ProductVideo::deleteUnusedUpload($oldVideoPath);
         }
+        if ($oldPosterPath !== $product->video_poster) {
+            ProductVideo::deleteUnusedPoster($oldPosterPath);
+        }
 
         Toastr::success('Product updated successfully!');
         return redirect()->route('products.index');
@@ -722,8 +737,10 @@ class ProductController extends Controller
 
         // uploaded video থাকলে ডিলিট
         $oldVideoPath = $product->pro_video_path;
+        $oldPosterPath = $product->video_poster;
         $product->delete();
         ProductVideo::deleteUnusedUpload($oldVideoPath);
+        ProductVideo::deleteUnusedPoster($oldPosterPath);
         Toastr::success('Product deleted successfully');
         return redirect()->back();
     }
@@ -919,6 +936,40 @@ class ProductController extends Controller
             $input['pro_video']      = $ytId;
             $input['pro_video_type'] = $ytId ? 'youtube' : null;
             $input['pro_video_path'] = null;
+        }
+    }
+
+    private function handleVideoPosterInput(Request $request, array &$input, ?Product $product): void
+    {
+        $effectiveType = array_key_exists('pro_video_type', $input)
+            ? $input['pro_video_type']
+            : ($product?->pro_video_type ?? ($product?->pro_video ? 'youtube' : null));
+
+        if ($effectiveType !== 'upload' && $request->hasFile('video_poster_file')) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'video_poster_file' => 'Upload a product video before adding a video poster.',
+            ]);
+        }
+
+        if ($effectiveType !== 'upload' || $request->boolean('video_poster_remove')) {
+            if ($product || $effectiveType === 'upload') {
+                $input['video_poster'] = null;
+            }
+            return;
+        }
+
+        if ($request->hasFile('video_poster_file')) {
+            $directory = 'public/uploads/product/video-posters/';
+            $filename = SafeUpload::move(
+                $request->file('video_poster_file'),
+                $directory,
+                'poster-',
+                ['jpg', 'png', 'webp'],
+                'video_poster_file'
+            );
+            $input['video_poster'] = $directory.$filename;
+        } elseif (!$product) {
+            $input['video_poster'] = null;
         }
     }
 

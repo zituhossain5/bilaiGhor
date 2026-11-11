@@ -189,6 +189,25 @@
                 <div id="up_preview_e" class="mt-1" style="display:none;">
                     <video id="up_video_e" width="100%" height="100" controls style="border-radius:8px;background:#000;"></video>
                 </div>
+                <label class="form-label mt-2" for="video_poster_file_e">Video Thumbnail / Poster (Optional)</label>
+                @php
+                    $existingPosterPath = \App\Support\ProductVideo::posterPath($edit_data->video_poster);
+                @endphp
+                @if($existingPosterPath && is_file(base_path($existingPosterPath)))
+                    <img src="{{ asset($existingPosterPath) }}" alt="Current video poster"
+                         class="d-block mb-2 rounded" style="width:120px;height:80px;object-fit:cover;">
+                @endif
+                <input type="file" name="video_poster_file" id="video_poster_file_e"
+                       class="form-control form-control-sm @error('video_poster_file') is-invalid @enderror"
+                       accept="image/jpeg,image/png,image/webp">
+                <small class="text-muted d-block">Used as the preview image for uploaded videos. Recommended: clear product/video frame image. JPG, PNG or WebP; maximum 5 MB. Leave blank to keep the current poster.</small>
+                @error('video_poster_file')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                @if($edit_data->video_poster)
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" name="video_poster_remove" value="1" id="video_poster_remove_e">
+                    <label class="form-check-label" for="video_poster_remove_e">Remove video poster when saving</label>
+                </div>
+                @endif
             </div>
             @if($existingVideoType)
             <div class="form-check mt-2">

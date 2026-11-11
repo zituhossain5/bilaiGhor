@@ -1048,6 +1048,11 @@ input.bpd-btn { cursor: pointer; }
     $youtubeId    = $videoType === 'youtube' ? \App\Support\ProductVideo::youtubeId($details->pro_video) : null;
     $uploadedVideoPath = $videoType === 'upload' ? \App\Support\ProductVideo::uploadPath($details->pro_video_path) : null;
     $uploadedVideoPath = $uploadedVideoPath && is_file(base_path($uploadedVideoPath)) ? $uploadedVideoPath : null;
+    $videoPosterPath = $uploadedVideoPath ? \App\Support\ProductVideo::posterPath($details->video_poster) : null;
+    $videoPosterPath = $videoPosterPath && is_file(base_path($videoPosterPath)) ? $videoPosterPath : null;
+    $mainImagePath = optional($details->image)->image;
+    $mainImageFile = $mainImagePath ? (str_starts_with($mainImagePath, 'public/') ? base_path($mainImagePath) : public_path($mainImagePath)) : null;
+    $videoThumbnailPath = $videoPosterPath ?: ($uploadedVideoPath && $mainImageFile && is_file($mainImageFile) ? $mainImagePath : null);
     $hasVideo     = (bool) ($youtubeId || $uploadedVideoPath);
     /* BilaiGhor Product Sold Fix Start */
     $soldCount    = $details->sold ?? 0;
@@ -1103,6 +1108,8 @@ input.bpd-btn { cursor: pointer; }
                             data-id="{{ $details->images->count() }}" aria-label="Show product video">
                         @if($youtubeId)
                         <img src="https://img.youtube.com/vi/{{ $youtubeId }}/hqdefault.jpg" alt="" loading="lazy">
+                        @elseif($videoThumbnailPath)
+                        <img src="{{ asset($videoThumbnailPath) }}" alt="" loading="lazy">
                         @endif
                         <span class="bpd-video-thumb-play" aria-hidden="true">&#9654;</span>
                         <span class="visually-hidden">Video</span>
@@ -1126,7 +1133,9 @@ input.bpd-btn { cursor: pointer; }
                     @if($hasVideo)
                     <div class="dimage_item bpd-video-slide" data-media="video">
                         @if($uploadedVideoPath)
-                        <video controls playsinline preload="metadata" aria-label="Product video for {{ $details->name }}">
+                        <video controls playsinline preload="metadata"
+                               @if($videoPosterPath) poster="{{ asset($videoPosterPath) }}" @endif
+                               aria-label="Product video for {{ $details->name }}">
                             <source src="{{ asset($uploadedVideoPath) }}" type="{{ \App\Support\ProductVideo::mimeType($uploadedVideoPath) }}">
                         </video>
                         @else

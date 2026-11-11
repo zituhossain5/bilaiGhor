@@ -83,7 +83,12 @@
                 <div id="up_preview_c" class="mt-1" style="display:none;">
                     <video id="up_video_c" width="100%" height="100" controls style="border-radius:8px;background:#000;"></video>
                 </div>
-                <small class="text-muted pf-field-hint">MP4, WebM, OGG max 40MB</small>
+                <label class="form-label mt-2" for="video_poster_file_c">Video Thumbnail / Poster (Optional)</label>
+                <input type="file" name="video_poster_file" id="video_poster_file_c"
+                       class="form-control form-control-sm @error('video_poster_file') is-invalid @enderror"
+                       accept="image/jpeg,image/png,image/webp">
+                <small class="text-muted d-block">Used as the preview image for uploaded videos. Recommended: clear product/video frame image. JPG, PNG or WebP; maximum 5 MB.</small>
+                @error('video_poster_file')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
             </div>
         </div>
 

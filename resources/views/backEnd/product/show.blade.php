@@ -368,10 +368,13 @@
                     @elseif($showVideoType === 'upload' && $product->pro_video_path)
                     <div class="mt-4">
                         <h5 class="font-size-15 mb-2">Product Video <span class="badge bg-primary" style="font-size:11px;">Hosted</span></h5>
-                        <video width="100%" height="250" controls
+                        @php
+                            $showPosterPath = \App\Support\ProductVideo::posterPath($product->video_poster);
+                            $showPosterPath = $showPosterPath && is_file(base_path($showPosterPath)) ? $showPosterPath : null;
+                        @endphp
+                        <video width="100%" height="250" controls @if($showPosterPath) poster="{{ asset($showPosterPath) }}" @endif
                                style="border-radius:8px;background:#000;display:block;">
-                            <source src="{{ asset($product->pro_video_path) }}" type="video/mp4">
-                            <source src="{{ asset($product->pro_video_path) }}" type="video/webm">
+                            <source src="{{ asset($product->pro_video_path) }}" type="{{ \App\Support\ProductVideo::mimeType($product->pro_video_path) }}">
                         </video>
                     </div>
                     @endif

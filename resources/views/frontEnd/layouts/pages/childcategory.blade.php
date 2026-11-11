@@ -1,11 +1,15 @@
 @extends('frontEnd.layouts.master') 
+@php
+    $listingSeo = \App\Support\ListingSeo::collection(request(), route('products', $childcategory->slug));
+@endphp
 @section('title',$childcategory->childcategoryName) 
+@section('canonical', $listingSeo->canonical)
 @push('css')
 <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/jquery-ui.css') }}" />
 @endpush 
 @push('seo')
-<meta name="app-url" content="{{route('products',$childcategory->slug)}}" />
-<meta name="robots" content="index, follow" />
+<meta name="app-url" content="{{ $listingSeo->canonical }}" />
+<meta name="robots" content="{{ $listingSeo->robots }}" />
 <meta name="description" content="{{ $childcategory->meta_description}}" />
 <meta name="keywords" content="{{ $childcategory->slug }}" />
 
@@ -15,13 +19,12 @@
 <meta name="twitter:title" content="{{$childcategory->childcategoryName}}" />
 <meta name="twitter:description" content="{{ $childcategory->meta_description}}" />
 <meta name="twitter:creator" content="gomobd.com" />
-<meta property="og:url" content="{{route('products',$childcategory->slug)}}" />
 <meta name="twitter:image" content="{{asset($childcategory->image)}}" />
 
 <!-- Open Graph data -->
 <meta property="og:title" content="{{$childcategory->childcategoryName}}" />
 <meta property="og:type" content="product" />
-<meta property="og:url" content="{{route('products',$childcategory->slug)}}" />
+<meta property="og:url" content="{{ $listingSeo->canonical }}" />
 <meta property="og:image" content="{{asset($childcategory->image)}}" />
 <meta property="og:description" content="{{ $childcategory->meta_description}}" />
 <meta property="og:site_name" content="{{$childcategory->childcategoryName}}" />

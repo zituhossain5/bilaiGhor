@@ -7,6 +7,5 @@ Disallow: /customer/register
 Disallow: /customer/checkout
 Disallow: /cart
 Disallow: /wishlist
-Disallow: /search
 
 Sitemap: https://bilaighor.bd/sitemap.xml

@@ -1189,7 +1189,7 @@ $brands = Brand::where('status', 1)
             $products = $products->where('new_price','<=',$request->max_price);
         }
 
-        $products = $products->paginate(24);
+        $products = $products->paginate(24)->withQueryString();
         $impproducts = Product::where(['status' => 1, 'approval_status' => 'approved', 'topsale' => 1])
             ->with('image')
             ->limit(6)

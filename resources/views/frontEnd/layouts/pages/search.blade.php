@@ -1,5 +1,12 @@
 @extends('frontEnd.layouts.master')
+@php
+    $listingSeo = \App\Support\ListingSeo::search(route('search'));
+@endphp
 @section('title', $keyword ?: 'Search')
+@section('canonical', $listingSeo->canonical)
+@push('seo')
+    <meta name="robots" content="{{ $listingSeo->robots }}" />
+@endpush
 
 @push('css')
     <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/jquery-ui.css') }}" />

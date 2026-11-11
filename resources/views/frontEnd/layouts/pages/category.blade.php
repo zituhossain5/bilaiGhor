@@ -4,7 +4,13 @@
     // Admin meta description, else the start of the SEO text shown below the products
     $seoDescription = \App\Support\SeoText::plain($category->meta_description, 170)
         ?: Str::limit((string) \App\Support\SeoText::plain($category->full_description), 155, '…', preserveWords: true);
-    $canonicalUrl = \App\Support\Canonical::current(route('category', $category->slug));
+    $selectedSubcategory = $subcategories->firstWhere('slug', request('subcategory'));
+    $listingSeo = \App\Support\ListingSeo::collection(
+        request(),
+        route('category', $category->slug),
+        $selectedSubcategory ? route('subcategory', $selectedSubcategory->slug) : null
+    );
+    $canonicalUrl = $listingSeo->canonical;
     $seoH1 = \App\Support\SeoText::plain($category->seo_h1) ?: $category->name;
     $seoImage = $category->image ? asset($category->image) : null;
     $breadcrumbJsonLd = [
@@ -36,7 +42,7 @@
 @endpush
 @push('seo')
     <meta name="app-url" content="{{ $canonicalUrl }}" />
-    <meta name="robots" content="index,follow" />
+    <meta name="robots" content="{{ $listingSeo->robots }}" />
     @if($seoDescription)
     <meta name="description" content="{{ $seoDescription }}" />
     @endif

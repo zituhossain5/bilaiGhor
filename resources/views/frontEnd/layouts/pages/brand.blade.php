@@ -6,7 +6,8 @@
     $seoDescription = \App\Support\SeoText::plain($brand->meta_description, 170)
         ?: 'Buy original ' . $brand->name . ' cat products in Bangladesh at the best price. Cash on delivery all over BD.'
             . ($inStockCount > 0 ? ' ' . $inStockCount . ' ' . \Illuminate\Support\Str::plural('product', $inStockCount) . ' in stock.' : '');
-    $canonicalUrl = \App\Support\Canonical::current(route('brand.products', $brand->slug));
+    $listingSeo = \App\Support\ListingSeo::collection(request(), route('brand.products', $brand->slug));
+    $canonicalUrl = $listingSeo->canonical;
     $seoImage = $brand->image ? \App\Support\JsonLd::fileUrl($brand->image) : null;
 
     $breadcrumbJsonLd = [
@@ -46,7 +47,7 @@
     <link rel="stylesheet" href="{{ asset_v('public/frontEnd/css/bilai-listing-figma.css') }}" />
 @endpush
 @push('seo')
-    <meta name="robots" content="index,follow" />
+    <meta name="robots" content="{{ $listingSeo->robots }}" />
     <meta name="description" content="{{ $seoDescription }}" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="{{ $seoTitle }}" />

@@ -1,8 +1,15 @@
 @extends('frontEnd.layouts.master')
+@php
+    $listingSeo = \App\Support\ListingSeo::collection(
+        request(),
+        request()->routeIs('all.products') ? route('shop') : request()->url()
+    );
+@endphp
 @section('title', $listingPageTitle ?? 'All Products')
+@section('canonical', $listingSeo->canonical)
 
 @push('seo')
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="{{ $listingSeo->robots }}" />
     <meta name="description" content="{{ $listingMetaDescription ?? optional($generalsetting)->tagline ?? 'Browse all approved products in one place.' }}" />
 @endpush
 

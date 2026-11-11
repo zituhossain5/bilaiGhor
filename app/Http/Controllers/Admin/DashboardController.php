@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Order;
+use App\Models\OrderStatus;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\Customer;
@@ -39,7 +40,10 @@ class DashboardController extends Controller
         $total_revenue         = (float) $revenueTotals->revenue;
         $total_delivery_charge = (float) $revenueTotals->delivery_charge;
         $net_revenue           = $total_revenue - $total_delivery_charge;
-        $pending_orders    = Order::whereNotIn('order_status', ['6','7'])->count();
+        $pendingStatusId = OrderStatus::where('slug', 'pending')->value('id');
+        $pending_orders = $pendingStatusId === null
+            ? 0
+            : Order::where('order_status', $pendingStatusId)->count();
         $low_stock         = Product::where('stock', '<', 10)->count();
 
         // ── Today stats ──

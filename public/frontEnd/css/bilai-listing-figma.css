@@ -91,6 +91,10 @@
     line-height: 1.65;
 }
 
+.bilai-listing-seo-intro p + p {
+    margin-top: 8px;
+}
+
 .bilai-seo-content ul {
     list-style: disc;
     list-style-position: outside;

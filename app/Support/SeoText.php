@@ -6,6 +6,18 @@ use Illuminate\Support\Str;
 
 class SeoText
 {
+    public static function plainParagraphs(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $paragraphs = preg_split('/\R\s*\R/u', trim($value));
+        $plain = array_filter(array_map(fn ($paragraph) => self::plain($paragraph), $paragraphs));
+
+        return $plain ? implode("\n\n", $plain) : null;
+    }
+
     public static function plain(?string $value, ?int $limit = null): ?string
     {
         if ($value === null) {

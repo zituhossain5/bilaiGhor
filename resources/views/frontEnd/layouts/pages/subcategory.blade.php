@@ -6,6 +6,9 @@
         ?: Str::limit((string) \App\Support\SeoText::plain($subcategory->full_description), 155, '…', preserveWords: true);
     $listingSeo = \App\Support\ListingSeo::collection(request(), route('subcategory', $subcategory->slug));
     $canonicalUrl = $listingSeo->canonical;
+    $seoIntroParagraphs = filled($subcategory->seo_intro)
+        ? preg_split('/\R\s*\R/u', trim($subcategory->seo_intro))
+        : [];
     $seoH1 = \App\Support\SeoText::plain($subcategory->seo_h1) ?: $subcategory->subcategoryName;
     $seoImage = $subcategory->image ? asset($subcategory->image) : null;
     $breadcrumbItems = [
@@ -88,7 +91,13 @@
 
         <section class="bilai-listing-seo-header">
             <h1>{{ $seoH1 }}</h1>
-            @if($seoDescription)
+            @if($seoIntroParagraphs)
+            <div class="bilai-listing-seo-intro">
+                @foreach($seoIntroParagraphs as $paragraph)
+                <p>{{ $paragraph }}</p>
+                @endforeach
+            </div>
+            @elseif($seoDescription)
             <p>{{ $seoDescription }}</p>
             @endif
         </section>

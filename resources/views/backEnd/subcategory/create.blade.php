@@ -219,6 +219,16 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="form-group mb-4">
+                            <label for="seo_intro" class="form-label">Short Listing Introduction</label>
+                            <textarea class="form-control @error('seo_intro') is-invalid @enderror"
+                                      name="seo_intro" id="seo_intro" rows="4"
+                                      placeholder="Short customer-focused introduction shown above products.">{{ old('seo_intro') }}</textarea>
+                            <small class="text-muted">Plain text shown above products. Separate paragraphs with a blank line.</small>
+                            @error('seo_intro')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
                         <div class="form-group mb-0">
                             <label for="full_description" class="form-label">Full Description / SEO Content</label>
                             <textarea class="summernote form-control @error('full_description') is-invalid @enderror"

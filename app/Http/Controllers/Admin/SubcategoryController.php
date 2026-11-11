@@ -51,6 +51,7 @@ class SubcategoryController extends Controller
             'seo_h1' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
+            'seo_intro' => 'nullable|string|max:2000',
             'full_description' => ['nullable', 'string', new \App\Rules\RichTextImagesHaveAlt],
             'image_alt' => 'nullable|string|max:255',
         ]);
@@ -88,6 +89,7 @@ class SubcategoryController extends Controller
         $input['seo_h1'] = SeoText::plain($request->seo_h1);
         $input['meta_title'] = SeoText::plain($request->meta_title);
         $input['meta_description'] = SeoText::plain($request->meta_description);
+        $input['seo_intro'] = SeoText::plainParagraphs($request->seo_intro);
         Subcategory::create($input);
         $this->clearFrontendCategoryCache();
         Toastr::success('Success','Data insert successfully');
@@ -112,6 +114,7 @@ class SubcategoryController extends Controller
             'seo_h1' => 'nullable|string|max:255',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
+            'seo_intro' => 'nullable|string|max:2000',
             'full_description' => ['nullable', 'string', new \App\Rules\RichTextImagesHaveAlt],
             'image_alt' => 'nullable|string|max:255',
         ]);
@@ -151,6 +154,7 @@ class SubcategoryController extends Controller
         $input['seo_h1'] = SeoText::plain($request->seo_h1);
         $input['meta_title'] = SeoText::plain($request->meta_title);
         $input['meta_description'] = SeoText::plain($request->meta_description);
+        $input['seo_intro'] = SeoText::plainParagraphs($request->seo_intro);
         
         $update_data->update($input);
         $this->clearFrontendCategoryCache();

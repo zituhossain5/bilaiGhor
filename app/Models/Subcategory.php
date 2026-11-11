@@ -16,6 +16,7 @@ class Subcategory extends Model
         'image_alt',
         'meta_title',
         'meta_description',
+        'seo_intro',
         'meta_decription',
         'seo_h1',
         'full_description',

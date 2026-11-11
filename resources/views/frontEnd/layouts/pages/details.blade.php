@@ -1045,8 +1045,10 @@ input.bpd-btn { cursor: pointer; }
                     ? (int)round((($details->old_price - $details->new_price) / $details->old_price) * 100)
                     : 0;
     $videoType    = $details->pro_video_type ?? ($details->pro_video ? 'youtube' : null);
-    $hasVideo     = ($videoType === 'youtube' && $details->pro_video) ||
-                    ($videoType === 'upload' && !empty($details->pro_video_path));
+    $youtubeId    = $videoType === 'youtube' ? \App\Support\ProductVideo::youtubeId($details->pro_video) : null;
+    $uploadedVideoPath = $videoType === 'upload' ? \App\Support\ProductVideo::uploadPath($details->pro_video_path) : null;
+    $uploadedVideoPath = $uploadedVideoPath && is_file(base_path($uploadedVideoPath)) ? $uploadedVideoPath : null;
+    $hasVideo     = (bool) ($youtubeId || $uploadedVideoPath);
     /* BilaiGhor Product Sold Fix Start */
     $soldCount    = $details->sold ?? 0;
     /* BilaiGhor Product Sold Fix End */
@@ -1090,12 +1092,22 @@ input.bpd-btn { cursor: pointer; }
             <div class="bpd-thumbs-col">
                 <div id="indicator_thumb_wrapper">
                     @foreach ($details->images as $key => $image)
-                    <div class="indicator-item{{ $key === 0 ? ' bpd-thumb-active' : '' }}"
+                    <button type="button" class="indicator-item{{ $key === 0 ? ' bpd-thumb-active' : '' }}"
                          data-id="{{ $key }}"
-                         data-color-id="{{ $image->color_id ?? '' }}">
+                         data-color-id="{{ $image->color_id ?? '' }}" aria-label="Show product image {{ $key + 1 }}">
                         <x-picture :src="$image->image" alt="{{ $image->image_alt ?: $details->name }}" />
-                    </div>
+                    </button>
                     @endforeach
+                    @if($hasVideo)
+                    <button type="button" class="indicator-item bpd-video-thumb{{ $details->images->isEmpty() ? ' bpd-thumb-active' : '' }}"
+                            data-id="{{ $details->images->count() }}" aria-label="Show product video">
+                        @if($youtubeId)
+                        <img src="https://img.youtube.com/vi/{{ $youtubeId }}/hqdefault.jpg" alt="" loading="lazy">
+                        @endif
+                        <span class="bpd-video-thumb-play" aria-hidden="true">&#9654;</span>
+                        <span class="visually-hidden">Video</span>
+                    </button>
+                    @endif
                 </div>
             </div>
 
@@ -1111,6 +1123,20 @@ input.bpd-btn { cursor: pointer; }
                         <x-picture :src="$value->image" alt="{{ $value->image_alt ?: $details->name }}" class="block__pic" />
                     </div>
                     @endforeach
+                    @if($hasVideo)
+                    <div class="dimage_item bpd-video-slide" data-media="video">
+                        @if($uploadedVideoPath)
+                        <video controls playsinline preload="metadata" aria-label="Product video for {{ $details->name }}">
+                            <source src="{{ asset($uploadedVideoPath) }}" type="{{ \App\Support\ProductVideo::mimeType($uploadedVideoPath) }}">
+                        </video>
+                        @else
+                        <iframe title="Product video for {{ $details->name }}"
+                                data-embed-url="https://www.youtube-nocookie.com/embed/{{ $youtubeId }}?rel=0"
+                                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -1722,8 +1748,38 @@ input.bpd-btn { cursor: pointer; }
 
     {{-- Product images for color filter --}}
     var productImages = @json($details->images->map(function($img) {
-        return ['src' => asset($img->image), 'color_id' => $img->color_id];
+        return ['src' => asset($img->image), 'alt' => $img->image_alt ?: $details->name, 'color_id' => $img->color_id];
     }));
+    var hasProductVideo = @json($hasVideo);
+
+    function pauseGalleryVideo() {
+        $('#details_slider_main video').each(function () { this.pause(); });
+        $('#details_slider_main iframe[data-embed-url]').each(function () {
+            if (this.hasAttribute('src')) this.removeAttribute('src');
+        });
+    }
+
+    function syncGalleryVideo(event) {
+        if (event && event.relatedTarget && event.item) {
+            var index = event.relatedTarget.relative(event.item.index);
+            $('#indicator_thumb_wrapper .indicator-item').removeClass('bpd-thumb-active')
+                .filter('[data-id="' + index + '"]').addClass('bpd-thumb-active');
+        }
+        var $active = $('#details_slider_main .owl-item.active .bpd-video-slide');
+        if (!$active.length) return;
+        var iframe = $active.find('iframe[data-embed-url]')[0];
+        if (iframe && !iframe.hasAttribute('src')) iframe.src = iframe.dataset.embedUrl;
+    }
+
+    function initProductGallery() {
+        $('#details_slider_main').owlCarousel({
+            margin: 0, items: 1, loop: !hasProductVideo, dots: false,
+            autoplay: !hasProductVideo, autoplayTimeout: 6000, autoplayHoverPause: true,
+            onChanged: pauseGalleryVideo,
+            onTranslated: syncGalleryVideo,
+            onInitialized: syncGalleryVideo
+        });
+    }
 
     {{-- Update gallery + thumbnails by selected color (vertical thumb version) --}}
     function updateImagesByColor(colorId) {
@@ -1739,26 +1795,34 @@ input.bpd-btn { cursor: pointer; }
         }
         if (!filtered.length) filtered = productImages;
 
-        // Rebuild main slider
-        var $slider = $('.details_slider');
+        // Keep the same video item when variant images are filtered.
+        var $slider = $('#details_slider_main');
+        pauseGalleryVideo();
+        var $videoSlide = $slider.find('.bpd-video-slide').first().clone();
+        var $videoThumb = $('#indicator_thumb_wrapper .bpd-video-thumb').first().clone();
         var owl = $slider.data('owl.carousel');
         if (owl) owl.destroy();
-        $slider.html(filtered.map(function(img) {
-            return '<div class="dimage_item"><img src="' + img.src + '" class="block__pic" /></div>';
-        }).join(''));
-        $slider.owlCarousel({ margin: 0, items: 1, loop: filtered.length > 1, dots: false, autoplay: true, autoplayTimeout: 6000, autoplayHoverPause: true });
+        $slider.empty();
+        filtered.forEach(function (img) {
+            $('<div class="dimage_item"></div>')
+                .append($('<img class="block__pic">').attr({ src: img.src, alt: img.alt }))
+                .appendTo($slider);
+        });
+        if ($videoSlide.length) $slider.append($videoSlide);
+        initProductGallery();
 
         // Rebuild vertical thumbnails
         var $tw = $('#indicator_thumb_wrapper');
-        $tw.html(filtered.map(function(img, i) {
-            return '<div class="indicator-item' + (i === 0 ? ' bpd-thumb-active' : '') + '" data-id="' + i + '"><img src="' + img.src + '" /></div>';
-        }).join(''));
-        $tw.find('.indicator-item').on('click', function() {
-            var idx = parseInt($(this).data('id'), 10);
-            $tw.find('.indicator-item').removeClass('bpd-thumb-active');
-            $(this).addClass('bpd-thumb-active');
-            $slider.trigger('to.owl.carousel', idx);
+        $tw.empty();
+        filtered.forEach(function (img, i) {
+            $('<button type="button" class="indicator-item"></button>')
+                .toggleClass('bpd-thumb-active', i === 0)
+                .attr({ 'data-id': i, 'aria-label': 'Show product image ' + (i + 1) })
+                .append($('<img>').attr({ src: img.src, alt: img.alt }))
+                .appendTo($tw);
         });
+        if ($videoThumb.length) $tw.append($videoThumb.attr('data-id', filtered.length).removeClass('bpd-thumb-active'));
+        if (!filtered.length) $tw.find('.bpd-video-thumb').addClass('bpd-thumb-active');
 
         // Re-apply imagezoomsl
         setTimeout(function() {
@@ -1770,17 +1834,16 @@ input.bpd-btn { cursor: pointer; }
 
     $(document).ready(function () {
         // Init main image carousel
-        $('.details_slider').owlCarousel({
-            margin: 0, items: 1, loop: true, dots: false,
-            autoplay: true, autoplayTimeout: 6000, autoplayHoverPause: true,
-        });
+        initProductGallery();
 
         // Thumbnail click → change main image
         $(document).on('click', '#indicator_thumb_wrapper .indicator-item', function () {
             var idx = parseInt($(this).data('id'), 10);
             $('#indicator_thumb_wrapper .indicator-item').removeClass('bpd-thumb-active');
             $(this).addClass('bpd-thumb-active');
-            $('.details_slider').trigger('to.owl.carousel', idx);
+            pauseGalleryVideo();
+            $('#details_slider_main').trigger('to.owl.carousel', [idx, 250]);
+            if (idx === 0) syncGalleryVideo();
         });
 
         // Color change → filter images

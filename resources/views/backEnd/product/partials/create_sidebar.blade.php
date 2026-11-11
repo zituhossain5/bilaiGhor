@@ -78,7 +78,8 @@
                 <small class="text-muted pf-field-hint">YouTube URL or Video ID</small>
             </div>
             <div id="up_section_c" style="display:none;">
-                <input type="file" name="pro_video_file" id="pro_video_file_c" class="form-control form-control-sm" accept="video/mp4,video/webm,video/ogg">
+                <input type="file" name="pro_video_file" id="pro_video_file_c" class="form-control form-control-sm" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v">
+                <small class="text-muted">MP4 recommended; WebM, Ogg, MOV and M4V accepted. Maximum 50 MB.</small>
                 <div id="up_preview_c" class="mt-1" style="display:none;">
                     <video id="up_video_c" width="100%" height="100" controls style="border-radius:8px;background:#000;"></video>
                 </div>

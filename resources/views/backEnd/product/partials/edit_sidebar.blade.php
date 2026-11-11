@@ -184,11 +184,18 @@
                     <a href="{{ asset($edit_data->pro_video_path) }}" target="_blank" class="btn btn-xs btn-outline-primary ms-auto py-0 px-1"><i class="fa fa-play"></i></a>
                 </div>
                 @endif
-                <input type="file" name="pro_video_file" id="pro_video_file_e" class="form-control form-control-sm" accept="video/mp4,video/webm,video/ogg">
+                <input type="file" name="pro_video_file" id="pro_video_file_e" class="form-control form-control-sm" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v">
+                <small class="text-muted">MP4 recommended; WebM, Ogg, MOV and M4V accepted. Maximum 50 MB. Leave blank to keep the current video.</small>
                 <div id="up_preview_e" class="mt-1" style="display:none;">
                     <video id="up_video_e" width="100%" height="100" controls style="border-radius:8px;background:#000;"></video>
                 </div>
             </div>
+            @if($existingVideoType)
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" name="pro_video_remove" value="1" id="pro_video_remove_e">
+                <label class="form-check-label" for="pro_video_remove_e">Remove current video when saving</label>
+            </div>
+            @endif
         </div>
 
         @php

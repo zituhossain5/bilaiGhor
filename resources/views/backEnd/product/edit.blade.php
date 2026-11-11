@@ -829,8 +829,20 @@ document.addEventListener('DOMContentLoaded', function () {
     function extractYtId(input) {
         if (!input) return null;
         if (/^[a-zA-Z0-9_-]{11}$/.test(input)) return input;
-        var m = input.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        return m ? m[1] : null;
+        try {
+            var url = new URL(/^(?:(?:www|m)\.)?(?:youtube\.com|youtu\.be)\//i.test(input) ? 'https://' + input : input);
+            if (!['http:', 'https:'].includes(url.protocol)) return null;
+            var host = url.hostname.toLowerCase();
+            var path = url.pathname.split('/').filter(Boolean);
+            var id = null;
+            if (['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(host)) {
+                id = path[0] === 'watch' ? url.searchParams.get('v') :
+                    (['shorts', 'embed', 'v'].includes(path[0]) ? path[1] : null);
+            } else if (['youtu.be', 'www.youtu.be'].includes(host)) {
+                id = path[0];
+            }
+            return /^[a-zA-Z0-9_-]{11}$/.test(id || '') ? id : null;
+        } catch (e) { return null; }
     }
 })();
 </script>

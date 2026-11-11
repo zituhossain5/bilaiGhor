@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\Productimage;
 use App\Support\SafeUpload;
+use App\Support\ProductVideo;
 use App\Support\ShortName;
 use App\Models\Productcolor;
 use App\Models\Productsize;
@@ -143,6 +144,9 @@ class ProductController extends Controller
 
             'product_type'        => 'required|in:physical,digital',
             'digital_file'        => 'nullable|file|max:51200', // 50MB
+            'pro_video_source'    => 'nullable|in:youtube,upload',
+            'pro_video'           => 'nullable|string|max:512',
+            'pro_video_file'      => 'nullable|file|mimetypes:video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v|max:51200',
             'download_limit'      => 'nullable|integer|min:1',
             'download_expire_days'=> 'nullable|integer|min:1',
             
@@ -178,6 +182,7 @@ class ProductController extends Controller
             'proColor',
             'pro_video_source',
             'pro_video_file',
+            'pro_video_remove',
         ]);
 
         foreach ($input as $key => $val) {
@@ -434,6 +439,10 @@ class ProductController extends Controller
 
             'product_type'        => 'required|in:physical,digital',
             'digital_file'        => 'nullable|file|max:51200',
+            'pro_video_source'    => 'nullable|in:youtube,upload',
+            'pro_video'           => 'nullable|string|max:512',
+            'pro_video_file'      => 'nullable|file|mimetypes:video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v|max:51200',
+            'pro_video_remove'    => 'nullable|boolean|prohibited_with:pro_video_file',
             'download_limit'      => 'nullable|integer|min:1',
             'download_expire_days'=> 'nullable|integer|min:1',
             
@@ -468,6 +477,7 @@ class ProductController extends Controller
             'proColor',
             'pro_video_source',
             'pro_video_file',
+            'pro_video_remove',
         ]);
 
         foreach ($input as $key => $val) {
@@ -563,6 +573,7 @@ class ProductController extends Controller
         unset($input['stock']);
 
         // PRODUCT UPDATE
+        $oldVideoPath = $product->pro_video_path;
         $product->update($input);
         \App\Services\InventoryService::applyProductStockEdit($product, $targetStock, Auth::id());
         // A renamed product keeps its old URL working (301 to the new one).
@@ -669,6 +680,10 @@ class ProductController extends Controller
             }
         }
 
+        if ($oldVideoPath !== $product->pro_video_path) {
+            ProductVideo::deleteUnusedUpload($oldVideoPath);
+        }
+
         Toastr::success('Product updated successfully!');
         return redirect()->route('products.index');
     }
@@ -706,11 +721,9 @@ class ProductController extends Controller
         }
 
         // uploaded video থাকলে ডিলিট
-        if ($product->pro_video_path && file_exists($product->pro_video_path)) {
-            @unlink($product->pro_video_path);
-        }
-
+        $oldVideoPath = $product->pro_video_path;
         $product->delete();
+        ProductVideo::deleteUnusedUpload($oldVideoPath);
         Toastr::success('Product deleted successfully');
         return redirect()->back();
     }
@@ -864,16 +877,18 @@ class ProductController extends Controller
     {
         $videoType = $request->input('pro_video_source', 'youtube'); // 'youtube' or 'upload'
 
+        if ($request->boolean('pro_video_remove')) {
+            $input['pro_video'] = null;
+            $input['pro_video_type'] = null;
+            $input['pro_video_path'] = null;
+            return;
+        }
+
         if ($videoType === 'upload') {
             if ($request->hasFile('pro_video_file')) {
                 // Image pattern অনুসরণ করে — CWD (htdocs) relative path; extension taken from the file's contents
                 $dir       = 'public/uploads/product/videos/';
                 $fileName  = SafeUpload::move($request->file('pro_video_file'), $dir, 'video-', SafeUpload::VIDEOS, 'pro_video_file');
-
-                // Delete old uploaded video only once the new one is safely saved
-                if ($product && $product->pro_video_path && file_exists($product->pro_video_path)) {
-                    @unlink($product->pro_video_path);
-                }
 
                 $input['pro_video']      = null;
                 $input['pro_video_type'] = 'upload';
@@ -890,11 +905,15 @@ class ProductController extends Controller
             }
         } else {
             // YouTube mode
-            $ytId = $this->getYouTubeVideoId($request->input('pro_video'));
-
-            // Delete old uploaded video if switching from upload to YouTube
-            if ($product && $product->pro_video_path && file_exists($product->pro_video_path)) {
-                @unlink($product->pro_video_path);
+            if (!$request->filled('pro_video') && $product) {
+                unset($input['pro_video'], $input['pro_video_type'], $input['pro_video_path']);
+                return;
+            }
+            $ytId = ProductVideo::youtubeId($request->input('pro_video'));
+            if ($request->filled('pro_video') && !$ytId) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'pro_video' => 'Enter a valid YouTube URL or video ID.',
+                ]);
             }
 
             $input['pro_video']      = $ytId;
@@ -903,22 +922,4 @@ class ProductController extends Controller
         }
     }
 
-    private function getYouTubeVideoId($input)
-    {
-        if (!$input) return null;
-
-        // শুধু ১১ ক্যারেক্টারের ID হলে
-        if (preg_match('/^[a-zA-Z0-9_-]{11}$/', $input)) {
-            return $input;
-        }
-
-        // পূর্ণ URL হলে
-        preg_match(
-            '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/',
-            $input,
-            $matches
-        );
-
-        return $matches[1] ?? null;
-    }
 }

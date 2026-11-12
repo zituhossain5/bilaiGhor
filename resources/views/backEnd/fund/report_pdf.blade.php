@@ -34,9 +34,10 @@
         <tr>
             <td><div class="label">Gross Profit</div><div class="value">{{ number_format($summary['gross_profit'], 2) }} BDT</div></td>
             <td><div class="label">Expenses</div><div class="value">{{ number_format($summary['expenses'], 2) }} BDT</div></td>
+            <td><div class="label">Historical Purchases</div><div class="value">{{ number_format($summary['historical_purchases'], 2) }} BDT</div></td>
             <td><div class="label">Net Profit</div><div class="value">{{ number_format($summary['net_profit'], 2) }} BDT</div></td>
-            <td><div class="label">Withdrawals</div><div class="value">{{ number_format($summary['withdrawals'], 2) }} BDT</div></td>
         </tr>
+        <tr><td><div class="label">Withdrawals</div><div class="value">{{ number_format($summary['withdrawals'], 2) }} BDT</div></td></tr>
     </table>
 
     <h2>Transaction History</h2>

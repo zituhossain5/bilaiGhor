@@ -792,6 +792,7 @@ Route::get('purchases/logs', [PurchaseController::class, 'logs'])->name('purchas
 Route::get('purchases/{id}/edit', [PurchaseController::class, 'edit'])->name('purchases.edit');
 Route::post('purchases/{id}/update', [PurchaseController::class, 'update'])->name('purchases.update');
 Route::delete('purchases/{id}', [PurchaseController::class, 'destroy'])->name('purchases.destroy');
+Route::post('purchases/{id}/reverse-historical', [PurchaseController::class, 'reverseHistorical'])->name('purchases.reverse_historical');
 Route::post('purchases/{id}/pay-due', [PurchaseController::class, 'payDue'])->name('purchases.pay_due');
 Route::post('purchase-item/{id}/return', [PurchaseController::class, 'returnItem'])->name('purchases.item_return');
 Route::get('purchases/{id}/invoice', [PurchaseController::class, 'invoice'])->name('purchases.invoice');

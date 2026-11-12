@@ -124,6 +124,7 @@ class InventoryController extends Controller
         $productIds = $rows->pluck('product_id')->all();
         $lastPurchases = PurchaseItem::with('purchase.supplier:id,name')
             ->whereIn('product_id', $productIds ?: [0])
+            ->whereHas('purchase', fn ($query) => $query->where('purchase_mode', 'normal'))
             ->orderByDesc('id')->get()
             ->unique('product_id')->keyBy('product_id');
 

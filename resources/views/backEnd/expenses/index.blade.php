@@ -473,6 +473,17 @@
         </div>
     </div>
 
+    @if($reclassifiedExpenses->isNotEmpty())
+    <div class="card shadow-sm mt-3">
+        <div class="card-header">Reclassified expenses (audit history)</div>
+        <div class="card-body table-responsive"><table class="table table-sm"><thead><tr><th>Date</th><th>Title</th><th>Amount</th><th>Reclassified to</th></tr></thead><tbody>
+            @foreach($reclassifiedExpenses as $expense)
+                <tr><td>{{ $expense->expense_date }}</td><td>{{ $expense->title }}</td><td>৳{{ number_format($expense->amount, 2) }}</td>
+                    <td><a href="{{ route('purchases.invoice', $expense->reclassified_purchase_id) }}">Purchase #{{ $expense->reclassified_purchase_id }}</a></td></tr>
+            @endforeach
+        </tbody></table>{{ $reclassifiedExpenses->links('pagination::bootstrap-5') }}</div>
+    </div>
+    @endif
 </div>
 @endsection
 

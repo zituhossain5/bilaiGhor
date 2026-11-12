@@ -11,6 +11,7 @@ class Purchase extends Model
         'total_qty','subtotal','discount','shipping_cost',
         'grand_total','paid_amount','due_amount',
         'note','status','created_by','updated_by',
+        'purchase_mode','accounting_treatment','reclassified_expense_id','historical_invoice_key',
     ];
 
     protected $dates = ['purchase_date'];
@@ -28,5 +29,10 @@ class Purchase extends Model
     public function payments()
     {
         return $this->hasMany(SupplierPayment::class);
+    }
+
+    public function reclassifiedExpense()
+    {
+        return $this->belongsTo(Expense::class, 'reclassified_expense_id');
     }
 }

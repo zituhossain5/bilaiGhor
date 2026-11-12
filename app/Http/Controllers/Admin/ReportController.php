@@ -351,7 +351,7 @@ $orders = $query->paginate(20)->withQueryString();
     {
         [$from, $to, $label, $type] = $this->getDateRange($request);
 
-        $query = Expense::query();
+        $query = Expense::query()->includedInAccounting();
 
         if (Schema::hasColumn('expenses', 'expense_date')) {
             $query->whereBetween('expense_date', [$from->toDateString(), $to->toDateString()]);

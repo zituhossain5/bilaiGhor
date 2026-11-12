@@ -193,6 +193,7 @@
                                             @endif
                                         </td>
                                         <td class="text-end">
+                                            <a href="{{ route('purchases.index', ['supplier_id' => $s->id]) }}" class="btn-icon btn-edit me-1" title="Purchase history">Purchases</a>
                                             <a href="{{ route('admin.suppliers.edit', $s->id) }}" class="btn-icon btn-edit me-1" title="Edit">
                                                 <i data-feather="edit-2" style="width:16px;"></i>
                                             </a>

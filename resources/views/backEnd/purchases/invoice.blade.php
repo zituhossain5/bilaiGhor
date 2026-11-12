@@ -10,6 +10,20 @@
             <a href="javascript:window.print()" class="btn btn-sm btn-primary">Print</a>
         </div>
         <div class="card-body">
+            @if($purchase->purchase_mode === 'historical')
+                <div class="alert alert-warning"><strong>Purchase Type:</strong> Historical / Backfill<br>
+                    <strong>Inventory Effect:</strong> No current stock adjustment<br>
+                    <strong>Accounting Treatment:</strong> {{ str_replace('_', ' ', $purchase->accounting_treatment) }}
+                    @if($purchase->reclassified_expense_id) — Reclassified from Expense #{{ $purchase->reclassified_expense_id }} @endif
+                </div>
+                @if($purchase->accounting_treatment !== 'new_payment' && (auth('admin')->id() == 1 || auth('admin')->user()?->getRoleNames()->map(fn ($role) => strtolower($role))->contains('admin')))
+                    <form action="{{ route('purchases.reverse_historical', $purchase->id) }}" method="POST" class="mb-3" onsubmit="return confirm('Reverse this historical purchase? This restores any reclassified expense and leaves current stock unchanged.');">
+                        @csrf
+                        <label for="reverse-confirmation">Controlled reversal: type REVERSE HISTORICAL PURCHASE</label>
+                        <div class="d-flex gap-2"><input id="reverse-confirmation" name="confirmation" class="form-control" required autocomplete="off"><button class="btn btn-outline-danger">Reverse</button></div>
+                    </form>
+                @endif
+            @endif
 
             <div class="row mb-3">
                 <div class="col-md-6">

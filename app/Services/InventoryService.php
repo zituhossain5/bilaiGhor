@@ -612,6 +612,9 @@ class InventoryService
     /** Stock-in for a purchase. Idempotent per (purchase, product). */
     public static function receivePurchase(Purchase $purchase): void
     {
+        if ($purchase->purchase_mode === 'historical') {
+            return;
+        }
         DB::transaction(function () use ($purchase) {
             foreach ($purchase->items()->get() as $item) {
                 if (!$item->product_id || (int) $item->qty <= 0) {
@@ -647,6 +650,9 @@ class InventoryService
     /** Stock-out for a purchase return (goods sent back to the supplier). */
     public static function returnPurchaseItem(PurchaseItem $item, int $qty, ?int $adminId = null): void
     {
+        if ($item->purchase?->purchase_mode === 'historical') {
+            throw new \DomainException('Historical purchases do not represent current stock and cannot be returned through inventory.');
+        }
         if ($qty <= 0) {
             return;
         }
@@ -673,6 +679,9 @@ class InventoryService
     /** Reverse the stock-in of a purchase that is being deleted. */
     public static function reversePurchase(Purchase $purchase, ?int $adminId = null): void
     {
+        if ($purchase->purchase_mode === 'historical') {
+            return;
+        }
         DB::transaction(function () use ($purchase, $adminId) {
             foreach ($purchase->items()->get() as $item) {
                 $net = (int) $item->qty - (int) ($item->returned_qty ?? 0);

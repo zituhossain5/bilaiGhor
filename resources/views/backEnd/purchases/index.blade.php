@@ -6,6 +6,7 @@
 @endphp
 
 @section('css')
+<link href="{{ asset('public/backEnd/assets/libs/select2/css/select2.min.css') }}" rel="stylesheet">
 <style>
     /* --- Modern Card Style --- */
     .card {
@@ -162,6 +163,7 @@
                 <div class="card-body">
                     <form action="{{ route('purchases.store') }}" method="POST">
                         @csrf
+                        @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Supplier *</label>
@@ -174,39 +176,73 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Invoice No *</label>
-                                <input type="text" name="invoice_no" class="form-control" value="{{ 'PUR-'.time() }}" required readonly style="background-color: #f8f9fc;">
+                                <input type="text" name="invoice_no" id="purchase-invoice" class="form-control" value="{{ old('invoice_no', 'PUR-'.time()) }}" required readonly>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Date *</label>
-                                <input type="date" name="purchase_date" class="form-control" value="{{ now()->format('Y-m-d') }}" required>
+                                <input type="date" name="purchase_date" class="form-control" value="{{ old('purchase_date', now()->format('Y-m-d')) }}" required>
                             </div>
                         </div>
+
+                        @if(Auth::guard('admin')->id() == 1 || Auth::guard('admin')->user()?->getRoleNames()->map(fn ($role) => strtolower($role))->contains('admin'))
+                        <div class="mb-3">
+                            <label class="form-label" for="purchase-mode">Inventory Effect</label>
+                            <select id="purchase-mode" name="purchase_mode" class="form-control form-select">
+                                <option value="normal" @selected(old('purchase_mode') !== 'historical')>Normal Purchase</option>
+                                <option value="historical" @selected(old('purchase_mode') === 'historical')>Historical / Backfill Purchase</option>
+                            </select>
+                        </div>
+                        <div id="historical-purchase-options" class="alert alert-warning" hidden>
+                            <strong>Historical Purchase</strong><p class="mb-2">Use this only to record a purchase that physically occurred in the past but was not entered into the Purchase module at that time. This mode records the real historical quantity and cost but DOES NOT increase current inventory. Current stock will not change.</p>
+                            <label class="form-label" for="accounting-treatment">Accounting Treatment *</label>
+                            <select id="accounting-treatment" name="accounting_treatment" class="form-control form-select mb-2">
+                                <option value="">-- Choose treatment --</option>
+                                <option value="reclassify_expense" @selected(old('accounting_treatment') === 'reclassify_expense')>Reclassify Existing Expense (no new fund movement)</option>
+                                <option value="already_recorded" @selected(old('accounting_treatment') === 'already_recorded')>Already recorded elsewhere (no new fund movement)</option>
+                                <option value="new_payment" @selected(old('accounting_treatment') === 'new_payment')>Not previously recorded (new fund payment)</option>
+                            </select>
+                            <div id="historical-expense-field" hidden>
+                                <label class="form-label" for="historical-expense">Existing Expense *</label>
+                                <select id="historical-expense" name="expense_id" class="form-control form-select mb-2">
+                                    <option value="">-- Select expense --</option>
+                                    @foreach($reclassifiableExpenses as $expense)
+                                        <option value="{{ $expense->id }}" @selected(old('expense_id') == $expense->id)>{{ $expense->expense_date }} | {{ $expense->title }} | ৳{{ number_format($expense->amount, 2) }} | {{ $expense->category }} | {{ $expense->note }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div id="historical-reference-field" hidden>
+                                <label class="form-label" for="historical-reference">Existing payment reference *</label>
+                                <input id="historical-reference" name="accounting_reference" class="form-control" value="{{ old('accounting_reference') }}" maxlength="255">
+                            </div>
+                        </div>
+                        @else
+                            <input type="hidden" name="purchase_mode" value="normal">
+                        @endif
 
                         <hr class="sidebar-divider my-3">
                         <h6 class="text-xs font-weight-bold text-uppercase text-gray-500 mb-3">Product Details</h6>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Product *</label>
-                                <select name="product_id" class="form-control form-select" required>
-                                    <option value="">-- Select Product --</option>
-                                    @foreach($products as $p)
-                                        <option value="{{ $p->id }}">{{ $p->name }} (Stock: {{ $p->stock }})</option>
-                                    @endforeach
-                                </select>
+                        <div id="purchase-lines">
+                            @foreach(old('lines', [['product_id' => '', 'qty' => 1, 'unit_cost' => '']]) as $index => $line)
+                            <div class="row purchase-line align-items-end">
+                                <div class="col-md-5 mb-2">
+                                    <label class="form-label">Product *</label>
+                                    <select name="lines[{{ $index }}][product_id]" class="form-control form-select purchase-product" required>
+                                        <option value="">-- Select Product --</option>
+                                        @foreach($products as $p)
+                                            <option value="{{ $p->id }}" @selected(($line['product_id'] ?? '') == $p->id)>{{ $p->name }} (Stock: {{ $p->stock }})</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-2 mb-2"><label class="form-label">Qty *</label><input type="number" name="lines[{{ $index }}][qty]" class="form-control purchase-qty" min="1" value="{{ $line['qty'] ?? 1 }}" required></div>
+                                <div class="col-md-2 mb-2"><label class="form-label">Unit Cost *</label><input type="number" name="lines[{{ $index }}][unit_cost]" class="form-control purchase-cost" min="0" step="0.01" value="{{ $line['unit_cost'] ?? '' }}" required></div>
+                                <div class="col-md-2 mb-2"><label class="form-label">Line Total</label><output class="form-control purchase-line-total">0.00</output></div>
+                                <div class="col-md-1 mb-2"><button type="button" class="btn btn-outline-danger purchase-remove-line" aria-label="Remove product row">×</button></div>
                             </div>
-                            
-                            <input type="hidden" name="variant_price_id" value="">
-
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Quantity *</label>
-                                <input type="number" name="qty" class="form-control" min="1" value="1" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Unit Cost (৳) *</label>
-                                <input type="number" step="0.01" name="unit_cost" class="form-control" placeholder="0.00" required>
-                            </div>
+                            @endforeach
                         </div>
+                        <button type="button" id="purchase-add-line" class="btn btn-outline-primary btn-sm">+ Add Product Row</button>
+                        <div class="mt-2 fw-bold">Quantity: <span id="purchase-total-qty">0</span> | Subtotal: ৳<span id="purchase-subtotal">0.00</span> | Total: ৳<span id="purchase-grand-total">0.00</span></div>
 
                         <div class="row">
                             <div class="col-md-3 mb-3">
@@ -220,7 +256,7 @@
                             <div class="col-md-3 mb-3">
                                 <label class="form-label text-success fw-bold">Paid Amount</label>
                                 <input type="number" step="0.01" name="paid_amount" class="form-control border-success" value="0">
-                                <small class="text-muted" style="font-size:10px;">Deducted from fund</small>
+                                <small id="purchase-paid-help" class="text-muted" style="font-size:10px;">Deducted from fund</small>
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label class="form-label">Note</label>
@@ -245,6 +281,7 @@
                 </div>
                 <div class="card-body">
                     <form action="{{ route('purchases.export') }}" method="GET" target="_blank">
+                        @if(request('supplier_id'))<input type="hidden" name="supplier_id" value="{{ request('supplier_id') }}">@endif
                         <div class="mb-3">
                             <label class="form-label">Filter by Month/Year</label>
                             <div class="input-group">
@@ -276,7 +313,9 @@
 
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary"><i class="fe-list me-1"></i> Recent Purchase History</h6>
+            <h6 class="m-0 font-weight-bold text-primary"><i class="fe-list me-1"></i> Recent Purchase History
+                @if(request('supplier_id')) — {{ $suppliers->firstWhere('id', request('supplier_id'))?->name ?? 'Supplier' }} <a class="btn btn-sm btn-outline-secondary" href="{{ route('purchases.index') }}">Clear filter</a>@endif
+            </h6>
         </div>
         <div class="card-body p-0">
             <div id="purchase-table-wrapper" class="table-responsive">
@@ -316,6 +355,7 @@
                             </td>
                             <td>
                                 <span class="fw-bold text-dark">{{ $p->invoice_no }}</span>
+                                @if($p->purchase_mode === 'historical')<span class="badge bg-warning text-dark">Historical</span>@endif
                                 @if($p->updated_by)
                                     <i class="fe-edit-2 text-warning ms-1" title="Edited" style="font-size: 10px;"></i>
                                 @endif
@@ -354,6 +394,7 @@
                                         <a href="{{ route('purchases.edit', $p->id) }}" class="btn btn-action btn-outline-primary ms-1" title="Edit">
                                             <i class="fe-edit"></i>
                                         </a>
+                                        @if($p->purchase_mode !== 'historical')
                                         <form method="POST" action="{{ route('purchases.destroy', $p->id) }}" class="d-inline delete-form">
                                             @csrf
                                             @method('DELETE')
@@ -361,6 +402,7 @@
                                                 <i class="fe-trash-2"></i>
                                             </button>
                                         </form>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
@@ -386,8 +428,83 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('script')
+<script src="{{ asset('public/backEnd/assets/libs/select2/js/select2.min.js') }}"></script>
 <script>
+    (() => {
+        const lines = document.getElementById('purchase-lines');
+        const lineTemplate = lines.querySelector('.purchase-line').cloneNode(true);
+        if (window.jQuery?.fn?.select2) {
+            jQuery(lines).find('.purchase-product').select2({ width: '100%', placeholder: 'Search product' });
+        }
+        const mode = document.getElementById('purchase-mode');
+        const treatment = document.getElementById('accounting-treatment');
+        const options = document.getElementById('historical-purchase-options');
+        const invoice = document.getElementById('purchase-invoice');
+        const originalInvoice = invoice.value;
+        let nextIndex = Math.max(...Array.from(lines.querySelectorAll('.purchase-product')).map(select =>
+            Number(select.name.match(/lines\[(\d+)\]/)?.[1] ?? -1))) + 1;
+
+        function refresh() {
+            const historical = mode?.value === 'historical';
+            if (options) options.hidden = !historical;
+            if (invoice) {
+                invoice.readOnly = !historical;
+                if (!historical) invoice.value = originalInvoice;
+            }
+            if (treatment) treatment.required = historical;
+            const expenseField = document.getElementById('historical-expense-field');
+            const referenceField = document.getElementById('historical-reference-field');
+            if (expenseField) expenseField.hidden = !historical || treatment.value !== 'reclassify_expense';
+            if (referenceField) referenceField.hidden = !historical || treatment.value !== 'already_recorded';
+            const expense = document.getElementById('historical-expense');
+            const reference = document.getElementById('historical-reference');
+            if (expense) expense.required = historical && treatment.value === 'reclassify_expense';
+            if (reference) reference.required = historical && treatment.value === 'already_recorded';
+            document.getElementById('purchase-paid-help').textContent = historical
+                ? 'Reclassification or existing payment does not deduct the fund again.' : 'Deducted from fund';
+
+            let qty = 0, subtotal = 0;
+            lines.querySelectorAll('.purchase-line').forEach(row => {
+                const count = Number(row.querySelector('.purchase-qty').value) || 0;
+                const cost = Number(row.querySelector('.purchase-cost').value) || 0;
+                qty += count;
+                subtotal += count * cost;
+                row.querySelector('.purchase-line-total').textContent = (count * cost).toFixed(2);
+            });
+            const discount = Number(document.querySelector('[name="discount"]').value) || 0;
+            const shipping = Number(document.querySelector('[name="shipping_cost"]').value) || 0;
+            document.getElementById('purchase-total-qty').textContent = qty;
+            document.getElementById('purchase-subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('purchase-grand-total').textContent = (subtotal - discount + shipping).toFixed(2);
+        }
+
+        document.getElementById('purchase-add-line').addEventListener('click', () => {
+            const row = lineTemplate.cloneNode(true);
+            row.querySelectorAll('[name]').forEach(input => {
+                input.name = input.name.replace(/lines\[\d+\]/, `lines[${nextIndex}]`);
+                if (input.classList.contains('purchase-product')) input.value = '';
+                if (input.classList.contains('purchase-qty')) input.value = '1';
+                if (input.classList.contains('purchase-cost')) input.value = '';
+            });
+            lines.appendChild(row);
+            if (window.jQuery?.fn?.select2) jQuery(row).find('.purchase-product').select2({ width: '100%', placeholder: 'Search product' });
+            nextIndex++;
+            refresh();
+        });
+        lines.addEventListener('click', event => {
+            if (!event.target.closest('.purchase-remove-line')) return;
+            if (lines.querySelectorAll('.purchase-line').length > 1) {
+                const row = event.target.closest('.purchase-line');
+                if (window.jQuery?.fn?.select2) jQuery(row).find('.purchase-product').select2('destroy');
+                row.remove();
+            }
+            refresh();
+        });
+        document.querySelector('form[action="{{ route('purchases.store') }}"]').addEventListener('input', refresh);
+        document.querySelector('form[action="{{ route('purchases.store') }}"]').addEventListener('change', refresh);
+        refresh();
+    })();
     // AJAX Pagination Script
     $(document).on('click', '#purchase-pagination a', function(e){
         e.preventDefault();
@@ -402,4 +519,4 @@
         });
     });
 </script>
-@endpush
+@endsection

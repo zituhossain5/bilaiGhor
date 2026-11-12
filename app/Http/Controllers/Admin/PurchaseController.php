@@ -11,6 +11,9 @@ use App\Models\SupplierPayment;
 use App\Models\Product;
 use App\Models\ProductVariantPrice;
 use App\Models\FundTransaction;
+use App\Models\Expense;
+use App\Services\HistoricalPurchaseService;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -72,6 +75,9 @@ class PurchaseController extends Controller
 
         // QUERY
         $query = Purchase::with('supplier')->latest();
+        if ($request->integer('supplier_id') > 0) {
+            $query->where('supplier_id', $request->integer('supplier_id'));
+        }
 
         if ($request->year) {
             $query->whereYear('purchase_date', $request->year);
@@ -86,17 +92,14 @@ class PurchaseController extends Controller
             $query->whereDate('purchase_date', '<=', $request->to_date);
         }
 
-        $purchases = $query->paginate(10);
-
-        // AJAX RESPONSE (ONLY TABLE)
-        if ($request->ajax()) {
-            return view('backEnd.purchases.index', compact(
-                'purchases'
-            ))->render();
-        }
+        $purchases = $query->paginate(10)->withQueryString();
 
         $suppliers = Supplier::orderBy('name')->get();
         $products  = Product::orderBy('name')->get();
+
+        $reclassifiableExpenses = $this->isAdmin()
+            ? Expense::includedInAccounting()->whereNull('reclassified_at')->orderByDesc('expense_date')->get()
+            : collect();
 
         return view('backEnd.purchases.index', compact(
             'currentYear',
@@ -107,7 +110,7 @@ class PurchaseController extends Controller
             'totalDue',
             'purchases',
             'suppliers',
-            'products'
+            'products', 'reclassifiableExpenses'
         ));
     }
 
@@ -118,27 +121,66 @@ class PurchaseController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        if (! $request->has('lines') && $request->has('product_id')) {
+            $request->merge(['lines' => [[
+                'product_id' => $request->input('product_id'),
+                'variant_price_id' => $request->input('variant_price_id'),
+                'qty' => $request->input('qty'),
+                'unit_cost' => $request->input('unit_cost'),
+            ]]]);
+        }
+        $mode = $request->input('purchase_mode', 'normal');
+        if ($mode === 'historical' && ! $this->isAdmin()) {
+            abort(403, 'Only Admin can enter historical purchases.');
+        }
+        $validated = $request->validate([
             'supplier_id'   => 'required|exists:suppliers,id',
-            'purchase_date' => 'required|date',
+            'purchase_date' => 'required|date_format:Y-m-d',
             'invoice_no'    => 'required|string|max:50',
-            'product_id'    => 'required|exists:products,id',
-            'qty'           => 'required|integer|min:1',
-            'unit_cost'     => 'required|numeric|min:0',
+            'purchase_mode' => 'nullable|in:normal,historical',
+            'lines' => 'required|array|min:1|max:100',
+            'lines.*.product_id' => 'required|integer|exists:products,id',
+            'lines.*.variant_price_id' => 'nullable|integer|exists:product_variant_prices,id',
+            'lines.*.qty' => 'required|integer|min:1',
+            'lines.*.unit_cost' => 'required|numeric|min:0',
             'discount'      => 'nullable|numeric|min:0',
             'shipping_cost' => 'nullable|numeric|min:0',
             'paid_amount'   => 'nullable|numeric|min:0',
+            'note' => 'nullable|string|max:2000',
+            'accounting_treatment' => [Rule::requiredIf($mode === 'historical'), 'nullable', 'in:reclassify_expense,already_recorded,new_payment'],
+            'expense_id' => [Rule::requiredIf($mode === 'historical' && $request->input('accounting_treatment') === 'reclassify_expense'), 'nullable', 'integer', 'exists:expenses,id'],
+            'accounting_reference' => 'nullable|string|max:255',
         ]);
 
-        return DB::transaction(function () use ($request) {
+        $productIds = array_column($validated['lines'], 'product_id');
+        if (count($productIds) !== count(array_unique($productIds))) {
+            throw ValidationException::withMessages(['lines' => 'Each product may appear only once per invoice.']);
+        }
+        foreach ($validated['lines'] as $line) {
+            if (! empty($line['variant_price_id']) && ! ProductVariantPrice::whereKey($line['variant_price_id'])
+                ->where('product_id', $line['product_id'])->exists()) {
+                throw ValidationException::withMessages(['lines' => 'A selected variant does not belong to its product.']);
+            }
+        }
+        if ($mode === 'historical') {
+            (new HistoricalPurchaseService())->create($validated, (int) Auth::guard('admin')->id());
+            return back()->with('success', 'Historical purchase recorded. Current stock was not changed.');
+        }
+
+        return DB::transaction(function () use ($request, $validated) {
 
         $discount      = $request->discount ?? 0;
         $shipping_cost = $request->shipping_cost ?? 0;
 
-        $qty        = (int) $request->qty;
-        $unit_cost  = (float) $request->unit_cost;
-        $subtotal   = $qty * $unit_cost;
+        $qty = array_sum(array_column($validated['lines'], 'qty'));
+        $subtotal = round(array_sum(array_map(
+            fn ($line) => (int) $line['qty'] * (float) $line['unit_cost'], $validated['lines']
+        )), 2);
         $grandTotal = $subtotal - $discount + $shipping_cost;
+
+        if ($grandTotal <= 0 || (float) ($request->paid_amount ?? 0) > $grandTotal) {
+            throw ValidationException::withMessages(['paid_amount' => 'Total must be positive and paid amount cannot exceed it.']);
+        }
 
         $paid = min($grandTotal, (float) ($request->paid_amount ?? 0));
         $due  = $grandTotal - $paid;
@@ -165,34 +207,28 @@ class PurchaseController extends Controller
             'note'          => $request->note,
             'status'        => 'completed',
             'created_by'    => Auth::id(),
+            'purchase_mode' => 'normal',
         ]);
 
-        // PURCHASE ITEM
-        PurchaseItem::create([
-            'purchase_id'      => $purchase->id,
-            'product_id'       => $request->product_id,
-            'variant_price_id' => $request->variant_price_id ?: null,
-            'qty'              => $qty,
-            'unit_cost'        => $unit_cost,
-            'line_total'       => $subtotal,
-        ]);
+        foreach ($validated['lines'] as $line) {
+            PurchaseItem::create([
+                'purchase_id' => $purchase->id,
+                'product_id' => $line['product_id'],
+                'variant_price_id' => $line['variant_price_id'] ?? null,
+                'qty' => $line['qty'],
+                'unit_cost' => $line['unit_cost'],
+                'line_total' => round((int) $line['qty'] * (float) $line['unit_cost'], 2),
+            ]);
+            Product::whereKey($line['product_id'])->update(['purchase_price' => $line['unit_cost']]);
+            if (! empty($line['variant_price_id'])) {
+                ProductVariantPrice::whereKey($line['variant_price_id'])->increment('stock', $line['qty']);
+            }
+        }
 
         // STOCK UPDATE — creating a purchase means the goods physically arrived
         // (this shop records purchases on receipt), so receive it into inventory.
         // Idempotent: the service never books the same purchase in twice.
-        $product = Product::findOrFail($request->product_id);
-        $product->purchase_price = $unit_cost; // latest cost drives inventory valuation
-        $product->save();
-
         \App\Services\InventoryService::receivePurchase($purchase);
-
-        if ($request->variant_price_id) {
-            $variant = ProductVariantPrice::find($request->variant_price_id);
-            if ($variant) {
-                $variant->stock += $qty;
-                $variant->save();
-            }
-        }
 
         // SUPPLIER DUE
         $supplier = Supplier::findOrFail($request->supplier_id);
@@ -289,6 +325,9 @@ class PurchaseController extends Controller
     public function returnItem(Request $request, $itemId)
     {
         $item = PurchaseItem::with('purchase','product','variant')->findOrFail($itemId);
+        if ($item->purchase?->purchase_mode === 'historical') {
+            abort(403, 'Historical purchases cannot be returned as current inventory.');
+        }
 
         $request->validate([
             'return_qty' => 'required|integer|min:1',
@@ -319,7 +358,7 @@ class PurchaseController extends Controller
      */
     public function invoice($id)
     {
-        $purchase = Purchase::with(['supplier','items.product','items.variant','payments'])
+        $purchase = Purchase::with(['supplier','items.product','items.variant','payments','reclassifiedExpense'])
                             ->findOrFail($id);
         return view('backEnd.purchases.invoice', compact('purchase'));
     }
@@ -332,6 +371,9 @@ class PurchaseController extends Controller
     public function export(Request $request)
     {
         $query = Purchase::with('supplier')->orderBy('purchase_date','asc');
+        if ($request->integer('supplier_id') > 0) {
+            $query->where('supplier_id', $request->integer('supplier_id'));
+        }
 
         if ($request->year) {
             $query->whereYear('purchase_date',$request->year);
@@ -357,17 +399,19 @@ class PurchaseController extends Controller
 
         $callback = function() use ($purchases) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Date','Invoice','Supplier','Total Qty','Grand Total','Paid','Due']);
+            fputcsv($handle, ['Date','Invoice','Supplier','Type','Total Qty','Grand Total','Paid','Due','Accounting Treatment']);
 
             foreach ($purchases as $p) {
                 fputcsv($handle, [
                     $p->purchase_date ? Carbon::parse($p->purchase_date)->format('d/m/Y') : '',
                     $p->invoice_no,
                     optional($p->supplier)->name,
+                    $p->purchase_mode ?? 'normal',
                     $p->total_qty,
                     $p->grand_total,
                     $p->paid_amount,
                     $p->due_amount,
+                    $p->accounting_treatment,
                 ]);
             }
             fclose($handle);
@@ -386,6 +430,9 @@ class PurchaseController extends Controller
         }
 
         $purchase = Purchase::with(['supplier', 'items.product', 'items.variant', 'payments'])->findOrFail($id);
+        if ($purchase->purchase_mode === 'historical') {
+            return view('backEnd.purchases.historical_edit', compact('purchase'));
+        }
         $suppliers = Supplier::orderBy('name')->get();
         $products  = Product::orderBy('name')->get();
 
@@ -399,6 +446,25 @@ class PurchaseController extends Controller
     {
         if (!$this->isAdmin()) {
             abort(403, 'Only Admin can update purchases.');
+        }
+
+        $existing = Purchase::findOrFail($id);
+        if ($existing->purchase_mode === 'historical') {
+            $data = $request->validate([
+                'purchase_mode' => 'required|in:historical',
+                'invoice_no' => 'required|string|max:50',
+                'purchase_date' => 'required|date_format:Y-m-d',
+                'note' => 'nullable|string|max:2000',
+                'lines' => 'required|array|min:1|max:100',
+                'lines.*.item_id' => 'required|integer|distinct',
+                'lines.*.qty' => 'required|integer|min:1',
+                'lines.*.unit_cost' => 'required|numeric|min:0',
+            ]);
+            (new HistoricalPurchaseService())->update($existing, $data, (int) Auth::guard('admin')->id());
+            return redirect()->route('purchases.invoice', $id)->with('success', 'Historical purchase updated without changing stock or fund.');
+        }
+        if ($request->input('purchase_mode', 'normal') !== 'normal') {
+            throw ValidationException::withMessages(['purchase_mode' => 'Purchase mode cannot be changed after creation.']);
         }
 
         $request->validate([
@@ -575,6 +641,10 @@ class PurchaseController extends Controller
             abort(403, 'Only Admin can delete purchases.');
         }
 
+        if (Purchase::findOrFail($id)->purchase_mode === 'historical') {
+            throw ValidationException::withMessages(['purchase' => 'Historical purchases require a controlled reversal; ordinary deletion is disabled.']);
+        }
+
         return DB::transaction(function () use ($id) {
             $purchase = Purchase::with(['items', 'payments'])->findOrFail($id);
 
@@ -655,6 +725,16 @@ class PurchaseController extends Controller
             return redirect()->route('purchases.index')
                              ->with('success', 'Purchase deleted successfully! Fund balance adjusted automatically.');
         });
+    }
+
+    public function reverseHistorical(Request $request, $id)
+    {
+        if (! $this->isAdmin()) {
+            abort(403);
+        }
+        $request->validate(['confirmation' => 'required|in:REVERSE HISTORICAL PURCHASE']);
+        (new HistoricalPurchaseService())->reverse(Purchase::findOrFail($id), (int) Auth::guard('admin')->id());
+        return redirect()->route('purchases.index')->with('success', 'Historical purchase reversed with no stock change.');
     }
 
     /**

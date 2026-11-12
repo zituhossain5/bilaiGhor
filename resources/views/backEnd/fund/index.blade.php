@@ -67,6 +67,7 @@
                 ['Cost of goods sold', $summary['cogs'], 'Historical purchase cost multiplied by quantity', 'fund-kpi--dark'],
                 ['Gross profit', $summary['gross_profit'], 'Sales revenue minus COGS', 'fund-kpi--positive'],
                 ['Expenses', $summary['expenses'], number_format($summary['expense_count']).' recorded expenses', 'fund-kpi--negative'],
+                ['Historical purchases', $summary['historical_purchases'], number_format($summary['historical_purchase_count']).' backfilled invoice(s); no new stock', ''],
                 ['Withdrawals', $summary['withdrawals'], number_format($summary['withdrawal_count']).' withdrawals in period', 'fund-kpi--negative'],
                 ['Net profit', $summary['net_profit'], 'Gross profit minus expenses', $summary['net_profit'] >= 0 ? 'fund-kpi--positive' : 'fund-kpi--negative'],
             ];
@@ -78,6 +79,9 @@
 
     @if($summary['cost_fallback_lines'] || $summary['zero_cost_lines'])
         <div class="alert alert-warning">Cost review: {{ $summary['cost_fallback_lines'] }} sold line(s) use current product cost because historical cost is missing, and {{ $summary['zero_cost_lines'] }} line(s) have zero/missing cost.</div>
+    @endif
+    @if($summary['historical_purchase_count'])
+        <div class="alert alert-info">Historical purchases are shown by purchase date. They do not change current inventory or automatically recalculate COGS on old orders. Review sold lines with missing saved cost separately.</div>
     @endif
 
     <div class="row g-3 mb-4">

@@ -111,6 +111,14 @@ final class AccountingSummaryService
             ->selectRaw('COUNT(*) as expense_count, COALESCE(SUM(amount), 0) as total')
             ->first();
 
+        $historicalPurchases = Purchase::query()->where('purchase_mode', 'historical');
+        if ($from && $to) {
+            $historicalPurchases->whereBetween('purchase_date', [$from->toDateString(), $to->toDateString()]);
+        }
+        $historicalPurchaseTotals = $historicalPurchases
+            ->selectRaw('COUNT(*) as purchase_count, COALESCE(SUM(grand_total), 0) as total')
+            ->first();
+
         $investmentQuery = FundTransaction::query()
             ->includedInAccounting()
             ->where('direction', 'in')
@@ -168,6 +176,8 @@ final class AccountingSummaryService
             'gross_profit' => $grossProfit,
             'expense_count' => (int) ($expense->expense_count ?? 0),
             'expenses' => $expenses,
+            'historical_purchase_count' => (int) ($historicalPurchaseTotals->purchase_count ?? 0),
+            'historical_purchases' => (float) ($historicalPurchaseTotals->total ?? 0),
             'net_profit' => $grossProfit - $expenses,
             'cost_fallback_lines' => (int) ($costs->fallback_lines ?? 0),
             'zero_cost_lines' => (int) ($costs->zero_cost_lines ?? 0),
@@ -305,7 +315,14 @@ final class AccountingSummaryService
             ->count();
 
         $supplierPaymentFundMismatches = DB::table('supplier_payments as payments')
+            ->leftJoin('purchases as purchases', 'purchases.id', '=', 'payments.purchase_id')
             ->leftJoin('fund_transactions as fund', 'fund.id', '=', 'payments.fund_transaction_id')
+            ->where(function ($query) {
+                $query->whereNotNull('payments.fund_transaction_id')
+                    ->orWhereNull('purchases.id')
+                    ->orWhere('purchases.purchase_mode', '!=', 'historical')
+                    ->orWhere('purchases.accounting_treatment', '!=', 'already_recorded');
+            })
             ->where(function ($query) {
                 $query->whereNull('fund.id')
                     ->orWhereNotNull('fund.excluded_from_accounting_at')

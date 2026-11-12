@@ -73,6 +73,8 @@ class ExpenseController extends Controller
         $expenses = Expense::includedInAccounting()->orderBy('expense_date', 'desc')
                         ->orderBy('id', 'desc')
                         ->paginate(20);
+        $reclassifiedExpenses = Expense::whereNotNull('reclassified_at')
+            ->orderByDesc('reclassified_at')->paginate(20, ['*'], 'reclassified_page')->withQueryString();
 
         return view('backEnd.expenses.index', compact(
             'currentYear',
@@ -81,7 +83,7 @@ class ExpenseController extends Controller
             'monthlyExpense',
             'todayExpense',
             'expenses',
-            'accounting'
+            'accounting', 'reclassifiedExpenses'
         ));
     }
 

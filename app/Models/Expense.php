@@ -19,10 +19,13 @@ class Expense extends Model
         'excluded_from_accounting_at',
         'accounting_exclusion_reason',
         'accounting_cleanup_run_id',
+        'reclassified_at',
+        'reclassified_purchase_id',
     ];
 
     protected $casts = [
         'excluded_from_accounting_at' => 'datetime',
+        'reclassified_at' => 'datetime',
     ];
 
     public function scopeIncludedInAccounting(Builder $query): Builder
@@ -33,6 +36,11 @@ class Expense extends Model
     public function fundTransaction()
     {
         return $this->belongsTo(FundTransaction::class);
+    }
+
+    public function reclassifiedPurchase()
+    {
+        return $this->belongsTo(Purchase::class, 'reclassified_purchase_id');
     }
 
     public function creator()

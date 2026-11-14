@@ -1756,7 +1756,7 @@ input.bpd-btn { cursor: pointer; }
     }
 
     {{-- Product images for color filter --}}
-    var productImages = @json($details->images->map(function($img) {
+    var productImages = @json($details->images->map(function($img) use ($details) {
         return ['src' => asset($img->image), 'alt' => $img->image_alt ?: $details->name, 'color_id' => $img->color_id];
     }));
     var hasProductVideo = @json($hasVideo);

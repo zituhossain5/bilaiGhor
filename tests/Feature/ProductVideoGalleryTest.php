@@ -110,6 +110,34 @@ class ProductVideoGalleryTest extends TestCase
         Cache::forget('product_details_'.$product->slug);
     }
 
+    public function test_gallery_images_render_with_a_legacy_special_character_slug(): void
+    {
+        $product = $this->makeProduct();
+        $product->update(['slug' => 'video-test-5*15g-'.$product->id]);
+        $product->images()->update(['image_alt' => null]);
+
+        try {
+            $html = $this->get('/product/'.rawurlencode($product->slug))->assertOk()->getContent();
+            $this->assertSame(1, preg_match('/var productImages = (\[.*?\]);/', $html, $match));
+            $this->assertSame('Video Test Cat Toy', json_decode($match[1], true, 512, JSON_THROW_ON_ERROR)[0]['alt']);
+        } finally {
+            Cache::forget('product_details_'.$product->slug);
+        }
+    }
+
+    public function test_product_without_optional_metadata_or_gallery_renders(): void
+    {
+        $product = $this->makeProduct();
+        $product->update(['brand_id' => null, 'weight_id' => null, 'old_price' => 0]);
+        $product->images()->delete();
+
+        try {
+            $this->get('/product/'.$product->slug)->assertOk();
+        } finally {
+            Cache::forget('product_details_'.$product->slug);
+        }
+    }
+
     public function test_blank_edit_preserves_video_and_replacement_cleans_up_only_unused_file(): void
     {
         $product = $this->makeProduct();

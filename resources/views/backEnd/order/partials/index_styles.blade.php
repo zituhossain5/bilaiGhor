@@ -118,7 +118,9 @@
         overflow-x: auto;
         overflow-y: visible;
         -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
+        /* Keep horizontal table swipes inside the rail, but let mouse-wheel scrolling reach the page. */
+        overscroll-behavior-x: contain;
+        overscroll-behavior-y: auto;
         border-radius: 10px;
         border: 1px solid #e2e8f0;
         position: relative;

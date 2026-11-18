@@ -10,6 +10,9 @@
     var initialDistrictId = @json((string) old('district_id', $selectedDistrictId ?? ''));
     var initialThanaId = @json((string) old('thana_id', $selectedThanaId ?? ''));
     var byId = function (id) { return document.getElementById(id); };
+    var savedPurpose = @json($isEdit ? ($order->order_purpose ?: 'sale') : null);
+    var purposeInput = document.querySelector('select[name="order_purpose"]:not([form])');
+    var noPaymentPurposes = ['promotional_giveaway', 'free_sample', 'customer_gift', 'customer_replacement'];
 
     // The thana's rate is only a suggestion. Once the charge is set by hand it is never
     // overwritten: an existing order keeps its saved charge, and a failed submit keeps
@@ -127,6 +130,10 @@
         var delivery = parseFloat(document.getElementById('delivery_charge').value) || 0;
         var grand = Math.max(0, subtotal - itemDiscount - orderDiscount + delivery);
         var paidInput = document.getElementById('paid_amount');
+        var freeOrder = noPaymentPurposes.indexOf(savedPurpose || (purposeInput ? purposeInput.value : 'sale')) !== -1;
+        paidInput.readOnly = freeOrder;
+        byId('mo-free-payment-help').hidden = !freeOrder;
+        if (freeOrder) paidInput.value = '0';
         var paid = parseFloat(paidInput.value) || 0;
         var due = Math.max(0, grand - paid);
         var paymentStatus = paid <= 0 ? 'Unpaid' : (paid < grand ? 'Partial' : 'Paid');
@@ -143,7 +150,7 @@
         document.getElementById('sum-total').textContent = money(grand);
         document.getElementById('sum-paid').textContent = money(paid);
         document.getElementById('sum-due').textContent = money(due);
-        document.getElementById('sum-payment-status').textContent = paymentStatus;
+        document.getElementById('sum-payment-status').textContent = freeOrder && grand === 0 ? 'No Payment Required' : paymentStatus;
     }
 
     // ------------------------------------------------------------------
@@ -441,6 +448,18 @@
     });
 
     document.getElementById('add-row').addEventListener('click', function () { addRow(); });
+    if (purposeInput) purposeInput.addEventListener('change', recalc);
+    var purposeToggle = byId('mo-purpose-toggle');
+    var purposeEditor = byId('mo-purpose-editor');
+    if (purposeToggle && purposeEditor) {
+        function showPurposeEditor(open) {
+            purposeEditor.hidden = !open;
+            purposeToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (open) byId('mo-purpose-select').focus();
+        }
+        purposeToggle.addEventListener('click', function () { showPurposeEditor(purposeEditor.hidden); });
+        byId('mo-purpose-cancel').addEventListener('click', function () { showPurposeEditor(false); purposeToggle.focus(); });
+    }
     document.addEventListener('input', function (event) {
         if (event.target.matches('.item-qty,.item-price,.item-discount,.calc-input')) {
             var row = event.target.closest('tr');

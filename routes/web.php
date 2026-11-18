@@ -1257,6 +1257,9 @@ Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.
     Route::post('orders/{order}/inline-status', [InlineOrderStatusController::class, 'update'])
         ->name('admin.orders.inline-status');
 
+    Route::post('orders/{order}/purpose', [\App\Http\Controllers\Admin\OrderPurposeController::class, 'update'])
+        ->name('admin.orders.purpose.update');
+
     // Order route 
     // Must come before order/{slug}, which would otherwise capture it as a status slug.
     Route::get('order/cart-thana-shipping', [DeliveryThanaController::class, 'cartShipping'])->name('admin.order.cart_thana_shipping');

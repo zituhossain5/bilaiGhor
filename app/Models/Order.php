@@ -48,6 +48,7 @@ class Order extends Model
 
             try {
                 if (
+                    ($order->order_purpose ?: 'sale') === \App\Support\OrderPurpose::SALE &&
                     (int) $order->order_status === \App\Services\InventoryService::COMPLETE_STATUS &&
                     strtolower((string) $order->payment_status) === 'paid'
                 ) {
@@ -87,6 +88,11 @@ class Order extends Model
     public function orderdetails()
     {
         return $this->hasMany(OrderDetails::class, 'order_id');
+    }
+
+    public function purposeChanges()
+    {
+        return $this->hasMany(OrderPurposeChange::class, 'order_id');
     }
 
     // alias: items()

@@ -60,6 +60,7 @@
 @endphp
 
 <div class="oqv-wrap" data-order-id="{{ $order->id }}" data-invoice-id="{{ $order->invoice_id }}">
+    @include('backEnd.order.partials.purpose_accounting', ['order' => $order])
     <div class="row g-3">
         {{-- গ্রাহক --}}
         <div class="col-md-5">

@@ -387,6 +387,7 @@ class CleanupLegacyAccounting extends Command
             ->keyBy('source_id');
         $authoritativeOrders = Order::query()
             ->where('order_status', InventoryService::COMPLETE_STATUS)
+            ->where('order_purpose', \App\Support\OrderPurpose::SALE)
             ->whereRaw('LOWER(COALESCE(payment_status, ?)) = ?', ['', 'paid'])
             ->orderBy('id')
             ->get(['id', 'invoice_id', 'amount', 'order_status', 'payment_status', 'created_at', 'updated_at']);

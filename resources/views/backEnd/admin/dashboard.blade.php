@@ -148,7 +148,7 @@ table.clean tbody tr:hover td { background: #fafafa; }
 }
 
 /* ─── Finance strip ─── */
-.fin-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.fin-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 20px; }
 @media(max-width:900px){ .fin-strip { grid-template-columns: repeat(2,1fr); } }
 @media(max-width:540px) { .fin-strip { grid-template-columns: 1fr 1fr; } }
 
@@ -356,7 +356,7 @@ table.clean tbody tr:hover td { background: #fafafa; }
             <div>
                 <div class="sc-label">Total Revenue</div>
                 <div class="sc-val">৳{{ number_format($total_revenue) }}</div>
-                <div class="sc-note">{{ $total_delivery }} delivered</div>
+                <div class="sc-note">{{ $accounted_sales_orders }} completed and paid sales</div>
             </div>
         </div>
 
@@ -367,7 +367,7 @@ table.clean tbody tr:hover td { background: #fafafa; }
             <div>
                 <div class="sc-label">Total Delivery Charge</div>
                 <div class="sc-val">৳{{ number_format($total_delivery_charge) }}</div>
-                <div class="sc-note">From {{ $total_delivery }} delivered orders</div>
+                <div class="sc-note">Customer delivery fees from {{ $accounted_sales_orders }} paid sales</div>
             </div>
         </div>
 
@@ -438,7 +438,7 @@ table.clean tbody tr:hover td { background: #fafafa; }
                 </span>
             </div>
             <div class="sn-val">৳{{ number_format($today_delivered_revenue) }}</div>
-            <div class="sn-sub">Delivered revenue</div>
+            <div class="sn-sub">Completed and paid sales recognized today</div>
       </div>
     </div>
 
@@ -612,7 +612,7 @@ table.clean tbody tr:hover td { background: #fafafa; }
             <div class="fin-item-val">৳{{ number_format($fund_balance) }}</div>
         </div>
         <div class="fin-item">
-            <div class="fin-item-label">Total Expenses</div>
+            <div class="fin-item-label">Recorded Operating Expenses</div>
             <div class="fin-item-val">৳{{ number_format($total_expenses) }}</div>
         </div>
         <div class="fin-item">
@@ -623,6 +623,10 @@ table.clean tbody tr:hover td { background: #fafafa; }
             <div class="fin-item-label">Monthly Expenses</div>
             <div class="fin-item-val">৳{{ number_format($monthly_expenses) }}</div>
     </div>
+        <div class="fin-item">
+            <div class="fin-item-label">Today Net Profit</div>
+            <div class="fin-item-val">৳{{ number_format($today_profit, 2) }}</div>
+        </div>
   </div>
 
 </div>

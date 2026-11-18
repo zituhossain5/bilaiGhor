@@ -22,10 +22,11 @@ class FundHelper
             $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->getKey());
 
             if (
+                ($lockedOrder->order_purpose ?: 'sale') !== \App\Support\OrderPurpose::SALE ||
                 (int) $lockedOrder->order_status !== \App\Services\InventoryService::COMPLETE_STATUS ||
                 strtolower((string) $lockedOrder->payment_status) !== 'paid'
             ) {
-                throw new LogicException('A sale can enter the fund only after the order is complete and paid.');
+                throw new LogicException('Only a completed, paid normal sale can enter the fund as sales revenue.');
             }
 
             $existing = FundTransaction::includedInAccounting()

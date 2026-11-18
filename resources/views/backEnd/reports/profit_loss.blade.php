@@ -151,7 +151,7 @@
             </div>
             <div class="col-md-3">
                 <div class="stat-card admin-stat-card admin-stat-card--secondary">
-                    <div class="stat-title">Total Expenses</div>
+                    <div class="stat-title">Operating Expenses</div>
                     <div class="stat-amount">৳{{ number_format($totalExpense ?? 0, 2) }}</div>
                 </div>
             </div>
@@ -188,6 +188,8 @@
                                 <th>Operating Expenses</th>
                                 <td class="text-end text-danger">- ৳{{ number_format($totalExpense ?? 0, 2) }}</td>
                             </tr>
+                            <tr><th>Promotional Giveaways (noncash)</th><td class="text-end text-danger">- ৳{{ number_format($summary['promotional_giveaway_cost'], 2) }}</td></tr>
+                            <tr><th>Customer Replacements (noncash)</th><td class="text-end text-danger">- ৳{{ number_format($summary['customer_replacement_cost'], 2) }}</td></tr>
                             <tr class="{{ ($netProfit ?? 0) >= 0 ? 'net-profit-row' : 'net-loss-row' }}">
                                 <th class="fs-5"><strong>Net Profit / (Loss)</strong></th>
                                 <td class="text-end fs-4 fw-bold {{ ($netProfit ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">

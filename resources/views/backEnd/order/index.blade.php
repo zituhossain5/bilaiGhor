@@ -61,7 +61,7 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td><a href="{{ route('admin.order.process', ['invoice_id' => $value->invoice_id]) }}" class="oi-invoice-link">#{{ $value->invoice_id }}</a></td>
+                                        <td><a href="{{ route('admin.order.process', ['invoice_id' => $value->invoice_id]) }}" class="oi-invoice-link">#{{ $value->invoice_id }}</a>@if(($value->order_purpose ?: 'sale') !== 'sale')<br><span class="badge bg-warning text-dark">{{ \App\Support\OrderPurpose::label($value->order_purpose) }}</span>@endif</td>
                                         <td>
                                             {{ date('d-m-Y', strtotime($value->updated_at)) }}<br>
                                             {{ date('h:i:s a', strtotime($value->updated_at)) }}

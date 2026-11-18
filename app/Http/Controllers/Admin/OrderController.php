@@ -454,6 +454,11 @@ class OrderController extends Controller
                 $couponDiscount = (float) Session::get('pos_discount', 0);
                 $shipping = (float) $order->shipping_charge; // kept current by updateOrderShipping
                 $amount = max(0, $subtotal + $shipping - $couponDiscount - $lineDiscount - (float) $order->reward_discount_amount);
+                if (($order->order_purpose ?: 'sale') !== 'sale' && $amount > 0) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'order_purpose' => 'A non-sale order must keep a zero total. Reclassify it as a sale before changing its price.',
+                    ]);
+                }
 
                 $order->forceFill([
                     'amount'     => (int) round($amount),
@@ -634,6 +639,7 @@ class OrderController extends Controller
     public function order_store(Request $request)
     {
         $validated = $request->validate([
+            'order_purpose' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\OrderPurpose::LABELS))],
             'name'        => 'required|string|max:155',
             'phone'       => 'required|string|max:55',
             'address'     => 'required|string|max:256',
@@ -660,6 +666,9 @@ class OrderController extends Controller
         $subtotal = $cart->sum(fn ($item) => (float) $item->price * (int) $item->qty);
         $lineDiscount = $cart->sum(fn ($item) => (float) ($item->options->product_discount ?? 0) * (int) $item->qty);
         $amount = max(0, $subtotal + $shipping - $couponDiscount - $lineDiscount);
+        if (($validated['order_purpose'] ?? 'sale') !== 'sale' && $amount > 0) {
+            return back()->withInput()->withErrors(['order_purpose' => 'A non-sale purpose requires a zero-total order.']);
+        }
         $adminId = Auth::guard('admin')->id();
 
         try {
@@ -668,6 +677,7 @@ class OrderController extends Controller
 
                 $order = Order::create([
                     'invoice_id'      => $this->newInvoiceId(),
+                    'order_purpose'   => $validated['order_purpose'] ?? 'sale',
                     'amount'          => (int) round($amount),
                     'discount'        => (int) round($couponDiscount + $lineDiscount),
                     'shipping_charge' => (int) round($shipping),

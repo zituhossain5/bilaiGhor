@@ -8,6 +8,7 @@ use App\Models\InventoryStock;
 use App\Models\Order;
 use App\Models\Expense;
 use App\Models\Purchase;
+use App\Support\OrderPurpose;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -77,31 +78,52 @@ final class AccountingSummaryService
             ->selectRaw('source_id, MIN(created_at) as recognized_at')
             ->groupBy('source_id');
 
+        // Fulfillment timestamps are immutable evidence of when stock left the business.
+        // A later admin edit or purpose change must not move that cost into a new period.
+        $fulfillments = DB::table('inventory_movements')
+            ->where('movement_type', 'sale_completed')
+            ->whereNotNull('order_id')
+            ->selectRaw('order_id, MIN(created_at) as fulfilled_at')
+            ->groupBy('order_id');
+        $courierDeliveries = DB::table('courier_parcels')
+            ->whereNotNull('delivered_at')
+            ->selectRaw('order_id, MIN(delivered_at) as delivered_at')
+            ->groupBy('order_id');
+
         $ordersQuery = Order::query()
             ->leftJoinSub($saleCredits, 'sale_credits', function ($join) {
                 $join->on('sale_credits.source_id', '=', 'orders.id');
             })
+            ->leftJoinSub($fulfillments, 'fulfillments', fn ($join) => $join->on('fulfillments.order_id', '=', 'orders.id'))
+            ->leftJoinSub($courierDeliveries, 'courier_deliveries', fn ($join) => $join->on('courier_deliveries.order_id', '=', 'orders.id'))
             ->where('orders.order_status', InventoryService::COMPLETE_STATUS)
-            ->whereRaw('LOWER(COALESCE(orders.payment_status, ?)) = ?', ['', 'paid']);
+            ->where(function ($query) {
+                $query->where(function ($sales) {
+                    $sales->where('orders.order_purpose', OrderPurpose::SALE)
+                        ->whereRaw("LOWER(COALESCE(orders.payment_status, '')) = 'paid'");
+                })->orWhereIn('orders.order_purpose', array_merge(OrderPurpose::PROMOTIONAL, [OrderPurpose::CUSTOMER_REPLACEMENT]));
+            });
 
         self::applyDateRange(
             $ordersQuery,
-            'COALESCE(sale_credits.recognized_at, orders.updated_at)',
+            'COALESCE(fulfillments.fulfilled_at, courier_deliveries.delivered_at, sale_credits.recognized_at, orders.created_at)',
             $from,
             $to,
             rawColumn: true
         );
 
-        $orders = $ordersQuery->get(['orders.id', 'orders.amount']);
+        $orders = $ordersQuery->get(['orders.id', 'orders.amount', 'orders.shipping_charge', 'orders.order_purpose']);
         $orderIds = $orders->pluck('id');
 
         $costs = DB::table('order_details as details')
             ->leftJoin('products', 'products.id', '=', 'details.product_id')
             ->whereIn('details.order_id', $orderIds)
-            ->selectRaw('COALESCE(SUM(COALESCE(details.purchase_price, products.purchase_price, 0) * details.qty), 0) as cogs')
+            ->selectRaw('details.order_id, COALESCE(SUM(COALESCE(details.purchase_price, products.purchase_price, 0) * details.qty), 0) as cost')
             ->selectRaw('SUM(CASE WHEN details.purchase_price IS NULL AND products.purchase_price IS NOT NULL THEN 1 ELSE 0 END) as fallback_lines')
+            ->selectRaw('COALESCE(SUM(CASE WHEN details.purchase_price IS NULL AND products.purchase_price IS NOT NULL THEN products.purchase_price * details.qty ELSE 0 END), 0) as estimated_cost')
             ->selectRaw('SUM(CASE WHEN COALESCE(details.purchase_price, products.purchase_price, 0) = 0 THEN 1 ELSE 0 END) as zero_cost_lines')
-            ->first();
+            ->groupBy('details.order_id')
+            ->get()->keyBy('order_id');
 
         $expenseQuery = Expense::query()->includedInAccounting();
         if ($from && $to) {
@@ -155,8 +177,14 @@ final class AccountingSummaryService
             ->selectRaw('COALESCE(SUM(amount), 0) as total')
             ->first();
 
-        $revenue = (float) $orders->sum('amount');
-        $cogs = (float) ($costs->cogs ?? 0);
+        $sales = $orders->where('order_purpose', OrderPurpose::SALE);
+        $promotional = $orders->whereIn('order_purpose', OrderPurpose::PROMOTIONAL);
+        $replacements = $orders->where('order_purpose', OrderPurpose::CUSTOMER_REPLACEMENT);
+        $sumCost = fn ($set) => (float) $set->sum(fn ($order) => (float) ($costs->get($order->id)->cost ?? 0));
+        $revenue = (float) $sales->sum('amount');
+        $cogs = $sumCost($sales);
+        $promotionalCost = $sumCost($promotional);
+        $replacementCost = $sumCost($replacements);
         $expenses = (float) ($expense->total ?? 0);
         $grossProfit = $revenue - $cogs;
 
@@ -170,18 +198,53 @@ final class AccountingSummaryService
             'period_fund_change' => (float) ($periodFund->total_in ?? 0) - (float) ($periodFund->total_out ?? 0),
             'withdrawals' => (float) ($periodFund->withdrawals ?? 0),
             'withdrawal_count' => (int) ($periodFund->withdrawal_count ?? 0),
-            'sales_orders' => $orders->count(),
+            'sales_orders' => $sales->count(),
             'sales_revenue' => $revenue,
+            'sales_delivery_charge' => (float) $sales->sum('shipping_charge'),
             'cogs' => $cogs,
+            'sales_cogs' => $cogs,
             'gross_profit' => $grossProfit,
             'expense_count' => (int) ($expense->expense_count ?? 0),
             'expenses' => $expenses,
+            'cash_operating_expenses' => $expenses,
+            'promotional_giveaway_orders' => $promotional->count(),
+            'promotional_giveaway_cost' => $promotionalCost,
+            'customer_replacement_orders' => $replacements->count(),
+            'customer_replacement_cost' => $replacementCost,
+            'promotional_estimated_cost' => (float) $promotional->sum(fn ($order) => (float) ($costs->get($order->id)->estimated_cost ?? 0)),
+            'promotional_fallback_lines' => (int) $promotional->sum(fn ($order) => (int) ($costs->get($order->id)->fallback_lines ?? 0)),
             'historical_purchase_count' => (int) ($historicalPurchaseTotals->purchase_count ?? 0),
             'historical_purchases' => (float) ($historicalPurchaseTotals->total ?? 0),
-            'net_profit' => $grossProfit - $expenses,
-            'cost_fallback_lines' => (int) ($costs->fallback_lines ?? 0),
-            'zero_cost_lines' => (int) ($costs->zero_cost_lines ?? 0),
+            'net_profit' => $grossProfit - $expenses - $promotionalCost - $replacementCost,
+            'cost_fallback_lines' => (int) $costs->sum('fallback_lines'),
+            'zero_cost_lines' => (int) $costs->sum('zero_cost_lines'),
         ];
+    }
+
+    /** Product cost already attached to an order, for its admin accounting display. */
+    public static function orderProductCost(Order $order): array
+    {
+        $order->loadMissing('orderdetails.product');
+        $total = 0.0;
+        $estimated = 0.0;
+        $estimatedLines = 0;
+        $missingLines = 0;
+
+        foreach ($order->orderdetails as $line) {
+            $quantity = (int) $line->qty;
+            if ($line->purchase_price !== null) {
+                $total += (float) $line->purchase_price * $quantity;
+            } elseif ($line->product?->purchase_price !== null) {
+                $value = (float) $line->product->purchase_price * $quantity;
+                $total += $value;
+                $estimated += $value;
+                $estimatedLines++;
+            } else {
+                $missingLines++;
+            }
+        }
+
+        return compact('total', 'estimated', 'estimatedLines', 'missingLines');
     }
 
     public static function applyDateRange($query, string $column, ?CarbonInterface $from, ?CarbonInterface $to, bool $rawColumn = false): void

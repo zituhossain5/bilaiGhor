@@ -29,16 +29,12 @@ class DashboardController extends Controller
         $total_order    = Order::count();
         $total_product  = Product::count();
         $total_customer = Customer::count();
-        $total_delivery = Order::where('order_status', '6')->count();
 
         // ── Revenue & pending ──
-        // Revenue and delivery charge come from one aggregate over the same delivered
-        // orders, so Net Revenue always equals Total Revenue − Total Delivery Charge.
-        $revenueTotals = Order::where('order_status', '6')
-            ->selectRaw('COALESCE(SUM(amount), 0) as revenue, COALESCE(SUM(shipping_charge), 0) as delivery_charge')
-            ->first();
-        $total_revenue         = (float) $revenueTotals->revenue;
-        $total_delivery_charge = (float) $revenueTotals->delivery_charge;
+        $allAccounting = AccountingSummaryService::businessSummary();
+        $accounted_sales_orders = $allAccounting['sales_orders'];
+        $total_revenue         = $allAccounting['sales_revenue'];
+        $total_delivery_charge = $allAccounting['sales_delivery_charge'];
         $net_revenue           = $total_revenue - $total_delivery_charge;
         $pendingStatusId = OrderStatus::where('slug', 'pending')->value('id');
         $pending_orders = $pendingStatusId === null
@@ -49,17 +45,13 @@ class DashboardController extends Controller
         // ── Today stats ──
         $today_order              = Order::whereDate('created_at', Carbon::today())->count();
         $today_revenue            = Order::whereDate('created_at', Carbon::today())->sum('amount');
-        $today_delivered_revenue  = Order::where('order_status', '6')->whereDate('updated_at', Carbon::today())->sum('amount');
-        $today_delivery           = Order::where('order_status', '6')->whereDate('updated_at', Carbon::today())->count();
+        $todayAccounting = AccountingSummaryService::businessSummary(
+            Carbon::today()->startOfDay(), Carbon::today()->endOfDay()
+        );
+        $today_delivered_revenue  = $todayAccounting['sales_revenue'];
 
         // ── Today profit ──
-        $todayDeliveredOrders = Order::where('order_status', '6')->whereDate('updated_at', Carbon::today())->get();
-        $todayOrderIds        = $todayDeliveredOrders->pluck('id');
-        $todayDetails         = OrderDetails::whereIn('order_id', $todayOrderIds)->with('product:id,purchase_price')->get();
-        $today_cogs           = $todayDetails->sum(function ($r) {
-            return ($r->purchase_price ?? ($r->product->purchase_price ?? 0)) * $r->qty;
-        });
-        $today_profit = $todayDeliveredOrders->sum('amount') - $today_cogs;
+        $today_profit = $todayAccounting['net_profit'];
 
         // ── Last 7 days trend ──
         $last7 = collect();
@@ -93,9 +85,11 @@ class DashboardController extends Controller
 
         // ── Fund & expenses ──
         $fund_balance     = AccountingSummaryService::fundBalance();
-        $total_expenses   = Expense::sum('amount');
-        $today_expenses   = Expense::whereDate('created_at', Carbon::today())->sum('amount');
-        $monthly_expenses = Expense::whereYear('created_at', Carbon::now()->year)->whereMonth('created_at', Carbon::now()->month)->sum('amount');
+        $total_expenses   = $allAccounting['expenses'];
+        $today_expenses   = $todayAccounting['expenses'];
+        $monthly_expenses = Expense::query()->includedInAccounting()
+            ->whereBetween('expense_date', [Carbon::today()->startOfMonth()->toDateString(), Carbon::today()->endOfMonth()->toDateString()])
+            ->sum('amount');
 
         // ── Category sales (donut chart) ──
         $deliveredOrderIds = Order::where('order_status', '6')->pluck('id');
@@ -150,9 +144,9 @@ class DashboardController extends Controller
         $trafficTotal     = $trafficSources->sum('count') ?: 1; // avoid division by zero
 
         return view('backEnd.admin.dashboard', compact(
-            'total_order', 'total_product', 'total_customer', 'total_delivery',
-            'total_revenue', 'total_delivery_charge', 'net_revenue', 'pending_orders', 'low_stock',
-            'today_order', 'today_revenue', 'today_delivered_revenue', 'today_delivery',
+            'total_order', 'total_product', 'total_customer',
+            'total_revenue', 'total_delivery_charge', 'net_revenue', 'accounted_sales_orders', 'pending_orders', 'low_stock',
+            'today_order', 'today_revenue', 'today_delivered_revenue',
             'today_profit', 'trend_labels', 'trend_data',
             'statusLabels', 'statusData',
             'latest_order', 'latest_products', 'latest_customer', 'categories',

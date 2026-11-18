@@ -40,6 +40,7 @@ class FundTransaction extends Model
             $order = Order::query()->find($transaction->source_id);
             if (
                 ! $order ||
+                ($order->order_purpose ?: 'sale') !== \App\Support\OrderPurpose::SALE ||
                 (int) $order->order_status !== \App\Services\InventoryService::COMPLETE_STATUS ||
                 strtolower((string) $order->payment_status) !== 'paid'
             ) {

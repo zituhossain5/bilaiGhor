@@ -263,6 +263,17 @@
                     @csrf
                     <input type="hidden" name="coupon_code" value="{{ Session::get('pos_coupon_code', '') }}">
 
+                    <div class="col-12 mb-2">
+                        <label class="form-label">Order Purpose</label>
+                        <select name="order_purpose" class="form-select form-select-sm">
+                            @foreach(\App\Support\OrderPurpose::LABELS as $purpose => $label)
+                                <option value="{{ $purpose }}" @selected(old('order_purpose', 'sale') === $purpose)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        @error('order_purpose')<small class="text-danger">{{ $message }}</small>@enderror
+                        <small class="d-block text-muted">Giveaways and replacements require a zero order total.</small>
+                    </div>
+
                     {{-- CUSTOMER --}}
                     <div class="col-md-6">
                         <div class="pos-section-title">Customer</div>

@@ -38,6 +38,7 @@
             <td><div class="label">Net Profit</div><div class="value">{{ number_format($summary['net_profit'], 2) }} BDT</div></td>
         </tr>
         <tr><td><div class="label">Withdrawals</div><div class="value">{{ number_format($summary['withdrawals'], 2) }} BDT</div></td></tr>
+        <tr><td><div class="label">Promotional Giveaways</div><div class="value">{{ number_format($summary['promotional_giveaway_cost'], 2) }} BDT</div></td><td><div class="label">Customer Replacements</div><div class="value">{{ number_format($summary['customer_replacement_cost'], 2) }} BDT</div></td></tr>
     </table>
 
     <h2>Transaction History</h2>

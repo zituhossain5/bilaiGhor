@@ -67,9 +67,11 @@
                 ['Cost of goods sold', $summary['cogs'], 'Historical purchase cost multiplied by quantity', 'fund-kpi--dark'],
                 ['Gross profit', $summary['gross_profit'], 'Sales revenue minus COGS', 'fund-kpi--positive'],
                 ['Expenses', $summary['expenses'], number_format($summary['expense_count']).' recorded expenses', 'fund-kpi--negative'],
+                ['Promotional giveaways', $summary['promotional_giveaway_cost'], number_format($summary['promotional_giveaway_orders']).' delivered giveaway/sample/gift orders; noncash', 'fund-kpi--negative'],
+                ['Customer replacements', $summary['customer_replacement_cost'], number_format($summary['customer_replacement_orders']).' delivered replacements; noncash', 'fund-kpi--negative'],
                 ['Historical purchases', $summary['historical_purchases'], number_format($summary['historical_purchase_count']).' backfilled invoice(s); no new stock', ''],
                 ['Withdrawals', $summary['withdrawals'], number_format($summary['withdrawal_count']).' withdrawals in period', 'fund-kpi--negative'],
-                ['Net profit', $summary['net_profit'], 'Gross profit minus expenses', $summary['net_profit'] >= 0 ? 'fund-kpi--positive' : 'fund-kpi--negative'],
+                ['Net profit', $summary['net_profit'], 'Gross profit minus expenses, giveaways and replacements', $summary['net_profit'] >= 0 ? 'fund-kpi--positive' : 'fund-kpi--negative'],
             ];
         @endphp
         @foreach($cards as [$label, $value, $hint, $variant])
@@ -78,7 +80,10 @@
     </div>
 
     @if($summary['cost_fallback_lines'] || $summary['zero_cost_lines'])
-        <div class="alert alert-warning">Cost review: {{ $summary['cost_fallback_lines'] }} sold line(s) use current product cost because historical cost is missing, and {{ $summary['zero_cost_lines'] }} line(s) have zero/missing cost.</div>
+        <div class="alert alert-warning">Cost review: {{ $summary['cost_fallback_lines'] }} order line(s) use current product cost because historical cost is missing, and {{ $summary['zero_cost_lines'] }} line(s) have zero/missing cost.</div>
+    @endif
+    @if($summary['promotional_fallback_lines'])
+        <div class="alert alert-warning">Giveaway cost review: {{ $summary['promotional_fallback_lines'] }} line(s) use estimated current product cost, totaling {{ number_format($summary['promotional_estimated_cost'], 2) }} &#2547;.</div>
     @endif
     @if($summary['historical_purchase_count'])
         <div class="alert alert-info">Historical purchases are shown by purchase date. They do not change current inventory or automatically recalculate COGS on old orders. Review sold lines with missing saved cost separately.</div>
@@ -112,7 +117,7 @@
             <div><dt>Expense records</dt><dd>{{ number_format($summary['expense_count']) }}</dd></div><div><dt>Total expense</dt><dd>{{ number_format($summary['expenses'], 2) }} &#2547;</dd></div><div><dt>Source</dt><dd>Expenses module</dd></div>
         </dl></div></div>
         <div class="col-lg-4"><div class="fund-panel h-100"><h5 class="fund-section-title">Profit Summary</h5><dl class="fund-metric-list d-block">
-            <div><dt>Gross profit</dt><dd>{{ number_format($summary['gross_profit'], 2) }} &#2547;</dd></div><div><dt>Expenses</dt><dd>- {{ number_format($summary['expenses'], 2) }} &#2547;</dd></div><div><dt>Net profit</dt><dd>{{ number_format($summary['net_profit'], 2) }} &#2547;</dd></div><div><dt>Formula</dt><dd>Revenue - COGS - Expenses</dd></div>
+            <div><dt>Gross profit</dt><dd>{{ number_format($summary['gross_profit'], 2) }} &#2547;</dd></div><div><dt>Expenses</dt><dd>- {{ number_format($summary['expenses'], 2) }} &#2547;</dd></div><div><dt>Promotional giveaways</dt><dd>- {{ number_format($summary['promotional_giveaway_cost'], 2) }} &#2547;</dd></div><div><dt>Customer replacements</dt><dd>- {{ number_format($summary['customer_replacement_cost'], 2) }} &#2547;</dd></div><div><dt>Net profit</dt><dd>{{ number_format($summary['net_profit'], 2) }} &#2547;</dd></div><div><dt>Formula</dt><dd>Revenue - COGS - expenses - giveaways - replacements</dd></div>
         </dl></div></div>
     </div>
 

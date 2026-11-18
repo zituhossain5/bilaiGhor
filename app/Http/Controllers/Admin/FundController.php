@@ -208,6 +208,8 @@ class FundController extends Controller
             fputcsv($handle, ['COGS', number_format($summary['cogs'], 2, '.', '')]);
             fputcsv($handle, ['Gross Profit', number_format($summary['gross_profit'], 2, '.', '')]);
             fputcsv($handle, ['Expenses', number_format($summary['expenses'], 2, '.', '')]);
+            fputcsv($handle, ['Promotional Giveaways', number_format($summary['promotional_giveaway_cost'], 2, '.', '')]);
+            fputcsv($handle, ['Customer Replacements', number_format($summary['customer_replacement_cost'], 2, '.', '')]);
             fputcsv($handle, ['Historical Purchases', number_format($summary['historical_purchases'], 2, '.', '')]);
             fputcsv($handle, ['Net Profit', number_format($summary['net_profit'], 2, '.', '')]);
             fputcsv($handle, ['Withdrawals', number_format($summary['withdrawals'], 2, '.', '')]);

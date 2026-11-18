@@ -91,6 +91,7 @@ class ManualOrderController extends Controller
             'post_code' => ['nullable', 'string', 'max:20'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'order_source' => ['required', 'in:' . implode(',', $this->sources)],
+            'order_purpose' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\OrderPurpose::LABELS))],
             'payment_method' => ['required', 'in:' . implode(',', $this->methods)],
             'transaction_id' => ['nullable', 'string', 'max:100'],
             'delivery_charge' => ['nullable', 'numeric', 'min:0'],
@@ -120,7 +121,13 @@ class ManualOrderController extends Controller
                 $orderDiscount = min((float) ($validated['order_discount'] ?? 0), max(0, $subtotal - $itemDiscount));
                 $delivery = $this->deliveryCharge($validated);
                 $grandTotal = max(0, $subtotal - $itemDiscount - $orderDiscount + $delivery);
+                if (($validated['order_purpose'] ?? 'sale') !== 'sale' && $grandTotal > 0) {
+                    throw ValidationException::withMessages(['order_purpose' => 'A non-sale purpose requires a zero-total order.']);
+                }
                 $paid = (float) ($validated['paid_amount'] ?? 0);
+                if (\App\Support\OrderPurpose::isNonSale($validated['order_purpose'] ?? 'sale') && $paid > 0) {
+                    throw ValidationException::withMessages(['paid_amount' => 'No customer payment is expected for a giveaway or replacement.']);
+                }
                 if ($paid > $grandTotal) {
                     throw ValidationException::withMessages([
                         'paid_amount' => 'Paid amount cannot be greater than the grand total.',
@@ -144,6 +151,7 @@ class ManualOrderController extends Controller
 
                 $order = Order::create([
                     'is_manual_order' => 1,
+                    'order_purpose' => $validated['order_purpose'] ?? 'sale',
                     'invoice_id' => $invoice,
                     'invoice_number' => $invoice,
                     'amount' => (int) round($grandTotal),
@@ -241,7 +249,10 @@ class ManualOrderController extends Controller
 
                 $validated['customer_id'] = $this->resolveCustomer($validated);
                 $items = $this->normalizeItems($validated['items']);
-                $totals = $this->calculateTotals($items, $validated);
+                $totals = $this->calculateTotals($items, $validated, $lockedOrder->order_purpose ?: 'sale');
+                if (($lockedOrder->order_purpose ?: 'sale') !== 'sale' && $totals['grand_total'] > 0) {
+                    throw ValidationException::withMessages(['order_purpose' => 'A non-sale order must keep a zero total. Reclassify it as a sale before changing its price.']);
+                }
                 $targetStatus = (int) $validated['order_status'];
                 $adminId = Auth::guard('admin')->id();
 
@@ -535,7 +546,7 @@ class ManualOrderController extends Controller
             : (float) $entered;
     }
 
-    private function calculateTotals(array $items, array $validated): array
+    private function calculateTotals(array $items, array $validated, string $purpose): array
     {
         $subtotal = (float) collect($items)->sum('gross');
         $itemDiscount = (float) collect($items)->sum('discount');
@@ -551,6 +562,10 @@ class ManualOrderController extends Controller
         $delivery = $this->deliveryCharge($validated);
         $grandTotal = max(0, $subtotal - $itemDiscount - $orderDiscount + $delivery);
         $paid = (float) ($validated['paid_amount'] ?? 0);
+
+        if (\App\Support\OrderPurpose::isNonSale($purpose) && $paid > 0) {
+            throw ValidationException::withMessages(['paid_amount' => 'No customer payment is expected for a giveaway or replacement.']);
+        }
 
         if ($paid > $grandTotal) {
             throw ValidationException::withMessages([

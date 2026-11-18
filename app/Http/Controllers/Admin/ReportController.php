@@ -488,7 +488,7 @@ $totalExpense = $expenses->sum('amount');
                 'Content-Disposition' => "attachment; filename=\"$fileName\"",
             ];
 
-            $callback = function () use ($label, $salesAmount, $cogs, $totalExpense, $grossProfit, $netProfit) {
+            $callback = function () use ($label, $salesAmount, $cogs, $totalExpense, $grossProfit, $netProfit, $summary) {
                 $handle = fopen('php://output', 'w');
                 fputcsv($handle, ['Profit & Loss Report', $label]);
                 fputcsv($handle, []);
@@ -496,6 +496,8 @@ $totalExpense = $expenses->sum('amount');
                 fputcsv($handle, ['COGS', $cogs]);
                 fputcsv($handle, ['Gross Profit', $grossProfit]);
                 fputcsv($handle, ['Expenses', $totalExpense]);
+                fputcsv($handle, ['Promotional Giveaways', $summary['promotional_giveaway_cost']]);
+                fputcsv($handle, ['Customer Replacements', $summary['customer_replacement_cost']]);
                 fputcsv($handle, ['Net Profit', $netProfit]);
                 fclose($handle);
             };
@@ -512,7 +514,7 @@ $totalExpense = $expenses->sum('amount');
             'cogs',
             'totalExpense',
             'grossProfit',
-            'netProfit'
+            'netProfit', 'summary'
         ));
     }
 }

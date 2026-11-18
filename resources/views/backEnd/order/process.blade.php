@@ -287,6 +287,8 @@
         </div>
     </div>
 
+    @include('backEnd.order.partials.purpose_accounting', ['order' => $data])
+
     <div class="op-card op-card-items mb-3">
         <div class="op-card-head">
                     <h6><i class="fas fa-box-open"></i> অর্ডার আইটেম</h6>

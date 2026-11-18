@@ -96,7 +96,7 @@
                         @forelse($orders as $order)
                             @php($paymentState = \App\Services\OrderPaymentService::state($order))
                             <tr>
-                                <td><strong>{{ $order->invoice_number ?: $order->invoice_id }}</strong></td>
+                                <td><strong>{{ $order->invoice_number ?: $order->invoice_id }}</strong>@if(($order->order_purpose ?: 'sale') !== 'sale')<br><span class="badge bg-warning text-dark">{{ \App\Support\OrderPurpose::label($order->order_purpose) }}</span>@endif</td>
                                 <td>{{ $order->created_at?->format('d M Y') }}</td>
                                 <td>{{ $order->manual_customer_name ?: optional($order->shipping)->name }}</td>
                                 <td>{{ $order->manual_customer_phone ?: optional($order->shipping)->phone }}</td>

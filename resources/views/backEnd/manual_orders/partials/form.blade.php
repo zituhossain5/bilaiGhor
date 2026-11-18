@@ -6,7 +6,9 @@
     $customerAddress = old('customer_address', $isEdit ? $order->manual_customer_address : '');
     $paymentMethod = old('payment_method', $isEdit ? ($paymentState['method'] ?? $order->payment_method) : 'cash');
     $transactionId = old('transaction_id', $isEdit ? ($paymentState['transaction_id'] ?? $order->transaction_id) : '');
-    $paidAmount = old('paid_amount', $isEdit ? ($paymentState['paid'] ?? $order->paid_amount) : 0);
+    $currentPurpose = $isEdit ? ($order->order_purpose ?: 'sale') : old('order_purpose', 'sale');
+    $freeOrder = \App\Support\OrderPurpose::isNonSale($currentPurpose);
+    $paidAmount = $freeOrder ? 0 : old('paid_amount', $isEdit ? ($paymentState['paid'] ?? $order->paid_amount) : 0);
     $selectedDistrictId = old('district_id', $isEdit ? optional($order->shipping)->district_id : null);
     $selectedThanaId = old('thana_id', $isEdit ? optional($order->shipping)->thana_id : null);
     $postCode = old('post_code', $isEdit ? optional($order->shipping)->post_code : '');
@@ -23,6 +25,10 @@
             @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
         </ul>
     </div>
+@endif
+
+@if($isEdit && \App\Support\OrderPurpose::canClassify(auth('admin')->user()))
+    <form id="manual-purpose-form" method="POST" action="{{ route('admin.orders.purpose.update', $order) }}">@csrf</form>
 @endif
 
 <form action="{{ $isEdit ? route('admin.manual_orders.update', $order) : route('admin.manual_orders.store') }}" method="POST" id="manual-order-form">
@@ -66,6 +72,17 @@
                                 @endforeach
                             </select>
                         </div>
+                        @if(! $isEdit)
+                            <div class="col-md-6">
+                                <label>Order Purpose *</label>
+                                <select name="order_purpose" class="form-select" required>
+                                    @foreach(\App\Support\OrderPurpose::LABELS as $purpose => $purposeLabel)
+                                        <option value="{{ $purpose }}" @selected(old('order_purpose', 'sale') === $purpose)>{{ $purposeLabel }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Giveaways and replacements require a zero total. Existing orders use the separate audited purpose form.</small>
+                            </div>
+                        @endif
                         <div class="col-md-6">
                             <label>Customer Name *</label>
                             <input type="text" name="customer_name" id="customer_name" value="{{ $customerName }}" class="form-control" required>
@@ -177,6 +194,9 @@
         </div>
 
         <div class="col-lg-4">
+            @if($isEdit)
+                @include('backEnd.manual_orders.partials.purpose-sidebar')
+            @endif
             <div class="mo-summary">
                 <h5 class="mb-3">Totals</h5>
                 <div class="mb-3">
@@ -195,8 +215,9 @@
                 </div>
                 <div class="mb-3">
                     <label>Paid Amount</label>
-                    <input type="number" step="0.01" min="0" name="paid_amount" id="paid_amount" value="{{ $paidAmount }}" class="form-control calc-input">
+                    <input type="number" step="0.01" min="0" name="paid_amount" id="paid_amount" value="{{ $paidAmount }}" class="form-control calc-input" @readonly($freeOrder)>
                     <div class="invalid-feedback">Paid amount cannot exceed the grand total.</div>
+                    <small id="mo-free-payment-help" class="text-muted d-block mt-1" @unless($freeOrder) hidden @endunless>No customer payment is expected for this giveaway or replacement. Product cost is handled separately in accounting.</small>
                 </div>
                 <div class="mo-summary-row"><span>Subtotal</span><strong id="sum-subtotal">&#2547;0.00</strong></div>
                 <div class="mo-summary-row"><span>Item Discount</span><strong id="sum-item-discount">&#2547;0.00</strong></div>
@@ -205,7 +226,7 @@
                 <div class="mo-summary-row total"><span>Grand Total</span><strong id="sum-total">&#2547;0.00</strong></div>
                 <div class="mo-summary-row"><span>Paid</span><strong id="sum-paid">&#2547;0.00</strong></div>
                 <div class="mo-summary-row"><span>Due</span><strong id="sum-due">&#2547;0.00</strong></div>
-                <div class="mo-summary-row"><span>Payment Status</span><strong id="sum-payment-status" class="mo-payment-status">Unpaid</strong></div>
+                <div class="mo-summary-row"><span>Payment</span><strong id="sum-payment-status" class="mo-payment-status">{{ $freeOrder && (float) ($order->amount ?? 0) === 0.0 ? 'No Payment Required' : 'Unpaid' }}</strong></div>
                 <button type="submit" class="btn btn-success w-100 mt-3">{{ $isEdit ? 'Update Manual Order' : 'Save Manual Order' }}</button>
             </div>
         </div>

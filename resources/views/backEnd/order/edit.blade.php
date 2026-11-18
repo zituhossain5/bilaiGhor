@@ -302,6 +302,8 @@
         </div>
     </div>
 
+    @include('backEnd.order.partials.purpose_accounting', ['order' => $order])
+
     <form action="{{ route('admin.order.update') }}" method="POST" class="pos_form" id="order_edit_form" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="order_id" value="{{ $order->id }}">

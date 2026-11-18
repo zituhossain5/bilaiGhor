@@ -8,6 +8,7 @@ use App\Http\Middleware\PreventManualOrderDeletion;
 use App\Models\InventoryMovement;
 use App\Models\InventoryStock;
 use App\Models\DeliveryThana;
+use App\Models\FundTransaction;
 use App\Models\Order;
 use App\Models\OrderDetails;
 use App\Models\Payment;
@@ -19,11 +20,114 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class ManualOrderEditWorkflowTest extends TestCase
 {
     use DatabaseTransactions;
+
+    public function test_zero_total_giveaway_rejects_customer_payment_without_changing_stock_or_fund(): void
+    {
+        [$product, $order] = $this->manualOrderWithStock(3, 10);
+        $order->update(['order_purpose' => 'promotional_giveaway', 'amount' => 0, 'discount' => 300, 'order_discount' => 300, 'due_amount' => 0]);
+        $request = $this->updateRequest($order, $product, paid: 673, status: 1);
+        $request->merge(['order_discount' => 490, 'delivery_charge' => 0]);
+        $admin = User::create(['name' => 'Giveaway Admin', 'email' => Str::uuid().'@example.test', 'password' => bcrypt('secret'), 'status' => 1]);
+        Auth::guard('admin')->login($admin);
+        $fundBefore = FundTransaction::where('source_id', $order->id)->count();
+        $movesBefore = InventoryMovement::where('order_id', $order->id)->count();
+
+        try {
+            app(ManualOrderController::class)->update($request, $order);
+            $this->fail('Positive customer payment should be rejected for a giveaway.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('paid_amount', $exception->errors());
+        }
+
+        $this->assertEquals(0, $order->fresh()->paid_amount);
+        $this->assertEquals(0, $order->fresh()->amount);
+        $this->assertEquals(300, $order->fresh()->order_discount);
+        $this->assertEquals(150, \App\Services\AccountingSummaryService::orderProductCost($order->fresh())['total']);
+        $this->assertSame($fundBefore, FundTransaction::where('source_id', $order->id)->count());
+        $this->assertSame($movesBefore, InventoryMovement::where('order_id', $order->id)->count());
+        $this->assertStock($product, onHand: 10, reserved: 3, available: 7);
+    }
+
+    public function test_creating_zero_total_giveaway_rejects_positive_payment(): void
+    {
+        [$product, $order] = $this->manualOrderWithStock(3, 10);
+        $data = $this->updateRequest($order, $product, paid: 673, status: 1)->all();
+        $data['order_purpose'] = 'promotional_giveaway';
+        $data['order_discount'] = 490;
+        $data['delivery_charge'] = 0;
+        $admin = User::create(['name' => 'Create Giveaway Admin', 'email' => Str::uuid().'@example.test', 'password' => bcrypt('secret'), 'status' => 1]);
+        Auth::guard('admin')->login($admin);
+        $ordersBefore = Order::count();
+        $fundBefore = FundTransaction::count();
+
+        try {
+            app(ManualOrderController::class)->store(Request::create('/admin/manual-orders', 'POST', $data));
+            $this->fail('Positive payment should be rejected for a new zero-total giveaway.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('paid_amount', $exception->errors());
+        }
+
+        $this->assertSame($ordersBefore, Order::count());
+        $this->assertSame($fundBefore, FundTransaction::count());
+        $this->assertStock($product, onHand: 10, reserved: 3, available: 7);
+    }
+
+    public function test_zero_paid_giveaway_edit_saves_without_fund_or_inventory_movement(): void
+    {
+        [$product, $order] = $this->manualOrderWithStock(3, 10);
+        $order->update(['order_purpose' => 'promotional_giveaway', 'amount' => 0, 'discount' => 300, 'order_discount' => 300, 'due_amount' => 0]);
+        $request = $this->updateRequest($order, $product, paid: 0, status: 1, quantity: 3);
+        $request->merge([
+            'items' => [['product_id' => $product->id, 'name' => '', 'qty' => 3, 'unit_price' => 100, 'discount' => 0]],
+            'order_discount' => 300, 'delivery_charge' => 0,
+        ]);
+        $admin = User::create(['name' => 'Zero Paid Admin', 'email' => Str::uuid().'@example.test', 'password' => bcrypt('secret'), 'status' => 1]);
+        Auth::guard('admin')->login($admin);
+        $fundBefore = FundTransaction::where('source_id', $order->id)->count();
+        $movesBefore = InventoryMovement::where('order_id', $order->id)->count();
+
+        $response = app(ManualOrderController::class)->update($request, $order);
+        $this->assertTrue($response->isRedirect(route('admin.manual_orders.show', $order)));
+        $this->assertEquals(0, $order->fresh()->paid_amount);
+        $this->assertEquals(0, $order->fresh()->amount);
+        $this->assertEquals(0, $order->fresh()->due_amount);
+        $this->assertSame($fundBefore, FundTransaction::where('source_id', $order->id)->count());
+        $this->assertSame($movesBefore, InventoryMovement::where('order_id', $order->id)->count());
+        $this->assertStock($product, onHand: 10, reserved: 3, available: 7);
+    }
+
+    public function test_giveaway_edit_renders_compact_sidebar_and_zero_payment_without_changing_sale_editing(): void
+    {
+        [, $order] = $this->manualOrderWithStock(3, 10);
+        $order->update(['order_purpose' => 'promotional_giveaway', 'amount' => 0, 'discount' => 300, 'order_discount' => 300, 'due_amount' => 0]);
+        $admin = User::create(['name' => 'Purpose UI Admin', 'email' => Str::uuid().'@example.test', 'password' => bcrypt('secret'), 'status' => 1]);
+        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'admin']);
+        $admin->assignRole($role);
+        Auth::guard('admin')->login($admin);
+
+        $html = app(ManualOrderController::class)->edit($order)
+            ->with('errors', new \Illuminate\Support\ViewErrorBag())->render();
+        $this->assertStringContainsString('class="mo-purpose-card mb-3"', $html);
+        $this->assertStringContainsString('No Payment Required', $html);
+        $this->assertStringContainsString('Product Cost', $html);
+        $this->assertStringContainsString('৳150.00', $html);
+        $this->assertStringContainsString('id="manual-purpose-form"', $html);
+        $this->assertStringContainsString('name="order_purpose" form="manual-purpose-form"', $html);
+        $this->assertMatchesRegularExpression('/id="mo-purpose-editor"[^>]*hidden/', $html);
+        $this->assertMatchesRegularExpression('/name="paid_amount"[^>]*value="0"[^>]*readonly/', $html);
+        $this->assertLessThan(strpos($html, '<h5 class="mb-3">Totals</h5>'), strpos($html, 'id="mo-purpose-title"'));
+
+        $order->update(['order_purpose' => 'sale', 'amount' => 300, 'discount' => 0, 'order_discount' => 0, 'due_amount' => 300]);
+        $saleHtml = app(ManualOrderController::class)->edit($order->fresh())
+            ->with('errors', new \Illuminate\Support\ViewErrorBag())->render();
+        $this->assertDoesNotMatchRegularExpression('/name="paid_amount"[^>]*readonly/', $saleHtml);
+    }
 
     public function test_inventory_reconciliation_applies_only_quantity_deltas_and_is_idempotent(): void
     {

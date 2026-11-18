@@ -47,11 +47,13 @@ class CourierWebhookOrderService
         }
 
         if (SteadfastWebhookStatus::isCompleted($newOrderStatus) && $oldStatus !== $newOrderStatus) {
-            \App\Helpers\FundHelper::creditSale(
-                $order,
-                "Order complete via {$sourceLabel} webhook (#{$order->invoice_id})",
-                1
-            );
+            if (($order->order_purpose ?: 'sale') === \App\Support\OrderPurpose::SALE) {
+                \App\Helpers\FundHelper::creditSale(
+                    $order,
+                    "Order complete via {$sourceLabel} webhook (#{$order->invoice_id})",
+                    1
+                );
+            }
 
             $this->distributeVendorEarnings($order, $sourceLabel);
             $this->creditResellerWallet($order, $sourceLabel);

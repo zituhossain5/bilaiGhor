@@ -4,6 +4,15 @@
 .mo-create label { font-weight: 700; font-size: 12px; color: #344054; }
 .mo-items th { font-size: 12px; color: #667085; white-space: nowrap; }
 .mo-summary { background: #fff8ec; border: 1px solid #f3cf9e; border-radius: 10px; padding: 16px; position: sticky; top: 90px; }
+.mo-purpose-card { background: #fff8ec; border: 1px solid #f3cf9e; border-radius: 10px; padding: 16px; min-width: 0; }
+.mo-purpose-card h5 { color: #3a1f0f; font-size: 16px; }
+.mo-purpose-card .mo-summary-row { gap: 8px; align-items: flex-start; font-size: 12px; }
+.mo-purpose-card .mo-summary-row > span:first-child { flex: 0 0 40%; }
+.mo-purpose-card .mo-summary-row > strong { text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.mo-purpose-card details summary { color: #77451e; cursor: pointer; }
+.mo-purpose-card details ul { list-style: disc; }
+.mo-purpose-card [hidden] { display: none !important; }
+@media (max-width: 991.98px) { .mo-create .mo-summary { position: static; } }
 .mo-summary-row { display: flex; justify-content: space-between; gap: 16px; padding: 7px 0; border-bottom: 1px dashed #e7c48e; }
 .mo-summary-row.total { margin-top: 8px; padding: 12px; background: #3a1f0f; color: #fff; border-radius: 8px; border: none; font-weight: 800; }
 .mo-stock-hint { display: block; margin-top: 5px; font-size: 11px; font-weight: 700; color: #198754; }

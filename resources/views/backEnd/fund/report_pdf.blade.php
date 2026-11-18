@@ -26,7 +26,7 @@
 
     <table class="summary">
         <tr>
-            <td><div class="label">Available Fund Balance</div><div class="value">{{ number_format($fundTotals['balance'], 2) }} BDT</div></td>
+            <td><div class="label">Recorded Fund Balance</div><div class="value">{{ number_format($fundTotals['balance'], 2) }} BDT</div></td>
             <td><div class="label">Investment Added</div><div class="value">{{ number_format($summary['period_investment'], 2) }} BDT</div></td>
             <td><div class="label">Sales Revenue</div><div class="value">{{ number_format($summary['sales_revenue'], 2) }} BDT</div></td>
             <td><div class="label">COGS</div><div class="value">{{ number_format($summary['cogs'], 2) }} BDT</div></td>

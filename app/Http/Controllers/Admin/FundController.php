@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\FundTransaction;
 use App\Models\FundTransactionLog;
+use App\Models\LiquidBalanceSnapshot;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -50,6 +51,17 @@ class FundController extends Controller
         $total_in = $fundTotals['in'];
         $total_out = $fundTotals['out'];
         $balance = $fundTotals['balance'];
+        $ledgerSources = FundTransaction::includedInAccounting()
+            ->select('source', 'direction')
+            ->selectRaw('COUNT(*) as entries, SUM(amount) as total')
+            ->groupBy('source', 'direction')
+            ->orderBy('direction')
+            ->orderBy('source')
+            ->get();
+        $latestMoneySnapshot = LiquidBalanceSnapshot::with('recorder:id,name')->latest('id')->first();
+        $moneySnapshots = LiquidBalanceSnapshot::with('recorder:id,name')
+            ->latest('id')->paginate(10, ['*'], 'money_page')->withQueryString();
+        $moneySnapshotToken = (string) Str::uuid();
         $hasInitialInvestment = FundTransaction::includedInAccounting()
             ->where('direction', 'in')
             ->whereIn('source', ['investment', 'manual_add'])
@@ -71,10 +83,48 @@ class FundController extends Controller
             'investments',
             'total_in',
             'total_out',
+            'ledgerSources',
+            'latestMoneySnapshot',
+            'moneySnapshots',
+            'moneySnapshotToken',
             'hasInitialInvestment',
             'isAdmin',
             'withdrawalToken'
         ));
+    }
+
+    public function recordLiquidBalances(Request $request)
+    {
+        abort_unless($this->isAdmin(), 403, 'Only Admin can record verified balances.');
+
+        $validated = $request->validate([
+            'idempotency_key' => 'required|uuid',
+            'cash_balance' => 'required|numeric|min:0|max:9999999999.99',
+            'bank_balance' => 'required|numeric|min:0|max:9999999999.99',
+            'mobile_wallet_balance' => 'required|numeric|min:0|max:9999999999.99',
+            'other_liquid_balance' => 'required|numeric|min:0|max:9999999999.99',
+            'courier_reported_balance' => 'nullable|numeric|min:0|max:9999999999.99',
+            'snapshot_note' => 'nullable|string|max:1000',
+            'verified' => 'accepted',
+        ]);
+
+        LiquidBalanceSnapshot::firstOrCreate(
+            ['idempotency_key' => $validated['idempotency_key']],
+            [
+                'cash_balance' => round((float) $validated['cash_balance'], 2),
+                'bank_balance' => round((float) $validated['bank_balance'], 2),
+                'mobile_wallet_balance' => round((float) $validated['mobile_wallet_balance'], 2),
+                'other_liquid_balance' => round((float) $validated['other_liquid_balance'], 2),
+                'courier_reported_balance' => isset($validated['courier_reported_balance'])
+                    ? round((float) $validated['courier_reported_balance'], 2) : null,
+                'note' => $validated['snapshot_note'] ?? null,
+                'verified_at' => now(),
+                'recorded_by' => Auth::guard('admin')->id(),
+            ]
+        );
+
+        return redirect()->route('admin.fund.index')
+            ->with('success', 'Verified money balances recorded. The accounting ledger was not changed.');
     }
 
     /**
@@ -202,7 +252,7 @@ class FundController extends Controller
 
             fputcsv($handle, ['Bilai Ghor Account & Fund Report']);
             fputcsv($handle, ['Period', $period['label']]);
-            fputcsv($handle, ['Available Fund Balance', number_format($fundTotals['balance'], 2, '.', '')]);
+            fputcsv($handle, ['Recorded Fund Balance', number_format($fundTotals['balance'], 2, '.', '')]);
             fputcsv($handle, ['Investment Added', number_format($summary['period_investment'], 2, '.', '')]);
             fputcsv($handle, ['Sales Revenue', number_format($summary['sales_revenue'], 2, '.', '')]);
             fputcsv($handle, ['COGS', number_format($summary['cogs'], 2, '.', '')]);

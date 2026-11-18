@@ -23,8 +23,11 @@
     .fund-table th { white-space: nowrap; }
     .fund-table td { vertical-align: middle; }
     .fund-source { text-transform: capitalize; }
+    .fund-money-total { color: var(--bilai-dark, #351600); font-size: 24px; font-weight: 700; }
+    .fund-money-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .fund-money-grid .form-label { margin-bottom: 4px; }
     @media (max-width: 1199px) { .fund-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .fund-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 575px) { .fund-toolbar, .fund-panel { padding: 14px; } .fund-filter-grid, .fund-kpi-grid, .fund-metric-list { grid-template-columns: 1fr; } .fund-kpi { min-height: 0; } .fund-kpi__value { font-size: 21px; } }
+    @media (max-width: 575px) { .fund-toolbar, .fund-panel { padding: 14px; } .fund-filter-grid, .fund-kpi-grid, .fund-metric-list, .fund-money-grid { grid-template-columns: 1fr; } .fund-kpi { min-height: 0; } .fund-kpi__value { font-size: 21px; } }
 </style>
 
 <div class="container-fluid fund-dashboard">
@@ -60,7 +63,7 @@
     <div class="fund-kpi-grid mb-4">
         @php
             $cards = [
-                ['Available fund balance', $balance, 'Cash ledger inflow minus outflow, not profit', 'fund-kpi--dark'],
+                ['Recorded fund balance', $balance, 'Accounting entries only; see verified money on hand below', 'fund-kpi--dark'],
                 ['Total investment', $summary['total_investment'], 'Initial plus all additional investment', ''],
                 ['Investment in period', $summary['period_investment'], 'Owner capital added in this filter', ''],
                 ['Sales revenue', $summary['sales_revenue'], number_format($summary['sales_orders']).' completed and paid orders', ''],
@@ -77,6 +80,76 @@
         @foreach($cards as [$label, $value, $hint, $variant])
             <div class="fund-kpi {{ $variant }}"><div class="fund-kpi__label">{{ $label }}</div><div class="fund-kpi__value">{{ number_format($value, 2) }} &#2547;</div><div class="fund-kpi__hint">{{ $hint }}</div></div>
         @endforeach
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-xl-6">
+            <section class="fund-panel h-100" aria-labelledby="recorded-ledger-heading">
+                <h5 class="fund-section-title" id="recorded-ledger-heading">Recorded fund ledger</h5>
+                <p class="text-muted small">Lifetime source breakdown of the accounting entries. A sale credit can appear before a courier payout reaches your bank or wallet.</p>
+                <div class="table-responsive"><table class="table fund-table">
+                    <thead><tr><th>Source</th><th>Direction</th><th class="text-end">Entries</th><th class="text-end">Amount</th></tr></thead>
+                    <tbody>
+                    @foreach($ledgerSources as $source)
+                        <tr><td class="fund-source">{{ str_replace('_', ' ', $source->source) }}</td><td>{{ strtoupper($source->direction) }}</td><td class="text-end">{{ number_format($source->entries) }}</td><td class="text-end">{{ number_format($source->total, 2) }} &#2547;</td></tr>
+                    @endforeach
+                    <tr><th>Total in</th><td></td><td></td><th class="text-end">{{ number_format($total_in, 2) }} &#2547;</th></tr>
+                    <tr><th>Total out</th><td></td><td></td><th class="text-end">{{ number_format($total_out, 2) }} &#2547;</th></tr>
+                    <tr><th>Recorded balance</th><td></td><td></td><th class="text-end">{{ number_format($balance, 2) }} &#2547;</th></tr>
+                    </tbody>
+                </table></div>
+                <small class="text-muted">COGS and giveaway cost affect profit; they are not additional fund withdrawals unless a separate payment was recorded.</small>
+            </section>
+        </div>
+        <div class="col-xl-6">
+            <section class="fund-panel h-100" aria-labelledby="actual-money-heading">
+                <h5 class="fund-section-title" id="actual-money-heading">Verified money on hand</h5>
+                @if($latestMoneySnapshot)
+                    <div class="fund-money-total">{{ number_format($latestMoneySnapshot->money_on_hand, 2) }} &#2547;</div>
+                    <p class="text-muted small">Last counted {{ $latestMoneySnapshot->verified_at->format('d/m/Y h:i A') }} by {{ $latestMoneySnapshot->recorder?->name ?? 'Admin' }}. This is a dated snapshot, not an automatically updated balance.</p>
+                    <dl class="fund-metric-list">
+                        <div><dt>Cash</dt><dd>{{ number_format($latestMoneySnapshot->cash_balance, 2) }} &#2547;</dd></div>
+                        <div><dt>Bank</dt><dd>{{ number_format($latestMoneySnapshot->bank_balance, 2) }} &#2547;</dd></div>
+                        <div><dt>Mobile wallets</dt><dd>{{ number_format($latestMoneySnapshot->mobile_wallet_balance, 2) }} &#2547;</dd></div>
+                        <div><dt>Other liquid accounts</dt><dd>{{ number_format($latestMoneySnapshot->other_liquid_balance, 2) }} &#2547;</dd></div>
+                        <div><dt>Courier portal balance (separate)</dt><dd>{{ $latestMoneySnapshot->courier_reported_balance === null ? 'Not recorded' : number_format($latestMoneySnapshot->courier_reported_balance, 2).' ৳' }}</dd></div>
+                    </dl>
+                @else
+                    <p class="text-muted">No verified money balance has been entered. The recorded fund balance above does not establish how much you can spend now.</p>
+                @endif
+                <p class="text-muted small mt-3">Count business money in each location once. Include money held in a personal account under the appropriate liquid account. Do not include stock, unpaid customer orders, or courier portal balances until received and available to use.</p>
+                <form method="POST" action="{{ route('admin.fund.liquid-balances.store') }}">
+                    @csrf
+                    <input type="hidden" name="idempotency_key" value="{{ old('idempotency_key', $moneySnapshotToken) }}">
+                    <div class="fund-money-grid">
+                        @foreach(['cash_balance' => 'Cash counted', 'bank_balance' => 'Bank available', 'mobile_wallet_balance' => 'bKash / Nagad / other wallets', 'other_liquid_balance' => 'Other available liquid money'] as $field => $label)
+                            <div><label for="{{ $field }}" class="form-label">{{ $label }} *</label><input id="{{ $field }}" type="number" name="{{ $field }}" min="0" max="9999999999.99" step="0.01" inputmode="decimal" value="{{ old($field) }}" class="form-control @error($field) is-invalid @enderror" required>@error($field)<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+                        @endforeach
+                    </div>
+                    <div class="mt-3"><label for="courier_reported_balance" class="form-label">Courier portal balance (optional, excluded from money on hand)</label><input id="courier_reported_balance" type="number" name="courier_reported_balance" min="0" max="9999999999.99" step="0.01" inputmode="decimal" value="{{ old('courier_reported_balance') }}" class="form-control @error('courier_reported_balance') is-invalid @enderror">@error('courier_reported_balance')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+                    <div class="mt-3"><label for="liquid_balance_note" class="form-label">Count / statement note</label><textarea id="liquid_balance_note" name="snapshot_note" rows="2" class="form-control @error('snapshot_note') is-invalid @enderror">{{ old('snapshot_note') }}</textarea>@error('snapshot_note')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+                    <div class="form-check my-3"><input class="form-check-input" type="checkbox" name="verified" value="1" id="liquid_balance_verified" required><label class="form-check-label" for="liquid_balance_verified">I checked each balance against cash and account statements; zero means verified zero.</label></div>
+                    @error('verified')<div class="text-danger small mb-2">{{ $message }}</div>@enderror
+                    <button type="submit" class="btn btn-primary">Record verified balances</button>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <div class="fund-panel mb-4">
+        <h5 class="fund-section-title">Verified money history</h5>
+        <p class="text-muted small">Each row is a count at that time. These records do not change fund transactions or profit.</p>
+        <div class="table-responsive"><table class="table fund-table">
+            <thead><tr><th>Verified at</th><th class="text-end">Cash</th><th class="text-end">Bank</th><th class="text-end">Wallets</th><th class="text-end">Other</th><th class="text-end">Money on hand</th><th class="text-end">Courier separate</th><th>Recorded by / Note</th></tr></thead>
+            <tbody>
+            @forelse($moneySnapshots as $snapshot)
+                <tr><td>{{ $snapshot->verified_at->format('d/m/Y h:i A') }}</td><td class="text-end">{{ number_format($snapshot->cash_balance, 2) }}</td><td class="text-end">{{ number_format($snapshot->bank_balance, 2) }}</td><td class="text-end">{{ number_format($snapshot->mobile_wallet_balance, 2) }}</td><td class="text-end">{{ number_format($snapshot->other_liquid_balance, 2) }}</td><td class="text-end fw-bold">{{ number_format($snapshot->money_on_hand, 2) }} &#2547;</td><td class="text-end">{{ $snapshot->courier_reported_balance === null ? '-' : number_format($snapshot->courier_reported_balance, 2) }}</td><td>{{ $snapshot->recorder?->name ?? 'Admin' }}<br><small class="text-muted">{{ $snapshot->note }}</small></td></tr>
+            @empty
+                <tr><td colspan="8" class="text-center text-muted">No verified balances recorded yet.</td></tr>
+            @endforelse
+            </tbody>
+        </table></div>
+        {{ $moneySnapshots->links('pagination::bootstrap-4') }}
     </div>
 
     @if($summary['cost_fallback_lines'] || $summary['zero_cost_lines'])
